@@ -1,6 +1,16 @@
 import { toast } from "sonner";
 
-const TRADING_VIEW_BASE_URL = "https://www.tradingview.com/chart/";
+// For development, we'll use a mock chart image until the backend is ready
+const MOCK_CHART_IMAGES = {
+  "1m": "/charts/1m-chart.png",
+  "5m": "/charts/5m-chart.png",
+  "15m": "/charts/15m-chart.png",
+  "1h": "/charts/1h-chart.png",
+  "4h": "/charts/4h-chart.png",
+  "1d": "/charts/1d-chart.png",
+  "1w": "/charts/1w-chart.png",
+  "1M": "/charts/1M-chart.png",
+};
 
 export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
   console.log("محاولة جلب صورة الشارت:", { symbol, timeframe });
@@ -11,23 +21,11 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
       throw new Error("يجب تحديد الرمز والإطار الزمني");
     }
 
-    // بناء رابط TradingView
-    const chartUrl = `${TRADING_VIEW_BASE_URL}?symbol=${symbol.toUpperCase()}&interval=${timeframe}`;
+    // في بيئة التطوير، نستخدم صورة تجريبية
+    const mockChartUrl = MOCK_CHART_IMAGES[timeframe as keyof typeof MOCK_CHART_IMAGES] || MOCK_CHART_IMAGES["1d"];
     
-    // في بيئة الإنتاج، هنا سنقوم باستدعاء API الخاص بنا للحصول على لقطة شاشة
-    // يمكن استخدام خدمات مثل Puppeteer أو Selenium على الخادم
-    const response = await fetch('/api/screenshot', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: chartUrl,
-        timeframe: timeframe,
-        symbol: symbol
-      })
-    });
-
+    // التحقق من وجود الصورة
+    const response = await fetch(mockChartUrl);
     if (!response.ok) {
       throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
     }
