@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { ImageUploader } from "./ImageUploader";
-import { AnalysisResult } from "./AnalysisResult";
-import { Canvas } from "./Canvas";
-import { TradingViewSelector } from "./TradingViewSelector";
-import { Button } from "@/components/ui/button";
-import { Camera, Upload } from "lucide-react";
+import { ChartModeSelector } from "./chart/ChartModeSelector";
+import { ChartInput } from "./chart/ChartInput";
+import { ChartDisplay } from "./chart/ChartDisplay";
 import { toast } from "sonner";
-import { getTradingViewUrl } from "@/utils/chartPatternAnalysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { calculateFibonacciLevels, calculateTargets, calculateStopLoss, calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis";
+import { 
+  calculateFibonacciLevels, 
+  calculateTargets, 
+  calculateStopLoss, 
+  calculateSupportResistance, 
+  detectTrend 
+} from "@/utils/technicalAnalysis";
 
 interface AnalysisData {
   pattern: string;
@@ -79,6 +81,34 @@ export const ChartAnalyzer = () => {
     setIsAnalyzing(false);
   };
 
+  const detectPrices = (imageData: ImageData): number[] => {
+    const prices: number[] = [];
+    const height = imageData.height;
+    
+    for (let y = 0; y < height; y += height / 10) {
+      let sum = 0;
+      let count = 0;
+      
+      for (let x = 0; x < 50; x++) {
+        const index = (Math.floor(y) * imageData.width + x) * 4;
+        const r = imageData.data[index];
+        const g = imageData.data[index + 1];
+        const b = imageData.data[index + 2];
+        
+        sum += (r + g + b) / 3;
+        count++;
+      }
+      
+      if (count > 0) {
+        const avgColor = sum / count;
+        const price = 2000 + (avgColor / 255) * 1000;
+        prices.push(Math.round(price));
+      }
+    }
+    
+    return prices;
+  };
+
   const analyzeChart = async (imageData: string) => {
     setIsAnalyzing(true);
     console.log("بدء تحليل الشارت...");
@@ -108,7 +138,7 @@ export const ChartAnalyzer = () => {
         }
 
         const currentPrice = prices[prices.length - 1];
-        const direction = detectTrend(prices);
+        const direction = detectTrend(prices) as "صاعد" | "هابط";
         
         const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
         
@@ -159,102 +189,25 @@ export const ChartAnalyzer = () => {
     }
   };
 
-  const detectPrices = (imageData: ImageData): number[] => {
-    const prices: number[] = [];
-    const height = imageData.height;
-    
-    for (let y = 0; y < height; y += height / 10) {
-      let sum = 0;
-      let count = 0;
-      
-      for (let x = 0; x < 50; x++) {
-        const index = (Math.floor(y) * imageData.width + x) * 4;
-        const r = imageData.data[index];
-        const g = imageData.data[index + 1];
-        const b = imageData.data[index + 2];
-        
-        sum += (r + g + b) / 3;
-        count++;
-      }
-      
-      if (count > 0) {
-        const avgColor = sum / count;
-        const price = 2000 + (avgColor / 255) * 1000;
-        prices.push(Math.round(price));
-      }
-    }
-    
-    return prices;
-  };
-
   return (
     <div className="space-y-8">
-      <div className="flex justify-center gap-4 mb-8">
-        <Button
-          variant={mode === 'upload' ? "default" : "outline"}
-          onClick={() => setMode('upload')}
-        >
-          تحليل صورة
-        </Button>
-        <Button
-          variant={mode === 'tradingview' ? "default" : "outline"}
-          onClick={() => setMode('tradingview')}
-        >
-          تحليل من TradingView
-        </Button>
-      </div>
+      <ChartModeSelector mode={mode} onModeChange={setMode} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-right">
-            {mode === 'upload' ? 'تحميل الشارت' : 'تحليل من TradingView'}
-          </h2>
-          
-          {mode === 'upload' ? (
-            <>
-              <ImageUploader onImageCapture={handleImageUpload} />
-              <div className="flex gap-4 mt-4 justify-center">
-                <Button 
-                  variant="outline"
-                  onClick={() => document.getElementById('fileInput')?.click()}
-                  className="hover:bg-gray-100"
-                >
-                  <Upload className="ml-2" />
-                  تحميل صورة
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => document.getElementById('cameraInput')?.click()}
-                  className="hover:bg-gray-100"
-                >
-                  <Camera className="ml-2" />
-                  التقاط صورة
-                </Button>
-              </div>
-            </>
-          ) : (
-            <TradingViewSelector 
-              onConfigSubmit={handleTradingViewConfig}
-              isLoading={isAnalyzing}
-            />
-          )}
-        </div>
+        <ChartInput
+          mode={mode}
+          onImageCapture={handleImageUpload}
+          onTradingViewConfig={handleTradingViewConfig}
+          isAnalyzing={isAnalyzing}
+        />
 
-        {image && (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4 text-right">الشارت</h2>
-            <Canvas image={image} analysis={analysis!} onClose={handleClose} />
-          </div>
-        )}
+        <ChartDisplay
+          image={image}
+          analysis={analysis}
+          isAnalyzing={isAnalyzing}
+          onClose={handleClose}
+        />
       </div>
-
-      {analysis && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
-          <AnalysisResult analysis={analysis} isLoading={isAnalyzing} />
-        </div>
-      )}
     </div>
   );
 };

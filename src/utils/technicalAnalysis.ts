@@ -21,8 +21,8 @@ export const calculatePivotPoints = (high: number, low: number, close: number) =
   };
 };
 
-export const detectTrend = (prices: number[]): "صاعد" | "هابط" | "محايد" => {
-  if (prices.length < 2) return "محايد";
+export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
+  if (prices.length < 2) return "صاعد";
   
   const recentPrices = prices.slice(-5);
   const avgChange = recentPrices.reduce((acc, price, i) => {
@@ -30,9 +30,7 @@ export const detectTrend = (prices: number[]): "صاعد" | "هابط" | "محا
     return acc + (price - recentPrices[i - 1]);
   }, 0) / (recentPrices.length - 1);
 
-  if (avgChange > 0.1) return "صاعد";
-  if (avgChange < -0.1) return "هابط";
-  return "محايد";
+  return avgChange > 0 ? "صاعد" : "هابط";
 };
 
 export const calculateSupportResistance = (
