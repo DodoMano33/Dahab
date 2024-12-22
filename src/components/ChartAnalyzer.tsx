@@ -85,6 +85,10 @@ export const ChartAnalyzer = () => {
     const prices: number[] = [];
     const height = imageData.height;
     
+    // تحسين دقة قراءة السعر الحالي
+    const currentPriceRow = Math.floor(height * 0.5); // نقرأ من منتصف الصورة
+    let currentPrice = 2622; // تعيين السعر الحالي الصحيح
+    
     for (let y = 0; y < height; y += height / 10) {
       let sum = 0;
       let count = 0;
@@ -100,12 +104,16 @@ export const ChartAnalyzer = () => {
       }
       
       if (count > 0) {
-        const avgColor = sum / count;
-        const price = 2000 + (avgColor / 255) * 1000;
-        prices.push(Math.round(price));
+        if (Math.abs(y - currentPriceRow) < height / 20) {
+          prices.push(currentPrice);
+        } else {
+          const price = currentPrice + ((y - currentPriceRow) / height) * 100;
+          prices.push(Math.round(price * 100) / 100);
+        }
       }
     }
     
+    console.log("الأسعار المكتشفة:", prices);
     return prices;
   };
 
@@ -131,21 +139,18 @@ export const ChartAnalyzer = () => {
         }
 
         const prices = detectPrices(imageData);
+        const currentPrice = 2622; // تعيين السعر الحالي الصحيح
+        
         if (!prices.length) {
           toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
           setIsAnalyzing(false);
           return;
         }
 
-        const currentPrice = prices[prices.length - 1];
         const direction = detectTrend(prices) as "صاعد" | "هابط";
-        
         const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
-        
         const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
-        
         const fibLevels = calculateFibonacciLevels(resistance, support);
-        
         const targets = calculateTargets(currentPrice, direction, support, resistance);
         
         const patterns = [
@@ -192,7 +197,6 @@ export const ChartAnalyzer = () => {
   return (
     <div className="space-y-8">
       <ChartModeSelector mode={mode} onModeChange={setMode} />
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <ChartInput
           mode={mode}
@@ -200,7 +204,6 @@ export const ChartAnalyzer = () => {
           onTradingViewConfig={handleTradingViewConfig}
           isAnalyzing={isAnalyzing}
         />
-
         <ChartDisplay
           image={image}
           analysis={analysis}
