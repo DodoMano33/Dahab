@@ -23,11 +23,13 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
 
     // في بيئة التطوير، نستخدم صورة تجريبية
     const mockChartUrl = MOCK_CHART_IMAGES[timeframe as keyof typeof MOCK_CHART_IMAGES] || MOCK_CHART_IMAGES["1d"];
+    console.log("استخدام الصورة التجريبية:", mockChartUrl);
     
     // التحقق من وجود الصورة
     const response = await fetch(mockChartUrl);
     if (!response.ok) {
-      throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
+      console.error("خطأ في جلب الصورة:", response.status, response.statusText);
+      throw new Error(`فشل في تحميل الصورة: ${response.statusText || 'خطأ غير معروف'}`);
     }
 
     const imageBlob = await response.blob();
