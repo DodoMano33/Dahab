@@ -5,6 +5,7 @@ import { Canvas } from "./Canvas";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { calculateStandardDeviation } from "@/utils/mathUtils";
 
 interface AnalysisData {
   pattern: string;
@@ -125,7 +126,7 @@ export const ChartAnalyzer = () => {
         // تحسين اختيار النموذج بناءً على تحليل حركة السعر
         let patternIndex = 0;
         const priceChanges = prices.slice(1).map((price, i) => price - prices[i]);
-        const volatility = Math.std(priceChanges);
+        const volatility = calculateStandardDeviation(priceChanges);
         
         if (volatility > 50) {
           patternIndex = 0; // نموذج الرأس والكتفين
@@ -219,10 +220,4 @@ export const ChartAnalyzer = () => {
       )}
     </div>
   );
-};
-
-// Helper function to calculate standard deviation
-Math.std = function(arr: number[]) {
-  const mean = arr.reduce((a, b) => a + b) / arr.length;
-  return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / arr.length);
 };
