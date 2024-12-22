@@ -6,6 +6,7 @@ interface AnalysisResultProps {
     direction: string;
     support: number;
     resistance: number;
+    targets?: number[];
   };
   isLoading: boolean;
 }
@@ -39,6 +40,19 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
           <p className="text-lg">{analysis.resistance}</p>
         </div>
       </div>
+      
+      {analysis.targets && analysis.targets.length > 0 && (
+        <div className="bg-gray-50 p-4 rounded-lg mt-4">
+          <h3 className="font-semibold text-gray-700 mb-2">الأهداف المتوقعة</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {analysis.targets.map((target, index) => (
+              <div key={index} className="bg-white p-2 rounded border border-gray-200">
+                <p className="text-lg">الهدف {index + 1}: {target}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

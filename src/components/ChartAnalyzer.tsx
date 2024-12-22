@@ -4,12 +4,14 @@ import { AnalysisResult } from "./AnalysisResult";
 import { Canvas } from "./Canvas";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 interface AnalysisData {
   pattern: string;
   direction: string;
   support: number;
   resistance: number;
+  targets?: number[];
 }
 
 export const ChartAnalyzer = () => {
@@ -26,16 +28,19 @@ export const ChartAnalyzer = () => {
     setIsAnalyzing(true);
     console.log("Analyzing chart...");
     
-    // هنا سيتم إضافة التحليل الفعلي لاحقاً
-    // حالياً نستخدم بيانات تجريبية
+    // محاكاة تحليل الصورة - سيتم استبداله بالتحليل الفعلي لاحقاً
     setTimeout(() => {
-      setAnalysis({
+      const mockAnalysis = {
         pattern: "نموذج الرأس والكتفين",
         direction: "هابط",
         support: 100,
-        resistance: 150
-      });
+        resistance: 150,
+        targets: [95, 90, 85] // أهداف متوقعة
+      };
+      
+      setAnalysis(mockAnalysis);
       setIsAnalyzing(false);
+      toast.success("تم تحليل الشارت بنجاح");
     }, 2000);
   };
 
@@ -68,7 +73,7 @@ export const ChartAnalyzer = () => {
         {image && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4 text-right">الشارت</h2>
-            <Canvas image={image} analysis={analysis} />
+            <Canvas image={image} analysis={analysis!} />
           </div>
         )}
       </div>
