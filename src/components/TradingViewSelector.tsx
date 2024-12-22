@@ -5,13 +5,14 @@ import { timeframes } from "@/utils/chartPatternAnalysis";
 import { toast } from "sonner";
 
 interface TradingViewSelectorProps {
-  onConfigSubmit: (symbol: string, timeframe: string) => void;
+  onConfigSubmit: (symbol: string, timeframe: string, currentPrice: number) => void;
   isLoading: boolean;
 }
 
 export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
+  const [currentPrice, setCurrentPrice] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +20,12 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSe
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
       return;
     }
-    console.log("Submitting TradingView config:", { symbol, timeframe });
-    onConfigSubmit(symbol, timeframe);
+    if (!currentPrice || isNaN(Number(currentPrice)) || Number(currentPrice) <= 0) {
+      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      return;
+    }
+    console.log("Submitting TradingView config:", { symbol, timeframe, currentPrice });
+    onConfigSubmit(symbol, timeframe, Number(currentPrice));
   };
 
   return (
@@ -34,6 +39,21 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSe
           placeholder="مثال: BTCUSD, EURUSD"
           value={symbol}
           onChange={(e) => setSymbol(e.target.value)}
+          className="w-full"
+          dir="ltr"
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          السعر الحالي
+        </label>
+        <Input
+          type="number"
+          step="any"
+          placeholder="أدخل السعر الحالي"
+          value={currentPrice}
+          onChange={(e) => setCurrentPrice(e.target.value)}
           className="w-full"
           dir="ltr"
         />

@@ -8,7 +8,7 @@ type AnalysisMode = 'upload' | 'tradingview';
 interface ChartInputProps {
   mode: AnalysisMode;
   onImageCapture: (imageData: string) => void;
-  onTradingViewConfig: (symbol: string, timeframe: string) => void;
+  onTradingViewConfig: (symbol: string, timeframe: string, currentPrice: number) => void;
   isAnalyzing: boolean;
 }
 

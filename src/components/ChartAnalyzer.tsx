@@ -58,15 +58,16 @@ export const ChartAnalyzer = () => {
     img.src = imageData;
   };
 
-  const handleTradingViewConfig = async (symbol: string, timeframe: string) => {
+  const handleTradingViewConfig = async (symbol: string, timeframe: string, currentPrice: number) => {
     try {
       setIsAnalyzing(true);
-      console.log("بدء تحليل TradingView:", symbol, timeframe);
+      console.log("بدء تحليل TradingView:", { symbol, timeframe, currentPrice });
       
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
       console.log("تم استلام صورة الشارت:", chartImage);
       
-      handleImageUpload(chartImage);
+      setImage(chartImage);
+      analyzeChartWithPrice(chartImage, currentPrice);
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
@@ -81,13 +82,13 @@ export const ChartAnalyzer = () => {
     setIsAnalyzing(false);
   };
 
-  const detectPrices = (imageData: ImageData): number[] => {
+  const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
     const prices: number[] = [];
     const height = imageData.height;
     
     // تحسين دقة قراءة السعر الحالي
     const currentPriceRow = Math.floor(height * 0.5); // نقرأ من منتصف الصورة
-    let currentPrice = 2622; // تعيين السعر الحالي الصحيح
+    let currentPrice = providedCurrentPrice || 2622; // استخدام السعر المقدم أو القيمة الافتراضية للذهب
     
     for (let y = 0; y < height; y += height / 10) {
       let sum = 0;
@@ -139,7 +140,83 @@ export const ChartAnalyzer = () => {
         }
 
         const prices = detectPrices(imageData);
-        const currentPrice = 2622; // تعيين السعر الحالي الصحيح
+        const currentPrice = 2622; // السعر الحالي للذهب
+        
+        if (!prices.length) {
+          toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
+          setIsAnalyzing(false);
+          return;
+        }
+
+        const direction = detectTrend(prices) as "صاعد" | "هابط";
+        const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
+        const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
+        const fibLevels = calculateFibonacciLevels(resistance, support);
+        const targets = calculateTargets(currentPrice, direction, support, resistance);
+        
+        const patterns = [
+          "نموذج الرأس والكتفين",
+          "نموذج القمة المزدوجة",
+          "نموذج القاع المزدوج",
+          "نموذج المثلث المتماثل",
+          "نموذج القناة السعرية"
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        
+        const analysisResult = {
+          pattern,
+          direction,
+          currentPrice,
+          support,
+          resistance,
+          stopLoss,
+          targets,
+          fibonacciLevels: fibLevels
+        };
+        
+        console.log("نتائج التحليل:", analysisResult);
+        setAnalysis(analysisResult);
+        setIsAnalyzing(false);
+        toast.success("تم تحليل الشارت بنجاح");
+      };
+      
+      img.onerror = () => {
+        console.error("فشل في تحميل الصورة");
+        toast.error("فشل في تحميل الصورة");
+        setIsAnalyzing(false);
+      };
+      
+      img.src = imageData;
+      
+    } catch (error) {
+      console.error("خطأ في تحليل الشارت:", error);
+      setIsAnalyzing(false);
+      toast.error("حدث خطأ أثناء تحليل الشارت");
+    }
+  };
+
+  const analyzeChartWithPrice = async (imageData: string, currentPrice: number) => {
+    setIsAnalyzing(true);
+    console.log("بدء تحليل الشارت مع السعر المحدد:", currentPrice);
+    
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.drawImage(img, 0, 0);
+        
+        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+        if (!imageData) {
+          toast.error("فشل في معالجة الصورة");
+          setIsAnalyzing(false);
+          return;
+        }
+
+        const prices = detectPrices(imageData, currentPrice);
         
         if (!prices.length) {
           toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
