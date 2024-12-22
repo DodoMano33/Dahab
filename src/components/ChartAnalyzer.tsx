@@ -243,7 +243,10 @@ export const ChartAnalyzer = () => {
               </div>
             </>
           ) : (
-            <TradingViewSelector onConfigSubmit={handleTradingViewConfig} />
+            <TradingViewSelector 
+              onConfigSubmit={handleTradingViewConfig} 
+              isLoading={isAnalyzing}
+            />
           )}
         </div>
 

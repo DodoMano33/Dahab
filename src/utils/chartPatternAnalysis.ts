@@ -15,46 +15,53 @@ export const chartPatterns: ChartPattern[] = [
     confirmation: ["فجوة سعرية", "حجم تداول مرتفع", "اختراق مستوى الدعم"]
   },
   {
-    name: "Bullish Harami",
-    description: "نموذج انعكاسي صعودي يظهر في نهاية الاتجاه الهابط",
-    type: "bullish",
-    reliability: 7,
-    confirmation: ["شمعة صغيرة داخل شمعة كبيرة", "زيادة في حجم التداول"]
-  },
-  {
     name: "Head and Shoulders",
     description: "نموذج انعكاسي هبوطي يتكون من ثلاث قمم، الوسطى أعلى من الجانبيتين",
-    type: "bearish"
+    type: "bearish",
+    reliability: 7,
+    confirmation: ["اختراق خط العنق", "زيادة حجم التداول عند الاختراق"]
   },
   {
     name: "Inverse Head and Shoulders",
     description: "نموذج انعكاسي صعودي يتكون من ثلاث قيعان، الوسطى أدنى من الجانبيتين",
-    type: "bullish"
+    type: "bullish",
+    reliability: 7,
+    confirmation: ["اختراق خط العنق", "زيادة حجم التداول عند الاختراق"]
   },
   {
     name: "Double Top",
     description: "نموذج انعكاسي هبوطي يتكون من قمتين متساويتين تقريباً",
-    type: "bearish"
+    type: "bearish",
+    reliability: 6,
+    confirmation: ["كسر مستوى الدعم", "زيادة حجم التداول"]
   },
   {
     name: "Double Bottom",
     description: "نموذج انعكاسي صعودي يتكون من قاعين متساويين تقريباً",
-    type: "bullish"
+    type: "bullish",
+    reliability: 6,
+    confirmation: ["اختراق مستوى المقاومة", "زيادة حجم التداول"]
   },
   {
     name: "Triangle",
     description: "نموذج استمراري يتكون من خطي اتجاه متقاربين",
-    type: "neutral"
+    type: "neutral",
+    reliability: 5,
+    confirmation: ["اختراق أحد خطي الاتجاه", "زيادة حجم التداول"]
   },
   {
     name: "Flag",
     description: "نموذج استمراري يظهر كتصحيح مؤقت للاتجاه الرئيسي",
-    type: "neutral"
+    type: "neutral",
+    reliability: 6,
+    confirmation: ["اكتمال النموذج", "عودة حجم التداول للمستويات العادية"]
   },
   {
     name: "Cup and Handle",
     description: "نموذج صعودي يشبه الفنجان مع مقبض جانبي",
-    type: "bullish"
+    type: "bullish",
+    reliability: 7,
+    confirmation: ["اكتمال تشكل المقبض", "اختراق مستوى المقاومة"]
   }
 ];
 
