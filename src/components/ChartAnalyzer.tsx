@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { getTradingViewUrl } from "@/utils/chartPatternAnalysis";
+import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 
 interface AnalysisData {
   pattern: string;
@@ -46,15 +47,11 @@ export const ChartAnalyzer = () => {
       const tradingViewUrl = getTradingViewUrl({ symbol, timeframe });
       console.log("Generated TradingView URL:", tradingViewUrl);
 
-      // Simulate getting chart image from TradingView
-      // In production, this would be replaced with actual API call or screenshot service
-      const mockChartImage = "https://example.com/chart.png";
+      // Get chart image using our new utility function
+      const chartImage = await getTradingViewChartImage(symbol, timeframe);
+      console.log("Got chart image:", chartImage);
       
-      // Add delay to simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      console.log("Processing chart image...");
-      handleImageUpload(mockChartImage);
+      handleImageUpload(chartImage);
       
     } catch (error) {
       console.error("Error in TradingView analysis:", error);
@@ -244,7 +241,7 @@ export const ChartAnalyzer = () => {
             </>
           ) : (
             <TradingViewSelector 
-              onConfigSubmit={handleTradingViewConfig} 
+              onConfigSubmit={handleTradingViewConfig}
               isLoading={isAnalyzing}
             />
           )}
