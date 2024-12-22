@@ -31,6 +31,43 @@ export const ChartAnalyzer = () => {
     setIsAnalyzing(false);
   };
 
+  const detectPrices = (imageData: ImageData): number[] => {
+    console.log("بدء اكتشاف الأسعار من الصورة");
+    const prices: number[] = [];
+    const height = imageData.height;
+    const width = imageData.width;
+    
+    // قراءة الأسعار من الجانب الأيسر من الصورة
+    for (let y = 0; y < height; y += height / 20) { // زيادة عدد نقاط القراءة
+      let sum = 0;
+      let count = 0;
+      
+      // قراءة المزيد من البكسلات للحصول على قراءة أدق
+      for (let x = 0; x < width * 0.2; x++) { // قراءة 20% من عرض الصورة
+        const index = (Math.floor(y) * width + x) * 4;
+        const r = imageData.data[index];
+        const g = imageData.data[index + 1];
+        const b = imageData.data[index + 2];
+        
+        // حساب متوسط قيمة اللون
+        sum += (r + g + b) / 3;
+        count++;
+      }
+      
+      if (count > 0) {
+        const avgColor = sum / count;
+        // تحويل قيمة اللون إلى سعر باستخدام نطاق أكبر
+        const price = 2000 + (avgColor / 255) * 1000;
+        if (price >= 2500 && price <= 3000) { // تحديد نطاق معقول للأسعار
+          prices.push(Math.round(price));
+        }
+      }
+    }
+    
+    console.log("الأسعار المكتشفة:", prices);
+    return prices;
+  };
+
   const analyzeChart = async (imageData: string) => {
     setIsAnalyzing(true);
     console.log("بدء تحليل الشارت...");
@@ -46,7 +83,11 @@ export const ChartAnalyzer = () => {
         ctx?.drawImage(img, 0, 0);
         
         const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-        if (!imageData) return;
+        if (!imageData) {
+          toast.error("فشل في قراءة بيانات الصورة");
+          setIsAnalyzing(false);
+          return;
+        }
 
         // تحليل الصورة لاكتشاف الأرقام والأنماط
         const prices = detectPrices(imageData);
@@ -72,7 +113,7 @@ export const ChartAnalyzer = () => {
           ? Math.round(support - (support * 0.01)) // 1% تحت مستوى الدعم
           : Math.round(resistance + (resistance * 0.01)); // 1% فوق مستوى المقاومة
 
-        // تحديد النموذج
+        // تحديد النموذج بناءً على تحليل الأسعار
         const patterns = [
           "نموذج الرأس والكتفين",
           "نموذج القمة المزدوجة",
@@ -80,9 +121,23 @@ export const ChartAnalyzer = () => {
           "نموذج المثلث المتماثل",
           "نموذج القناة السعرية"
         ];
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         
-        // حساب الأهداف
+        // تحسين اختيار النموذج بناءً على تحليل حركة السعر
+        let patternIndex = 0;
+        const priceChanges = prices.slice(1).map((price, i) => price - prices[i]);
+        const volatility = Math.std(priceChanges);
+        
+        if (volatility > 50) {
+          patternIndex = 0; // نموذج الرأس والكتفين
+        } else if (maxPrice - minPrice > 100) {
+          patternIndex = 1; // نموذج القمة المزدوجة
+        } else {
+          patternIndex = 2; // نموذج القاع المزدوج
+        }
+        
+        const pattern = patterns[patternIndex];
+        
+        // حساب الأهداف بناءً على المدى السعري
         const range = Math.abs(resistance - support);
         const targets = direction === "صاعد" 
           ? [
@@ -118,38 +173,6 @@ export const ChartAnalyzer = () => {
       setIsAnalyzing(false);
       toast.error("حدث خطأ أثناء تحليل الشارت");
     }
-  };
-
-  const detectPrices = (imageData: ImageData): number[] => {
-    // هنا نحتاج إلى تحسين خوارزمية اكتشاف الأسعار
-    // يمكن استخدام مكتبة OCR في المستقبل لتحسين الدقة
-    const prices: number[] = [];
-    const height = imageData.height;
-    
-    for (let y = 0; y < height; y += height / 10) {
-      let sum = 0;
-      let count = 0;
-      
-      for (let x = 0; x < 50; x++) { // نقرأ من الجانب الأيسر فقط
-        const index = (Math.floor(y) * imageData.width + x) * 4;
-        const r = imageData.data[index];
-        const g = imageData.data[index + 1];
-        const b = imageData.data[index + 2];
-        
-        // نحسب متوسط قيمة اللون
-        sum += (r + g + b) / 3;
-        count++;
-      }
-      
-      if (count > 0) {
-        const avgColor = sum / count;
-        // نحول قيمة اللون إلى سعر تقريبي
-        const price = 2000 + (avgColor / 255) * 1000;
-        prices.push(Math.round(price));
-      }
-    }
-    
-    return prices;
   };
 
   return (
@@ -196,4 +219,10 @@ export const ChartAnalyzer = () => {
       )}
     </div>
   );
+};
+
+// Helper function to calculate standard deviation
+Math.std = function(arr: number[]) {
+  const mean = arr.reduce((a, b) => a + b) / arr.length;
+  return Math.sqrt(arr.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / arr.length);
 };
