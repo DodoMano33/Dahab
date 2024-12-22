@@ -41,19 +41,23 @@ export const ChartAnalyzer = () => {
   const handleTradingViewConfig = async (symbol: string, timeframe: string) => {
     try {
       setIsAnalyzing(true);
-      const tradingViewUrl = getTradingViewUrl({ symbol, timeframe });
+      console.log("Starting TradingView analysis for:", symbol, timeframe);
       
-      // Here you would implement the logic to capture the TradingView chart
-      // For now, we'll simulate it with a delay
+      const tradingViewUrl = getTradingViewUrl({ symbol, timeframe });
+      console.log("Generated TradingView URL:", tradingViewUrl);
+
+      // Simulate getting chart image from TradingView
+      // In production, this would be replaced with actual API call or screenshot service
+      const mockChartImage = "https://example.com/chart.png";
+      
+      // Add delay to simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Simulate getting an image from TradingView
-      // In a real implementation, you would need to use their API or implement a screenshot mechanism
-      const mockChartImage = "https://example.com/chart.png";
+      console.log("Processing chart image...");
       handleImageUpload(mockChartImage);
       
     } catch (error) {
-      console.error("Error fetching TradingView chart:", error);
+      console.error("Error in TradingView analysis:", error);
       toast.error("حدث خطأ أثناء جلب الرسم البياني");
       setIsAnalyzing(false);
     }

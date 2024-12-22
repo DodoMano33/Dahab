@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { timeframes } from "@/utils/chartPatternAnalysis";
 import { toast } from "sonner";
 
 interface TradingViewSelectorProps {
   onConfigSubmit: (symbol: string, timeframe: string) => void;
+  isLoading: boolean;
 }
 
-export const TradingViewSelector = ({ onConfigSubmit }: TradingViewSelectorProps) => {
+export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
 
@@ -19,6 +19,7 @@ export const TradingViewSelector = ({ onConfigSubmit }: TradingViewSelectorProps
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
       return;
     }
+    console.log("Submitting TradingView config:", { symbol, timeframe });
     onConfigSubmit(symbol, timeframe);
   };
 
@@ -55,8 +56,8 @@ export const TradingViewSelector = ({ onConfigSubmit }: TradingViewSelectorProps
         </select>
       </div>
 
-      <Button type="submit" className="w-full">
-        تحليل الرسم البياني
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "جاري التحليل..." : "تحليل الرسم البياني"}
       </Button>
     </form>
   );

@@ -2,9 +2,25 @@ export interface ChartPattern {
   name: string;
   description: string;
   type: 'bullish' | 'bearish' | 'neutral';
+  reliability: number; // 1-10 scale
+  confirmation: string[];
 }
 
 export const chartPatterns: ChartPattern[] = [
+  {
+    name: "Island Reversal",
+    description: "نموذج انعكاسي يتميز بفجوة سعرية في كلا الاتجاهين",
+    type: "bearish",
+    reliability: 8,
+    confirmation: ["فجوة سعرية", "حجم تداول مرتفع", "اختراق مستوى الدعم"]
+  },
+  {
+    name: "Bullish Harami",
+    description: "نموذج انعكاسي صعودي يظهر في نهاية الاتجاه الهابط",
+    type: "bullish",
+    reliability: 7,
+    confirmation: ["شمعة صغيرة داخل شمعة كبيرة", "زيادة في حجم التداول"]
+  },
   {
     name: "Head and Shoulders",
     description: "نموذج انعكاسي هبوطي يتكون من ثلاث قمم، الوسطى أعلى من الجانبيتين",
@@ -59,10 +75,90 @@ export interface TradingViewConfig {
 }
 
 export const getTradingViewUrl = (config: TradingViewConfig): string => {
-  const baseUrl = "https://www.tradingview.com/chart/";
-  const params = new URLSearchParams({
-    symbol: config.symbol,
-    interval: config.timeframe
-  });
-  return `${baseUrl}?${params.toString()}`;
+  // Remove any trailing colons from the URL
+  const baseUrl = "https://www.tradingview.com/chart";
+  const cleanSymbol = config.symbol.replace(/:/g, '');
+  
+  // Construct URL with proper parameters
+  const url = new URL(baseUrl);
+  url.searchParams.append('symbol', cleanSymbol.toUpperCase());
+  url.searchParams.append('interval', config.timeframe);
+  
+  console.log("Generated TradingView URL:", url.toString());
+  return url.toString();
+};
+
+// New utility functions for enhanced analysis
+export const calculateMovingAverage = (prices: number[], period: number): number[] => {
+  const ma: number[] = [];
+  for (let i = period - 1; i < prices.length; i++) {
+    const sum = prices.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
+    ma.push(sum / period);
+  }
+  return ma;
+};
+
+export const calculateFibonacciLevels = (high: number, low: number): number[] => {
+  const diff = high - low;
+  return [
+    high,
+    high - diff * 0.236,
+    high - diff * 0.382,
+    high - diff * 0.5,
+    high - diff * 0.618,
+    high - diff * 0.786,
+    low
+  ];
+};
+
+export const calculateShortInterestRatio = (shortVolume: number, avgDailyVolume: number): number => {
+  return shortVolume / avgDailyVolume;
+};
+
+export const predictPriceMovement = (
+  currentPrice: number,
+  ma20: number,
+  ma50: number,
+  shortInterestRatio: number,
+  pattern: ChartPattern
+): {
+  direction: 'صعود' | 'هبوط' | 'محايد';
+  confidence: number;
+  reasons: string[];
+} => {
+  const reasons: string[] = [];
+  let confidence = 0;
+  
+  // Moving Average Analysis
+  if (currentPrice > ma50 && ma20 > ma50) {
+    confidence += 2;
+    reasons.push("السعر وMA20 فوق MA50");
+  } else if (currentPrice < ma50 && ma20 < ma50) {
+    confidence -= 2;
+    reasons.push("السعر وMA20 تحت MA50");
+  }
+
+  // Short Interest Analysis
+  if (shortInterestRatio > 0.2) {
+    confidence -= 1;
+    reasons.push("نسبة البيع على المكشوف مرتفعة");
+  }
+
+  // Pattern Analysis
+  confidence += pattern.reliability * 0.5;
+  reasons.push(`نموذج ${pattern.name} تم اكتشافه`);
+
+  // Determine Direction
+  let direction: 'صعود' | 'هبوط' | 'محايد' = 'محايد';
+  if (confidence > 3) {
+    direction = 'صعود';
+  } else if (confidence < -3) {
+    direction = 'هبوط';
+  }
+
+  return {
+    direction,
+    confidence: Math.abs(confidence),
+    reasons
+  };
 };
