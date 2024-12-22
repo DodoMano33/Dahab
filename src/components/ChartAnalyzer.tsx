@@ -8,14 +8,20 @@ import { Camera, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { getTradingViewUrl } from "@/utils/chartPatternAnalysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
+import { calculateFibonacciLevels, calculateTargets, calculateStopLoss, calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis";
 
 interface AnalysisData {
   pattern: string;
   direction: string;
+  currentPrice: number;
   support: number;
   resistance: number;
   stopLoss: number;
   targets?: number[];
+  fibonacciLevels?: {
+    level: number;
+    price: number;
+  }[];
 }
 
 type AnalysisMode = 'upload' | 'tradingview';
@@ -34,7 +40,6 @@ export const ChartAnalyzer = () => {
 
     console.log("بدء معالجة الصورة:", imageData);
     
-    // التحقق من وجود الصورة قبل المعالجة
     const img = new Image();
     img.onload = () => {
       console.log("تم تحميل الصورة بنجاح");
@@ -95,7 +100,6 @@ export const ChartAnalyzer = () => {
           return;
         }
 
-        // تحليل الصورة لاكتشاف الأرقام والأنماط
         const prices = detectPrices(imageData);
         if (!prices.length) {
           toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
@@ -103,23 +107,17 @@ export const ChartAnalyzer = () => {
           return;
         }
 
-        const maxPrice = Math.max(...prices);
-        const minPrice = Math.min(...prices);
-        const lastPrice = prices[prices.length - 1];
+        const currentPrice = prices[prices.length - 1];
+        const direction = detectTrend(prices);
         
-        // تحديد الاتجاه بناءً على آخر سعرين
-        const direction = prices[prices.length - 1] > prices[prices.length - 2] ? "صاعد" : "هابط";
+        const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
         
-        // حساب مستويات الدعم والمقاومة
-        const resistance = Math.round(maxPrice);
-        const support = Math.round(minPrice);
+        const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
         
-        // حساب نقطة وقف الخسارة
-        const stopLoss = direction === "صاعد" 
-          ? Math.round(support - (support * 0.01)) // 1% تحت مستوى الدعم
-          : Math.round(resistance + (resistance * 0.01)); // 1% فوق مستوى المقاومة
-
-        // تحديد النموذج
+        const fibLevels = calculateFibonacciLevels(resistance, support);
+        
+        const targets = calculateTargets(currentPrice, direction, support, resistance);
+        
         const patterns = [
           "نموذج الرأس والكتفين",
           "نموذج القمة المزدوجة",
@@ -129,27 +127,15 @@ export const ChartAnalyzer = () => {
         ];
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         
-        // حساب الأهداف
-        const range = Math.abs(resistance - support);
-        const targets = direction === "صاعد" 
-          ? [
-              Math.round(lastPrice + (range * 0.3)),
-              Math.round(lastPrice + (range * 0.5)),
-              Math.round(lastPrice + (range * 0.7))
-            ]
-          : [
-              Math.round(lastPrice - (range * 0.3)),
-              Math.round(lastPrice - (range * 0.5)),
-              Math.round(lastPrice - (range * 0.7))
-            ];
-        
         const analysisResult = {
           pattern,
           direction,
+          currentPrice,
           support,
           resistance,
           stopLoss,
-          targets
+          targets,
+          fibonacciLevels: fibLevels
         };
         
         console.log("نتائج التحليل:", analysisResult);
