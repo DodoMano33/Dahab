@@ -1,42 +1,34 @@
 import { toast } from "sonner";
 
-// For development, we'll use a mock chart image until the backend is ready
-const MOCK_CHART_IMAGES = {
-  "1m": "/charts/1m-chart.png",
-  "5m": "/charts/5m-chart.png",
-  "15m": "/charts/15m-chart.png",
-  "1h": "/charts/1h-chart.png",
-  "4h": "/charts/4h-chart.png",
-  "1d": "/charts/1d-chart.png",
-  "1w": "/charts/1w-chart.png",
-  "1M": "/charts/1M-chart.png",
-};
+// صورة افتراضية للتطوير والعرض التجريبي
+const PLACEHOLDER_CHART = "/placeholder.svg";
 
 export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
   console.log("محاولة جلب صورة الشارت:", { symbol, timeframe });
   
   try {
+    // في الإنتاج، سيتم استبدال هذا بخدمة API حقيقية
+    // تقوم بالتقاط لقطات شاشة من TradingView
+    
     // التحقق من صحة المدخلات
     if (!symbol || !timeframe) {
       throw new Error("يجب تحديد الرمز والإطار الزمني");
     }
 
-    // في بيئة التطوير، نستخدم صورة تجريبية
-    const mockChartUrl = MOCK_CHART_IMAGES[timeframe as keyof typeof MOCK_CHART_IMAGES] || MOCK_CHART_IMAGES["1d"];
-    console.log("استخدام الصورة التجريبية:", mockChartUrl);
+    // محاكاة تأخير API
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // في الإنتاج، سنقوم بإنشاء URL فعلي للصورة
+    const chartUrl = PLACEHOLDER_CHART;
     
     // التحقق من وجود الصورة
-    const response = await fetch(mockChartUrl);
+    const response = await fetch(chartUrl);
     if (!response.ok) {
-      console.error("خطأ في جلب الصورة:", response.status, response.statusText);
-      throw new Error(`فشل في تحميل الصورة: ${response.statusText || 'خطأ غير معروف'}`);
+      throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
     }
-
-    const imageBlob = await response.blob();
-    const imageUrl = URL.createObjectURL(imageBlob);
     
-    console.log("تم جلب صورة الشارت بنجاح:", imageUrl);
-    return imageUrl;
+    console.log("تم جلب صورة الشارت بنجاح:", chartUrl);
+    return chartUrl;
     
   } catch (error) {
     console.error("خطأ في جلب صورة الشارت:", error);
