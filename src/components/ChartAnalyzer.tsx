@@ -21,8 +21,18 @@ export const ChartAnalyzer = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleImageUpload = (imageData: string) => {
-    setImage(imageData);
-    analyzeChart(imageData);
+    // Validate the image URL format
+    if (!imageData || typeof imageData !== 'string') {
+      toast.error("صيغة الصورة غير صحيحة");
+      return;
+    }
+
+    // Remove any potential malformed URL parts
+    const cleanImageUrl = imageData.replace(/:[/]*$/, '');
+    console.log("Clean image URL:", cleanImageUrl);
+    
+    setImage(cleanImageUrl);
+    analyzeChart(cleanImageUrl);
   };
 
   const handleClose = () => {
@@ -46,7 +56,11 @@ export const ChartAnalyzer = () => {
         ctx?.drawImage(img, 0, 0);
         
         const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-        if (!imageData) return;
+        if (!imageData) {
+          toast.error("فشل في معالجة الصورة");
+          setIsAnalyzing(false);
+          return;
+        }
 
         // تحليل الصورة لاكتشاف الأرقام والأنماط
         const prices = detectPrices(imageData);
@@ -111,6 +125,12 @@ export const ChartAnalyzer = () => {
         toast.success("تم تحليل الشارت بنجاح");
       };
       
+      img.onerror = () => {
+        console.error("فشل في تحميل الصورة");
+        toast.error("فشل في تحميل الصورة");
+        setIsAnalyzing(false);
+      };
+      
       img.src = imageData;
       
     } catch (error) {
@@ -121,8 +141,6 @@ export const ChartAnalyzer = () => {
   };
 
   const detectPrices = (imageData: ImageData): number[] => {
-    // هنا نحتاج إلى تحسين خوارزمية اكتشاف الأسعار
-    // يمكن استخدام مكتبة OCR في المستقبل لتحسين الدقة
     const prices: number[] = [];
     const height = imageData.height;
     
@@ -130,20 +148,18 @@ export const ChartAnalyzer = () => {
       let sum = 0;
       let count = 0;
       
-      for (let x = 0; x < 50; x++) { // نقرأ من الجانب الأيسر فقط
+      for (let x = 0; x < 50; x++) {
         const index = (Math.floor(y) * imageData.width + x) * 4;
         const r = imageData.data[index];
         const g = imageData.data[index + 1];
         const b = imageData.data[index + 2];
         
-        // نحسب متوسط قيمة اللون
         sum += (r + g + b) / 3;
         count++;
       }
       
       if (count > 0) {
         const avgColor = sum / count;
-        // نحول قيمة اللون إلى سعر تقريبي
         const price = 2000 + (avgColor / 255) * 1000;
         prices.push(Math.round(price));
       }
