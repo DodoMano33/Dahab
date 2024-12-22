@@ -6,6 +6,7 @@ interface AnalysisResultProps {
     direction: string;
     support: number;
     resistance: number;
+    stopLoss: number;
     targets?: number[];
   };
   isLoading: boolean;
@@ -38,6 +39,10 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
         <div className="bg-gray-50 p-4 rounded-lg">
           <h3 className="font-semibold text-gray-700 mb-2">مستوى المقاومة</h3>
           <p className="text-lg">{analysis.resistance}</p>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg col-span-2">
+          <h3 className="font-semibold text-gray-700 mb-2">نقطة وقف الخسارة</h3>
+          <p className="text-lg">{analysis.stopLoss}</p>
         </div>
       </div>
       

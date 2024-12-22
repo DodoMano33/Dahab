@@ -11,6 +11,7 @@ interface AnalysisData {
   direction: string;
   support: number;
   resistance: number;
+  stopLoss: number;
   targets?: number[];
 }
 
@@ -24,13 +25,17 @@ export const ChartAnalyzer = () => {
     analyzeChart(imageData);
   };
 
+  const handleClose = () => {
+    setImage(null);
+    setAnalysis(null);
+    setIsAnalyzing(false);
+  };
+
   const analyzeChart = async (imageData: string) => {
     setIsAnalyzing(true);
     console.log("بدء تحليل الشارت...");
     
     try {
-      // محاكاة تحليل الصورة باستخدام خوارزمية بسيطة
-      // في النسخة النهائية، سيتم استبدال هذا بتحليل حقيقي باستخدام ML
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
@@ -40,25 +45,23 @@ export const ChartAnalyzer = () => {
         canvas.height = img.height;
         ctx?.drawImage(img, 0, 0);
         
-        // تحليل بيانات الصورة
         const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
         if (!imageData) return;
         
-        // حساب متوسط القيم في الثلث العلوي والسفلي من الصورة
         const upperThird = calculateAveragePixelValue(imageData, 0, canvas.height / 3);
         const lowerThird = calculateAveragePixelValue(imageData, (2 * canvas.height) / 3, canvas.height);
         
-        // تحديد الاتجاه بناءً على متوسط القيم
         const direction = upperThird > lowerThird ? "صاعد" : "هابط";
         
-        // تحديد مستويات الدعم والمقاومة
         const resistance = Math.round(canvas.height - (upperThird * canvas.height / 255));
         const support = Math.round(canvas.height - (lowerThird * canvas.height / 255));
         
-        // تحديد النموذج بناءً على تحليل الصورة
-        const pattern = determinePattern(imageData, canvas.width, canvas.height);
+        // حساب نقطة وقف الخسارة
+        const stopLoss = direction === "صاعد" 
+          ? Math.round(support - (support * 0.02)) // 2% تحت مستوى الدعم
+          : Math.round(resistance + (resistance * 0.02)); // 2% فوق مستوى المقاومة
         
-        // حساب الأهداف المتوقعة
+        const pattern = determinePattern(imageData, canvas.width, canvas.height);
         const targets = calculateTargets(direction, support, resistance);
         
         const analysisResult = {
@@ -66,6 +69,7 @@ export const ChartAnalyzer = () => {
           direction,
           support,
           resistance,
+          stopLoss,
           targets
         };
         
@@ -162,7 +166,7 @@ export const ChartAnalyzer = () => {
         {image && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4 text-right">الشارت</h2>
-            <Canvas image={image} analysis={analysis!} />
+            <Canvas image={image} analysis={analysis!} onClose={handleClose} />
           </div>
         )}
       </div>
