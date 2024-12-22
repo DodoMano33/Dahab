@@ -22,7 +22,7 @@ export const calculatePivotPoints = (high: number, low: number, close: number) =
 };
 
 export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
-  if (prices.length < 2) return "صاعد";
+  if (prices.length < 2) return "هابط";
   
   const recentPrices = prices.slice(-5);
   const avgChange = recentPrices.reduce((acc, price, i) => {
@@ -41,14 +41,14 @@ export const calculateSupportResistance = (
   const sortedPrices = [...prices].sort((a, b) => a - b);
   const priceRange = sortedPrices[sortedPrices.length - 1] - sortedPrices[0];
   
-  let support, resistance;
+  let support: number, resistance: number;
   
   if (direction === "صاعد") {
-    support = Math.max(...prices.filter(p => p < currentPrice));
+    support = Math.max(currentPrice - (priceRange * 0.1), sortedPrices[0]);
     resistance = currentPrice + (priceRange * 0.1);
   } else {
-    resistance = Math.min(...prices.filter(p => p > currentPrice));
     support = currentPrice - (priceRange * 0.1);
+    resistance = Math.min(currentPrice + (priceRange * 0.1), sortedPrices[sortedPrices.length - 1]);
   }
   
   return {
@@ -66,9 +66,9 @@ export const calculateStopLoss = (
   const risk = 0.02; // 2% risk
   
   if (direction === "صاعد") {
-    return Math.round((support * (1 - risk)) * 100) / 100;
+    return Math.round((currentPrice * (1 - risk)) * 100) / 100;
   } else {
-    return Math.round((resistance * (1 + risk)) * 100) / 100;
+    return Math.round((currentPrice * (1 + risk)) * 100) / 100;
   }
 };
 
@@ -82,15 +82,15 @@ export const calculateTargets = (
   
   if (direction === "صاعد") {
     return [
+      Math.round((currentPrice + (range * 0.3)) * 100) / 100,
       Math.round((currentPrice + (range * 0.5)) * 100) / 100,
-      Math.round((currentPrice + (range * 0.8)) * 100) / 100,
-      Math.round((currentPrice + (range * 1.2)) * 100) / 100
+      Math.round((currentPrice + (range * 0.8)) * 100) / 100
     ];
   } else {
     return [
+      Math.round((currentPrice - (range * 0.3)) * 100) / 100,
       Math.round((currentPrice - (range * 0.5)) * 100) / 100,
-      Math.round((currentPrice - (range * 0.8)) * 100) / 100,
-      Math.round((currentPrice - (range * 1.2)) * 100) / 100
+      Math.round((currentPrice - (range * 0.8)) * 100) / 100
     ];
   }
 };
