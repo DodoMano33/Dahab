@@ -2,9 +2,11 @@ import { useState } from "react";
 import { ImageUploader } from "./ImageUploader";
 import { AnalysisResult } from "./AnalysisResult";
 import { Canvas } from "./Canvas";
+import { TradingViewSelector } from "./TradingViewSelector";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { getTradingViewUrl } from "@/utils/chartPatternAnalysis";
 
 interface AnalysisData {
   pattern: string;
@@ -15,24 +17,46 @@ interface AnalysisData {
   targets?: number[];
 }
 
+type AnalysisMode = 'upload' | 'tradingview';
+
 export const ChartAnalyzer = () => {
+  const [mode, setMode] = useState<AnalysisMode>('upload');
   const [image, setImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleImageUpload = (imageData: string) => {
-    // Validate the image URL format
     if (!imageData || typeof imageData !== 'string') {
       toast.error("صيغة الصورة غير صحيحة");
       return;
     }
 
-    // Remove any potential malformed URL parts
     const cleanImageUrl = imageData.replace(/:[/]*$/, '');
     console.log("Clean image URL:", cleanImageUrl);
     
     setImage(cleanImageUrl);
     analyzeChart(cleanImageUrl);
+  };
+
+  const handleTradingViewConfig = async (symbol: string, timeframe: string) => {
+    try {
+      setIsAnalyzing(true);
+      const tradingViewUrl = getTradingViewUrl({ symbol, timeframe });
+      
+      // Here you would implement the logic to capture the TradingView chart
+      // For now, we'll simulate it with a delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate getting an image from TradingView
+      // In a real implementation, you would need to use their API or implement a screenshot mechanism
+      const mockChartImage = "https://example.com/chart.png";
+      handleImageUpload(mockChartImage);
+      
+    } catch (error) {
+      console.error("Error fetching TradingView chart:", error);
+      toast.error("حدث خطأ أثناء جلب الرسم البياني");
+      setIsAnalyzing(false);
+    }
   };
 
   const handleClose = () => {
@@ -170,30 +194,53 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-center gap-4 mb-8">
+        <Button
+          variant={mode === 'upload' ? "default" : "outline"}
+          onClick={() => setMode('upload')}
+        >
+          تحليل صورة
+        </Button>
+        <Button
+          variant={mode === 'tradingview' ? "default" : "outline"}
+          onClick={() => setMode('tradingview')}
+        >
+          تحليل من TradingView
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-right">تحميل الشارت</h2>
-          <ImageUploader onImageCapture={handleImageUpload} />
+          <h2 className="text-xl font-semibold mb-4 text-right">
+            {mode === 'upload' ? 'تحميل الشارت' : 'تحليل من TradingView'}
+          </h2>
           
-          <div className="flex gap-4 mt-4 justify-center">
-            <Button 
-              variant="outline"
-              onClick={() => document.getElementById('fileInput')?.click()}
-              className="hover:bg-gray-100"
-            >
-              <Upload className="ml-2" />
-              تحميل صورة
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById('cameraInput')?.click()}
-              className="hover:bg-gray-100"
-            >
-              <Camera className="ml-2" />
-              التقاط صورة
-            </Button>
-          </div>
+          {mode === 'upload' ? (
+            <>
+              <ImageUploader onImageCapture={handleImageUpload} />
+              <div className="flex gap-4 mt-4 justify-center">
+                <Button 
+                  variant="outline"
+                  onClick={() => document.getElementById('fileInput')?.click()}
+                  className="hover:bg-gray-100"
+                >
+                  <Upload className="ml-2" />
+                  تحميل صورة
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById('cameraInput')?.click()}
+                  className="hover:bg-gray-100"
+                >
+                  <Camera className="ml-2" />
+                  التقاط صورة
+                </Button>
+              </div>
+            </>
+          ) : (
+            <TradingViewSelector onConfigSubmit={handleTradingViewConfig} />
+          )}
         </div>
 
         {image && (
