@@ -1,25 +1,38 @@
 import { toast } from "sonner";
 
-// Placeholder image for development/demo purposes
+// صورة افتراضية للتطوير والعرض التجريبي
 const PLACEHOLDER_CHART = "/placeholder.svg";
 
 export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
-  console.log("Getting chart image for:", { symbol, timeframe });
+  console.log("محاولة جلب صورة الشارت:", { symbol, timeframe });
   
   try {
-    // In production, this would make an API call to a backend service
-    // that captures screenshots from TradingView
-    // For now, we'll use a placeholder image
+    // في الإنتاج، سيتم استبدال هذا بخدمة API حقيقية
+    // تقوم بالتقاط لقطات شاشة من TradingView
     
-    // Simulate API delay
+    // التحقق من صحة المدخلات
+    if (!symbol || !timeframe) {
+      throw new Error("يجب تحديد الرمز والإطار الزمني");
+    }
+
+    // محاكاة تأخير API
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Return placeholder image
-    return PLACEHOLDER_CHART;
+    // في الإنتاج، سنقوم بإنشاء URL فعلي للصورة
+    const chartUrl = PLACEHOLDER_CHART;
+    
+    // التحقق من وجود الصورة
+    const response = await fetch(chartUrl);
+    if (!response.ok) {
+      throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
+    }
+    
+    console.log("تم جلب صورة الشارت بنجاح:", chartUrl);
+    return chartUrl;
     
   } catch (error) {
-    console.error("Error getting TradingView chart:", error);
-    toast.error("حدث خطأ أثناء جلب الرسم البياني");
+    console.error("خطأ في جلب صورة الشارت:", error);
+    toast.error("فشل في تحميل صورة الشارت");
     throw error;
   }
 };

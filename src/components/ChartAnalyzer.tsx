@@ -32,29 +32,37 @@ export const ChartAnalyzer = () => {
       return;
     }
 
-    const cleanImageUrl = imageData.replace(/:[/]*$/, '');
-    console.log("Clean image URL:", cleanImageUrl);
+    console.log("بدء معالجة الصورة:", imageData);
     
-    setImage(cleanImageUrl);
-    analyzeChart(cleanImageUrl);
+    // التحقق من وجود الصورة قبل المعالجة
+    const img = new Image();
+    img.onload = () => {
+      console.log("تم تحميل الصورة بنجاح");
+      setImage(imageData);
+      analyzeChart(imageData);
+    };
+    
+    img.onerror = () => {
+      console.error("فشل في تحميل الصورة");
+      toast.error("فشل في تحميل الصورة");
+      setIsAnalyzing(false);
+    };
+    
+    img.src = imageData;
   };
 
   const handleTradingViewConfig = async (symbol: string, timeframe: string) => {
     try {
       setIsAnalyzing(true);
-      console.log("Starting TradingView analysis for:", symbol, timeframe);
+      console.log("بدء تحليل TradingView:", symbol, timeframe);
       
-      const tradingViewUrl = getTradingViewUrl({ symbol, timeframe });
-      console.log("Generated TradingView URL:", tradingViewUrl);
-
-      // Get chart image using our new utility function
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
-      console.log("Got chart image:", chartImage);
+      console.log("تم استلام صورة الشارت:", chartImage);
       
       handleImageUpload(chartImage);
       
     } catch (error) {
-      console.error("Error in TradingView analysis:", error);
+      console.error("خطأ في تحليل TradingView:", error);
       toast.error("حدث خطأ أثناء جلب الرسم البياني");
       setIsAnalyzing(false);
     }
