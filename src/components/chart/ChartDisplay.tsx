@@ -1,5 +1,6 @@
 import { Canvas } from "../Canvas";
 import { AnalysisResult } from "../AnalysisResult";
+import { LiveTradingViewChart } from "./LiveTradingViewChart";
 
 interface AnalysisData {
   pattern: string;
@@ -20,24 +21,32 @@ interface ChartDisplayProps {
   analysis: AnalysisData | null;
   isAnalyzing: boolean;
   onClose: () => void;
+  symbol?: string;
 }
 
-export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose }: ChartDisplayProps) => {
-  if (!image) return null;
-
+export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: ChartDisplayProps) => {
   return (
-    <>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4 text-right">الشارت</h2>
-        <Canvas image={image} analysis={analysis!} onClose={onClose} />
-      </div>
+    <div className="space-y-8">
+      {symbol && (
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4 text-right">الشارت المباشر</h2>
+          <LiveTradingViewChart symbol={symbol} />
+        </div>
+      )}
+
+      {image && (
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4 text-right">تحليل الشارت</h2>
+          <Canvas image={image} analysis={analysis!} onClose={onClose} />
+        </div>
+      )}
 
       {analysis && (
-        <div className="bg-white p-6 rounded-lg shadow-md mt-8">
+        <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
           <AnalysisResult analysis={analysis} isLoading={isAnalyzing} />
         </div>
       )}
-    </>
+    </div>
   );
 };

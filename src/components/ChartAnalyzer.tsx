@@ -33,6 +33,7 @@ export const ChartAnalyzer = () => {
   const [image, setImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentSymbol, setCurrentSymbol] = useState<string>('');
 
   const handleImageUpload = (imageData: string) => {
     if (!imageData || typeof imageData !== 'string') {
@@ -61,6 +62,7 @@ export const ChartAnalyzer = () => {
   const handleTradingViewConfig = async (symbol: string, timeframe: string, currentPrice: number) => {
     try {
       setIsAnalyzing(true);
+      setCurrentSymbol(symbol);
       console.log("بدء تحليل TradingView:", { symbol, timeframe, currentPrice });
       
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
@@ -86,9 +88,8 @@ export const ChartAnalyzer = () => {
     const prices: number[] = [];
     const height = imageData.height;
     
-    // تحسين دقة قراءة السعر الحالي
-    const currentPriceRow = Math.floor(height * 0.5); // نقرأ من منتصف الصورة
-    let currentPrice = providedCurrentPrice || 2622; // استخدام السعر المقدم أو القيمة الافتراضية للذهب
+    const currentPriceRow = Math.floor(height * 0.5); 
+    let currentPrice = providedCurrentPrice || 2622; 
     
     for (let y = 0; y < height; y += height / 10) {
       let sum = 0;
@@ -140,7 +141,7 @@ export const ChartAnalyzer = () => {
         }
 
         const prices = detectPrices(imageData);
-        const currentPrice = 2622; // السعر الحالي للذهب
+        const currentPrice = 2622; 
         
         if (!prices.length) {
           toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
@@ -286,6 +287,7 @@ export const ChartAnalyzer = () => {
           analysis={analysis}
           isAnalyzing={isAnalyzing}
           onClose={handleClose}
+          symbol={currentSymbol}
         />
       </div>
     </div>
