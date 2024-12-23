@@ -40,7 +40,7 @@ export const ChartAnalyzer = () => {
   const handleTradingViewConfig = async (symbol: string, timeframe: string, providedPrice?: number) => {
     try {
       setIsAnalyzing(true);
-      setCurrentSymbol(symbol);
+      setCurrentSymbol(symbol.toUpperCase());
       console.log("بدء تحليل TradingView:", { symbol, timeframe, providedPrice });
       
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
@@ -59,7 +59,7 @@ export const ChartAnalyzer = () => {
       }
       
       setImage(chartImage);
-      analyzeChartWithPrice(chartImage, currentPrice);
+      await analyzeChartWithPrice(chartImage, currentPrice);
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
@@ -156,14 +156,18 @@ export const ChartAnalyzer = () => {
         console.log("نتائج التحليل:", analysisResult);
         setAnalysis(analysisResult);
 
-        setSearchHistory(prev => [{
+        // Update search history with the new entry at the beginning
+        const newHistoryEntry = {
           date: new Date(),
-          symbol: currentSymbol || 'غير محدد',
+          symbol: currentSymbol,
           currentPrice,
           analysis: analysisResult,
           targetHit: false,
           stopLossHit: false
-        }, ...prev]);
+        };
+
+        setSearchHistory(prev => [newHistoryEntry, ...prev]);
+        console.log("تم تحديث سجل البحث:", newHistoryEntry);
 
         setIsAnalyzing(false);
         toast.success("تم تحليل الشارت بنجاح");

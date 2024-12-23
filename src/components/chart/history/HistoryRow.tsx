@@ -35,6 +35,9 @@ export const HistoryRow = ({
         {symbol.toUpperCase()}
       </TableCell>
       <TableCell className="text-right">{currentPrice}</TableCell>
+      <TableCell className="text-right font-medium">
+        {latestPrice ? latestPrice.toFixed(2) : '-'}
+      </TableCell>
       <TableCell className="text-right">
         <DirectionIndicator direction={analysis.direction} />
       </TableCell>

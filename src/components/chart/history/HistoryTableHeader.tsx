@@ -5,7 +5,8 @@ export const HistoryTableHeader = () => (
     <TableRow>
       <TableHead className="text-right">التاريخ</TableHead>
       <TableHead className="text-right">الرمز</TableHead>
-      <TableHead className="text-right">السعر الحالي</TableHead>
+      <TableHead className="text-right">السعر عند التحليل</TableHead>
+      <TableHead className="text-right">السعر الحقيقي</TableHead>
       <TableHead className="text-right">الاتجاه</TableHead>
       <TableHead className="text-right">أفضل نقطة دخول</TableHead>
       <TableHead className="text-right">الأهداف والتوقيت</TableHead>
