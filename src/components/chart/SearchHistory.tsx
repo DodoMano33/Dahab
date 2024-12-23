@@ -18,9 +18,9 @@ interface SearchHistoryProps {
 export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-right">سجل البحث</DialogTitle>
+          <DialogTitle>سجل البحث</DialogTitle>
         </DialogHeader>
         <div className="max-h-[70vh] overflow-auto">
           <Table>
@@ -29,6 +29,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                 <TableHead className="text-right">التاريخ</TableHead>
                 <TableHead className="text-right">الرمز</TableHead>
                 <TableHead className="text-right">السعر الحالي</TableHead>
+                <TableHead className="text-right">أفضل نقطة دخول</TableHead>
                 <TableHead className="text-right">الأهداف والتوقيت</TableHead>
                 <TableHead className="text-right">وقف الخسارة</TableHead>
               </TableRow>
@@ -41,6 +42,18 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                   </TableCell>
                   <TableCell className="text-right">{item.symbol}</TableCell>
                   <TableCell className="text-right">{item.currentPrice}</TableCell>
+                  <TableCell className="text-right">
+                    {item.analysis.bestEntryPoint ? (
+                      <div>
+                        <div>السعر: {item.analysis.bestEntryPoint.price}</div>
+                        <div className="text-sm text-gray-600">
+                          السبب: {item.analysis.bestEntryPoint.reason}
+                        </div>
+                      </div>
+                    ) : (
+                      "غير متوفر"
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="space-y-2">
                       {item.analysis.targets?.map((target, idx) => (

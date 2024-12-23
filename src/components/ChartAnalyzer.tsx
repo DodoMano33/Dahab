@@ -17,7 +17,7 @@ import {
 import { addDays, addHours } from "date-fns";
 import { AnalysisData } from "@/types/analysis";
 
-type AnalysisMode = 'upload' | 'tradingview';
+type AnalysisMode = 'tradingview';
 
 type SearchHistoryItem = {
   date: Date;
@@ -27,55 +27,13 @@ type SearchHistoryItem = {
 };
 
 export const ChartAnalyzer = () => {
-  const [mode, setMode] = useState<AnalysisMode>('upload');
+  const [mode] = useState<AnalysisMode>('tradingview');
   const [image, setImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-
-  const analyzeChart = (imageData: string) => {
-    setIsAnalyzing(true);
-    getCurrentPriceFromTradingView(currentSymbol)
-      .then(currentPrice => {
-        if (currentPrice) {
-          analyzeChartWithPrice(imageData, currentPrice);
-        } else {
-          toast.error("فشل في الحصول على السعر الحالي");
-          setIsAnalyzing(false);
-        }
-      })
-      .catch(error => {
-        console.error("خطأ في جلب السعر الحالي:", error);
-        toast.error("فشل في الحصول على السعر الحالي");
-        setIsAnalyzing(false);
-      });
-  };
-
-  const handleImageUpload = (imageData: string) => {
-    if (!imageData || typeof imageData !== 'string') {
-      toast.error("صيغة الصورة غير صحيحة");
-      return;
-    }
-
-    console.log("بدء معالجة الصورة:", imageData);
-    
-    const img = new Image();
-    img.onload = () => {
-      console.log("تم تحميل الصورة بنجاح");
-      setImage(imageData);
-      analyzeChart(imageData);
-    };
-    
-    img.onerror = () => {
-      console.error("فشل في تحميل الصورة");
-      toast.error("فشل في تحميل الصورة");
-      setIsAnalyzing(false);
-    };
-    
-    img.src = imageData;
-  };
 
   const handleTradingViewConfig = async (symbol: string, timeframe: string, providedPrice?: number) => {
     try {
@@ -196,7 +154,6 @@ export const ChartAnalyzer = () => {
         console.log("نتائج التحليل:", analysisResult);
         setAnalysis(analysisResult);
 
-        // إضافة التحليل إلى سجل البحث
         setSearchHistory(prev => [{
           date: new Date(),
           symbol: currentSymbol || 'غير محدد',
@@ -260,11 +217,10 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="space-y-8">
-      <ChartModeSelector mode={mode} onModeChange={setMode} />
+      <ChartModeSelector mode={mode} onModeChange={() => {}} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <ChartInput
           mode={mode}
-          onImageCapture={handleImageUpload}
           onTradingViewConfig={handleTradingViewConfig}
           onHistoryClick={handleShowHistory}
           isAnalyzing={isAnalyzing}
