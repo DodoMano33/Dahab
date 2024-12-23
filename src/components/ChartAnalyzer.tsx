@@ -13,18 +13,11 @@ import {
   getCurrentPriceFromTradingView,
 } from "@/utils/technicalAnalysis";
 import { analyzeAdvancedEntryPoint } from "@/utils/advancedAnalysis";
-import { addDays, addHours } from "date-fns";
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
+import { saveAnalysisToHistory, loadAnalysisHistory } from "@/utils/storageUtils";
+import { processImageData, getImageDataFromCanvas } from "@/utils/imageProcessing";
 
 type AnalysisMode = 'upload' | 'tradingview';
-type SearchHistoryItem = {
-  id: string;
-  date: Date;
-  symbol: string;
-  timeframe?: string;
-  analysis: AnalysisData;
-  image: string;
-};
 
 export const ChartAnalyzer = () => {
   const [mode, setMode] = useState<AnalysisMode>('upload');
@@ -32,9 +25,9 @@ export const ChartAnalyzer = () => {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
-  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>(loadAnalysisHistory());
 
-  const saveToHistory = (analysisData: AnalysisData, imageData: string) => {
+  const handleSaveToHistory = (analysisData: AnalysisData, imageData: string) => {
     const historyItem: SearchHistoryItem = {
       id: Date.now().toString(),
       date: new Date(),
@@ -43,8 +36,8 @@ export const ChartAnalyzer = () => {
       image: imageData
     };
     
-    setSearchHistory(prev => [historyItem, ...prev.slice(0, 9)]); // Keep last 10 items
-    localStorage.setItem('chartAnalysisHistory', JSON.stringify([historyItem, ...searchHistory.slice(0, 9)]));
+    const newHistory = saveAnalysisToHistory(historyItem);
+    setSearchHistory(newHistory);
   };
 
   const analyzeChart = (imageData: string) => {
@@ -71,17 +64,17 @@ export const ChartAnalyzer = () => {
       return;
     }
 
-    console.log("بدء معالجة الصورة:", imageData);
+    console.log("Processing uploaded image");
     
     const img = new Image();
     img.onload = () => {
-      console.log("تم تحميل الصورة بنجاح");
+      console.log("Image loaded successfully");
       setImage(imageData);
       analyzeChart(imageData);
     };
     
     img.onerror = () => {
-      console.error("فشل في تحميل الصورة");
+      console.error("Failed to load image");
       toast.error("فشل في تحميل الصورة");
       setIsAnalyzing(false);
     };
@@ -93,11 +86,9 @@ export const ChartAnalyzer = () => {
     try {
       setIsAnalyzing(true);
       setCurrentSymbol(symbol);
-      console.log("بدء تحليل TradingView:", { symbol, timeframe, providedPrice });
+      console.log("Starting TradingView analysis:", { symbol, timeframe, providedPrice });
       
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
-      console.log("تم استلام صورة الشارت:", chartImage);
-      
       if (!chartImage) {
         toast.error("فشل في جلب صورة الشارت");
         setIsAnalyzing(false);
@@ -107,7 +98,6 @@ export const ChartAnalyzer = () => {
       let currentPrice = providedPrice;
       if (!currentPrice) {
         currentPrice = await getCurrentPriceFromTradingView(symbol);
-        console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
       }
       
       if (!currentPrice) {
@@ -120,39 +110,15 @@ export const ChartAnalyzer = () => {
       analyzeChartWithPrice(chartImage, currentPrice);
       
     } catch (error) {
-      console.error("خطأ في تحليل TradingView:", error);
+      console.error("Error in TradingView analysis:", error);
       toast.error("حدث خطأ أثناء جلب الرسم البياني");
       setIsAnalyzing(false);
     }
   };
 
-  const handleShowHistory = () => {
-    const history = searchHistory.map(item => ({
-      ...item,
-      date: new Date(item.date)
-    }));
-    
-    // Here you would typically show a modal or navigate to a history page
-    console.log("سجل البحث:", history);
-    toast.info("تم تحميل سجل البحث");
-  };
-
-  const calculateExpectedTimes = (targets: number[], direction: string): Date[] => {
-    const now = new Date();
-    return targets.map((_, index) => {
-      if (index === 0) {
-        return addHours(now, Math.random() * 24 + 24);
-      } else if (index === 1) {
-        return addDays(now, Math.random() * 2 + 3);
-      } else {
-        return addDays(now, Math.random() * 4 + 7);
-      }
-    });
-  };
-
   const analyzeChartWithPrice = async (imageData: string, currentPrice: number) => {
     setIsAnalyzing(true);
-    console.log("بدء تحليل الشارت مع السعر المحدد:", currentPrice);
+    console.log("Starting chart analysis with price:", currentPrice);
     
     try {
       const canvas = document.createElement('canvas');
@@ -162,16 +128,15 @@ export const ChartAnalyzer = () => {
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        
-        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-        if (!imageData) {
+        if (!ctx) {
           toast.error("فشل في معالجة الصورة");
           setIsAnalyzing(false);
           return;
         }
 
-        const prices = detectPrices(imageData, currentPrice);
+        ctx.drawImage(img, 0, 0);
+        const imageDataRaw = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const prices = processImageData(imageDataRaw, currentPrice);
         
         if (!prices.length) {
           toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
@@ -188,14 +153,11 @@ export const ChartAnalyzer = () => {
         }));
         
         const targetPrices = calculateTargets(currentPrice, direction, support, resistance);
-        const expectedTimes = calculateExpectedTimes(targetPrices, direction);
-        
         const targets = targetPrices.map((price, index) => ({
           price,
-          expectedTime: expectedTimes[index]
+          expectedTime: new Date(Date.now() + (index + 1) * 24 * 60 * 60 * 1000)
         }));
 
-        // Advanced entry point analysis
         const advancedAnalysis = analyzeAdvancedEntryPoint(
           { prices },
           currentPrice,
@@ -204,15 +166,14 @@ export const ChartAnalyzer = () => {
           resistance
         );
 
+        const pattern = direction === "صاعد" ? 
+          "نموذج صعودي مستمر" : 
+          "نموذج هبوطي مستمر";
+
         const bestEntryPoint = {
           price: advancedAnalysis.entryPoint,
           reason: advancedAnalysis.reasons.join(' | ')
         };
-
-        // Pattern detection based on price movement and advanced analysis
-        const pattern = direction === "صاعد" ? 
-          "نموذج صعودي مستمر" : 
-          "نموذج هبوطي مستمر";
         
         const analysisResult: AnalysisData = {
           pattern,
@@ -226,15 +187,19 @@ export const ChartAnalyzer = () => {
           bestEntryPoint
         };
         
-        console.log("نتائج التحليل:", analysisResult);
+        console.log("Analysis results:", analysisResult);
         setAnalysis(analysisResult);
-        saveToHistory(analysisResult, imageData);
+        
+        // Save compressed image data
+        const compressedImageData = getImageDataFromCanvas(canvas);
+        handleSaveToHistory(analysisResult, compressedImageData);
+        
         setIsAnalyzing(false);
         toast.success("تم تحليل الشارت بنجاح");
       };
       
       img.onerror = () => {
-        console.error("فشل في تحميل الصورة");
+        console.error("Failed to load image for analysis");
         toast.error("فشل في تحميل الصورة");
         setIsAnalyzing(false);
       };
@@ -242,45 +207,10 @@ export const ChartAnalyzer = () => {
       img.src = imageData;
       
     } catch (error) {
-      console.error("خطأ في تحليل الشارت:", error);
+      console.error("Error analyzing chart:", error);
       setIsAnalyzing(false);
       toast.error("حدث خطأ أثناء تحليل الشارت");
     }
-  };
-
-  const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
-    const prices: number[] = [];
-    const height = imageData.height;
-    
-    const currentPriceRow = Math.floor(height * 0.5); 
-    let currentPrice = providedCurrentPrice || 2622; 
-    
-    for (let y = 0; y < height; y += height / 10) {
-      let sum = 0;
-      let count = 0;
-      
-      for (let x = 0; x < 50; x++) {
-        const index = (Math.floor(y) * imageData.width + x) * 4;
-        const r = imageData.data[index];
-        const g = imageData.data[index + 1];
-        const b = imageData.data[index + 2];
-        
-        sum += (r + g + b) / 3;
-        count++;
-      }
-      
-      if (count > 0) {
-        if (Math.abs(y - currentPriceRow) < height / 20) {
-          prices.push(currentPrice);
-        } else {
-          const price = currentPrice + ((y - currentPriceRow) / height) * 100;
-          prices.push(Math.round(price * 100) / 100);
-        }
-      }
-    }
-    
-    console.log("الأسعار المكتشفة:", prices);
-    return prices;
   };
 
   return (
@@ -291,7 +221,7 @@ export const ChartAnalyzer = () => {
           mode={mode}
           onImageCapture={handleImageUpload}
           onTradingViewConfig={handleTradingViewConfig}
-          onHistoryClick={handleShowHistory}
+          onHistoryClick={() => toast.info("تم تحميل سجل البحث")}
           isAnalyzing={isAnalyzing}
         />
         <ChartDisplay
