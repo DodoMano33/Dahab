@@ -1,20 +1,7 @@
 import { Canvas } from "../Canvas";
 import { AnalysisResult } from "../AnalysisResult";
 import { LiveTradingViewChart } from "./LiveTradingViewChart";
-
-interface AnalysisData {
-  pattern: string;
-  direction: string;
-  currentPrice: number;
-  support: number;
-  resistance: number;
-  stopLoss: number;
-  targets?: number[];
-  fibonacciLevels?: {
-    level: number;
-    price: number;
-  }[];
-}
+import { AnalysisData } from "@/types/analysis";
 
 interface ChartDisplayProps {
   image: string | null;

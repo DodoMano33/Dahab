@@ -13,23 +13,7 @@ import {
   getCurrentPriceFromTradingView
 } from "@/utils/technicalAnalysis";
 import { addDays, addHours } from "date-fns";
-
-interface AnalysisData {
-  pattern: string;
-  direction: string;
-  currentPrice: number;
-  support: number;
-  resistance: number;
-  stopLoss: number;
-  targets?: {
-    price: number;
-    expectedTime: Date;
-  }[];
-  fibonacciLevels?: {
-    level: number;
-    price: number;
-  }[];
-}
+import { AnalysisData } from "@/types/analysis";
 
 type AnalysisMode = 'upload' | 'tradingview';
 
@@ -39,6 +23,24 @@ export const ChartAnalyzer = () => {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
+
+  const analyzeChart = (imageData: string) => {
+    setIsAnalyzing(true);
+    getCurrentPriceFromTradingView(currentSymbol)
+      .then(currentPrice => {
+        if (currentPrice) {
+          analyzeChartWithPrice(imageData, currentPrice);
+        } else {
+          toast.error("فشل في الحصول على السعر الحالي");
+          setIsAnalyzing(false);
+        }
+      })
+      .catch(error => {
+        console.error("خطأ في جلب السعر الحالي:", error);
+        toast.error("فشل في الحصول على السعر الحالي");
+        setIsAnalyzing(false);
+      });
+  };
 
   const handleImageUpload = (imageData: string) => {
     if (!imageData || typeof imageData !== 'string') {
@@ -152,6 +154,11 @@ export const ChartAnalyzer = () => {
           price,
           expectedTime: expectedTimes[index]
         }));
+
+        const fibonacciLevels = fibLevels.map((price, index) => ({
+          level: [0.236, 0.382, 0.618][index],
+          price
+        }));
         
         const patterns = [
           "نموذج الرأس والكتفين",
@@ -162,7 +169,7 @@ export const ChartAnalyzer = () => {
         ];
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         
-        const analysisResult = {
+        const analysisResult: AnalysisData = {
           pattern,
           direction,
           currentPrice,
@@ -170,7 +177,7 @@ export const ChartAnalyzer = () => {
           resistance,
           stopLoss,
           targets,
-          fibonacciLevels: fibLevels
+          fibonacciLevels
         };
         
         console.log("نتائج التحليل:", analysisResult);
