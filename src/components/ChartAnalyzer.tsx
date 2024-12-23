@@ -11,12 +11,20 @@ import {
   calculateSupportResistance, 
   detectTrend,
   getCurrentPriceFromTradingView,
-  calculateBestEntryPoint
 } from "@/utils/technicalAnalysis";
+import { analyzeAdvancedEntryPoint } from "@/utils/advancedAnalysis";
 import { addDays, addHours } from "date-fns";
 import { AnalysisData } from "@/types/analysis";
 
 type AnalysisMode = 'upload' | 'tradingview';
+type SearchHistoryItem = {
+  id: string;
+  date: Date;
+  symbol: string;
+  timeframe?: string;
+  analysis: AnalysisData;
+  image: string;
+};
 
 export const ChartAnalyzer = () => {
   const [mode, setMode] = useState<AnalysisMode>('upload');
@@ -24,6 +32,20 @@ export const ChartAnalyzer = () => {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+
+  const saveToHistory = (analysisData: AnalysisData, imageData: string) => {
+    const historyItem: SearchHistoryItem = {
+      id: Date.now().toString(),
+      date: new Date(),
+      symbol: currentSymbol,
+      analysis: analysisData,
+      image: imageData
+    };
+    
+    setSearchHistory(prev => [historyItem, ...prev.slice(0, 9)]); // Keep last 10 items
+    localStorage.setItem('chartAnalysisHistory', JSON.stringify([historyItem, ...searchHistory.slice(0, 9)]));
+  };
 
   const analyzeChart = (imageData: string) => {
     setIsAnalyzing(true);
@@ -76,6 +98,12 @@ export const ChartAnalyzer = () => {
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
       console.log("تم استلام صورة الشارت:", chartImage);
       
+      if (!chartImage) {
+        toast.error("فشل في جلب صورة الشارت");
+        setIsAnalyzing(false);
+        return;
+      }
+      
       let currentPrice = providedPrice;
       if (!currentPrice) {
         currentPrice = await getCurrentPriceFromTradingView(symbol);
@@ -99,7 +127,14 @@ export const ChartAnalyzer = () => {
   };
 
   const handleShowHistory = () => {
-    toast.info("سيتم إضافة سجل البحث قريباً");
+    const history = searchHistory.map(item => ({
+      ...item,
+      date: new Date(item.date)
+    }));
+    
+    // Here you would typically show a modal or navigate to a history page
+    console.log("سجل البحث:", history);
+    toast.info("تم تحميل سجل البحث");
   };
 
   const calculateExpectedTimes = (targets: number[], direction: string): Date[] => {
@@ -151,6 +186,7 @@ export const ChartAnalyzer = () => {
           level: [0.236, 0.382, 0.618][index],
           price
         }));
+        
         const targetPrices = calculateTargets(currentPrice, direction, support, resistance);
         const expectedTimes = calculateExpectedTimes(targetPrices, direction);
         
@@ -159,15 +195,21 @@ export const ChartAnalyzer = () => {
           expectedTime: expectedTimes[index]
         }));
 
-        const bestEntryPoint = calculateBestEntryPoint(
+        // Advanced entry point analysis
+        const advancedAnalysis = analyzeAdvancedEntryPoint(
+          { prices },
           currentPrice,
           direction,
           support,
-          resistance,
-          fibLevels
+          resistance
         );
 
-        // Add pattern detection based on price movement
+        const bestEntryPoint = {
+          price: advancedAnalysis.entryPoint,
+          reason: advancedAnalysis.reasons.join(' | ')
+        };
+
+        // Pattern detection based on price movement and advanced analysis
         const pattern = direction === "صاعد" ? 
           "نموذج صعودي مستمر" : 
           "نموذج هبوطي مستمر";
@@ -186,6 +228,7 @@ export const ChartAnalyzer = () => {
         
         console.log("نتائج التحليل:", analysisResult);
         setAnalysis(analysisResult);
+        saveToHistory(analysisResult, imageData);
         setIsAnalyzing(false);
         toast.success("تم تحليل الشارت بنجاح");
       };
