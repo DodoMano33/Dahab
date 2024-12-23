@@ -18,11 +18,3 @@ export interface AnalysisData {
     price: number;
   }[];
 }
-
-export interface SearchHistoryItem {
-  id: string;
-  date: Date;
-  symbol: string;
-  analysis: AnalysisData;
-  image: string;
-}
