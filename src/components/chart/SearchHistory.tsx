@@ -28,7 +28,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
         if (!priceStates[item.symbol]?.isActive && item.symbol && item.symbol !== 'غير محدد') {
           try {
             const price = await getCurrentPriceFromTradingView(item.symbol);
-            console.log(`Updated price for ${item.symbol}:`, price);
+            console.log(`تحديث السعر للعملة ${item.symbol}:`, price);
             
             setPriceStates(prev => ({
               ...prev,
@@ -39,7 +39,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
             }));
 
             if (price <= item.analysis.stopLoss && !item.stopLossHit) {
-              console.log(`Stop loss hit for ${item.symbol}`);
+              console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${item.symbol}`);
               setPriceStates(prev => ({
                 ...prev,
                 [item.symbol]: {
@@ -53,7 +53,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
               price >= item.analysis.targets[0].price && 
               !item.targetHit
             ) {
-              console.log(`Target hit for ${item.symbol}`);
+              console.log(`تم الوصول للهدف للعملة ${item.symbol}`);
               setPriceStates(prev => ({
                 ...prev,
                 [item.symbol]: {
@@ -63,7 +63,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
               }));
             }
           } catch (error) {
-            console.error(`Error updating price for ${item.symbol}:`, error);
+            console.error(`خطأ في تحديث السعر للعملة ${item.symbol}:`, error);
           }
         }
       }
@@ -76,6 +76,11 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
     }
   }, [isOpen, history, priceStates]);
 
+  // تصفية وترتيب العناصر
+  const filteredHistory = history
+    .filter(item => item.symbol && item.symbol !== 'غير محدد')
+    .reverse(); // عكس الترتيب ليظهر أحدث عملة في الأعلى
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl" dir="rtl">
@@ -86,18 +91,16 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
           <Table>
             <HistoryTableHeader />
             <TableBody>
-              {history
-                .filter(item => item.symbol && item.symbol !== 'غير محدد')
-                .map((item, index) => (
-                  <HistoryRow
-                    key={index}
-                    date={item.date}
-                    symbol={item.symbol}
-                    currentPrice={item.currentPrice}
-                    analysis={item.analysis}
-                    latestPrice={priceStates[item.symbol]?.currentPrice}
-                  />
-                ))}
+              {filteredHistory.map((item, index) => (
+                <HistoryRow
+                  key={`${item.symbol}-${index}`}
+                  date={item.date}
+                  symbol={item.symbol}
+                  currentPrice={item.currentPrice}
+                  analysis={item.analysis}
+                  latestPrice={priceStates[item.symbol]?.currentPrice}
+                />
+              ))}
             </TableBody>
           </Table>
         </div>
