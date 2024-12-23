@@ -5,6 +5,10 @@ export interface AnalysisData {
   support: number;
   resistance: number;
   stopLoss: number;
+  bestEntryPoint?: {
+    price: number;
+    reason: string;
+  };
   targets?: {
     price: number;
     expectedTime: Date;

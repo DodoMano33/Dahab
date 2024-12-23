@@ -11,6 +11,10 @@ interface AnalysisResultProps {
     support: number;
     resistance: number;
     stopLoss: number;
+    bestEntryPoint?: {
+      price: number;
+      reason: string;
+    };
     targets?: {
       price: number;
       expectedTime: Date;
@@ -81,6 +85,20 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
             {analysis.stopLoss}
           </p>
         </div>
+        {analysis.bestEntryPoint && (
+          <div className="bg-gray-50 p-4 rounded-lg col-span-2">
+            <h3 className="font-semibold text-gray-700 mb-2">أفضل نقطة دخول</h3>
+            <p className={cn(
+              "text-lg mb-2",
+              isPriceHigher(analysis.bestEntryPoint.price) ? "text-red-600" : "text-green-600"
+            )}>
+              السعر: {analysis.bestEntryPoint.price}
+            </p>
+            <p className="text-sm text-gray-600">
+              السبب: {analysis.bestEntryPoint.reason}
+            </p>
+          </div>
+        )}
       </div>
       
       {analysis.targets && analysis.targets.length > 0 && (

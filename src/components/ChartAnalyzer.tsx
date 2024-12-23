@@ -10,7 +10,8 @@ import {
   calculateStopLoss, 
   calculateSupportResistance, 
   detectTrend,
-  getCurrentPriceFromTradingView
+  getCurrentPriceFromTradingView,
+  calculateBestEntryPoint
 } from "@/utils/technicalAnalysis";
 import { addDays, addHours } from "date-fns";
 import { AnalysisData } from "@/types/analysis";
@@ -146,7 +147,10 @@ export const ChartAnalyzer = () => {
         const direction = detectTrend(prices) as "صاعد" | "هابط";
         const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
         const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
-        const fibLevels = calculateFibonacciLevels(resistance, support);
+        const fibLevels = calculateFibonacciLevels(resistance, support).map((price, index) => ({
+          level: [0.236, 0.382, 0.618][index],
+          price
+        }));
         const targetPrices = calculateTargets(currentPrice, direction, support, resistance);
         const expectedTimes = calculateExpectedTimes(targetPrices, direction);
         
@@ -155,19 +159,13 @@ export const ChartAnalyzer = () => {
           expectedTime: expectedTimes[index]
         }));
 
-        const fibonacciLevels = fibLevels.map((price, index) => ({
-          level: [0.236, 0.382, 0.618][index],
-          price
-        }));
-        
-        const patterns = [
-          "نموذج الرأس والكتفين",
-          "نموذج القمة المزدوجة",
-          "نموذج القاع المزدوج",
-          "نموذج المثلث المتماثل",
-          "نموذج القناة السعرية"
-        ];
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        const bestEntryPoint = calculateBestEntryPoint(
+          currentPrice,
+          direction,
+          support,
+          resistance,
+          fibLevels
+        );
         
         const analysisResult: AnalysisData = {
           pattern,
@@ -177,7 +175,8 @@ export const ChartAnalyzer = () => {
           resistance,
           stopLoss,
           targets,
-          fibonacciLevels
+          fibonacciLevels: fibLevels,
+          bestEntryPoint
         };
         
         console.log("نتائج التحليل:", analysisResult);

@@ -46,3 +46,47 @@ export const getCurrentPriceFromTradingView = async (symbol: string): Promise<nu
     throw error;
   }
 };
+
+export const calculateBestEntryPoint = (
+  currentPrice: number,
+  direction: string,
+  support: number,
+  resistance: number,
+  fibLevels: { level: number; price: number }[]
+): { price: number; reason: string } => {
+  console.log("حساب أفضل نقطة دخول:", { currentPrice, direction, support, resistance, fibLevels });
+  
+  if (direction === "صاعد") {
+    // البحث عن أقرب مستوى فيبوناتشي للسعر الحالي
+    const nearestFib = fibLevels.find(level => level.price < currentPrice);
+    
+    if (nearestFib) {
+      return {
+        price: nearestFib.price,
+        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى دعم قوي`
+      };
+    }
+    
+    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى الدعم
+    return {
+      price: support,
+      reason: "أفضل نقطة دخول عند مستوى الدعم الرئيسي"
+    };
+  } else {
+    // في حالة الاتجاه الهابط
+    const nearestFib = fibLevels.find(level => level.price > currentPrice);
+    
+    if (nearestFib) {
+      return {
+        price: nearestFib.price,
+        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى مقاومة قوي`
+      };
+    }
+    
+    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى المقاومة
+    return {
+      price: resistance,
+      reason: "أفضل نقطة دخول عند مستوى المقاومة الرئيسي"
+    };
+  }
+};
