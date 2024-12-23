@@ -88,15 +88,35 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
         {analysis.bestEntryPoint && (
           <div className="bg-gray-50 p-4 rounded-lg col-span-2">
             <h3 className="font-semibold text-gray-700 mb-2">أفضل نقطة دخول</h3>
-            <p className={cn(
-              "text-lg mb-2",
-              isPriceHigher(analysis.bestEntryPoint.price) ? "text-red-600" : "text-green-600"
-            )}>
-              السعر: {analysis.bestEntryPoint.price}
-            </p>
-            <p className="text-sm text-gray-600">
-              السبب: {analysis.bestEntryPoint.reason}
-            </p>
+            <div className="space-y-4">
+              <div>
+                <p className={cn(
+                  "text-lg mb-2",
+                  isPriceHigher(analysis.bestEntryPoint.price) ? "text-red-600" : "text-green-600"
+                )}>
+                  السعر المقترح: {analysis.bestEntryPoint.price}
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <h4 className="font-semibold text-gray-700 mb-2">تحليل نقطة الدخول:</h4>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  {analysis.bestEntryPoint.reason.split('|').map((reason, index) => (
+                    <li key={index} className="text-sm">
+                      {reason.trim()}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <h4 className="font-semibold text-gray-700 mb-2">نصائح إضافية:</h4>
+                <ul className="list-disc list-inside space-y-2 text-gray-600 text-sm">
+                  <li>تأكد من وجود حجم تداول كافٍ عند نقطة الدخول</li>
+                  <li>انتظر تأكيد الاتجاه قبل الدخول في الصفقة</li>
+                  <li>راقب المؤشرات الفنية الإضافية مثل RSI و MACD</li>
+                  <li>ضع أمر وقف الخسارة مباشرة بعد الدخول</li>
+                </ul>
+              </div>
+            </div>
           </div>
         )}
       </div>
