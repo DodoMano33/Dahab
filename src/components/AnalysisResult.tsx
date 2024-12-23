@@ -241,44 +241,45 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
           </div>
         )}
 
-      {analysis.targets && analysis.targets.length > 0 && (
-        <div className="bg-gray-50 p-4 rounded-lg mt-4">
-          <h3 className="font-semibold text-gray-700 mb-2">الأهداف المتوقعة</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {analysis.targets.map((target, index) => (
-              <div key={index} className="bg-white p-4 rounded border border-gray-200">
-                <p className={cn(
-                  "text-lg mb-2",
-                  isPriceHigher(target.price) ? "text-red-600" : "text-green-600"
-                )}>
-                  الهدف {index + 1}: {target.price}
-                </p>
-                <p className="text-sm text-gray-600">
-                  التوقيت المتوقع: {format(target.expectedTime, 'PPpp', { locale: ar })}
-                </p>
-              </div>
-            ))}
+        {analysis.targets && analysis.targets.length > 0 && (
+          <div className="bg-gray-50 p-4 rounded-lg mt-4">
+            <h3 className="font-semibold text-gray-700 mb-2">الأهداف المتوقعة</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {analysis.targets.map((target, index) => (
+                <div key={index} className="bg-white p-4 rounded border border-gray-200">
+                  <p className={cn(
+                    "text-lg mb-2",
+                    isPriceHigher(target.price) ? "text-red-600" : "text-green-600"
+                  )}>
+                    الهدف {index + 1}: {target.price}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    التوقيت المتوقع: {format(target.expectedTime, 'PPpp', { locale: ar })}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {analysis.fibonacciLevels && analysis.fibonacciLevels.length > 0 && (
-        <div className="bg-gray-50 p-4 rounded-lg mt-4">
-          <h3 className="font-semibold text-gray-700 mb-2">مستويات فيبوناتشي</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {analysis.fibonacciLevels.map((level, index) => (
-              <div key={index} className="bg-white p-2 rounded border border-gray-200">
-                <p className={cn(
-                  "text-lg",
-                  isPriceHigher(level.price) ? "text-red-600" : "text-green-600"
-                )}>
-                  {level.level * 100}%: {level.price}
-                </p>
-              </div>
-            ))}
+        {analysis.fibonacciLevels && analysis.fibonacciLevels.length > 0 && (
+          <div className="bg-gray-50 p-4 rounded-lg mt-4">
+            <h3 className="font-semibold text-gray-700 mb-2">مستويات فيبوناتشي</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {analysis.fibonacciLevels.map((level, index) => (
+                <div key={index} className="bg-white p-2 rounded border border-gray-200">
+                  <p className={cn(
+                    "text-lg",
+                    isPriceHigher(level.price) ? "text-red-600" : "text-green-600"
+                  )}>
+                    {level.level * 100}%: {level.price}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
