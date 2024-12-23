@@ -1,11 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { Table, TableBody } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
 import { useEffect, useState } from "react";
 import { getCurrentPriceFromTradingView } from "@/utils/tradingViewUtils";
+import { HistoryTableHeader } from "./history/HistoryTableHeader";
+import { HistoryRow } from "./history/HistoryRow";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -85,80 +84,20 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
         </DialogHeader>
         <div className="max-h-[70vh] overflow-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">التاريخ</TableHead>
-                <TableHead className="text-right">الرمز</TableHead>
-                <TableHead className="text-right">السعر الحالي</TableHead>
-                <TableHead className="text-right">الاتجاه</TableHead>
-                <TableHead className="text-right">أفضل نقطة دخول</TableHead>
-                <TableHead className="text-right">الأهداف والتوقيت</TableHead>
-                <TableHead className="text-right">وقف الخسارة</TableHead>
-              </TableRow>
-            </TableHeader>
+            <HistoryTableHeader />
             <TableBody>
               {history
                 .filter(item => item.symbol && item.symbol !== 'غير محدد')
-                .map((item, index) => {
-                const currentPrice = priceStates[item.symbol]?.currentPrice;
-                const isStopLossHit = currentPrice && currentPrice <= item.analysis.stopLoss;
-                const isTargetHit = currentPrice && item.analysis.targets?.[0] && 
-                                  currentPrice >= item.analysis.targets[0].price;
-
-                return (
-                  <TableRow key={index}>
-                    <TableCell className="text-right">
-                      {format(item.date, 'PPpp', { locale: ar })}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {item.symbol.toUpperCase()}
-                    </TableCell>
-                    <TableCell className="text-right">{item.currentPrice}</TableCell>
-                    <TableCell className="text-right">
-                      {item.analysis.direction === "صاعد" ? (
-                        <ArrowUp className="text-green-500 inline w-6 h-6" />
-                      ) : (
-                        <ArrowDown className="text-red-500 inline w-6 h-6" />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.analysis.bestEntryPoint ? (
-                        <div>
-                          <div>السعر: {item.analysis.bestEntryPoint.price}</div>
-                          <div className="text-sm text-gray-600">
-                            السبب: {item.analysis.bestEntryPoint.reason}
-                          </div>
-                        </div>
-                      ) : (
-                        "غير متوفر"
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="space-y-2">
-                        {item.analysis.targets?.map((target, idx) => (
-                          <div 
-                            key={idx}
-                            className={`relative ${isTargetHit && idx === 0 ? 'pb-4' : ''}`}
-                          >
-                            الهدف {idx + 1}: {target.price}
-                            <br />
-                            التوقيت: {format(target.expectedTime, 'PPpp', { locale: ar })}
-                            {isTargetHit && idx === 0 && (
-                              <div className="absolute bottom-0 left-0 right-0 h-2 bg-green-500 rounded-sm" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className={`text-right relative ${isStopLossHit ? 'pb-4' : ''}`}>
-                      {item.analysis.stopLoss}
-                      {isStopLossHit && (
-                        <div className="absolute bottom-0 left-0 right-0 h-2 bg-red-500 rounded-sm" />
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                .map((item, index) => (
+                  <HistoryRow
+                    key={index}
+                    date={item.date}
+                    symbol={item.symbol}
+                    currentPrice={item.currentPrice}
+                    analysis={item.analysis}
+                    latestPrice={priceStates[item.symbol]?.currentPrice}
+                  />
+                ))}
             </TableBody>
           </Table>
         </div>
