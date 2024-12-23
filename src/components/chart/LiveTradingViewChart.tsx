@@ -1,5 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 
+// تعريف النوع للـ TradingView
+declare global {
+  interface Window {
+    TradingView: any;
+  }
+}
+
 interface LiveTradingViewChartProps {
   symbol: string;
   timeframe?: string;
@@ -18,8 +25,8 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     script.src = 'https://s3.tradingview.com/tv.js';
     script.async = true;
     script.onload = () => {
-      if (typeof TradingView !== 'undefined') {
-        new TradingView.widget({
+      if (typeof window.TradingView !== 'undefined') {
+        new window.TradingView.widget({
           "width": "100%",
           "height": 500,
           "symbol": symbol,
