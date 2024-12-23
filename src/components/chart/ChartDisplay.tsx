@@ -1,6 +1,5 @@
 import { Canvas } from "../Canvas";
 import { AnalysisResult } from "../AnalysisResult";
-import { LiveTradingViewChart } from "./LiveTradingViewChart";
 import { AnalysisData } from "@/types/analysis";
 
 interface ChartDisplayProps {
@@ -11,16 +10,9 @@ interface ChartDisplayProps {
   symbol?: string;
 }
 
-export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: ChartDisplayProps) => {
+export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose }: ChartDisplayProps) => {
   return (
     <div className="space-y-8">
-      {symbol && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-right">الشارت المباشر</h2>
-          <LiveTradingViewChart symbol={symbol} />
-        </div>
-      )}
-
       {image && (
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">تحليل الشارت</h2>

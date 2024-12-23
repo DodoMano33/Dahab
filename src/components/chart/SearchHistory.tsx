@@ -25,17 +25,21 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
 
   useEffect(() => {
     const updatePrices = async () => {
+      if (!isOpen || !history.length) return;
+      
       console.log("تحديث الأسعار لسجل البحث:", history);
       
-      for (const item of history) {
-        if (!item?.symbol) {
-          console.warn("تم العثور على عنصر بدون رمز في سجل البحث");
-          continue;
-        }
-
+      const validHistory = history.filter(item => item?.symbol && typeof item.symbol === 'string');
+      
+      for (const item of validHistory) {
         try {
           console.log(`جاري تحديث السعر للعملة ${item.symbol}`);
           const price = await getCurrentPriceFromTradingView(item.symbol);
+          
+          if (typeof price !== 'number' || isNaN(price)) {
+            console.error(`سعر غير صالح للعملة ${item.symbol}:`, price);
+            continue;
+          }
           
           setPriceStates(prev => ({
             ...prev,
@@ -66,7 +70,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
       }
     };
 
-    if (isOpen && history.length > 0) {
+    if (isOpen) {
       updatePrices();
       const interval = setInterval(updatePrices, 5000);
       return () => clearInterval(interval);
@@ -74,7 +78,13 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
   }, [isOpen, history]);
 
   // تصفية السجل للتأكد من وجود رموز صحيحة فقط
-  const validHistory = history.filter(item => item && item.symbol);
+  const validHistory = history.filter(item => 
+    item && 
+    item.symbol && 
+    typeof item.symbol === 'string' && 
+    item.currentPrice && 
+    item.analysis
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -88,7 +98,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
             <TableBody>
               {validHistory.map((item, index) => (
                 <HistoryRow
-                  key={`${item.symbol}-${item.date.getTime()}`}
+                  key={`${item.symbol}-${index}-${item.date.getTime()}`}
                   date={item.date}
                   symbol={item.symbol}
                   currentPrice={item.currentPrice}
