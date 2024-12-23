@@ -24,6 +24,8 @@ type SearchHistoryItem = {
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
+  targetHit?: boolean;
+  stopLossHit?: boolean;
 };
 
 export const ChartAnalyzer = () => {
@@ -158,7 +160,9 @@ export const ChartAnalyzer = () => {
           date: new Date(),
           symbol: currentSymbol || 'غير محدد',
           currentPrice,
-          analysis: analysisResult
+          analysis: analysisResult,
+          targetHit: false,
+          stopLossHit: false
         }, ...prev]);
 
         setIsAnalyzing(false);
