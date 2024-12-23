@@ -9,6 +9,7 @@ interface ChartInputProps {
   mode: AnalysisMode;
   onImageCapture: (imageData: string) => void;
   onTradingViewConfig: (symbol: string, timeframe: string, currentPrice?: number) => void;
+  onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
 
@@ -16,6 +17,7 @@ export const ChartInput = ({
   mode, 
   onImageCapture, 
   onTradingViewConfig,
+  onHistoryClick,
   isAnalyzing 
 }: ChartInputProps) => {
   return (
@@ -50,8 +52,8 @@ export const ChartInput = ({
       ) : (
         <TradingViewSelector 
           onConfigSubmit={onTradingViewConfig}
+          onHistoryClick={onHistoryClick}
           isLoading={isAnalyzing}
-          onHistoryClick={() => {}}
         />
       )}
     </div>
