@@ -1,5 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface AnalysisResultProps {
   analysis: {
@@ -9,7 +11,10 @@ interface AnalysisResultProps {
     support: number;
     resistance: number;
     stopLoss: number;
-    targets?: number[];
+    targets?: {
+      price: number;
+      expectedTime: Date;
+    }[];
     fibonacciLevels?: {
       level: number;
       price: number;
@@ -81,14 +86,17 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
       {analysis.targets && analysis.targets.length > 0 && (
         <div className="bg-gray-50 p-4 rounded-lg mt-4">
           <h3 className="font-semibold text-gray-700 mb-2">الأهداف المتوقعة</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {analysis.targets.map((target, index) => (
-              <div key={index} className="bg-white p-2 rounded border border-gray-200">
+              <div key={index} className="bg-white p-4 rounded border border-gray-200">
                 <p className={cn(
-                  "text-lg",
-                  isPriceHigher(target) ? "text-red-600" : "text-green-600"
+                  "text-lg mb-2",
+                  isPriceHigher(target.price) ? "text-red-600" : "text-green-600"
                 )}>
-                  الهدف {index + 1}: {target}
+                  الهدف {index + 1}: {target.price}
+                </p>
+                <p className="text-sm text-gray-600">
+                  التوقيت المتوقع: {format(target.expectedTime, 'PPpp', { locale: ar })}
                 </p>
               </div>
             ))}

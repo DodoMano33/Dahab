@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { timeframes } from "@/utils/chartPatternAnalysis";
 import { toast } from "sonner";
+import { History } from "lucide-react";
 
 interface TradingViewSelectorProps {
-  onConfigSubmit: (symbol: string, timeframe: string, currentPrice: number) => void;
+  onConfigSubmit: (symbol: string, timeframe: string, currentPrice?: number) => void;
   isLoading: boolean;
+  onHistoryClick: () => void;
 }
 
-export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSelectorProps) => {
+export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
   const [currentPrice, setCurrentPrice] = useState("");
@@ -20,12 +22,15 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSe
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
       return;
     }
-    if (!currentPrice || isNaN(Number(currentPrice)) || Number(currentPrice) <= 0) {
+    
+    const price = currentPrice ? Number(currentPrice) : undefined;
+    if (currentPrice && (isNaN(price!) || price! <= 0)) {
       toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
       return;
     }
-    console.log("Submitting TradingView config:", { symbol, timeframe, currentPrice });
-    onConfigSubmit(symbol, timeframe, Number(currentPrice));
+    
+    console.log("Submitting TradingView config:", { symbol, timeframe, currentPrice: price });
+    onConfigSubmit(symbol, timeframe, price);
   };
 
   return (
@@ -46,7 +51,7 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSe
       
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          السعر الحالي
+          السعر الحالي (اختياري)
         </label>
         <Input
           type="number"
@@ -76,9 +81,20 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading }: TradingViewSe
         </select>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "جاري التحليل..." : "تحليل الرسم البياني"}
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit" className="flex-1" disabled={isLoading}>
+          {isLoading ? "جاري التحليل..." : "تحليل الرسم البياني"}
+        </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onHistoryClick}
+          className="flex items-center gap-2"
+        >
+          <History className="w-4 h-4" />
+          سجل البحث
+        </Button>
+      </div>
     </form>
   );
 };

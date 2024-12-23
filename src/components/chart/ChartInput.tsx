@@ -8,14 +8,16 @@ type AnalysisMode = 'upload' | 'tradingview';
 interface ChartInputProps {
   mode: AnalysisMode;
   onImageCapture: (imageData: string) => void;
-  onTradingViewConfig: (symbol: string, timeframe: string, currentPrice: number) => void;
+  onTradingViewConfig: (symbol: string, timeframe: string, currentPrice?: number) => void;
+  onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
 
 export const ChartInput = ({ 
   mode, 
   onImageCapture, 
-  onTradingViewConfig, 
+  onTradingViewConfig,
+  onHistoryClick,
   isAnalyzing 
 }: ChartInputProps) => {
   return (
@@ -27,11 +29,11 @@ export const ChartInput = ({
       {mode === 'upload' ? (
         <>
           <ImageUploader onImageCapture={onImageCapture} />
-          <div className="flex gap-4 mt-4 justify-center">
+          <div className="flex gap-4 mt-4">
             <Button 
               variant="outline"
               onClick={() => document.getElementById('fileInput')?.click()}
-              className="hover:bg-gray-100"
+              className="hover:bg-gray-100 flex-1"
             >
               <Upload className="ml-2" />
               تحميل صورة
@@ -40,7 +42,7 @@ export const ChartInput = ({
             <Button
               variant="outline"
               onClick={() => document.getElementById('cameraInput')?.click()}
-              className="hover:bg-gray-100"
+              className="hover:bg-gray-100 flex-1"
             >
               <Camera className="ml-2" />
               التقاط صورة
@@ -50,6 +52,7 @@ export const ChartInput = ({
       ) : (
         <TradingViewSelector 
           onConfigSubmit={onTradingViewConfig}
+          onHistoryClick={onHistoryClick}
           isLoading={isAnalyzing}
         />
       )}

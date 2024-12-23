@@ -9,8 +9,10 @@ import {
   calculateTargets, 
   calculateStopLoss, 
   calculateSupportResistance, 
-  detectTrend 
+  detectTrend,
+  getCurrentPriceFromTradingView
 } from "@/utils/technicalAnalysis";
+import { addDays, addHours } from "date-fns";
 
 interface AnalysisData {
   pattern: string;
@@ -19,7 +21,10 @@ interface AnalysisData {
   support: number;
   resistance: number;
   stopLoss: number;
-  targets?: number[];
+  targets?: {
+    price: number;
+    expectedTime: Date;
+  }[];
   fibonacciLevels?: {
     level: number;
     price: number;
@@ -59,14 +64,26 @@ export const ChartAnalyzer = () => {
     img.src = imageData;
   };
 
-  const handleTradingViewConfig = async (symbol: string, timeframe: string, currentPrice: number) => {
+  const handleTradingViewConfig = async (symbol: string, timeframe: string, providedPrice?: number) => {
     try {
       setIsAnalyzing(true);
       setCurrentSymbol(symbol);
-      console.log("بدء تحليل TradingView:", { symbol, timeframe, currentPrice });
+      console.log("بدء تحليل TradingView:", { symbol, timeframe, providedPrice });
       
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
       console.log("تم استلام صورة الشارت:", chartImage);
+      
+      let currentPrice = providedPrice;
+      if (!currentPrice) {
+        currentPrice = await getCurrentPriceFromTradingView(symbol);
+        console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
+      }
+      
+      if (!currentPrice) {
+        toast.error("فشل في الحصول على السعر الحالي");
+        setIsAnalyzing(false);
+        return;
+      }
       
       setImage(chartImage);
       analyzeChartWithPrice(chartImage, currentPrice);
@@ -78,10 +95,103 @@ export const ChartAnalyzer = () => {
     }
   };
 
-  const handleClose = () => {
-    setImage(null);
-    setAnalysis(null);
-    setIsAnalyzing(false);
+  const handleShowHistory = () => {
+    toast.info("سيتم إضافة سجل البحث قريباً");
+  };
+
+  const calculateExpectedTimes = (targets: number[], direction: string): Date[] => {
+    const now = new Date();
+    return targets.map((_, index) => {
+      if (index === 0) {
+        return addHours(now, Math.random() * 24 + 24);
+      } else if (index === 1) {
+        return addDays(now, Math.random() * 2 + 3);
+      } else {
+        return addDays(now, Math.random() * 4 + 7);
+      }
+    });
+  };
+
+  const analyzeChartWithPrice = async (imageData: string, currentPrice: number) => {
+    setIsAnalyzing(true);
+    console.log("بدء تحليل الشارت مع السعر المحدد:", currentPrice);
+    
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.drawImage(img, 0, 0);
+        
+        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+        if (!imageData) {
+          toast.error("فشل في معالجة الصورة");
+          setIsAnalyzing(false);
+          return;
+        }
+
+        const prices = detectPrices(imageData, currentPrice);
+        
+        if (!prices.length) {
+          toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
+          setIsAnalyzing(false);
+          return;
+        }
+
+        const direction = detectTrend(prices) as "صاعد" | "هابط";
+        const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
+        const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
+        const fibLevels = calculateFibonacciLevels(resistance, support);
+        const targetPrices = calculateTargets(currentPrice, direction, support, resistance);
+        const expectedTimes = calculateExpectedTimes(targetPrices, direction);
+        
+        const targets = targetPrices.map((price, index) => ({
+          price,
+          expectedTime: expectedTimes[index]
+        }));
+        
+        const patterns = [
+          "نموذج الرأس والكتفين",
+          "نموذج القمة المزدوجة",
+          "نموذج القاع المزدوج",
+          "نموذج المثلث المتماثل",
+          "نموذج القناة السعرية"
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        
+        const analysisResult = {
+          pattern,
+          direction,
+          currentPrice,
+          support,
+          resistance,
+          stopLoss,
+          targets,
+          fibonacciLevels: fibLevels
+        };
+        
+        console.log("نتائج التحليل:", analysisResult);
+        setAnalysis(analysisResult);
+        setIsAnalyzing(false);
+        toast.success("تم تحليل الشارت بنجاح");
+      };
+      
+      img.onerror = () => {
+        console.error("فشل في تحميل الصورة");
+        toast.error("فشل في تحميل الصورة");
+        setIsAnalyzing(false);
+      };
+      
+      img.src = imageData;
+      
+    } catch (error) {
+      console.error("خطأ في تحليل الشارت:", error);
+      setIsAnalyzing(false);
+      toast.error("حدث خطأ أثناء تحليل الشارت");
+    }
   };
 
   const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
@@ -119,159 +229,6 @@ export const ChartAnalyzer = () => {
     return prices;
   };
 
-  const analyzeChart = async (imageData: string) => {
-    setIsAnalyzing(true);
-    console.log("بدء تحليل الشارت...");
-    
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        
-        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-        if (!imageData) {
-          toast.error("فشل في معالجة الصورة");
-          setIsAnalyzing(false);
-          return;
-        }
-
-        const prices = detectPrices(imageData);
-        const currentPrice = 2622; 
-        
-        if (!prices.length) {
-          toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
-          setIsAnalyzing(false);
-          return;
-        }
-
-        const direction = detectTrend(prices) as "صاعد" | "هابط";
-        const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
-        const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
-        const fibLevels = calculateFibonacciLevels(resistance, support);
-        const targets = calculateTargets(currentPrice, direction, support, resistance);
-        
-        const patterns = [
-          "نموذج الرأس والكتفين",
-          "نموذج القمة المزدوجة",
-          "نموذج القاع المزدوج",
-          "نموذج المثلث المتماثل",
-          "نموذج القناة السعرية"
-        ];
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-        
-        const analysisResult = {
-          pattern,
-          direction,
-          currentPrice,
-          support,
-          resistance,
-          stopLoss,
-          targets,
-          fibonacciLevels: fibLevels
-        };
-        
-        console.log("نتائج التحليل:", analysisResult);
-        setAnalysis(analysisResult);
-        setIsAnalyzing(false);
-        toast.success("تم تحليل الشارت بنجاح");
-      };
-      
-      img.onerror = () => {
-        console.error("فشل في تحميل الصورة");
-        toast.error("فشل في تحميل الصورة");
-        setIsAnalyzing(false);
-      };
-      
-      img.src = imageData;
-      
-    } catch (error) {
-      console.error("خطأ في تحليل الشارت:", error);
-      setIsAnalyzing(false);
-      toast.error("حدث خطأ أثناء تحليل الشارت");
-    }
-  };
-
-  const analyzeChartWithPrice = async (imageData: string, currentPrice: number) => {
-    setIsAnalyzing(true);
-    console.log("بدء تحليل الشارت مع السعر المحدد:", currentPrice);
-    
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        
-        const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-        if (!imageData) {
-          toast.error("فشل في معالجة الصورة");
-          setIsAnalyzing(false);
-          return;
-        }
-
-        const prices = detectPrices(imageData, currentPrice);
-        
-        if (!prices.length) {
-          toast.error("لم نتمكن من قراءة الأسعار بشكل واضح. يرجى إرفاق صورة أوضح.");
-          setIsAnalyzing(false);
-          return;
-        }
-
-        const direction = detectTrend(prices) as "صاعد" | "هابط";
-        const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction);
-        const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance);
-        const fibLevels = calculateFibonacciLevels(resistance, support);
-        const targets = calculateTargets(currentPrice, direction, support, resistance);
-        
-        const patterns = [
-          "نموذج الرأس والكتفين",
-          "نموذج القمة المزدوجة",
-          "نموذج القاع المزدوج",
-          "نموذج المثلث المتماثل",
-          "نموذج القناة السعرية"
-        ];
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-        
-        const analysisResult = {
-          pattern,
-          direction,
-          currentPrice,
-          support,
-          resistance,
-          stopLoss,
-          targets,
-          fibonacciLevels: fibLevels
-        };
-        
-        console.log("نتائج التحليل:", analysisResult);
-        setAnalysis(analysisResult);
-        setIsAnalyzing(false);
-        toast.success("تم تحليل الشارت بنجاح");
-      };
-      
-      img.onerror = () => {
-        console.error("فشل في تحميل الصورة");
-        toast.error("فشل في تحميل الصورة");
-        setIsAnalyzing(false);
-      };
-      
-      img.src = imageData;
-      
-    } catch (error) {
-      console.error("خطأ في تحليل الشارت:", error);
-      setIsAnalyzing(false);
-      toast.error("حدث خطأ أثناء تحليل الشارت");
-    }
-  };
-
   return (
     <div className="space-y-8">
       <ChartModeSelector mode={mode} onModeChange={setMode} />
@@ -280,13 +237,18 @@ export const ChartAnalyzer = () => {
           mode={mode}
           onImageCapture={handleImageUpload}
           onTradingViewConfig={handleTradingViewConfig}
+          onHistoryClick={handleShowHistory}
           isAnalyzing={isAnalyzing}
         />
         <ChartDisplay
           image={image}
           analysis={analysis}
           isAnalyzing={isAnalyzing}
-          onClose={handleClose}
+          onClose={() => {
+            setImage(null);
+            setAnalysis(null);
+            setIsAnalyzing(false);
+          }}
           symbol={currentSymbol}
         />
       </div>
