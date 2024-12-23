@@ -13,7 +13,8 @@ import {
   getCurrentPriceFromTradingView,
 } from "@/utils/technicalAnalysis";
 import { analyzeAdvancedEntryPoint } from "@/utils/advancedAnalysis";
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
+import { saveAnalysisToHistory, loadAnalysisHistory } from "@/utils/storageUtils";
 import { processImageData, getImageDataFromCanvas } from "@/utils/imageProcessing";
 
 type AnalysisMode = 'upload' | 'tradingview';
@@ -24,6 +25,20 @@ export const ChartAnalyzer = () => {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>(loadAnalysisHistory());
+
+  const handleSaveToHistory = (analysisData: AnalysisData, imageData: string) => {
+    const historyItem: SearchHistoryItem = {
+      id: Date.now().toString(),
+      date: new Date(),
+      symbol: currentSymbol,
+      analysis: analysisData,
+      image: imageData
+    };
+    
+    const newHistory = saveAnalysisToHistory(historyItem);
+    setSearchHistory(newHistory);
+  };
 
   const analyzeChart = (imageData: string) => {
     setIsAnalyzing(true);
@@ -174,6 +189,11 @@ export const ChartAnalyzer = () => {
         
         console.log("Analysis results:", analysisResult);
         setAnalysis(analysisResult);
+        
+        // Save compressed image data
+        const compressedImageData = getImageDataFromCanvas(canvas);
+        handleSaveToHistory(analysisResult, compressedImageData);
+        
         setIsAnalyzing(false);
         toast.success("تم تحليل الشارت بنجاح");
       };
@@ -201,6 +221,7 @@ export const ChartAnalyzer = () => {
           mode={mode}
           onImageCapture={handleImageUpload}
           onTradingViewConfig={handleTradingViewConfig}
+          onHistoryClick={() => toast.info("تم تحميل سجل البحث")}
           isAnalyzing={isAnalyzing}
         />
         <ChartDisplay
