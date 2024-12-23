@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChartModeSelector } from "./chart/ChartModeSelector";
 import { ChartInput } from "./chart/ChartInput";
 import { ChartDisplay } from "./chart/ChartDisplay";
+import { SearchHistory } from "./chart/SearchHistory";
 import { toast } from "sonner";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { 
@@ -18,12 +19,21 @@ import { AnalysisData } from "@/types/analysis";
 
 type AnalysisMode = 'upload' | 'tradingview';
 
+type SearchHistoryItem = {
+  date: Date;
+  symbol: string;
+  currentPrice: number;
+  analysis: AnalysisData;
+};
+
 export const ChartAnalyzer = () => {
   const [mode, setMode] = useState<AnalysisMode>('upload');
   const [image, setImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   const analyzeChart = (imageData: string) => {
     setIsAnalyzing(true);
@@ -99,7 +109,7 @@ export const ChartAnalyzer = () => {
   };
 
   const handleShowHistory = () => {
-    toast.info("سيتم إضافة سجل البحث قريباً");
+    setIsHistoryOpen(true);
   };
 
   const calculateExpectedTimes = (targets: number[], direction: string): Date[] => {
@@ -167,7 +177,6 @@ export const ChartAnalyzer = () => {
           fibLevels
         );
 
-        // Add pattern detection based on price movement
         const pattern = direction === "صاعد" ? 
           "نموذج صعودي مستمر" : 
           "نموذج هبوطي مستمر";
@@ -186,6 +195,15 @@ export const ChartAnalyzer = () => {
         
         console.log("نتائج التحليل:", analysisResult);
         setAnalysis(analysisResult);
+
+        // إضافة التحليل إلى سجل البحث
+        setSearchHistory(prev => [{
+          date: new Date(),
+          symbol: currentSymbol || 'غير محدد',
+          currentPrice,
+          analysis: analysisResult
+        }, ...prev]);
+
         setIsAnalyzing(false);
         toast.success("تم تحليل الشارت بنجاح");
       };
@@ -263,6 +281,11 @@ export const ChartAnalyzer = () => {
           symbol={currentSymbol}
         />
       </div>
+      <SearchHistory
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        history={searchHistory}
+      />
     </div>
   );
 };
