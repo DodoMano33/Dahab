@@ -26,7 +26,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
   useEffect(() => {
     const updatePrices = async () => {
       for (const item of history) {
-        if (!priceStates[item.symbol]?.isActive) {
+        if (!priceStates[item.symbol]?.isActive && item.symbol && item.symbol !== 'غير محدد') {
           try {
             const price = await getCurrentPriceFromTradingView(item.symbol);
             console.log(`Updated price for ${item.symbol}:`, price);
@@ -39,7 +39,6 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
               }
             }));
 
-            // Check if target or stop loss is hit
             if (price <= item.analysis.stopLoss && !item.stopLossHit) {
               console.log(`Stop loss hit for ${item.symbol}`);
               setPriceStates(prev => ({
@@ -73,7 +72,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
 
     if (isOpen) {
       updatePrices();
-      const interval = setInterval(updatePrices, 5000); // Update every 5 seconds
+      const interval = setInterval(updatePrices, 5000);
       return () => clearInterval(interval);
     }
   }, [isOpen, history, priceStates]);
@@ -98,7 +97,9 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {history.map((item, index) => {
+              {history
+                .filter(item => item.symbol && item.symbol !== 'غير محدد')
+                .map((item, index) => {
                 const currentPrice = priceStates[item.symbol]?.currentPrice;
                 const isStopLossHit = currentPrice && currentPrice <= item.analysis.stopLoss;
                 const isTargetHit = currentPrice && item.analysis.targets?.[0] && 
@@ -109,13 +110,15 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                     <TableCell className="text-right">
                       {format(item.date, 'PPpp', { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-right">{item.symbol}</TableCell>
+                    <TableCell className="text-right font-medium">
+                      {item.symbol.toUpperCase()}
+                    </TableCell>
                     <TableCell className="text-right">{item.currentPrice}</TableCell>
                     <TableCell className="text-right">
                       {item.analysis.direction === "صاعد" ? (
-                        <ArrowUp className="text-green-500 inline" />
+                        <ArrowUp className="text-green-500 inline w-6 h-6" />
                       ) : (
-                        <ArrowDown className="text-red-500 inline" />
+                        <ArrowDown className="text-red-500 inline w-6 h-6" />
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -135,22 +138,22 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                         {item.analysis.targets?.map((target, idx) => (
                           <div 
                             key={idx}
-                            className={`relative ${isTargetHit && idx === 0 ? 'pb-1' : ''}`}
+                            className={`relative ${isTargetHit && idx === 0 ? 'pb-4' : ''}`}
                           >
                             الهدف {idx + 1}: {target.price}
                             <br />
                             التوقيت: {format(target.expectedTime, 'PPpp', { locale: ar })}
                             {isTargetHit && idx === 0 && (
-                              <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-500" />
+                              <div className="absolute bottom-0 left-0 right-0 h-2 bg-green-500 rounded-sm" />
                             )}
                           </div>
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className={`text-right relative ${isStopLossHit ? 'pb-1' : ''}`}>
+                    <TableCell className={`text-right relative ${isStopLossHit ? 'pb-4' : ''}`}>
                       {item.analysis.stopLoss}
                       {isStopLossHit && (
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-500" />
+                        <div className="absolute bottom-0 left-0 right-0 h-2 bg-red-500 rounded-sm" />
                       )}
                     </TableCell>
                   </TableRow>
