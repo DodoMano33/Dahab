@@ -1,25 +1,16 @@
 import { Button } from "@/components/ui/button";
 
-type AnalysisMode = 'upload' | 'tradingview';
+type AnalysisMode = 'tradingview';
 
 interface ChartModeSelectorProps {
   mode: AnalysisMode;
   onModeChange: (mode: AnalysisMode) => void;
 }
 
-export const ChartModeSelector = ({ mode, onModeChange }: ChartModeSelectorProps) => {
+export const ChartModeSelector = ({ mode }: ChartModeSelectorProps) => {
   return (
     <div className="flex justify-center gap-4 mb-8">
-      <Button
-        variant={mode === 'upload' ? "default" : "outline"}
-        onClick={() => onModeChange('upload')}
-      >
-        تحليل صورة
-      </Button>
-      <Button
-        variant={mode === 'tradingview' ? "default" : "outline"}
-        onClick={() => onModeChange('tradingview')}
-      >
+      <Button variant="default">
         تحليل من TradingView
       </Button>
     </div>
