@@ -166,6 +166,11 @@ export const ChartAnalyzer = () => {
           resistance,
           fibLevels
         );
+
+        // Add pattern detection based on price movement
+        const pattern = direction === "صاعد" ? 
+          "نموذج صعودي مستمر" : 
+          "نموذج هبوطي مستمر";
         
         const analysisResult: AnalysisData = {
           pattern,
