@@ -21,58 +21,66 @@ interface SearchHistoryProps {
 }
 
 export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) => {
-  const [priceStates, setPriceStates] = useState<{ [key: string]: { currentPrice: number; isActive: boolean } }>({});
+  const [priceStates, setPriceStates] = useState<{ [key: string]: { currentPrice: number; isActive: boolean; lastUpdated: Date } }>({});
 
-  useEffect(() => {
-    const updatePrices = async () => {
-      if (!isOpen || !history.length) return;
+  const updatePrice = async (symbol: string) => {
+    try {
+      console.log(`جاري تحديث السعر للعملة ${symbol}`);
+      const price = await getCurrentPriceFromTradingView(symbol);
       
-      console.log("تحديث الأسعار لسجل البحث:", history);
+      if (typeof price !== 'number' || isNaN(price)) {
+        console.error(`سعر غير صالح للعملة ${symbol}:`, price);
+        return null;
+      }
       
-      const validHistory = history.filter(item => item?.symbol && typeof item.symbol === 'string');
+      console.log(`تم تحديث السعر للعملة ${symbol}:`, price);
+      return price;
+    } catch (error) {
+      console.error(`خطأ في تحديث السعر للعملة ${symbol}:`, error);
+      return null;
+    }
+  };
+
+  const updateAllPrices = async () => {
+    if (!isOpen || !history.length) return;
+    
+    console.log("تحديث الأسعار لسجل البحث:", history);
+    
+    const validHistory = history.filter(item => item?.symbol && typeof item.symbol === 'string');
+    
+    for (const item of validHistory) {
+      const price = await updatePrice(item.symbol);
       
-      for (const item of validHistory) {
-        try {
-          console.log(`جاري تحديث السعر للعملة ${item.symbol}`);
-          const price = await getCurrentPriceFromTradingView(item.symbol);
-          
-          if (typeof price !== 'number' || isNaN(price)) {
-            console.error(`سعر غير صالح للعملة ${item.symbol}:`, price);
-            continue;
+      if (price !== null) {
+        setPriceStates(prev => ({
+          ...prev,
+          [item.symbol]: {
+            currentPrice: price,
+            isActive: true,
+            lastUpdated: new Date()
           }
-          
-          setPriceStates(prev => ({
-            ...prev,
-            [item.symbol]: {
-              currentPrice: price,
-              isActive: true
-            }
-          }));
+        }));
 
-          console.log(`تم تحديث السعر للعملة ${item.symbol}:`, price);
-
-          // التحقق من وصول السعر إلى وقف الخسارة أو الهدف
-          if (price <= item.analysis.stopLoss) {
-            console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${item.symbol}`);
-            toast.warning(`${item.symbol} وصل إلى وقف الخسارة`);
-          } else if (
-            item.analysis.targets && 
-            item.analysis.targets[0] && 
-            price >= item.analysis.targets[0].price
-          ) {
-            console.log(`تم الوصول للهدف للعملة ${item.symbol}`);
-            toast.success(`${item.symbol} وصل إلى الهدف الأول`);
-          }
-        } catch (error) {
-          console.error(`خطأ في تحديث السعر للعملة ${item.symbol}:`, error);
-          toast.error(`فشل في تحديث السعر للعملة ${item.symbol}`);
+        // التحقق من وصول السعر إلى وقف الخسارة أو الهدف
+        if (price <= item.analysis.stopLoss) {
+          console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${item.symbol}`);
+          toast.warning(`${item.symbol} وصل إلى وقف الخسارة`);
+        } else if (
+          item.analysis.targets && 
+          item.analysis.targets[0] && 
+          price >= item.analysis.targets[0].price
+        ) {
+          console.log(`تم الوصول للهدف للعملة ${item.symbol}`);
+          toast.success(`${item.symbol} وصل إلى الهدف الأول`);
         }
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     if (isOpen) {
-      updatePrices();
-      const interval = setInterval(updatePrices, 5000);
+      updateAllPrices();
+      const interval = setInterval(updateAllPrices, 5000);
       return () => clearInterval(interval);
     }
   }, [isOpen, history]);

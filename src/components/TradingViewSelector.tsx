@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { timeframes } from "@/utils/chartPatternAnalysis";
 import { toast } from "sonner";
 import { History } from "lucide-react";
 
@@ -13,7 +12,6 @@ interface TradingViewSelectorProps {
 
 export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState("");
-  const [timeframe, setTimeframe] = useState("1d");
   const [currentPrice, setCurrentPrice] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,8 +27,8 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
       return;
     }
     
-    console.log("Submitting TradingView config:", { symbol, timeframe, currentPrice: price });
-    onConfigSubmit(symbol, timeframe, price);
+    console.log("Submitting TradingView config:", { symbol, currentPrice: price });
+    onConfigSubmit(symbol, "1d", price); // Using default timeframe "1d"
   };
 
   return (
@@ -62,23 +60,6 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
           className="w-full"
           dir="ltr"
         />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          الإطار الزمني
-        </label>
-        <select
-          value={timeframe}
-          onChange={(e) => setTimeframe(e.target.value)}
-          className="w-full rounded-md border border-gray-300 p-2"
-        >
-          {timeframes.map((tf) => (
-            <option key={tf.value} value={tf.value}>
-              {tf.label}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div className="flex gap-2">
