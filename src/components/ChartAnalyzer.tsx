@@ -202,6 +202,11 @@ export const ChartAnalyzer = () => {
           onImageCapture={handleImageUpload}
           onTradingViewConfig={handleTradingViewConfig}
           isAnalyzing={isAnalyzing}
+          onHistoryClick={() => {
+            console.log("History click handler");
+            // Since history functionality was removed, we'll just show a toast
+            toast.info("سجل البحث غير متوفر حالياً");
+          }}
         />
         <ChartDisplay
           image={image}
