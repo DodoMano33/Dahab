@@ -40,15 +40,16 @@ export const ChartAnalyzer = () => {
   const handleTradingViewConfig = async (symbol: string, timeframe: string, providedPrice?: number) => {
     try {
       setIsAnalyzing(true);
-      setCurrentSymbol(symbol.toUpperCase());
-      console.log("بدء تحليل TradingView:", { symbol, timeframe, providedPrice });
+      const upperSymbol = symbol.toUpperCase();
+      setCurrentSymbol(upperSymbol);
+      console.log("بدء تحليل TradingView:", { symbol: upperSymbol, timeframe, providedPrice });
       
-      const chartImage = await getTradingViewChartImage(symbol, timeframe);
+      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت:", chartImage);
       
       let currentPrice = providedPrice;
       if (!currentPrice) {
-        currentPrice = await getCurrentPriceFromTradingView(symbol);
+        currentPrice = await getCurrentPriceFromTradingView(upperSymbol);
         console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
       }
       
@@ -59,7 +60,7 @@ export const ChartAnalyzer = () => {
       }
       
       setImage(chartImage);
-      await analyzeChartWithPrice(chartImage, currentPrice);
+      await analyzeChartWithPrice(chartImage, currentPrice, upperSymbol);
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
@@ -85,7 +86,7 @@ export const ChartAnalyzer = () => {
     });
   };
 
-  const analyzeChartWithPrice = async (imageData: string, currentPrice: number) => {
+  const analyzeChartWithPrice = async (imageData: string, currentPrice: number, symbol: string) => {
     setIsAnalyzing(true);
     console.log("بدء تحليل الشارت مع السعر المحدد:", currentPrice);
     
@@ -156,10 +157,10 @@ export const ChartAnalyzer = () => {
         console.log("نتائج التحليل:", analysisResult);
         setAnalysis(analysisResult);
 
-        // Update search history with the new entry at the beginning
-        const newHistoryEntry = {
+        // إضافة نتيجة البحث الجديدة في بداية المصفوفة
+        const newHistoryEntry: SearchHistoryItem = {
           date: new Date(),
-          symbol: currentSymbol,
+          symbol: symbol,
           currentPrice,
           analysis: analysisResult,
           targetHit: false,

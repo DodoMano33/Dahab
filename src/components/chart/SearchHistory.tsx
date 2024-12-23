@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getCurrentPriceFromTradingView } from "@/utils/tradingViewUtils";
 import { HistoryTableHeader } from "./history/HistoryTableHeader";
 import { HistoryRow } from "./history/HistoryRow";
+import { toast } from "sonner";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -24,45 +25,56 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
 
   useEffect(() => {
     const updatePrices = async () => {
+      console.log("تحديث الأسعار لسجل البحث:", history);
+      
       for (const item of history) {
-        if (item.symbol) {
-          try {
-            const price = await getCurrentPriceFromTradingView(item.symbol);
-            console.log(`تحديث السعر للعملة ${item.symbol}:`, price);
-            
-            setPriceStates(prev => ({
-              ...prev,
-              [item.symbol]: {
-                currentPrice: price,
-                isActive: true
-              }
-            }));
+        if (!item?.symbol) {
+          console.warn("تم العثور على عنصر بدون رمز في سجل البحث");
+          continue;
+        }
 
-            if (price <= item.analysis.stopLoss) {
-              console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${item.symbol}`);
-            } else if (
-              item.analysis.targets && 
-              item.analysis.targets[0] && 
-              price >= item.analysis.targets[0].price
-            ) {
-              console.log(`تم الوصول للهدف للعملة ${item.symbol}`);
+        try {
+          console.log(`جاري تحديث السعر للعملة ${item.symbol}`);
+          const price = await getCurrentPriceFromTradingView(item.symbol);
+          
+          setPriceStates(prev => ({
+            ...prev,
+            [item.symbol]: {
+              currentPrice: price,
+              isActive: true
             }
-          } catch (error) {
-            console.error(`خطأ في تحديث السعر للعملة ${item.symbol}:`, error);
+          }));
+
+          console.log(`تم تحديث السعر للعملة ${item.symbol}:`, price);
+
+          // التحقق من وصول السعر إلى وقف الخسارة أو الهدف
+          if (price <= item.analysis.stopLoss) {
+            console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${item.symbol}`);
+            toast.warning(`${item.symbol} وصل إلى وقف الخسارة`);
+          } else if (
+            item.analysis.targets && 
+            item.analysis.targets[0] && 
+            price >= item.analysis.targets[0].price
+          ) {
+            console.log(`تم الوصول للهدف للعملة ${item.symbol}`);
+            toast.success(`${item.symbol} وصل إلى الهدف الأول`);
           }
+        } catch (error) {
+          console.error(`خطأ في تحديث السعر للعملة ${item.symbol}:`, error);
+          toast.error(`فشل في تحديث السعر للعملة ${item.symbol}`);
         }
       }
     };
 
-    if (isOpen) {
+    if (isOpen && history.length > 0) {
       updatePrices();
       const interval = setInterval(updatePrices, 5000);
       return () => clearInterval(interval);
     }
   }, [isOpen, history]);
 
-  // Display history items in their original order (newest first)
-  const validHistory = history.filter(item => item.symbol);
+  // تصفية السجل للتأكد من وجود رموز صحيحة فقط
+  const validHistory = history.filter(item => item && item.symbol);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -76,7 +88,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
             <TableBody>
               {validHistory.map((item, index) => (
                 <HistoryRow
-                  key={`${item.symbol}-${index}`}
+                  key={`${item.symbol}-${item.date.getTime()}`}
                   date={item.date}
                   symbol={item.symbol}
                   currentPrice={item.currentPrice}
