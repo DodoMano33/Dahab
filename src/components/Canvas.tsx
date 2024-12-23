@@ -1,17 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ZoomIn, ZoomOut, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AnalysisData } from "@/types/analysis";
 
 interface CanvasProps {
   image: string;
-  analysis: {
-    pattern: string;
-    direction: string;
-    support: number;
-    resistance: number;
-    stopLoss: number;
-    targets?: number[];
-  };
+  analysis: AnalysisData;
   onClose: () => void;
 }
 
@@ -106,7 +100,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
         // رسم الأهداف المتوقعة
         if (analysis.targets) {
           analysis.targets.forEach((target, index) => {
-            const targetY = (canvas.height - ((target / img.height) * canvas.height)) / scale;
+            const targetY = (canvas.height - ((target.price / img.height) * canvas.height)) / scale;
             
             ctx.beginPath();
             ctx.setLineDash([5, 5]);
@@ -120,7 +114,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
             // كتابة قيمة الهدف
             ctx.font = `${12/scale}px Arial`;
             ctx.fillStyle = "purple";
-            ctx.fillText(`الهدف ${index + 1}: ${target}`, 10, targetY - 5);
+            ctx.fillText(`الهدف ${index + 1}: ${target.price}`, 10, targetY - 5);
           });
         }
       }
