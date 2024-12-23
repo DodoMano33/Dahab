@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 // صورة افتراضية للتطوير والعرض التجريبي
 const PLACEHOLDER_CHART = "/placeholder.svg";
 
@@ -30,25 +32,7 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
     
   } catch (error) {
     console.error("خطأ في جلب صورة الشارت:", error);
-    throw error;
-  }
-};
-
-export const getCurrentPriceFromTradingView = async (symbol: string): Promise<number> => {
-  console.log("محاولة جلب السعر الحالي من TradingView:", symbol);
-  
-  try {
-    // محاكاة تأخير API
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // في الإنتاج، سيتم استبدال هذا برابط API حقيقي
-    // هنا نقوم بإرجاع سعر عشوائي للتجربة
-    const mockPrice = Math.random() * 1000 + 100;
-    console.log("تم جلب السعر الحالي بنجاح:", mockPrice);
-    return Number(mockPrice.toFixed(2));
-    
-  } catch (error) {
-    console.error("خطأ في جلب السعر الحالي:", error);
+    toast.error("فشل في تحميل صورة الشارت");
     throw error;
   }
 };

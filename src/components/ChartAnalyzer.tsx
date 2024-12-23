@@ -17,19 +17,17 @@ import {
 import { addDays, addHours } from "date-fns";
 import { AnalysisData } from "@/types/analysis";
 
-type AnalysisMode = 'tradingview';
+type AnalysisMode = 'upload' | 'tradingview';
 
 type SearchHistoryItem = {
   date: Date;
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
-  targetHit?: boolean;
-  stopLossHit?: boolean;
 };
 
 export const ChartAnalyzer = () => {
-  const [mode] = useState<AnalysisMode>('tradingview');
+  const [mode, setMode] = useState<AnalysisMode>('upload');
   const [image, setImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -37,10 +35,52 @@ export const ChartAnalyzer = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
+  const analyzeChart = (imageData: string) => {
+    setIsAnalyzing(true);
+    getCurrentPriceFromTradingView(currentSymbol)
+      .then(currentPrice => {
+        if (currentPrice) {
+          analyzeChartWithPrice(imageData, currentPrice);
+        } else {
+          toast.error("فشل في الحصول على السعر الحالي");
+          setIsAnalyzing(false);
+        }
+      })
+      .catch(error => {
+        console.error("خطأ في جلب السعر الحالي:", error);
+        toast.error("فشل في الحصول على السعر الحالي");
+        setIsAnalyzing(false);
+      });
+  };
+
+  const handleImageUpload = (imageData: string) => {
+    if (!imageData || typeof imageData !== 'string') {
+      toast.error("صيغة الصورة غير صحيحة");
+      return;
+    }
+
+    console.log("بدء معالجة الصورة:", imageData);
+    
+    const img = new Image();
+    img.onload = () => {
+      console.log("تم تحميل الصورة بنجاح");
+      setImage(imageData);
+      analyzeChart(imageData);
+    };
+    
+    img.onerror = () => {
+      console.error("فشل في تحميل الصورة");
+      toast.error("فشل في تحميل الصورة");
+      setIsAnalyzing(false);
+    };
+    
+    img.src = imageData;
+  };
+
   const handleTradingViewConfig = async (symbol: string, timeframe: string, providedPrice?: number) => {
     try {
       setIsAnalyzing(true);
-      setCurrentSymbol(symbol.toUpperCase());
+      setCurrentSymbol(symbol);
       console.log("بدء تحليل TradingView:", { symbol, timeframe, providedPrice });
       
       const chartImage = await getTradingViewChartImage(symbol, timeframe);
@@ -59,7 +99,7 @@ export const ChartAnalyzer = () => {
       }
       
       setImage(chartImage);
-      await analyzeChartWithPrice(chartImage, currentPrice);
+      analyzeChartWithPrice(chartImage, currentPrice);
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
@@ -156,18 +196,13 @@ export const ChartAnalyzer = () => {
         console.log("نتائج التحليل:", analysisResult);
         setAnalysis(analysisResult);
 
-        // Update search history with the new entry at the beginning
-        const newHistoryEntry = {
+        // إضافة التحليل إلى سجل البحث
+        setSearchHistory(prev => [{
           date: new Date(),
-          symbol: currentSymbol,
+          symbol: currentSymbol || 'غير محدد',
           currentPrice,
-          analysis: analysisResult,
-          targetHit: false,
-          stopLossHit: false
-        };
-
-        setSearchHistory(prev => [newHistoryEntry, ...prev]);
-        console.log("تم تحديث سجل البحث:", newHistoryEntry);
+          analysis: analysisResult
+        }, ...prev]);
 
         setIsAnalyzing(false);
         toast.success("تم تحليل الشارت بنجاح");
@@ -225,10 +260,11 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="space-y-8">
-      <ChartModeSelector mode={mode} onModeChange={() => {}} />
+      <ChartModeSelector mode={mode} onModeChange={setMode} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <ChartInput
           mode={mode}
+          onImageCapture={handleImageUpload}
           onTradingViewConfig={handleTradingViewConfig}
           onHistoryClick={handleShowHistory}
           isAnalyzing={isAnalyzing}
