@@ -51,6 +51,7 @@ export const ChartInput = ({
         <TradingViewSelector 
           onConfigSubmit={onTradingViewConfig}
           isLoading={isAnalyzing}
+          onHistoryClick={() => {}}
         />
       )}
     </div>
