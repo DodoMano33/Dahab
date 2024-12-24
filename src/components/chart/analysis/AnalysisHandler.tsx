@@ -10,7 +10,8 @@ import {
   calculateStopLoss, 
   calculateSupportResistance, 
   detectTrend,
-  calculateBestEntryPoint
+  calculateBestEntryPoint,
+  calculateExpectedTimes
 } from "@/utils/technicalAnalysis";
 
 export const useAnalysisHandler = () => {
