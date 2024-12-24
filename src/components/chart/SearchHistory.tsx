@@ -17,6 +17,7 @@ interface SearchHistoryProps {
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
+    analysisType: "عادي" | "سكالبينج";
   }>;
 }
 
@@ -46,11 +47,13 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
           }
         }));
 
-        if (!notifiedSymbols.current.has(symbol)) {
+        const notificationKey = `${symbol}_${item.analysisType}`;
+        
+        if (!notifiedSymbols.current.has(notificationKey)) {
           if (price <= item.analysis.stopLoss) {
             console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${symbol}`);
             toast.warning(`${symbol} وصل إلى وقف الخسارة`);
-            notifiedSymbols.current.add(symbol);
+            notifiedSymbols.current.add(notificationKey);
           } else if (
             item.analysis.targets && 
             item.analysis.targets[0] && 
@@ -58,16 +61,17 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
           ) {
             console.log(`تم الوصول للهدف للعملة ${symbol}`);
             toast.success(`${symbol} وصل إلى الهدف الأول`);
-            notifiedSymbols.current.add(symbol);
+            notifiedSymbols.current.add(notificationKey);
           }
         }
       };
 
       const onError = (error: Error) => {
         console.error(`خطأ في تحديث السعر للعملة ${symbol}:`, error);
-        if (!notifiedSymbols.current.has(`${symbol}_error`)) {
+        const errorKey = `${symbol}_error_${item.analysisType}`;
+        if (!notifiedSymbols.current.has(errorKey)) {
           toast.error(`فشل في تحديث السعر للعملة ${symbol}`);
-          notifiedSymbols.current.add(`${symbol}_error`);
+          notifiedSymbols.current.add(errorKey);
         }
       };
 
@@ -110,6 +114,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                   currentPrice={item.currentPrice}
                   analysis={item.analysis}
                   latestPrice={priceStates[item.symbol]?.currentPrice}
+                  analysisType={item.analysisType}
                 />
               ))}
             </TableBody>

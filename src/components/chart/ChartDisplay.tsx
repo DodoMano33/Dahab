@@ -50,7 +50,7 @@ export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: 
       )}
 
       {symbol && (
-        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-64 bg-red-600 p-4 rounded-lg shadow-lg">
+        <div className="fixed bottom-4 left-4 bg-red-600 p-4 rounded-lg shadow-lg w-64">
           <div className="text-center">
             <div className="text-white text-sm mb-1">السعر الحالي</div>
             <div className="text-white text-2xl font-bold">{currentPrice || '...'}</div>

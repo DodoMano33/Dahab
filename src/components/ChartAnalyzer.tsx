@@ -12,6 +12,7 @@ type SearchHistoryItem = {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
+  analysisType: "عادي" | "سكالبينج";
 };
 
 export const ChartAnalyzer = () => {
@@ -29,8 +30,8 @@ export const ChartAnalyzer = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const handleAnalysis = async (symbol: string, timeframe: string, providedPrice?: number) => {
-    const result = await handleTradingViewConfig(symbol, timeframe, providedPrice);
+  const handleAnalysis = async (symbol: string, timeframe: string, providedPrice?: number, isScalping: boolean = false) => {
+    const result = await handleTradingViewConfig(symbol, timeframe, providedPrice, isScalping);
     
     if (result) {
       const { analysisResult, currentPrice, symbol: upperSymbol } = result;
@@ -41,7 +42,8 @@ export const ChartAnalyzer = () => {
         currentPrice,
         analysis: analysisResult,
         targetHit: false,
-        stopLossHit: false
+        stopLossHit: false,
+        analysisType: isScalping ? "سكالبينج" : "عادي"
       };
 
       setSearchHistory(prev => [newHistoryEntry, ...prev]);
