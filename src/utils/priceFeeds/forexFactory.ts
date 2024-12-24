@@ -8,24 +8,23 @@ export const getForexFactoryPrice = async (symbol: string): Promise<number> => {
   try {
     console.log(`جاري جلب السعر من ForexFactory للعملة ${symbol}`);
     
-    // Since ForexFactory doesn't provide a public API, we'll simulate the price feed
-    // In a production environment, you would implement web scraping or use their API
+    // Updated mock prices to match current market prices
     const mockPrices: { [key: string]: number } = {
       'EURUSD': 1.0925,
       'GBPUSD': 1.2715,
       'USDJPY': 142.35,
-      'XAUUSD': 2023.50,
+      'XAUUSD': 2615.43, // Updated to match current market price
       'BTCUSD': 42150.75,
     };
 
-    const price = mockPrices[symbol] || 0;
-    if (price === 0) {
+    const price = mockPrices[symbol.toUpperCase()];
+    if (!price) {
       throw new Error(`لا يتوفر سعر للعملة ${symbol}`);
     }
 
     // Add small random variation to simulate live price
     const variation = (Math.random() - 0.5) * 0.0002 * price;
-    const finalPrice = Number((price + variation).toFixed(5));
+    const finalPrice = Number((price + variation).toFixed(2));
 
     console.log(`تم جلب السعر من ForexFactory للعملة ${symbol}: ${finalPrice}`);
     return finalPrice;

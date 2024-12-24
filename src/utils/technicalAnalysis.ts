@@ -1,43 +1,53 @@
-import { addHours, addDays } from "date-fns";
+import { addHours } from "date-fns";
 
 export const calculateFibonacciLevels = (high: number, low: number) => {
   const difference = high - low;
   return [
-    high - difference * 0.236,
-    high - difference * 0.382,
-    high - difference * 0.618,
+    low + difference * 0.236,
+    low + difference * 0.382,
+    low + difference * 0.618
   ];
 };
 
 export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number) => {
-  const targets = [];
+  const range = Math.abs(resistance - support);
   if (direction === "صاعد") {
-    targets.push(resistance + (resistance - support) * 0.5);
-    targets.push(resistance + (resistance - support));
+    return [
+      currentPrice + range * 0.5,
+      currentPrice + range
+    ];
   } else {
-    targets.push(support - (resistance - support) * 0.5);
-    targets.push(support - (resistance - support));
+    return [
+      currentPrice - range * 0.5,
+      currentPrice - range
+    ];
   }
-  return targets;
 };
 
 export const calculateStopLoss = (currentPrice: number, direction: string, support: number, resistance: number) => {
-  return direction === "صاعد" ? support : resistance;
+  const range = Math.abs(resistance - support);
+  return direction === "صاعد" ? 
+    currentPrice - (range * 0.1) : 
+    currentPrice + (range * 0.1);
 };
 
 export const calculateSupportResistance = (prices: number[], currentPrice: number, direction: string) => {
-  const support = Math.min(...prices);
-  const resistance = Math.max(...prices);
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+  const support = direction === "صاعد" ? 
+    sortedPrices[Math.floor(sortedPrices.length * 0.2)] :
+    sortedPrices[Math.floor(sortedPrices.length * 0.1)];
+  const resistance = direction === "صاعد" ? 
+    sortedPrices[Math.floor(sortedPrices.length * 0.9)] :
+    sortedPrices[Math.floor(sortedPrices.length * 0.8)];
   return { support, resistance };
 };
 
-export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
+export const detectTrend = (prices: number[]) => {
   const isUptrend = prices[prices.length - 1] > prices[0];
   return isUptrend ? "صاعد" : "هابط";
 };
 
 export const calculateExpectedTimes = (targetPrices: number[], direction: string): Date[] => {
-  // Calculate expected times based on target distances
   return targetPrices.map((_, index) => {
     // First target expected in 24 hours, second target in 48 hours
     return addHours(new Date(), (index + 1) * 24);
@@ -50,7 +60,7 @@ export const calculateBestEntryPoint = (
   support: number,
   resistance: number,
   fibLevels: { level: number; price: number }[]
-): { price: number; reason: string } => {
+) => {
   console.log("حساب أفضل نقطة دخول:", { currentPrice, direction, support, resistance, fibLevels });
   
   if (direction === "صاعد") {
@@ -59,7 +69,7 @@ export const calculateBestEntryPoint = (
     if (nearestFib) {
       return {
         price: nearestFib.price,
-        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى دعم قوي`
+        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level}`
       };
     }
     
@@ -73,7 +83,7 @@ export const calculateBestEntryPoint = (
     if (nearestFib) {
       return {
         price: nearestFib.price,
-        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى مقاومة قوي`
+        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level}`
       };
     }
     
