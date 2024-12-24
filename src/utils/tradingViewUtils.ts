@@ -1,3 +1,4 @@
+// صورة افتراضية للتطوير والعرض التجريبي
 const PLACEHOLDER_CHART = "/placeholder.svg";
 
 export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
@@ -8,16 +9,20 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
       throw new Error("يجب تحديد الرمز والإطار الزمني");
     }
 
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
+    const chartUrl = PLACEHOLDER_CHART;
     
-    // For now, return placeholder chart
-    console.log("تم جلب صورة الشارت بنجاح:", PLACEHOLDER_CHART);
-    return PLACEHOLDER_CHART;
+    const response = await fetch(chartUrl);
+    if (!response.ok) {
+      throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
+    }
+    
+    console.log("تم جلب صورة الشارت بنجاح:", chartUrl);
+    return chartUrl;
     
   } catch (error) {
     console.error("خطأ في جلب صورة الشارت:", error);
-    throw new Error("حدث خطأ أثناء جلب الرسم البياني");
+    throw error;
   }
 };
 
@@ -25,9 +30,10 @@ export const getCurrentPriceFromTradingView = async (symbol: string): Promise<nu
   console.log("محاولة جلب السعر الحالي من TradingView:", symbol);
   
   try {
-    // Updated mock prices to match current market prices
+    // في الإنتاج، هذا سيكون استدعاء حقيقي لـ TradingView API
+    // حالياً نقوم بمحاكاة السعر بشكل أكثر واقعية
     const mockPrices: { [key: string]: number } = {
-      'XAUUSD': 2615.43,
+      'XAUUSD': 2023.50,
       'BTCUSD': 42150.75,
       'ETHUSD': 2245.30,
       'EURUSD': 1.0925,
@@ -36,16 +42,12 @@ export const getCurrentPriceFromTradingView = async (symbol: string): Promise<nu
 
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    const basePrice = mockPrices[symbol.toUpperCase()];
-    if (!basePrice) {
-      throw new Error(`لا يتوفر سعر للعملة ${symbol}`);
-    }
+    const basePrice = mockPrices[symbol.toUpperCase()] || 100;
+    const randomVariation = (Math.random() - 0.5) * 0.001 * basePrice; // 0.1% variation
+    const price = basePrice + randomVariation;
     
-    const randomVariation = (Math.random() - 0.5) * 0.001 * basePrice;
-    const price = Number((basePrice + randomVariation).toFixed(2));
-    
-    console.log("تم جلب السعر الحالي بنجاح:", price);
-    return price;
+    console.log("تم جلب السعر الحالي بنجاح:", price.toFixed(2));
+    return Number(price.toFixed(2));
     
   } catch (error) {
     console.error("خطأ في جلب السعر الحالي:", error);

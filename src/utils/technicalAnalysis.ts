@@ -1,57 +1,50 @@
-import { addHours } from "date-fns";
+import { addDays, addHours } from "date-fns";
 
 export const calculateFibonacciLevels = (high: number, low: number) => {
   const difference = high - low;
   return [
-    low + difference * 0.236,
-    low + difference * 0.382,
-    low + difference * 0.618
+    high - difference * 0.236,
+    high - difference * 0.382,
+    high - difference * 0.618,
   ];
 };
 
 export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number) => {
-  const range = Math.abs(resistance - support);
+  const targets = [];
   if (direction === "صاعد") {
-    return [
-      currentPrice + range * 0.5,
-      currentPrice + range
-    ];
+    targets.push(resistance + (resistance - support) * 0.5);
+    targets.push(resistance + (resistance - support));
   } else {
-    return [
-      currentPrice - range * 0.5,
-      currentPrice - range
-    ];
+    targets.push(support - (resistance - support) * 0.5);
+    targets.push(support - (resistance - support));
   }
+  return targets;
 };
 
 export const calculateStopLoss = (currentPrice: number, direction: string, support: number, resistance: number) => {
-  const range = Math.abs(resistance - support);
-  return direction === "صاعد" ? 
-    currentPrice - (range * 0.1) : 
-    currentPrice + (range * 0.1);
+  return direction === "صاعد" ? support : resistance;
 };
 
 export const calculateSupportResistance = (prices: number[], currentPrice: number, direction: string) => {
-  const sortedPrices = [...prices].sort((a, b) => a - b);
-  const support = direction === "صاعد" ? 
-    sortedPrices[Math.floor(sortedPrices.length * 0.2)] :
-    sortedPrices[Math.floor(sortedPrices.length * 0.1)];
-  const resistance = direction === "صاعد" ? 
-    sortedPrices[Math.floor(sortedPrices.length * 0.9)] :
-    sortedPrices[Math.floor(sortedPrices.length * 0.8)];
+  const support = Math.min(...prices);
+  const resistance = Math.max(...prices);
   return { support, resistance };
 };
 
-export const detectTrend = (prices: number[]) => {
+export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
   const isUptrend = prices[prices.length - 1] > prices[0];
   return isUptrend ? "صاعد" : "هابط";
 };
 
-export const calculateExpectedTimes = (targetPrices: number[], direction: string): Date[] => {
-  return targetPrices.map((_, index) => {
-    // First target expected in 24 hours, second target in 48 hours
-    return addHours(new Date(), (index + 1) * 24);
-  });
+export const getCurrentPriceFromTradingView = async (symbol: string): Promise<number> => {
+  try {
+    // هذه مجرد محاكاة - يجب استبدالها بطلب API حقيقي
+    const mockPrice = Math.random() * 1000 + 100;
+    return Number(mockPrice.toFixed(2));
+  } catch (error) {
+    console.error("Error fetching current price:", error);
+    throw error;
+  }
 };
 
 export const calculateBestEntryPoint = (
@@ -60,33 +53,37 @@ export const calculateBestEntryPoint = (
   support: number,
   resistance: number,
   fibLevels: { level: number; price: number }[]
-) => {
+): { price: number; reason: string } => {
   console.log("حساب أفضل نقطة دخول:", { currentPrice, direction, support, resistance, fibLevels });
   
   if (direction === "صاعد") {
+    // البحث عن أقرب مستوى فيبوناتشي للسعر الحالي
     const nearestFib = fibLevels.find(level => level.price < currentPrice);
     
     if (nearestFib) {
       return {
         price: nearestFib.price,
-        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level}`
+        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى دعم قوي`
       };
     }
     
+    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى الدعم
     return {
       price: support,
       reason: "أفضل نقطة دخول عند مستوى الدعم الرئيسي"
     };
   } else {
+    // في حالة الاتجاه الهابط
     const nearestFib = fibLevels.find(level => level.price > currentPrice);
     
     if (nearestFib) {
       return {
         price: nearestFib.price,
-        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level}`
+        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى مقاومة قوي`
       };
     }
     
+    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى المقاومة
     return {
       price: resistance,
       reason: "أفضل نقطة دخول عند مستوى المقاومة الرئيسي"

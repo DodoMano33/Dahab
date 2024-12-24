@@ -13,7 +13,6 @@ interface HistoryRowProps {
   currentPrice: number;
   analysis: AnalysisData;
   latestPrice?: number;
-  analysisType: "عادي" | "سكالبينج";
 }
 
 export const HistoryRow = ({ 
@@ -21,8 +20,7 @@ export const HistoryRow = ({
   symbol, 
   currentPrice, 
   analysis,
-  latestPrice,
-  analysisType
+  latestPrice 
 }: HistoryRowProps) => {
   const isStopLossHit = latestPrice && latestPrice <= analysis.stopLoss;
   const isTargetHit = latestPrice && analysis.targets?.[0] && 
@@ -35,13 +33,6 @@ export const HistoryRow = ({
       </TableCell>
       <TableCell className="text-right font-medium">
         {symbol.toUpperCase()}
-      </TableCell>
-      <TableCell className="text-right">
-        <span className={`px-2 py-1 rounded ${
-          analysisType === "سكالبينج" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
-        }`}>
-          {analysisType}
-        </span>
       </TableCell>
       <TableCell className="text-right">{currentPrice}</TableCell>
       <TableCell className="text-right font-medium">
