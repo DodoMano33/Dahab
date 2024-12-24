@@ -18,12 +18,17 @@ export const useAnalysisHandler = () => {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
 
-  const handleTradingViewConfig = async (symbol: string, timeframe: string, providedPrice?: number) => {
+  const handleTradingViewConfig = async (
+    symbol: string, 
+    timeframe: string, 
+    providedPrice?: number,
+    isScalping: boolean = false
+  ) => {
     try {
       setIsAnalyzing(true);
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
-      console.log("بدء تحليل TradingView:", { symbol: upperSymbol, timeframe, providedPrice });
+      console.log("بدء تحليل TradingView:", { symbol: upperSymbol, timeframe, providedPrice, isScalping });
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت:", chartImage);
@@ -41,7 +46,7 @@ export const useAnalysisHandler = () => {
       }
       
       setImage(chartImage);
-      const analysisResult = await analyzeChartWithPrice(chartImage, currentPrice, upperSymbol);
+      const analysisResult = await analyzeChartWithPrice(chartImage, currentPrice, upperSymbol, isScalping);
       return { analysisResult, currentPrice, symbol: upperSymbol };
       
     } catch (error) {
@@ -65,9 +70,14 @@ export const useAnalysisHandler = () => {
     });
   };
 
-  const analyzeChartWithPrice = async (imageData: string, currentPrice: number, symbol: string) => {
+  const analyzeChartWithPrice = async (
+    imageData: string, 
+    currentPrice: number, 
+    symbol: string,
+    isScalping: boolean = false
+  ) => {
     setIsAnalyzing(true);
-    console.log("بدء تحليل الشارت مع السعر المحدد:", currentPrice);
+    console.log("بدء تحليل الشارت مع السعر المحدد:", { currentPrice, isScalping });
     
     try {
       const canvas = document.createElement('canvas');
@@ -104,7 +114,12 @@ export const useAnalysisHandler = () => {
             level: [0.236, 0.382, 0.618][index],
             price
           }));
-          const targetPrices = calculateTargets(currentPrice, direction, support, resistance);
+
+          // Adjust target calculation based on analysis type
+          const targetPrices = isScalping 
+            ? calculateTargets(currentPrice, direction, support, resistance).map(price => price * 0.5) // Smaller targets for scalping
+            : calculateTargets(currentPrice, direction, support, resistance);
+
           const expectedTimes = calculateExpectedTimes(targetPrices, direction);
           
           const targets = targetPrices.map((price, index) => ({
