@@ -40,7 +40,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           "allow_symbol_change": true,
           "container_id": "tradingview_chart",
           "studies": [
-            { id: "MAExp@tv-basicstudies", inputs: { length: 20 } }
+            { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
           ],
           "autosize": true,
         });

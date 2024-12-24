@@ -36,10 +36,10 @@ export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: 
   return (
     <div className="space-y-8">
       {symbol && (
-        <div className="fixed top-4 right-4 z-50 bg-red-600 p-2 rounded-lg shadow-lg w-36">
+        <div className="fixed top-2 right-2 z-50 bg-red-600 p-1.5 rounded-lg shadow-lg w-32">
           <div className="text-center">
             <div className="text-white text-xs mb-0.5">السعر الحالي</div>
-            <div className="text-white text-lg font-bold">{currentPrice || '...'}</div>
+            <div className="text-white text-base font-bold">{currentPrice || '...'}</div>
             <div className="text-white text-xs opacity-75">{symbol}</div>
           </div>
         </div>

@@ -35,6 +35,7 @@ export const ChartInput = ({
 
     // تحديد الإطار الزمني بناءً على نوع التحليل
     const timeframe = isScalping ? "5" : "D";
+    console.log(`تحليل ${isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
     onTradingViewConfig(symbol, timeframe, providedPrice, isScalping);
   };
 
