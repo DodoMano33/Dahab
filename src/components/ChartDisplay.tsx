@@ -1,5 +1,5 @@
-import { Canvas } from "../Canvas";
-import { AnalysisResult } from "../AnalysisResult";
+import { Canvas } from "./Canvas";
+import { AnalysisResult } from "./AnalysisResult";
 import { AnalysisData } from "@/types/analysis";
 import { useEffect, useState } from "react";
 import { priceUpdater } from "@/utils/priceUpdater";
