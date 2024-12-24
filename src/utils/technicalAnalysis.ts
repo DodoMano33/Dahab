@@ -1,4 +1,4 @@
-import { addDays, addHours } from "date-fns";
+import { addDays, addHours, addMinutes } from "date-fns";
 
 export const calculateFibonacciLevels = (high: number, low: number) => {
   const difference = high - low;
@@ -10,37 +10,64 @@ export const calculateFibonacciLevels = (high: number, low: number) => {
 };
 
 export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {
+  const range = resistance - support;
   const targets = [];
-  const multiplier = isScalping ? 0.3 : 0.5; // أهداف أقصر للسكالبينج
-
-  if (direction === "صاعد") {
-    targets.push(resistance + (resistance - support) * multiplier);
-    if (!isScalping) {
-      targets.push(resistance + (resistance - support));
+  
+  if (isScalping) {
+    // أهداف أقصر للسكالبينج
+    if (direction === "صاعد") {
+      targets.push(currentPrice + (range * 0.2));  // هدف قصير المدى
+      targets.push(currentPrice + (range * 0.4));  // هدف متوسط المدى
+    } else {
+      targets.push(currentPrice - (range * 0.2));
+      targets.push(currentPrice - (range * 0.4));
     }
   } else {
-    targets.push(support - (resistance - support) * multiplier);
-    if (!isScalping) {
-      targets.push(support - (resistance - support));
+    // أهداف التحليل العادي
+    if (direction === "صاعد") {
+      targets.push(resistance + (range * 0.5));
+      targets.push(resistance + range);
+    } else {
+      targets.push(support - (range * 0.5));
+      targets.push(support - range);
     }
   }
+  
   return targets;
 };
 
 export const calculateStopLoss = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {
+  const range = resistance - support;
+  
   if (isScalping) {
-    // نقطة وقف خسارة أقرب للسكالبينج
-    const range = resistance - support;
+    // وقف خسارة أقرب للسكالبينج
     return direction === "صاعد" ? 
-      currentPrice - (range * 0.2) : 
-      currentPrice + (range * 0.2);
+      currentPrice - (range * 0.1) : // 10% من المدى للسكالبينج
+      currentPrice + (range * 0.1);
   }
+  
+  // وقف الخسارة للتحليل العادي
   return direction === "صاعد" ? support : resistance;
 };
 
-export const calculateSupportResistance = (prices: number[], currentPrice: number, direction: string) => {
-  const support = Math.min(...prices);
-  const resistance = Math.max(...prices);
+export const calculateSupportResistance = (prices: number[], currentPrice: number, direction: string, isScalping: boolean = false) => {
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+  let support, resistance;
+
+  if (isScalping) {
+    // حساب مستويات أقرب للسعر الحالي في السكالبينج
+    const priceIndex = sortedPrices.findIndex(p => p >= currentPrice);
+    const nearestLower = sortedPrices.slice(Math.max(0, priceIndex - 3), priceIndex);
+    const nearestHigher = sortedPrices.slice(priceIndex, Math.min(priceIndex + 3, sortedPrices.length));
+    
+    support = Math.min(...nearestLower);
+    resistance = Math.max(...nearestHigher);
+  } else {
+    // التحليل العادي
+    support = Math.min(...sortedPrices);
+    resistance = Math.max(...sortedPrices);
+  }
+
   return { support, resistance };
 };
 
@@ -51,7 +78,6 @@ export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
 
 export const getCurrentPriceFromTradingView = async (symbol: string): Promise<number> => {
   try {
-    // هذه مجرد محاكاة - يجب استبدالها بطلب API حقيقي
     const mockPrice = Math.random() * 1000 + 100;
     return Number(mockPrice.toFixed(2));
   } catch (error) {
@@ -65,38 +91,49 @@ export const calculateBestEntryPoint = (
   direction: string,
   support: number,
   resistance: number,
-  fibLevels: { level: number; price: number }[]
+  fibLevels: { level: number; price: number }[],
+  isScalping: boolean = false
 ): { price: number; reason: string } => {
-  console.log("حساب أفضل نقطة دخول:", { currentPrice, direction, support, resistance, fibLevels });
+  console.log("حساب أفضل نقطة دخول للسكالبينج:", { currentPrice, direction, support, resistance, fibLevels, isScalping });
   
+  if (isScalping) {
+    const range = resistance - support;
+    if (direction === "صاعد") {
+      const entryPrice = currentPrice - (range * 0.05); // دخول قريب من السعر الحالي
+      return {
+        price: Number(entryPrice.toFixed(2)),
+        reason: "نقطة دخول قريبة من السعر الحالي مع اتجاه صاعد قصير المدى"
+      };
+    } else {
+      const entryPrice = currentPrice + (range * 0.05);
+      return {
+        price: Number(entryPrice.toFixed(2)),
+        reason: "نقطة دخول قريبة من السعر الحالي مع اتجاه هابط قصير المدى"
+      };
+    }
+  }
+  
+  // التحليل العادي
   if (direction === "صاعد") {
-    // البحث عن أقرب مستوى فيبوناتشي للسعر الحالي
     const nearestFib = fibLevels.find(level => level.price < currentPrice);
-    
     if (nearestFib) {
       return {
         price: nearestFib.price,
         reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى دعم قوي`
       };
     }
-    
-    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى الدعم
     return {
       price: support,
       reason: "أفضل نقطة دخول عند مستوى الدعم الرئيسي"
     };
   } else {
-    // في حالة الاتجاه الهابط
     const nearestFib = fibLevels.find(level => level.price > currentPrice);
-    
     if (nearestFib) {
       return {
         price: nearestFib.price,
         reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى مقاومة قوي`
       };
     }
-    
-    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى المقاومة
     return {
       price: resistance,
       reason: "أفضل نقطة دخول عند مستوى المقاومة الرئيسي"
