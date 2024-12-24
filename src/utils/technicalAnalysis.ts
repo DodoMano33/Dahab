@@ -9,19 +9,32 @@ export const calculateFibonacciLevels = (high: number, low: number) => {
   ];
 };
 
-export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number) => {
+export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {
   const targets = [];
+  const multiplier = isScalping ? 0.3 : 0.5; // أهداف أقصر للسكالبينج
+
   if (direction === "صاعد") {
-    targets.push(resistance + (resistance - support) * 0.5);
-    targets.push(resistance + (resistance - support));
+    targets.push(resistance + (resistance - support) * multiplier);
+    if (!isScalping) {
+      targets.push(resistance + (resistance - support));
+    }
   } else {
-    targets.push(support - (resistance - support) * 0.5);
-    targets.push(support - (resistance - support));
+    targets.push(support - (resistance - support) * multiplier);
+    if (!isScalping) {
+      targets.push(support - (resistance - support));
+    }
   }
   return targets;
 };
 
-export const calculateStopLoss = (currentPrice: number, direction: string, support: number, resistance: number) => {
+export const calculateStopLoss = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {
+  if (isScalping) {
+    // نقطة وقف خسارة أقرب للسكالبينج
+    const range = resistance - support;
+    return direction === "صاعد" ? 
+      currentPrice - (range * 0.2) : 
+      currentPrice + (range * 0.2);
+  }
   return direction === "صاعد" ? support : resistance;
 };
 

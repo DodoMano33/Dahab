@@ -33,7 +33,9 @@ export const ChartInput = ({
       return;
     }
 
-    onTradingViewConfig(symbol, "D", providedPrice, isScalping);
+    // تحديد الإطار الزمني بناءً على نوع التحليل
+    const timeframe = isScalping ? "5" : "D";
+    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping);
   };
 
   return (

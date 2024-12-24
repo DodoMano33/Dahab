@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 
-// تعريف النوع للـ TradingView
 declare global {
   interface Window {
     TradingView: any;
@@ -40,6 +39,9 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           "hide_side_toolbar": false,
           "allow_symbol_change": true,
           "container_id": "tradingview_chart",
+          "studies": [
+            { id: "MAExp@tv-basicstudies", inputs: { length: 20 } }
+          ],
           "autosize": true,
         });
       }
