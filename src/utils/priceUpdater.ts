@@ -1,5 +1,3 @@
-import { toast } from "sonner";
-
 interface PriceSubscription {
   symbol: string;
   onUpdate: (price: number) => void;
@@ -16,7 +14,7 @@ class PriceUpdater {
     try {
       console.log(`جاري جلب السعر للعملة ${symbol}`);
       
-      // محاكاة طلب API حقيقي - في الإنتاج، استبدل هذا بطلب API فعلي
+      // محاكاة أسعار واقعية للعملات الشائعة
       const mockPrices: { [key: string]: number } = {
         'XAUUSD': 2023.50,
         'BTCUSD': 42150.75,
@@ -28,7 +26,10 @@ class PriceUpdater {
         'US100': 16750.80
       };
 
+      // تحقق من وجود سعر أساسي للعملة
       const basePrice = mockPrices[symbol] || 100;
+      
+      // إضافة تغير عشوائي صغير للسعر لمحاكاة حركة السوق
       const randomVariation = (Math.random() - 0.5) * 0.001 * basePrice;
       const price = Number((basePrice + randomVariation).toFixed(2));
       
@@ -50,6 +51,11 @@ class PriceUpdater {
     if (!this.polling) {
       this.startPolling();
     }
+
+    // جلب السعر الأولي فور الاشتراك
+    this.fetchPrice(symbol)
+      .then(price => subscription.onUpdate(price))
+      .catch(error => subscription.onError(error as Error));
   }
 
   unsubscribe(symbol: string, onUpdate: (price: number) => void) {

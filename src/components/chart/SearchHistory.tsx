@@ -71,8 +71,10 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
     // تنظيف المشتركين عند إغلاق النافذة
     return () => {
       validHistory.forEach(item => {
-        const symbol = item.symbol.toUpperCase();
-        priceUpdater.unsubscribe(symbol, () => {});
+        if (item?.symbol) {
+          const symbol = item.symbol.toUpperCase();
+          priceUpdater.unsubscribe(symbol, () => {});
+        }
       });
     };
   }, [isOpen, history]);
