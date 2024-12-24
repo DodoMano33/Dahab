@@ -43,7 +43,7 @@ export const ChartAnalyzer = () => {
         analysis: analysisResult,
         targetHit: false,
         stopLossHit: false,
-        analysisType: timeframe === "1m" ? "سكالبينج" : "عادي"
+        analysisType: timeframe === "5" ? "سكالبينج" : "عادي"
       };
 
       setSearchHistory(prev => [newHistoryEntry, ...prev]);
