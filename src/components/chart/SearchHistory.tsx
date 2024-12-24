@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { HistoryTableHeader } from "./history/HistoryTableHeader";
 import { HistoryRow } from "./history/HistoryRow";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ interface SearchHistoryProps {
 
 export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) => {
   const [priceStates, setPriceStates] = useState<{ [key: string]: { currentPrice: number; lastUpdated: Date } }>({});
+  const notifiedSymbols = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!isOpen || !history.length) return;
@@ -33,7 +34,6 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
       item.analysis
     );
 
-    // إعداد المشتركين في تحديثات الأسعار
     validHistory.forEach(item => {
       const symbol = item.symbol.toUpperCase();
       
@@ -46,29 +46,34 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
           }
         }));
 
-        // التحقق من وصول السعر إلى وقف الخسارة أو الهدف
-        if (price <= item.analysis.stopLoss) {
-          console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${symbol}`);
-          toast.warning(`${symbol} وصل إلى وقف الخسارة`);
-        } else if (
-          item.analysis.targets && 
-          item.analysis.targets[0] && 
-          price >= item.analysis.targets[0].price
-        ) {
-          console.log(`تم الوصول للهدف للعملة ${symbol}`);
-          toast.success(`${symbol} وصل إلى الهدف الأول`);
+        if (!notifiedSymbols.current.has(symbol)) {
+          if (price <= item.analysis.stopLoss) {
+            console.log(`تم الوصول لنقطة وقف الخسارة للعملة ${symbol}`);
+            toast.warning(`${symbol} وصل إلى وقف الخسارة`);
+            notifiedSymbols.current.add(symbol);
+          } else if (
+            item.analysis.targets && 
+            item.analysis.targets[0] && 
+            price >= item.analysis.targets[0].price
+          ) {
+            console.log(`تم الوصول للهدف للعملة ${symbol}`);
+            toast.success(`${symbol} وصل إلى الهدف الأول`);
+            notifiedSymbols.current.add(symbol);
+          }
         }
       };
 
       const onError = (error: Error) => {
         console.error(`خطأ في تحديث السعر للعملة ${symbol}:`, error);
-        toast.error(`فشل في تحديث السعر للعملة ${symbol}`);
+        if (!notifiedSymbols.current.has(`${symbol}_error`)) {
+          toast.error(`فشل في تحديث السعر للعملة ${symbol}`);
+          notifiedSymbols.current.add(`${symbol}_error`);
+        }
       };
 
       priceUpdater.subscribe({ symbol, onUpdate, onError });
     });
 
-    // تنظيف المشتركين عند إغلاق النافذة
     return () => {
       validHistory.forEach(item => {
         if (item?.symbol) {

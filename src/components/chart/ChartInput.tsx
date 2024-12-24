@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 interface ChartInputProps {
   mode: "tradingview";
-  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number) => void;
+  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean) => void;
   onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
@@ -19,7 +19,7 @@ export const ChartInput = ({
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, isScalping: boolean = false) => {
     e.preventDefault();
     
     if (!symbol) {
@@ -33,11 +33,11 @@ export const ChartInput = ({
       return;
     }
 
-    onTradingViewConfig(symbol, "D", providedPrice);
+    onTradingViewConfig(symbol, "D", providedPrice, isScalping);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+    <form onSubmit={(e) => handleSubmit(e)} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
       <div>
         <label htmlFor="symbol" className="block text-sm font-medium text-gray-700 mb-1">
           رمز العملة
@@ -68,13 +68,22 @@ export const ChartInput = ({
         />
       </div>
 
-      <div className="flex justify-between items-center pt-4">
+      <div className="flex gap-2 pt-4">
         <Button
           type="submit"
           disabled={isAnalyzing}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isAnalyzing ? "جاري التحليل..." : "تحليل"}
+        </Button>
+
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => handleSubmit(e, true)}
+          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          تحليل سكالبينج
         </Button>
         
         <Button
