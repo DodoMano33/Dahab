@@ -12,6 +12,7 @@ type SearchHistoryItem = {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
+  analysisType: "عادي" | "سكالبينج";
 };
 
 export const ChartAnalyzer = () => {
@@ -41,7 +42,8 @@ export const ChartAnalyzer = () => {
         currentPrice,
         analysis: analysisResult,
         targetHit: false,
-        stopLossHit: false
+        stopLossHit: false,
+        analysisType: timeframe === "1m" ? "سكالبينج" : "عادي"
       };
 
       setSearchHistory(prev => [newHistoryEntry, ...prev]);

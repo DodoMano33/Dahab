@@ -17,6 +17,7 @@ interface SearchHistoryProps {
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
+    analysisType: "عادي" | "سكالبينج";
   }>;
 }
 
@@ -110,6 +111,7 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                   currentPrice={item.currentPrice}
                   analysis={item.analysis}
                   latestPrice={priceStates[item.symbol]?.currentPrice}
+                  analysisType={item.analysisType}
                 />
               ))}
             </TableBody>
