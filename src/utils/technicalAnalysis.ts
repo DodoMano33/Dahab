@@ -2,11 +2,12 @@ import { addDays, addHours, addMinutes } from "date-fns";
 
 export const calculateFibonacciLevels = (high: number, low: number) => {
   const difference = high - low;
-  return [
-    high - difference * 0.236,
-    high - difference * 0.382,
-    high - difference * 0.618,
-  ];
+  const levels = [0.236, 0.382, 0.618];
+  
+  return levels.map(level => ({
+    level,
+    price: Number((high - difference * level).toFixed(2))
+  }));
 };
 
 export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {

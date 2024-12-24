@@ -7,6 +7,7 @@ import {
   detectTrend,
   calculateBestEntryPoint,
 } from "@/utils/technicalAnalysis";
+import { addMinutes } from "date-fns";
 
 export const analyzeScalpingChart = async (
   imageData: string,
@@ -53,6 +54,12 @@ export const analyzeScalpingChart = async (
         "نموذج سكالبينج صعودي" : 
         "نموذج سكالبينج هبوطي";
 
+      // Create targets with proper dates for scalping (shorter timeframes)
+      const targets = targetPrices.map((price, index) => ({
+        price,
+        expectedTime: addMinutes(new Date(), (index + 1) * 15) // Each target is expected 15 minutes after the previous
+      }));
+
       const analysisResult: AnalysisData = {
         pattern,
         direction,
@@ -60,7 +67,7 @@ export const analyzeScalpingChart = async (
         support,
         resistance,
         stopLoss,
-        targets: targetPrices,
+        targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
         analysisType: "سكالبينج"

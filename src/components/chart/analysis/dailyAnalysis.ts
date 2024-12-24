@@ -7,6 +7,7 @@ import {
   detectTrend,
   calculateBestEntryPoint,
 } from "@/utils/technicalAnalysis";
+import { addDays } from "date-fns";
 
 export const analyzeDailyChart = async (
   imageData: string,
@@ -53,6 +54,12 @@ export const analyzeDailyChart = async (
         "نموذج صعودي مستمر" : 
         "نموذج هبوطي مستمر";
 
+      // Create targets with proper dates
+      const targets = targetPrices.map((price, index) => ({
+        price,
+        expectedTime: addDays(new Date(), (index + 1) * 2) // Each target is expected 2 days after the previous
+      }));
+
       const analysisResult: AnalysisData = {
         pattern,
         direction,
@@ -60,7 +67,7 @@ export const analyzeDailyChart = async (
         support,
         resistance,
         stopLoss,
-        targets: targetPrices,
+        targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
         analysisType: "عادي"
