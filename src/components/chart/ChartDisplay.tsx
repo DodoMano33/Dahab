@@ -35,6 +35,16 @@ export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: 
 
   return (
     <div className="space-y-8">
+      {symbol && (
+        <div className="fixed top-2 right-2 z-50 bg-red-600 p-1.5 rounded-lg shadow-lg w-32">
+          <div className="text-center">
+            <div className="text-white text-xs mb-0.5">السعر الحالي</div>
+            <div className="text-white text-base font-bold">{currentPrice || '...'}</div>
+            <div className="text-white text-xs opacity-75">{symbol}</div>
+          </div>
+        </div>
+      )}
+
       {image && (
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">تحليل الشارت</h2>
@@ -46,16 +56,6 @@ export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
           <AnalysisResult analysis={analysis} isLoading={isAnalyzing} />
-        </div>
-      )}
-
-      {symbol && (
-        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-64 bg-red-600 p-4 rounded-lg shadow-lg">
-          <div className="text-center">
-            <div className="text-white text-sm mb-1">السعر الحالي</div>
-            <div className="text-white text-2xl font-bold">{currentPrice || '...'}</div>
-            <div className="text-white text-sm opacity-75">{symbol}</div>
-          </div>
         </div>
       )}
     </div>
