@@ -1,4 +1,4 @@
-import { addDays, addHours } from "date-fns";
+import { addHours, addDays } from "date-fns";
 
 export const calculateFibonacciLevels = (high: number, low: number) => {
   const difference = high - low;
@@ -36,15 +36,12 @@ export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
   return isUptrend ? "صاعد" : "هابط";
 };
 
-export const getCurrentPriceFromTradingView = async (symbol: string): Promise<number> => {
-  try {
-    // هذه مجرد محاكاة - يجب استبدالها بطلب API حقيقي
-    const mockPrice = Math.random() * 1000 + 100;
-    return Number(mockPrice.toFixed(2));
-  } catch (error) {
-    console.error("Error fetching current price:", error);
-    throw error;
-  }
+export const calculateExpectedTimes = (targetPrices: number[], direction: string): Date[] => {
+  // Calculate expected times based on target distances
+  return targetPrices.map((_, index) => {
+    // First target expected in 24 hours, second target in 48 hours
+    return addHours(new Date(), (index + 1) * 24);
+  });
 };
 
 export const calculateBestEntryPoint = (
@@ -57,7 +54,6 @@ export const calculateBestEntryPoint = (
   console.log("حساب أفضل نقطة دخول:", { currentPrice, direction, support, resistance, fibLevels });
   
   if (direction === "صاعد") {
-    // البحث عن أقرب مستوى فيبوناتشي للسعر الحالي
     const nearestFib = fibLevels.find(level => level.price < currentPrice);
     
     if (nearestFib) {
@@ -67,13 +63,11 @@ export const calculateBestEntryPoint = (
       };
     }
     
-    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى الدعم
     return {
       price: support,
       reason: "أفضل نقطة دخول عند مستوى الدعم الرئيسي"
     };
   } else {
-    // في حالة الاتجاه الهابط
     const nearestFib = fibLevels.find(level => level.price > currentPrice);
     
     if (nearestFib) {
@@ -83,7 +77,6 @@ export const calculateBestEntryPoint = (
       };
     }
     
-    // إذا لم نجد مستوى فيبوناتشي مناسب، نستخدم مستوى المقاومة
     return {
       price: resistance,
       reason: "أفضل نقطة دخول عند مستوى المقاومة الرئيسي"
