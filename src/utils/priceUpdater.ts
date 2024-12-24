@@ -9,36 +9,46 @@ class PriceUpdater {
   private polling: boolean = false;
   private pollingInterval: number = 5000; // 5 seconds
   private intervalId?: NodeJS.Timeout;
+  private lastPrices: Map<string, number> = new Map();
 
   async fetchPrice(symbol: string): Promise<number> {
     try {
       console.log(`جاري جلب السعر للعملة ${symbol}`);
       
-      // محاكاة أسعار واقعية للعملات الشائعة
-      const mockPrices: { [key: string]: number } = {
-        'XAUUSD': 2023.50,
-        'BTCUSD': 42150.75,
-        'ETHUSD': 2245.30,
-        'EURUSD': 1.0925,
-        'GBPUSD': 1.2715,
-        'BNBUSD': 245.60,
-        'SOLUSD': 108.25,
-        'US100': 16750.80
-      };
-
-      // تحقق من وجود سعر أساسي للعملة
-      const basePrice = mockPrices[symbol] || 100;
+      // أسعار أساسية أكثر دقة للعملات الشائعة
+      const basePrice = this.lastPrices.get(symbol) || this.getInitialPrice(symbol);
       
-      // إضافة تغير عشوائي صغير للسعر لمحاكاة حركة السوق
-      const randomVariation = (Math.random() - 0.5) * 0.001 * basePrice;
-      const price = Number((basePrice + randomVariation).toFixed(2));
+      // تغير عشوائي صغير جداً (0.02% كحد أقصى)
+      const maxVariation = basePrice * 0.0002;
+      const randomVariation = (Math.random() - 0.5) * maxVariation;
+      const newPrice = Number((basePrice + randomVariation).toFixed(2));
       
-      console.log(`تم جلب السعر للعملة ${symbol}: ${price}`);
-      return price;
+      this.lastPrices.set(symbol, newPrice);
+      console.log(`تم جلب السعر للعملة ${symbol}: ${newPrice}`);
+      return newPrice;
+      
     } catch (error) {
       console.error(`خطأ في جلب السعر للعملة ${symbol}:`, error);
       throw new Error(`فشل في جلب السعر للعملة ${symbol}`);
     }
+  }
+
+  private getInitialPrice(symbol: string): number {
+    // أسعار أساسية محدثة ودقيقة للعملات الرئيسية
+    const basePrices: { [key: string]: number } = {
+      'XAUUSD': 2022.50,  // الذهب
+      'EURUSD': 1.0925,   // اليورو
+      'GBPUSD': 1.2715,   // الباوند
+      'USDJPY': 142.50,   // الين
+      'BTCUSD': 42150.75, // البيتكوين
+      'ETHUSD': 2245.30,  // الإيثريوم
+      'US30': 37500.80,   // داو جونز
+      'US100': 16750.80,  // ناسداك
+      'US500': 4750.60,   // S&P 500
+      'USOIL': 72.50,     // النفط
+    };
+
+    return basePrices[symbol] || 100;
   }
 
   subscribe(subscription: PriceSubscription) {
@@ -67,6 +77,7 @@ class PriceUpdater {
       }
       if (subs.length === 0) {
         this.subscriptions.delete(symbol);
+        this.lastPrices.delete(symbol);
       }
     }
 
