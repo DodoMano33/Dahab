@@ -1,8 +1,6 @@
 import { Canvas } from "./Canvas";
 import { AnalysisResult } from "./AnalysisResult";
 import { AnalysisData } from "@/types/analysis";
-import { useEffect, useState } from "react";
-import { priceUpdater } from "@/utils/priceUpdater";
 
 interface ChartDisplayProps {
   image: string | null;
@@ -12,39 +10,9 @@ interface ChartDisplayProps {
   symbol?: string;
 }
 
-export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose, symbol }: ChartDisplayProps) => {
-  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!symbol) return;
-
-    const onUpdate = (price: number) => {
-      setCurrentPrice(price);
-    };
-
-    const onError = (error: Error) => {
-      console.error("Error updating price:", error);
-    };
-
-    priceUpdater.subscribe({ symbol, onUpdate, onError });
-
-    return () => {
-      priceUpdater.unsubscribe(symbol, onUpdate);
-    };
-  }, [symbol]);
-
+export const ChartDisplay = ({ image, analysis, isAnalyzing, onClose }: ChartDisplayProps) => {
   return (
     <div className="space-y-8">
-      {symbol && (
-        <div className="fixed top-2 right-2 z-50 bg-red-600 p-1.5 rounded-lg shadow-lg w-32">
-          <div className="text-center">
-            <div className="text-white text-xs mb-0.5">السعر الحالي</div>
-            <div className="text-white text-base font-bold">{currentPrice || '...'}</div>
-            <div className="text-white text-xs opacity-75">{symbol}</div>
-          </div>
-        </div>
-      )}
-
       {image && (
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">تحليل الشارت</h2>

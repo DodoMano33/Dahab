@@ -21,13 +21,8 @@ export const HistoryRow = ({
   symbol, 
   currentPrice, 
   analysis,
-  latestPrice,
   analysisType
 }: HistoryRowProps) => {
-  const isStopLossHit = latestPrice && latestPrice <= analysis.stopLoss;
-  const isTargetHit = latestPrice && analysis.targets?.[0] && 
-                      latestPrice >= analysis.targets[0].price;
-
   return (
     <TableRow>
       <TableCell className="text-right">
@@ -40,9 +35,6 @@ export const HistoryRow = ({
         {analysisType}
       </TableCell>
       <TableCell className="text-right">{currentPrice}</TableCell>
-      <TableCell className="text-right font-medium">
-        {latestPrice ? latestPrice.toFixed(2) : '-'}
-      </TableCell>
       <TableCell className="text-right">
         <DirectionIndicator direction={analysis.direction} />
       </TableCell>
@@ -55,13 +47,13 @@ export const HistoryRow = ({
       <TableCell className="text-right">
         <TargetsList 
           targets={analysis.targets || []} 
-          isTargetHit={!!isTargetHit} 
+          isTargetHit={false}
         />
       </TableCell>
       <TableCell className="text-right">
         <StopLoss 
           value={analysis.stopLoss} 
-          isHit={!!isStopLossHit} 
+          isHit={false}
         />
       </TableCell>
     </TableRow>
