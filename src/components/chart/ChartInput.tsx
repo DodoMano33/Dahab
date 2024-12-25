@@ -2,10 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Brain } from "lucide-react";
 
 interface ChartInputProps {
   mode: "tradingview";
-  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean) => void;
+  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean, isAI?: boolean) => void;
   onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
@@ -19,7 +20,7 @@ export const ChartInput = ({
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = (e: React.FormEvent, isScalping: boolean = false) => {
+  const handleSubmit = (e: React.FormEvent, isScalping: boolean = false, isAI: boolean = false) => {
     e.preventDefault();
     
     if (!symbol) {
@@ -35,8 +36,8 @@ export const ChartInput = ({
 
     // تحديد الإطار الزمني بناءً على نوع التحليل
     const timeframe = isScalping ? "5" : "D";
-    console.log(`تحليل ${isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
-    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping);
+    console.log(`تحليل ${isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
+    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI);
   };
 
   return (
@@ -71,7 +72,7 @@ export const ChartInput = ({
         />
       </div>
 
-      <div className="flex gap-2 pt-4">
+      <div className="flex flex-wrap gap-2 pt-4">
         <Button
           type="submit"
           disabled={isAnalyzing}
@@ -87,6 +88,16 @@ export const ChartInput = ({
           className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
         >
           تحليل سكالبينج
+        </Button>
+
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => handleSubmit(e, false, true)}
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+        >
+          <Brain className="w-4 h-4" />
+          تحليل ذكي
         </Button>
         
         <Button

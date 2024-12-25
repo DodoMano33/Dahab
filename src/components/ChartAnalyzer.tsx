@@ -4,6 +4,7 @@ import { ChartDisplay } from "./chart/ChartDisplay";
 import { SearchHistory } from "./chart/SearchHistory";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisData } from "@/types/analysis";
+import { toast } from "sonner";
 
 type SearchHistoryItem = {
   date: Date;
@@ -12,7 +13,7 @@ type SearchHistoryItem = {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "عادي" | "سكالبينج";
+  analysisType: "عادي" | "سكالبينج" | "ذكي";
 };
 
 export const ChartAnalyzer = () => {
@@ -30,24 +31,44 @@ export const ChartAnalyzer = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const handleAnalysis = async (symbol: string, timeframe: string, providedPrice?: number) => {
-    const result = await handleTradingViewConfig(symbol, timeframe, providedPrice);
-    
-    if (result) {
-      const { analysisResult, currentPrice, symbol: upperSymbol } = result;
-      
-      const newHistoryEntry: SearchHistoryItem = {
-        date: new Date(),
-        symbol: upperSymbol,
-        currentPrice,
-        analysis: analysisResult,
-        targetHit: false,
-        stopLossHit: false,
-        analysisType: timeframe === "5" ? "سكالبينج" : "عادي"
-      };
+  const handleAnalysis = async (
+    symbol: string, 
+    timeframe: string, 
+    providedPrice?: number, 
+    isScalping?: boolean,
+    isAI?: boolean
+  ) => {
+    try {
+      if (isAI) {
+        toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
+        // هنا يمكن إضافة المنطق الخاص بالتحليل الذكي
+      }
 
-      setSearchHistory(prev => [newHistoryEntry, ...prev]);
-      console.log("تم تحديث سجل البحث:", newHistoryEntry);
+      const result = await handleTradingViewConfig(symbol, timeframe, providedPrice);
+      
+      if (result) {
+        const { analysisResult, currentPrice, symbol: upperSymbol } = result;
+        
+        const newHistoryEntry: SearchHistoryItem = {
+          date: new Date(),
+          symbol: upperSymbol,
+          currentPrice,
+          analysis: analysisResult,
+          targetHit: false,
+          stopLossHit: false,
+          analysisType: isAI ? "ذكي" : timeframe === "5" ? "سكالبينج" : "عادي"
+        };
+
+        setSearchHistory(prev => [newHistoryEntry, ...prev]);
+        console.log("تم تحديث سجل البحث:", newHistoryEntry);
+
+        if (isAI) {
+          toast.success("تم إكمال التحليل الذكي بنجاح");
+        }
+      }
+    } catch (error) {
+      console.error("خطأ في التحليل:", error);
+      toast.error(isAI ? "حدث خطأ أثناء التحليل الذكي" : "حدث خطأ أثناء التحليل");
     }
   };
 
