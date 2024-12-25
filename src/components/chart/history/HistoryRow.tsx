@@ -12,7 +12,7 @@ interface HistoryRowProps {
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
-  analysisType: "عادي" | "سكالبينج";
+  analysisType: "عادي" | "سكالبينج" | "ذكي";
 }
 
 export const HistoryRow = ({ 
