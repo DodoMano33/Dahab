@@ -12,72 +12,65 @@ class PriceUpdater {
   private pollingInterval: number = 5000; // 5 seconds
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, { price: number; timestamp: number }> = new Map();
-  private apiKey: string = "3P42SPLIYAP6IOZ3";
-  private baseUrl: string = "https://www.alphavantage.co/query";
+  private finnhubApiKey: string = "ctlsb91r01qv7qq38es0ctlsb91r01qv7qq38esg";
+  private baseUrl: string = "https://finnhub.io/api/v1";
 
   async fetchPrice(symbol: string): Promise<number> {
     try {
-      console.log(`جاري جلب السعر الحقيقي للعملة ${symbol}`);
+      console.log(`جاري جلب السعر من Finnhub للرمز ${symbol}`);
 
-      // Check cache first (valid for 1 minute)
+      // التحقق من الذاكرة المؤقتة (صالحة لمدة دقيقة واحدة)
       const cached = this.lastPrices.get(symbol);
       if (cached && Date.now() - cached.timestamp < 60000) {
-        console.log(`استخدام السعر المخزن للعملة ${symbol}: ${cached.price}`);
+        console.log(`استخدام السعر المخزن للرمز ${symbol}: ${cached.price}`);
         return cached.price;
       }
 
       let endpoint: string;
-      let params: any;
-
-      if (symbol === 'XAUUSD') {
-        endpoint = 'CURRENCY_EXCHANGE_RATE';
-        params = {
-          function: endpoint,
-          from_currency: 'XAU',
-          to_currency: 'USD',
-          apikey: this.apiKey
-        };
-      } else if (symbol.length === 6) {
-        // Forex pairs
-        endpoint = 'CURRENCY_EXCHANGE_RATE';
-        params = {
-          function: endpoint,
-          from_currency: symbol.slice(0, 3),
-          to_currency: symbol.slice(3, 6),
-          apikey: this.apiKey
-        };
-      } else {
-        // For other symbols like indices, use GLOBAL_QUOTE
-        endpoint = 'GLOBAL_QUOTE';
-        params = {
-          function: endpoint,
-          symbol: symbol,
-          apikey: this.apiKey
-        };
-      }
-
-      const response = await axios.get(this.baseUrl, { params });
       let price: number;
 
-      if (response.data['Realtime Currency Exchange Rate']) {
-        price = Number(response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
-      } else if (response.data['Global Quote']) {
-        price = Number(response.data['Global Quote']['05. price']);
+      if (symbol === 'XAUUSD') {
+        // الذهب
+        endpoint = `/quote?symbol=OANDA:XAU_USD`;
+      } else if (symbol.length === 6 && !symbol.includes('USD')) {
+        // أزواج العملات التي لا تتضمن الدولار
+        endpoint = `/forex/rates?base=USD`;
+      } else if (symbol.includes('USD')) {
+        // أزواج العملات مع الدولار
+        const base = symbol.slice(0, 3);
+        endpoint = `/forex/rates?base=${base}`;
       } else {
-        console.warn(`لم يتم العثور على سعر حقيقي للعملة ${symbol}، استخدام سعر محاكي`);
+        // الأسهم والمؤشرات
+        endpoint = `/quote?symbol=${symbol}`;
+      }
+
+      const response = await axios.get(`${this.baseUrl}${endpoint}`, {
+        headers: {
+          'X-Finnhub-Token': this.finnhubApiKey
+        }
+      });
+
+      if (response.data.c) {
+        // سعر الإغلاق الحالي للأسهم
+        price = response.data.c;
+      } else if (response.data.quote) {
+        // أسعار العملات
+        price = response.data.quote;
+      } else {
+        console.warn(`لم يتم العثور على سعر حقيقي للرمز ${symbol}، استخدام سعر محاكي`);
         return this.getSimulatedPrice(symbol);
       }
 
       if (!price || isNaN(price)) {
-        throw new Error(`سعر غير صالح للعملة ${symbol}`);
+        throw new Error(`سعر غير صالح للرمز ${symbol}`);
       }
 
-      console.log(`تم جلب السعر الحقيقي للعملة ${symbol}: ${price}`);
+      console.log(`تم جلب السعر الحقيقي للرمز ${symbol}: ${price}`);
       this.lastPrices.set(symbol, { price, timestamp: Date.now() });
       return price;
 
     } catch (error) {
-      console.error(`خطأ في جلب السعر للعملة ${symbol}:`, error);
+      console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
       return this.getSimulatedPrice(symbol);
     }
   }
@@ -89,7 +82,7 @@ class PriceUpdater {
     const newPrice = Number((lastPrice + variation).toFixed(2));
     
     this.lastPrices.set(symbol, { price: newPrice, timestamp: Date.now() });
-    console.log(`استخدام سعر محاكي للعملة ${symbol}: ${newPrice}`);
+    console.log(`استخدام سعر محاكي للرمز ${symbol}: ${newPrice}`);
     return newPrice;
   }
 
@@ -150,7 +143,7 @@ class PriceUpdater {
         const price = await this.fetchPrice(symbol);
         subs.forEach(sub => sub.onUpdate(price));
       } catch (error) {
-        console.error(`خطأ في تحديث السعر للعملة ${symbol}:`, error);
+        console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
         subs.forEach(sub => sub.onError(error as Error));
       }
     }
