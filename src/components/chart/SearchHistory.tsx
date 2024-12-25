@@ -110,7 +110,6 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
                   symbol={item.symbol}
                   currentPrice={item.currentPrice}
                   analysis={item.analysis}
-                  latestPrice={priceStates[item.symbol]?.currentPrice}
                   analysisType={item.analysisType}
                 />
               ))}
