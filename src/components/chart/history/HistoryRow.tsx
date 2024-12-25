@@ -12,7 +12,6 @@ interface HistoryRowProps {
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
-  latestPrice?: number;
   analysisType: "عادي" | "سكالبينج";
 }
 
@@ -41,7 +40,7 @@ export const HistoryRow = ({
       <TableCell className="text-right">
         <BestEntryPoint 
           price={analysis.bestEntryPoint?.price} 
-          reason={analysis.bestEntryPoint?.reason} 
+          reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
       <TableCell className="text-right">
