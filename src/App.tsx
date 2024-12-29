@@ -1,19 +1,24 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ChartAnalyzer } from "./components/ChartAnalyzer";
-import { Toaster } from "./components/ui/sonner";
-import "./App.css";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
 
-function App() {
-  return (
-    <Router>
-      <div className="container mx-auto p-4">
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ChartAnalyzer />} />
+          <Route path="/" element={<Index />} />
         </Routes>
-        <Toaster />
-      </div>
-    </Router>
-  );
-}
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
