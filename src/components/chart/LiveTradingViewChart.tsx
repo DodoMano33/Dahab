@@ -7,13 +7,15 @@ declare global {
 }
 
 interface LiveTradingViewChartProps {
-  symbol: string;
+  symbol?: string;
   timeframe?: string;
+  chartId?: string;
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
   symbol = "XAUUSD",
-  timeframe = "D" 
+  timeframe = "D",
+  chartId
 }) => {
   const container = useRef<HTMLDivElement>(null);
 
@@ -43,6 +45,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
             { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
           ],
           "autosize": true,
+          ...(chartId && { chart: chartId })
         });
       }
     };
@@ -57,7 +60,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         }
       }
     };
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, chartId]);
 
   return (
     <div className="w-full h-[500px] bg-white rounded-lg shadow-lg">
