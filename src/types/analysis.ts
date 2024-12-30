@@ -17,5 +17,5 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  analysisType: "عادي" | "سكالبينج";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC";
 }

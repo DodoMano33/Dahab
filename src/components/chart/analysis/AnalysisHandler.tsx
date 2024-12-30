@@ -4,6 +4,7 @@ import { AnalysisData } from "@/types/analysis";
 import { getTradingViewChartImage, getCurrentPriceFromTradingView } from "@/utils/tradingViewUtils";
 import { analyzeDailyChart } from "./dailyAnalysis";
 import { analyzeScalpingChart } from "./scalpingAnalysis";
+import { analyzeSMCChart } from "./smcAnalysis";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -15,7 +16,9 @@ export const useAnalysisHandler = () => {
     symbol: string, 
     timeframe: string, 
     providedPrice?: number,
-    isScalping: boolean = false
+    isScalping: boolean = false,
+    isAI: boolean = false,
+    isSMC: boolean = false
   ) => {
     try {
       setIsAnalyzing(true);
@@ -26,7 +29,7 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: isScalping ? "سكالبينج" : "عادي" 
+        نوع_التحليل: isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
       });
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
@@ -46,9 +49,14 @@ export const useAnalysisHandler = () => {
       
       setImage(chartImage);
 
-      const analysisResult = isScalping ?
-        await analyzeScalpingChart(chartImage, currentPrice, upperSymbol) :
-        await analyzeDailyChart(chartImage, currentPrice, upperSymbol);
+      let analysisResult;
+      if (isSMC) {
+        analysisResult = await analyzeSMCChart(chartImage, currentPrice, upperSymbol);
+      } else if (isScalping) {
+        analysisResult = await analyzeScalpingChart(chartImage, currentPrice, upperSymbol);
+      } else {
+        analysisResult = await analyzeDailyChart(chartImage, currentPrice, upperSymbol);
+      }
 
       setAnalysis(analysisResult);
       setIsAnalyzing(false);
