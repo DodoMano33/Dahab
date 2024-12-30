@@ -14,7 +14,7 @@ interface SearchHistoryProps {
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC";
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT";
   }>;
 }
 
