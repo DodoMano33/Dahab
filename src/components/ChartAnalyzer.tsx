@@ -13,7 +13,7 @@ type SearchHistoryItem = {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "عادي" | "سكالبينج" | "ذكي";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC";
 };
 
 export const ChartAnalyzer = () => {
@@ -36,15 +36,17 @@ export const ChartAnalyzer = () => {
     timeframe: string, 
     providedPrice?: number, 
     isScalping?: boolean,
-    isAI?: boolean
+    isAI?: boolean,
+    isSMC?: boolean
   ) => {
     try {
       if (isAI) {
         toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
-        // هنا يمكن إضافة المنطق الخاص بالتحليل الذكي
+      } else if (isSMC) {
+        toast.info("جاري تحليل البيانات باستخدام نموذج SMC...");
       }
 
-      const result = await handleTradingViewConfig(symbol, timeframe, providedPrice);
+      const result = await handleTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC);
       
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
@@ -56,7 +58,7 @@ export const ChartAnalyzer = () => {
           analysis: analysisResult,
           targetHit: false,
           stopLossHit: false,
-          analysisType: isAI ? "ذكي" : timeframe === "5" ? "سكالبينج" : "عادي"
+          analysisType: isSMC ? "SMC" : isAI ? "ذكي" : timeframe === "5" ? "سكالبينج" : "عادي"
         };
 
         setSearchHistory(prev => [newHistoryEntry, ...prev]);
@@ -64,6 +66,8 @@ export const ChartAnalyzer = () => {
 
         if (isAI) {
           toast.success("تم إكمال التحليل الذكي بنجاح");
+        } else if (isSMC) {
+          toast.success("تم إكمال تحليل SMC بنجاح");
         }
       }
     } catch (error) {
