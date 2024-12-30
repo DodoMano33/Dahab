@@ -2,11 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Brain, TrendingUp } from "lucide-react";
+import { Brain, TrendingUp, Building2 } from "lucide-react";
 
 interface ChartInputProps {
   mode: "tradingview";
-  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean, isAI?: boolean, isSMC?: boolean) => void;
+  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean, isAI?: boolean, isSMC?: boolean, isICT?: boolean) => void;
   onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
@@ -20,7 +20,7 @@ export const ChartInput = ({
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = (e: React.FormEvent, isScalping: boolean = false, isAI: boolean = false, isSMC: boolean = false) => {
+  const handleSubmit = (e: React.FormEvent, isScalping: boolean = false, isAI: boolean = false, isSMC: boolean = false, isICT: boolean = false) => {
     e.preventDefault();
     
     if (!symbol) {
@@ -35,8 +35,8 @@ export const ChartInput = ({
     }
 
     const timeframe = isScalping ? "5" : "D";
-    console.log(`تحليل ${isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
-    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC);
+    console.log(`تحليل ${isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
+    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC, isICT);
   };
 
   return (
@@ -97,6 +97,16 @@ export const ChartInput = ({
         >
           <TrendingUp className="w-4 h-4" />
           تحليل SMC
+        </Button>
+
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => handleSubmit(e, false, false, false, true)}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+        >
+          <Building2 className="w-4 h-4" />
+          تحليل ICT
         </Button>
 
         <Button
