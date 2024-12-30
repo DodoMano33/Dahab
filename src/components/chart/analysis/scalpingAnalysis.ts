@@ -1,12 +1,4 @@
 import { AnalysisData } from "@/types/analysis";
-import {
-  calculateFibonacciLevels,
-  calculateTargets,
-  calculateStopLoss,
-  calculateSupportResistance,
-  detectTrend,
-  calculateBestEntryPoint,
-} from "@/utils/technicalAnalysis";
 import { addMinutes } from "date-fns";
 
 export const analyzeScalpingChart = async (
@@ -35,30 +27,30 @@ export const analyzeScalpingChart = async (
       const prices = detectPrices(imageData, currentPrice);
       console.log("الأسعار المكتشفة لتحليل السكالبينج:", prices);
 
-      const direction = detectTrend(prices) as "صاعد" | "هابط";
-      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, true);
-      const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, true);
-      const fibLevels = calculateFibonacciLevels(resistance, support);
-      const targetPrices = calculateTargets(currentPrice, direction, support, resistance, true);
+      // تحديد الاتجاه بناءً على متوسط الأسعار
+      const direction = detectScalpingTrend(prices) as "صاعد" | "هابط";
+      
+      // حساب مستويات الدعم والمقاومة القريبة
+      const { support, resistance } = calculateNearestLevels(prices, currentPrice);
+      
+      // حساب وقف الخسارة (1:2 نسبة المخاطرة/المكافأة)
+      const stopLoss = calculateScalpingStopLoss(currentPrice, direction, support, resistance);
+      
+      // حساب الأهداف القريبة
+      const targetPrices = calculateScalpingTargets(currentPrice, direction, support, resistance);
 
-      const bestEntryPoint = calculateBestEntryPoint(
-        currentPrice,
-        direction,
-        support,
-        resistance,
-        fibLevels,
-        true
-      );
+      // تحديد أفضل نقطة دخول
+      const bestEntry = calculateScalpingEntryPoint(currentPrice, direction, support, resistance);
 
-      const pattern = direction === "صاعد" ? 
-        "نموذج سكالبينج صعودي" : 
-        "نموذج سكالبينج هبوطي";
-
-      // Create targets with proper dates for scalping (shorter timeframes)
+      // إنشاء الأهداف مع التوقيت المتوقع (15-30 دقيقة لكل هدف)
       const targets = targetPrices.map((price, index) => ({
         price,
-        expectedTime: addMinutes(new Date(), (index + 1) * 15) // Each target is expected 15 minutes after the previous
+        expectedTime: addMinutes(new Date(), (index + 1) * 15)
       }));
+
+      const pattern = direction === "صاعد" ? 
+        "نموذج سكالبينج صعودي قصير المدى" : 
+        "نموذج سكالبينج هبوطي قصير المدى";
 
       const analysisResult: AnalysisData = {
         pattern,
@@ -68,8 +60,7 @@ export const analyzeScalpingChart = async (
         resistance,
         stopLoss,
         targets,
-        fibonacciLevels: fibLevels,
-        bestEntryPoint,
+        bestEntryPoint: bestEntry,
         analysisType: "سكالبينج"
       };
 
@@ -85,37 +76,99 @@ export const analyzeScalpingChart = async (
   });
 };
 
-const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
+const detectPrices = (imageData: ImageData, currentPrice: number): number[] => {
   const prices: number[] = [];
   const height = imageData.height;
   
-  const currentPriceRow = Math.floor(height * 0.5); 
-  let currentPrice = providedCurrentPrice || 2622; 
+  // نطاق السعر للسكالبينج (0.5% فوق وتحت السعر الحالي)
+  const range = currentPrice * 0.005;
+  const minPrice = currentPrice - range;
+  const maxPrice = currentPrice + range;
   
-  for (let y = 0; y < height; y += height / 10) {
-    let sum = 0;
-    let count = 0;
-    
-    for (let x = 0; x < 50; x++) {
-      const index = (Math.floor(y) * imageData.width + x) * 4;
-      const r = imageData.data[index];
-      const g = imageData.data[index + 1];
-      const b = imageData.data[index + 2];
-      
-      sum += (r + g + b) / 3;
-      count++;
-    }
-    
-    if (count > 0) {
-      if (Math.abs(y - currentPriceRow) < height / 20) {
-        prices.push(currentPrice);
-      } else {
-        const price = currentPrice + ((y - currentPriceRow) / height) * 100;
-        prices.push(Math.round(price * 100) / 100);
-      }
-    }
+  for (let y = 0; y < height; y += height / 20) {
+    const price = minPrice + ((y / height) * (maxPrice - minPrice));
+    prices.push(Number(price.toFixed(2)));
   }
   
-  console.log("الأسعار المكتشفة:", prices);
   return prices;
+};
+
+const detectScalpingTrend = (prices: number[]): "صاعد" | "هابط" => {
+  // حساب المتوسط المتحرك السريع (5 فترات) والبطيء (10 فترات)
+  const ma5 = calculateMA(prices, 5);
+  const ma10 = calculateMA(prices, 10);
+  
+  return ma5[ma5.length - 1] > ma10[ma10.length - 1] ? "صاعد" : "هابط";
+};
+
+const calculateMA = (prices: number[], period: number): number[] => {
+  const ma: number[] = [];
+  for (let i = period - 1; i < prices.length; i++) {
+    const sum = prices.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0);
+    ma.push(sum / period);
+  }
+  return ma;
+};
+
+const calculateNearestLevels = (prices: number[], currentPrice: number) => {
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+  const currentIndex = sortedPrices.findIndex(p => p >= currentPrice);
+  
+  // البحث عن أقرب مستويات الدعم والمقاومة (0.2% من السعر الحالي)
+  const range = currentPrice * 0.002;
+  const support = Math.max(...sortedPrices.filter(p => p < currentPrice - range));
+  const resistance = Math.min(...sortedPrices.filter(p => p > currentPrice + range));
+  
+  return { support, resistance };
+};
+
+const calculateScalpingStopLoss = (currentPrice: number, direction: string, support: number, resistance: number): number => {
+  // وقف الخسارة يكون أقرب (0.2-0.3% من نقطة الدخول)
+  const stopDistance = currentPrice * 0.002;
+  
+  return direction === "صاعد" ? 
+    Number((currentPrice - stopDistance).toFixed(2)) : 
+    Number((currentPrice + stopDistance).toFixed(2));
+};
+
+const calculateScalpingTargets = (currentPrice: number, direction: string, support: number, resistance: number): number[] => {
+  // الأهداف تكون قريبة (0.4-0.6% لكل هدف)
+  const target1Distance = currentPrice * 0.004;
+  const target2Distance = currentPrice * 0.006;
+  
+  if (direction === "صاعد") {
+    return [
+      Number((currentPrice + target1Distance).toFixed(2)),
+      Number((currentPrice + target2Distance).toFixed(2))
+    ];
+  } else {
+    return [
+      Number((currentPrice - target1Distance).toFixed(2)),
+      Number((currentPrice - target2Distance).toFixed(2))
+    ];
+  }
+};
+
+const calculateScalpingEntryPoint = (
+  currentPrice: number,
+  direction: string,
+  support: number,
+  resistance: number
+): { price: number; reason: string } => {
+  // حساب أفضل نقطة دخول بناءً على الاتجاه والمستويات القريبة
+  const entryDistance = currentPrice * 0.001; // 0.1% من السعر الحالي
+  
+  if (direction === "صاعد") {
+    const entryPrice = Number((currentPrice - entryDistance).toFixed(2));
+    return {
+      price: entryPrice,
+      reason: "نقطة دخول عند تصحيح السعر القصير مع اتجاه صعودي قصير المدى"
+    };
+  } else {
+    const entryPrice = Number((currentPrice + entryDistance).toFixed(2));
+    return {
+      price: entryPrice,
+      reason: "نقطة دخول عند ارتداد السعر القصير مع اتجاه هبوطي قصير المدى"
+    };
+  }
 };
