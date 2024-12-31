@@ -6,6 +6,7 @@ import { analyzeDailyChart } from "./dailyAnalysis";
 import { analyzeScalpingChart } from "./scalpingAnalysis";
 import { analyzeSMCChart } from "./smcAnalysis";
 import { analyzeICTChart } from "./ictAnalysis";
+import { analyzeTurtleSoupChart } from "./turtleSoupAnalysis";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -20,7 +21,8 @@ export const useAnalysisHandler = () => {
     isScalping: boolean = false,
     isAI: boolean = false,
     isSMC: boolean = false,
-    isICT: boolean = false
+    isICT: boolean = false,
+    isTurtleSoup: boolean = false
   ) => {
     try {
       setIsAnalyzing(true);
@@ -31,7 +33,7 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
+        نوع_التحليل: isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
       });
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
@@ -52,7 +54,9 @@ export const useAnalysisHandler = () => {
       setImage(chartImage);
 
       let analysisResult;
-      if (isICT) {
+      if (isTurtleSoup) {
+        analysisResult = await analyzeTurtleSoupChart(chartImage, currentPrice, upperSymbol);
+      } else if (isICT) {
         analysisResult = await analyzeICTChart(chartImage, currentPrice, upperSymbol);
       } else if (isSMC) {
         analysisResult = await analyzeSMCChart(chartImage, currentPrice, upperSymbol);
