@@ -6,7 +6,7 @@ import { HistoryRow } from "./history/HistoryRow";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Share2, WhatsappIcon, Facebook } from "lucide-react";
+import { CalendarIcon, Share2, MessageCircle, Facebook } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState } from "react";
@@ -133,7 +133,7 @@ ${item.symbol} - ${format(item.date, 'PPpp', { locale: ar })}
               </Popover>
 
               <Button onClick={() => handleShare('whatsapp')} variant="outline" size="icon">
-                <WhatsappIcon className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4" />
               </Button>
               <Button onClick={() => handleShare('facebook')} variant="outline" size="icon">
                 <Facebook className="h-4 w-4" />
