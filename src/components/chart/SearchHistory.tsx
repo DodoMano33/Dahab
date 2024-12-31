@@ -6,27 +6,30 @@ import { HistoryRow } from "./history/HistoryRow";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Share2, MessageCircle, Facebook } from "lucide-react";
+import { CalendarIcon, Share2, MessageCircle, Facebook, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface SearchHistoryProps {
   isOpen: boolean;
   onClose: () => void;
   history: Array<{
+    id: string;
     date: Date;
     symbol: string;
     currentPrice: number;
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT";
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
   }>;
+  onDelete: (id: string) => void;
 }
 
-export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) => {
+export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHistoryProps) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
@@ -59,7 +62,6 @@ ${targets}`;
     try {
       let shareText = "";
       
-      // فلترة العناصر المحددة أو حسب النطاق الزمني
       const filteredHistory = validHistory.filter(item => {
         if (selectedItems.size > 0) {
           return selectedItems.has(`${item.symbol}-${item.date.getTime()}`);
@@ -75,7 +77,6 @@ ${targets}`;
         return;
       }
 
-      // تجهيز نص المشاركة مع كل البيانات
       shareText = filteredHistory.map(item => `
 تاريخ التحليل: ${format(item.date, 'PPpp', { locale: ar })}
 الرمز: ${item.symbol}
@@ -85,7 +86,6 @@ ${formatAnalysisData(item.analysis)}
 ${'-'.repeat(50)}`
       ).join('\n');
 
-      // مشاركة حسب المنصة
       switch (platform) {
         case 'whatsapp':
           window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
@@ -101,6 +101,26 @@ ${'-'.repeat(50)}`
     } catch (error) {
       console.error("خطأ في المشاركة:", error);
       toast.error("حدث خطأ أثناء المشاركة");
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      const selectedIds = Array.from(selectedItems);
+      if (selectedIds.length === 0) {
+        toast.error("الرجاء تحديد عناصر للحذف");
+        return;
+      }
+
+      for (const id of selectedIds) {
+        await onDelete(id);
+      }
+
+      setSelectedItems(new Set());
+      toast.success("تم حذف العناصر المحددة بنجاح");
+    } catch (error) {
+      console.error("خطأ في حذف العناصر:", error);
+      toast.error("حدث خطأ أثناء حذف العناصر");
     }
   };
 
@@ -146,6 +166,10 @@ ${'-'.repeat(50)}`
                 </PopoverContent>
               </Popover>
 
+              <Button onClick={handleDeleteSelected} variant="destructive" size="icon">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+
               <Button onClick={() => handleShare('whatsapp')} variant="outline" size="icon">
                 <MessageCircle className="h-4 w-4" />
               </Button>
@@ -160,27 +184,28 @@ ${'-'.repeat(50)}`
         </DialogHeader>
         <div className="max-h-[70vh] overflow-auto">
           <Table>
-            <HistoryTableHeader showCheckbox={true} />
+            <HistoryTableHeader showCheckbox={true} showDelete={true} />
             <TableBody>
-              {validHistory.map((item, index) => (
+              {validHistory.map((item) => (
                 <HistoryRow
-                  key={`${item.symbol}-${index}-${item.date.getTime()}`}
+                  key={item.id}
+                  id={item.id}
                   date={item.date}
                   symbol={item.symbol}
                   currentPrice={item.currentPrice}
                   analysis={item.analysis}
                   analysisType={item.analysisType}
-                  isSelected={selectedItems.has(`${item.symbol}-${item.date.getTime()}`)}
+                  isSelected={selectedItems.has(item.id)}
                   onSelect={() => {
                     const newSelected = new Set(selectedItems);
-                    const key = `${item.symbol}-${item.date.getTime()}`;
-                    if (newSelected.has(key)) {
-                      newSelected.delete(key);
+                    if (newSelected.has(item.id)) {
+                      newSelected.delete(item.id);
                     } else {
-                      newSelected.add(key);
+                      newSelected.add(item.id);
                     }
                     setSelectedItems(newSelected);
                   }}
+                  onDelete={() => onDelete(item.id)}
                 />
               ))}
             </TableBody>

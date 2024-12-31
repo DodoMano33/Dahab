@@ -1,7 +1,9 @@
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { Trash2 } from "lucide-react";
 import { DirectionIndicator } from "./DirectionIndicator";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { TargetsList } from "./TargetsList";
@@ -9,23 +11,27 @@ import { StopLoss } from "./StopLoss";
 import { AnalysisData } from "@/types/analysis";
 
 interface HistoryRowProps {
+  id: string;
   date: Date;
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
   isSelected?: boolean;
   onSelect?: () => void;
+  onDelete?: () => void;
 }
 
 export const HistoryRow = ({ 
+  id,
   date, 
   symbol, 
   currentPrice, 
   analysis,
   analysisType,
   isSelected,
-  onSelect
+  onSelect,
+  onDelete
 }: HistoryRowProps) => {
   return (
     <TableRow>
@@ -65,6 +71,18 @@ export const HistoryRow = ({
           isHit={false}
         />
       </TableCell>
+      {onDelete && (
+        <TableCell>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onDelete}
+            className="hover:bg-destructive hover:text-destructive-foreground"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      )}
     </TableRow>
   );
 };

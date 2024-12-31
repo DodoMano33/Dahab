@@ -5,7 +5,7 @@ create table public.search_history (
   symbol text not null,
   current_price numeric not null,
   analysis jsonb not null,
-  analysis_type text not null check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT'))
+  analysis_type text not null check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup'))
 );
 
 -- Set up Row Level Security (RLS)
@@ -22,3 +22,9 @@ create policy "Users can insert their own search history"
   on public.search_history
   for insert
   with check (auth.uid() = user_id);
+
+-- Create policy to allow users to delete their own search history
+create policy "Users can delete their own search history"
+  on public.search_history
+  for delete
+  using (auth.uid() = user_id);

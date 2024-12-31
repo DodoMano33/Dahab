@@ -9,13 +9,14 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
 type SearchHistoryItem = {
+  id: string;
   date: Date;
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
 };
 
 export const ChartAnalyzer = () => {
@@ -34,7 +35,6 @@ export const ChartAnalyzer = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  // Fetch search history when user logs in
   useEffect(() => {
     if (user) {
       fetchSearchHistory();
@@ -53,6 +53,7 @@ export const ChartAnalyzer = () => {
       if (error) throw error;
 
       const formattedHistory: SearchHistoryItem[] = data.map(item => ({
+        id: item.id,
         date: new Date(item.created_at),
         symbol: item.symbol,
         currentPrice: item.current_price,
@@ -67,6 +68,23 @@ export const ChartAnalyzer = () => {
     }
   };
 
+  const handleDeleteHistoryItem = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSearchHistory(prev => prev.filter(item => item.id !== id));
+      toast.success("تم حذف العنصر بنجاح");
+    } catch (error) {
+      console.error("Error deleting history item:", error);
+      toast.error("حدث خطأ أثناء حذف العنصر");
+    }
+  };
+
   const handleAnalysis = async (
     symbol: string, 
     timeframe: string, 
@@ -74,7 +92,8 @@ export const ChartAnalyzer = () => {
     isScalping?: boolean,
     isAI?: boolean,
     isSMC?: boolean,
-    isICT?: boolean
+    isICT?: boolean,
+    isTurtleSoup?: boolean
   ) => {
     try {
       if (!user) {
@@ -88,17 +107,33 @@ export const ChartAnalyzer = () => {
         toast.info("جاري تحليل البيانات باستخدام نموذج SMC...");
       } else if (isICT) {
         toast.info("جاري تحليل البيانات باستخدام نموذج ICT...");
+      } else if (isTurtleSoup) {
+        toast.info("جاري تحليل البيانات باستخدام نموذج Turtle Soup...");
       }
 
-      const result = await handleTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC, isICT);
+      const result = await handleTradingViewConfig(
+        symbol, 
+        timeframe, 
+        providedPrice, 
+        isScalping, 
+        isAI, 
+        isSMC, 
+        isICT,
+        isTurtleSoup
+      );
       
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : timeframe === "5" ? "سكالبينج" : "عادي";
+        const analysisType = isTurtleSoup ? "Turtle Soup" : 
+                           isICT ? "ICT" : 
+                           isSMC ? "SMC" : 
+                           isAI ? "ذكي" : 
+                           isScalping ? "سكالبينج" : 
+                           "عادي";
         
         // Save to Supabase
-        const { error: saveError } = await supabase
+        const { data, error: saveError } = await supabase
           .from('search_history')
           .insert({
             user_id: user.id,
@@ -106,12 +141,15 @@ export const ChartAnalyzer = () => {
             current_price: currentPrice,
             analysis: analysisResult,
             analysis_type: analysisType
-          });
+          })
+          .select()
+          .single();
 
         if (saveError) throw saveError;
 
         // Update local state
         const newHistoryEntry: SearchHistoryItem = {
+          id: data.id,
           date: new Date(),
           symbol: upperSymbol,
           currentPrice,
@@ -130,11 +168,13 @@ export const ChartAnalyzer = () => {
           toast.success("تم إكمال تحليل SMC بنجاح");
         } else if (isICT) {
           toast.success("تم إكمال تحليل ICT بنجاح");
+        } else if (isTurtleSoup) {
+          toast.success("تم إكمال تحليل Turtle Soup بنجاح");
         }
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
-      toast.error(isAI ? "حدث خطأ أثناء التحليل الذكي" : "حدث خطأ أثناء التحليل");
+      toast.error("حدث خطأ أثناء التحليل");
     }
   };
 
@@ -171,6 +211,7 @@ export const ChartAnalyzer = () => {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         history={searchHistory}
+        onDelete={handleDeleteHistoryItem}
       />
     </div>
   );
