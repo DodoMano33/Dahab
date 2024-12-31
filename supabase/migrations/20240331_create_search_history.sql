@@ -9,7 +9,7 @@ CREATE TABLE public.search_history (
   symbol text NOT NULL,
   current_price numeric NOT NULL,
   analysis jsonb NOT NULL,
-  analysis_type text NOT NULL check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup'))
+  analysis_type text NOT NULL check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup', 'Gann'))
 );
 
 -- Set up Row Level Security (RLS)
