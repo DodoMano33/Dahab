@@ -45,12 +45,15 @@ export const ChartAnalyzer = () => {
 
   const fetchSearchHistory = async () => {
     try {
+      console.log("Fetching search history...");
       const { data, error } = await supabase
         .from('search_history')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      console.log("Received search history data:", data);
 
       const formattedHistory: SearchHistoryItem[] = data.map(item => ({
         id: item.id,
@@ -125,14 +128,26 @@ export const ChartAnalyzer = () => {
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isTurtleSoup ? "Turtle Soup" : 
-                           isICT ? "ICT" : 
-                           isSMC ? "SMC" : 
-                           isAI ? "ذكي" : 
-                           isScalping ? "سكالبينج" : 
-                           "عادي";
+        // تحديد نوع التحليل بشكل صحيح حسب القيم المسموح بها في ENUM
+        let analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
         
-        // Save to Supabase
+        if (isTurtleSoup) {
+          analysisType = "Turtle Soup";
+        } else if (isICT) {
+          analysisType = "ICT";
+        } else if (isSMC) {
+          analysisType = "SMC";
+        } else if (isAI) {
+          analysisType = "ذكي";
+        } else if (isScalping) {
+          analysisType = "سكالبينج";
+        } else {
+          analysisType = "عادي";
+        }
+
+        console.log("Saving analysis with type:", analysisType);
+        
+        // حفظ في Supabase
         const { data, error: saveError } = await supabase
           .from('search_history')
           .insert({
@@ -145,9 +160,14 @@ export const ChartAnalyzer = () => {
           .select()
           .single();
 
-        if (saveError) throw saveError;
+        if (saveError) {
+          console.error("Error saving to Supabase:", saveError);
+          throw saveError;
+        }
 
-        // Update local state
+        console.log("Successfully saved to Supabase:", data);
+
+        // تحديث الحالة المحلية
         const newHistoryEntry: SearchHistoryItem = {
           id: data.id,
           date: new Date(),
@@ -160,7 +180,7 @@ export const ChartAnalyzer = () => {
         };
 
         setSearchHistory(prev => [newHistoryEntry, ...prev]);
-        console.log("تم تحديث سجل البحث:", newHistoryEntry);
+        console.log("Updated search history:", newHistoryEntry);
 
         if (isAI) {
           toast.success("تم إكمال التحليل الذكي بنجاح");
