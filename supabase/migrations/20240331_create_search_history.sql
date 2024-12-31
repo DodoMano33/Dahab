@@ -1,30 +1,38 @@
-create table public.search_history (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  user_id uuid references auth.users(id) not null,
-  symbol text not null,
-  current_price numeric not null,
-  analysis jsonb not null,
-  analysis_type text not null check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup'))
+-- Drop existing table if it exists
+DROP TABLE IF EXISTS public.search_history;
+
+-- Create the search_history table
+CREATE TABLE public.search_history (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  user_id uuid references auth.users(id) NOT NULL,
+  symbol text NOT NULL,
+  current_price numeric NOT NULL,
+  analysis jsonb NOT NULL,
+  analysis_type text NOT NULL check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup'))
 );
 
 -- Set up Row Level Security (RLS)
-alter table public.search_history enable row level security;
+ALTER TABLE public.search_history ENABLE ROW LEVEL SECURITY;
 
 -- Create policy to allow users to see only their own search history
-create policy "Users can view their own search history"
-  on public.search_history
-  for select
-  using (auth.uid() = user_id);
+CREATE POLICY "Users can view their own search history"
+  ON public.search_history
+  FOR SELECT
+  USING (auth.uid() = user_id);
 
 -- Create policy to allow users to insert their own search history
-create policy "Users can insert their own search history"
-  on public.search_history
-  for insert
-  with check (auth.uid() = user_id);
+CREATE POLICY "Users can insert their own search history"
+  ON public.search_history
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
 
 -- Create policy to allow users to delete their own search history
-create policy "Users can delete their own search history"
-  on public.search_history
-  for delete
-  using (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own search history"
+  ON public.search_history
+  FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Create indexes for better performance
+CREATE INDEX idx_search_history_user_id ON public.search_history(user_id);
+CREATE INDEX idx_search_history_created_at ON public.search_history(created_at);
