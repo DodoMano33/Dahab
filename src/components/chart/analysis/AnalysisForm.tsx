@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { SearchHistoryItem } from "@/types/analysis";
 import { supabase } from "@/lib/supabase";
+import { useAnalysisHandler } from "./AnalysisHandler";
 
 interface AnalysisFormProps {
   onAnalysis: (item: SearchHistoryItem) => void;
@@ -13,6 +14,7 @@ interface AnalysisFormProps {
 
 export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: AnalysisFormProps) => {
   const { user } = useAuth();
+  const { handleTradingViewConfig } = useAnalysisHandler();
 
   const handleAnalysis = async (
     symbol: string, 
@@ -66,7 +68,7 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
                            isScalping ? "سكالبينج" : 
                            "عادي";
         
-        // Save to Supabase
+        // حفظ في Supabase
         const { data, error: saveError } = await supabase
           .from('search_history')
           .insert({
@@ -81,7 +83,7 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
 
         if (saveError) throw saveError;
 
-        // Update local state
+        // تحديث الحالة المحلية
         const newHistoryEntry: SearchHistoryItem = {
           id: data.id,
           date: new Date(),
