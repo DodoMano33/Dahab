@@ -1,8 +1,13 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-export const HistoryTableHeader = () => (
+interface HistoryTableHeaderProps {
+  showCheckbox?: boolean;
+}
+
+export const HistoryTableHeader = ({ showCheckbox = false }: HistoryTableHeaderProps) => (
   <TableHeader>
     <TableRow>
+      {showCheckbox && <TableHead className="w-12"></TableHead>}
       <TableHead className="text-right">التاريخ</TableHead>
       <TableHead className="text-right">الرمز</TableHead>
       <TableHead className="text-right">نوع التحليل</TableHead>

@@ -1,4 +1,5 @@
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { DirectionIndicator } from "./DirectionIndicator";
@@ -13,6 +14,8 @@ interface HistoryRowProps {
   currentPrice: number;
   analysis: AnalysisData;
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT";
+  isSelected?: boolean;
+  onSelect?: () => void;
 }
 
 export const HistoryRow = ({ 
@@ -20,10 +23,17 @@ export const HistoryRow = ({
   symbol, 
   currentPrice, 
   analysis,
-  analysisType
+  analysisType,
+  isSelected,
+  onSelect
 }: HistoryRowProps) => {
   return (
     <TableRow>
+      {onSelect !== undefined && (
+        <TableCell>
+          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+        </TableCell>
+      )}
       <TableCell className="text-right">
         {format(date, 'PPpp', { locale: ar })}
       </TableCell>
