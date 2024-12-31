@@ -1,23 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChartInput } from "./chart/ChartInput";
 import { ChartDisplay } from "./chart/ChartDisplay";
 import { SearchHistory } from "./chart/SearchHistory";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
-import { AnalysisData } from "@/types/analysis";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSearchHistory } from "./chart/hooks/useSearchHistory";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
-
-type SearchHistoryItem = {
-  id: string;
-  date: Date;
-  symbol: string;
-  currentPrice: number;
-  analysis: AnalysisData;
-  targetHit?: boolean;
-  stopLossHit?: boolean;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
-};
 
 export const ChartAnalyzer = () => {
   const { user } = useAuth();
@@ -32,61 +21,13 @@ export const ChartAnalyzer = () => {
     setIsAnalyzing
   } = useAnalysisHandler();
 
-  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const {
+    searchHistory,
+    setSearchHistory,
+    deleteHistoryItem
+  } = useSearchHistory(user);
+
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      fetchSearchHistory();
-    } else {
-      setSearchHistory([]);
-    }
-  }, [user]);
-
-  const fetchSearchHistory = async () => {
-    try {
-      console.log("Fetching search history...");
-      const { data, error } = await supabase
-        .from('search_history')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      console.log("Received search history data:", data);
-
-      const formattedHistory: SearchHistoryItem[] = data.map(item => ({
-        id: item.id,
-        date: new Date(item.created_at),
-        symbol: item.symbol,
-        currentPrice: item.current_price,
-        analysis: item.analysis,
-        analysisType: item.analysis_type
-      }));
-
-      setSearchHistory(formattedHistory);
-    } catch (error) {
-      console.error("Error fetching search history:", error);
-      toast.error("حدث خطأ أثناء جلب سجل البحث");
-    }
-  };
-
-  const handleDeleteHistoryItem = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('search_history')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setSearchHistory(prev => prev.filter(item => item.id !== id));
-      toast.success("تم حذف العنصر بنجاح");
-    } catch (error) {
-      console.error("Error deleting history item:", error);
-      toast.error("حدث خطأ أثناء حذف العنصر");
-    }
-  };
 
   const handleAnalysis = async (
     symbol: string, 
@@ -128,7 +69,6 @@ export const ChartAnalyzer = () => {
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        // تحديد نوع التحليل بشكل صحيح حسب القيم المسموح بها في ENUM
         let analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
         
         if (isTurtleSoup) {
@@ -147,7 +87,6 @@ export const ChartAnalyzer = () => {
 
         console.log("Saving analysis with type:", analysisType);
         
-        // حفظ في Supabase
         const { data, error: saveError } = await supabase
           .from('search_history')
           .insert({
@@ -167,8 +106,7 @@ export const ChartAnalyzer = () => {
 
         console.log("Successfully saved to Supabase:", data);
 
-        // تحديث الحالة المحلية
-        const newHistoryEntry: SearchHistoryItem = {
+        const newHistoryEntry = {
           id: data.id,
           date: new Date(),
           symbol: upperSymbol,
@@ -182,19 +120,23 @@ export const ChartAnalyzer = () => {
         setSearchHistory(prev => [newHistoryEntry, ...prev]);
         console.log("Updated search history:", newHistoryEntry);
 
-        if (isAI) {
-          toast.success("تم إكمال التحليل الذكي بنجاح");
-        } else if (isSMC) {
-          toast.success("تم إكمال تحليل SMC بنجاح");
-        } else if (isICT) {
-          toast.success("تم إكمال تحليل ICT بنجاح");
-        } else if (isTurtleSoup) {
-          toast.success("تم إكمال تحليل Turtle Soup بنجاح");
-        }
+        showSuccessMessage(isAI, isSMC, isICT, isTurtleSoup);
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
       toast.error("حدث خطأ أثناء التحليل");
+    }
+  };
+
+  const showSuccessMessage = (isAI: boolean, isSMC: boolean, isICT: boolean, isTurtleSoup: boolean) => {
+    if (isAI) {
+      toast.success("تم إكمال التحليل الذكي بنجاح");
+    } else if (isSMC) {
+      toast.success("تم إكمال تحليل SMC بنجاح");
+    } else if (isICT) {
+      toast.success("تم إكمال تحليل ICT بنجاح");
+    } else if (isTurtleSoup) {
+      toast.success("تم إكمال تحليل Turtle Soup بنجاح");
     }
   };
 
@@ -231,7 +173,7 @@ export const ChartAnalyzer = () => {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         history={searchHistory}
-        onDelete={handleDeleteHistoryItem}
+        onDelete={deleteHistoryItem}
       />
     </div>
   );
