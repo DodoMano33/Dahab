@@ -7,7 +7,7 @@ import { CalendarIcon, Share2, MessageCircle, Facebook, Trash2 } from "lucide-re
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { toast } from "sonner";
-import { SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem, AnalysisData } from "@/types/analysis";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
 import { ShareButtons } from "./ShareButtons";
