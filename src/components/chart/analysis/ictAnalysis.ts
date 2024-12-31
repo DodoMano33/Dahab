@@ -24,11 +24,14 @@ export const analyzeICTChart = async (
         return;
       }
 
-      // تحليل ICT يعتمد على نقاط السيولة والمناطق المؤسسية
+      // تحليل مناطق السيولة المؤسسية وفقاً لاستراتيجية الفيديو
       const prices = detectICTPrices(imageData, currentPrice);
       console.log("الأسعار المكتشفة لتحليل ICT:", prices);
 
+      // تحديد الاتجاه بناءً على مناطق تجمع السيولة
       const direction = detectICTDirection(prices, currentPrice);
+      
+      // حساب مستويات الدعم والمقاومة بناءً على مناطق تجمع السيولة المؤسسية
       const { support, resistance } = calculateICTLevels(prices, currentPrice);
       
       // حساب نقطة وقف الخسارة بناءً على مناطق السيولة المؤسسية
@@ -37,6 +40,7 @@ export const analyzeICTChart = async (
       // حساب الأهداف بناءً على مناطق تجمع السيولة المؤسسية
       const targetPrices = calculateICTTargets(currentPrice, direction, support, resistance);
 
+      // تحديد أفضل نقطة دخول بناءً على مناطق تجمع السيولة
       const bestEntryPoint = calculateICTEntryPoint(
         currentPrice,
         direction,
@@ -44,12 +48,13 @@ export const analyzeICTChart = async (
         resistance
       );
 
+      // تحديد النموذج المؤسسي
       const pattern = detectICTPattern(direction, prices, currentPrice);
 
       // إنشاء الأهداف مع توقيتات متوقعة
       const targets = targetPrices.map((price, index) => ({
         price,
-        expectedTime: addHours(new Date(), (index + 1) * 4) // كل هدف متوقع بعد 4 ساعات
+        expectedTime: addHours(new Date(), (index + 1) * 4)
       }));
 
       const analysisResult: AnalysisData = {
@@ -77,10 +82,11 @@ export const analyzeICTChart = async (
 };
 
 const detectICTPrices = (imageData: ImageData, currentPrice: number): number[] => {
-  // محاكاة اكتشاف الأسعار مع التركيز على مناطق السيولة المؤسسية
+  // تحليل مناطق تجمع السيولة المؤسسية
   const prices: number[] = [];
-  const range = currentPrice * 0.02; // نطاق 2% حول السعر الحالي
+  const range = currentPrice * 0.03; // نطاق 3% حول السعر الحالي
   
+  // محاكاة اكتشاف مناطق تجمع السيولة
   for (let i = 0; i < 20; i++) {
     const deviation = (Math.random() - 0.5) * range;
     prices.push(currentPrice + deviation);
@@ -90,29 +96,42 @@ const detectICTPrices = (imageData: ImageData, currentPrice: number): number[] =
 };
 
 const detectICTDirection = (prices: number[], currentPrice: number): "صاعد" | "هابط" => {
-  // تحديد الاتجاه بناءً على موقع السعر الحالي من مناطق السيولة المؤسسية
+  // تحديد الاتجاه بناءً على موقع السعر من مناطق تجمع السيولة المؤسسية
   const midPoint = prices[Math.floor(prices.length / 2)];
-  return currentPrice > midPoint ? "صاعد" : "هابط";
+  const recentPrices = prices.slice(-5);
+  const avgRecentPrice = recentPrices.reduce((a, b) => a + b, 0) / recentPrices.length;
+  
+  // تحليل نمط حركة السعر
+  if (currentPrice > avgRecentPrice && currentPrice > midPoint) {
+    return "صاعد";
+  } else {
+    return "هابط";
+  }
 };
 
 const calculateICTLevels = (prices: number[], currentPrice: number) => {
-  // حساب مستويات الدعم والمقاومة بناءً على مناطق السيولة المؤسسية
+  // حساب مستويات الدعم والمقاومة بناءً على مناطق تجمع السيولة المؤسسية
   const sortedPrices = [...prices].sort((a, b) => a - b);
-  const support = sortedPrices[Math.floor(sortedPrices.length * 0.2)]; // مستوى الدعم عند 20%
-  const resistance = sortedPrices[Math.floor(sortedPrices.length * 0.8)]; // مستوى المقاومة عند 80%
   
-  return { support, resistance };
+  // تحديد مناطق تجمع السيولة الرئيسية
+  const lowerLiquidity = sortedPrices[Math.floor(sortedPrices.length * 0.2)];
+  const upperLiquidity = sortedPrices[Math.floor(sortedPrices.length * 0.8)];
+  
+  return {
+    support: lowerLiquidity,
+    resistance: upperLiquidity
+  };
 };
 
 const calculateICTStopLoss = (currentPrice: number, direction: "صاعد" | "هابط", support: number, resistance: number): number => {
   const range = resistance - support;
   
   if (direction === "صاعد") {
-    // وقف الخسارة تحت منطقة السيولة المؤسسية الأخيرة
-    return currentPrice - (range * 0.3);
+    // وقف الخسارة تحت منطقة تجمع السيولة المؤسسية الأخيرة
+    return currentPrice - (range * 0.25);
   } else {
-    // وقف الخسارة فوق منطقة السيولة المؤسسية الأخيرة
-    return currentPrice + (range * 0.3);
+    // وقف الخسارة فوق منطقة تجمع السيولة المؤسسية الأخيرة
+    return currentPrice + (range * 0.25);
   }
 };
 
@@ -121,14 +140,14 @@ const calculateICTTargets = (currentPrice: number, direction: "صاعد" | "ها
   
   if (direction === "صاعد") {
     return [
-      currentPrice + (range * 0.5),  // الهدف الأول عند منطقة السيولة المؤسسية الأولى
-      currentPrice + (range * 0.8),  // الهدف الثاني عند منطقة السيولة المؤسسية الثانية
-      currentPrice + range           // الهدف الثالث عند منطقة السيولة المؤسسية الرئيسية
+      currentPrice + (range * 0.382),  // الهدف الأول عند مستوى فيبوناتشي 0.382
+      currentPrice + (range * 0.618),  // الهدف الثاني عند مستوى فيبوناتشي 0.618
+      currentPrice + range            // الهدف الثالث عند مستوى فيبوناتشي 1.0
     ];
   } else {
     return [
-      currentPrice - (range * 0.5),
-      currentPrice - (range * 0.8),
+      currentPrice - (range * 0.382),
+      currentPrice - (range * 0.618),
       currentPrice - range
     ];
   }
@@ -143,24 +162,24 @@ const calculateICTEntryPoint = (
   const range = resistance - support;
   
   if (direction === "صاعد") {
-    const entryPrice = currentPrice - (range * 0.15);
+    const entryPrice = currentPrice - (range * 0.236); // استخدام مستوى فيبوناتشي 0.236 للدخول
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "نقطة دخول عند منطقة تجمع السيولة المؤسسية مع احتمالية اختراق صعودي"
+      reason: "نقطة دخول عند منطقة تجمع السيولة المؤسسية مع احتمالية اختراق صعودي بعد اختبار المنطقة"
     };
   } else {
-    const entryPrice = currentPrice + (range * 0.15);
+    const entryPrice = currentPrice + (range * 0.236);
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "نقطة دخول عند منطقة تجمع السيولة المؤسسية مع احتمالية اختراق هبوطي"
+      reason: "نقطة دخول عند منطقة تجمع السيولة المؤسسية مع احتمالية اختراق هبوطي بعد اختبار المنطقة"
     };
   }
 };
 
 const detectICTPattern = (direction: "صاعد" | "هابط", prices: number[], currentPrice: number): string => {
   if (direction === "صاعد") {
-    return "نموذج تجميع سيولة مؤسسي قبل الاختراق الصعودي";
+    return "نموذج تجميع سيولة مؤسسي قبل الاختراق الصعودي - اختبار منطقة السيولة السفلية";
   } else {
-    return "نموذج تجميع سيولة مؤسسي قبل الاختراق الهبوطي";
+    return "نموذج تجميع سيولة مؤسسي قبل الاختراق الهبوطي - اختبار منطقة السيولة العلوية";
   }
 };
