@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChartInput } from "./chart/ChartInput";
 import { ChartDisplay } from "./chart/ChartDisplay";
 import { SearchHistory } from "./chart/SearchHistory";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisData } from "@/types/analysis";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 type SearchHistoryItem = {
   date: Date;
@@ -17,6 +19,7 @@ type SearchHistoryItem = {
 };
 
 export const ChartAnalyzer = () => {
+  const { user } = useAuth();
   const {
     isAnalyzing,
     image,
@@ -31,6 +34,39 @@ export const ChartAnalyzer = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
+  // Fetch search history when user logs in
+  useEffect(() => {
+    if (user) {
+      fetchSearchHistory();
+    } else {
+      setSearchHistory([]);
+    }
+  }, [user]);
+
+  const fetchSearchHistory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedHistory: SearchHistoryItem[] = data.map(item => ({
+        date: new Date(item.created_at),
+        symbol: item.symbol,
+        currentPrice: item.current_price,
+        analysis: item.analysis,
+        analysisType: item.analysis_type
+      }));
+
+      setSearchHistory(formattedHistory);
+    } catch (error) {
+      console.error("Error fetching search history:", error);
+      toast.error("حدث خطأ أثناء جلب سجل البحث");
+    }
+  };
+
   const handleAnalysis = async (
     symbol: string, 
     timeframe: string, 
@@ -41,6 +77,11 @@ export const ChartAnalyzer = () => {
     isICT?: boolean
   ) => {
     try {
+      if (!user) {
+        toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
+        return;
+      }
+
       if (isAI) {
         toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
       } else if (isSMC) {
@@ -54,6 +95,22 @@ export const ChartAnalyzer = () => {
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
+        const analysisType = isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : timeframe === "5" ? "سكالبينج" : "عادي";
+        
+        // Save to Supabase
+        const { error: saveError } = await supabase
+          .from('search_history')
+          .insert({
+            user_id: user.id,
+            symbol: upperSymbol,
+            current_price: currentPrice,
+            analysis: analysisResult,
+            analysis_type: analysisType
+          });
+
+        if (saveError) throw saveError;
+
+        // Update local state
         const newHistoryEntry: SearchHistoryItem = {
           date: new Date(),
           symbol: upperSymbol,
@@ -61,7 +118,7 @@ export const ChartAnalyzer = () => {
           analysis: analysisResult,
           targetHit: false,
           stopLossHit: false,
-          analysisType: isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : timeframe === "5" ? "سكالبينج" : "عادي"
+          analysisType
         };
 
         setSearchHistory(prev => [newHistoryEntry, ...prev]);
@@ -82,6 +139,10 @@ export const ChartAnalyzer = () => {
   };
 
   const handleShowHistory = () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لعرض سجل البحث");
+      return;
+    }
     setIsHistoryOpen(true);
   };
 
