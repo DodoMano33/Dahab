@@ -42,6 +42,19 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
     item.analysis
   );
 
+  const formatAnalysisData = (analysis: AnalysisData) => {
+    const targets = analysis.targets?.map((target, idx) => 
+      `الهدف ${idx + 1}: ${target.price} (${format(target.expectedTime, 'PPpp', { locale: ar })})`
+    ).join('\n') || 'لا توجد أهداف';
+
+    return `الاتجاه: ${analysis.direction}
+نقطة الدخول: ${analysis.bestEntryPoint?.price || 'غير محدد'}
+سبب الدخول: ${analysis.bestEntryPoint?.reason || 'غير محدد'}
+وقف الخسارة: ${analysis.stopLoss}
+الأهداف:
+${targets}`;
+  };
+
   const handleShare = async (platform: 'whatsapp' | 'facebook' | 'copy') => {
     try {
       let shareText = "";
@@ -62,14 +75,15 @@ export const SearchHistory = ({ isOpen, onClose, history }: SearchHistoryProps) 
         return;
       }
 
-      // تجهيز نص المشاركة
+      // تجهيز نص المشاركة مع كل البيانات
       shareText = filteredHistory.map(item => `
-${item.symbol} - ${format(item.date, 'PPpp', { locale: ar })}
-السعر: ${item.currentPrice}
-الاتجاه: ${item.analysis.direction}
-نقطة الدخول: ${item.analysis.bestEntryPoint?.price}
-وقف الخسارة: ${item.analysis.stopLoss}
-      `).join('\n---\n');
+تاريخ التحليل: ${format(item.date, 'PPpp', { locale: ar })}
+الرمز: ${item.symbol}
+نوع التحليل: ${item.analysisType}
+السعر عند التحليل: ${item.currentPrice}
+${formatAnalysisData(item.analysis)}
+${'-'.repeat(50)}`
+      ).join('\n');
 
       // مشاركة حسب المنصة
       switch (platform) {
