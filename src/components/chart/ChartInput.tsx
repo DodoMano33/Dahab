@@ -2,11 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Brain, TrendingUp, Building2, Turtle, Activity } from "lucide-react";
+import { Brain, TrendingUp, Building2, Turtle, Activity, Waves } from "lucide-react";
 
 interface ChartInputProps {
   mode: "tradingview";
-  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean, isAI?: boolean, isSMC?: boolean, isICT?: boolean, isTurtleSoup?: boolean, isGann?: boolean) => void;
+  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean, isAI?: boolean, isSMC?: boolean, isICT?: boolean, isTurtleSoup?: boolean, isGann?: boolean, isWaves?: boolean) => void;
   onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
@@ -20,7 +20,16 @@ export const ChartInput = ({
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = (e: React.FormEvent, isScalping: boolean = false, isAI: boolean = false, isSMC: boolean = false, isICT: boolean = false, isTurtleSoup: boolean = false, isGann: boolean = false) => {
+  const handleSubmit = (
+    e: React.FormEvent, 
+    isScalping: boolean = false, 
+    isAI: boolean = false, 
+    isSMC: boolean = false, 
+    isICT: boolean = false, 
+    isTurtleSoup: boolean = false, 
+    isGann: boolean = false,
+    isWaves: boolean = false
+  ) => {
     e.preventDefault();
     
     if (!symbol) {
@@ -35,8 +44,8 @@ export const ChartInput = ({
     }
 
     const timeframe = isScalping ? "5" : "D";
-    console.log(`تحليل ${isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
-    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC, isICT, isTurtleSoup, isGann);
+    console.log(`تحليل ${isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
+    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC, isICT, isTurtleSoup, isGann, isWaves);
   };
 
   return (
@@ -127,6 +136,16 @@ export const ChartInput = ({
         >
           <Activity className="w-4 h-4" />
           تحليل Gann
+        </Button>
+
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => handleSubmit(e, false, false, false, false, false, false, true)}
+          className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2"
+        >
+          <Waves className="w-4 h-4" />
+          تحليل Waves
         </Button>
 
         <Button
