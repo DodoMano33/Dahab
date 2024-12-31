@@ -44,7 +44,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_analysis_type: {
+        Args: {
+          p_user_id: string
+          p_symbol: string
+          p_current_price: number
+          p_analysis: Json
+          p_analysis_type: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
