@@ -16,6 +16,8 @@ CREATE TABLE search_history (
   current_price DECIMAL NOT NULL,
   analysis JSONB NOT NULL,
   analysis_type analysis_type NOT NULL,
+  target_hit BOOLEAN DEFAULT false,
+  stop_loss_hit BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -66,7 +68,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add triggers for updated_at
+-- Create triggers for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
