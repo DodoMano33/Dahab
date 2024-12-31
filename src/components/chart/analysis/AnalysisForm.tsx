@@ -25,7 +25,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
     isSMC?: boolean,
     isICT?: boolean,
     isTurtleSoup?: boolean,
-    isGann?: boolean
+    isGann?: boolean,
+    isWaves?: boolean
   ) => {
     try {
       if (!user) {
@@ -33,7 +34,9 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
         return;
       }
 
-      if (isGann) {
+      if (isWaves) {
+        toast.info("جاري تحليل البيانات باستخدام نموذج Waves...");
+      } else if (isGann) {
         toast.info("جاري تحليل البيانات باستخدام نظرية غان...");
       } else if (isAI) {
         toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
@@ -54,13 +57,15 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
         isSMC, 
         isICT,
         isTurtleSoup,
-        isGann
+        isGann,
+        isWaves
       );
       
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isGann ? "Gann" :
+        const analysisType = isWaves ? "Waves" :
+                           isGann ? "Gann" :
                            isTurtleSoup ? "Turtle Soup" : 
                            isICT ? "ICT" : 
                            isSMC ? "SMC" : 

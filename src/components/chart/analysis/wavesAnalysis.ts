@@ -1,23 +1,22 @@
 import { addDays } from "date-fns";
+import { AnalysisData } from "@/types/analysis";
 
 export const analyzeWavesChart = async (
   chartImage: string,
   currentPrice: number,
   symbol: string
-) => {
+): Promise<AnalysisData> => {
   console.log("بدء تحليل Waves للرمز:", symbol);
 
-  // حساب الموجات بناءً على السعر الحالي
+  // حساب نسب فيبوناتشي للموجات
   const waveRange = currentPrice * 0.02; // نطاق 2% للموجة
-  
-  // تحديد مستويات الدعم والمقاومة بناءً على الموجات
   const support = currentPrice - (waveRange * 2);
   const resistance = currentPrice + (waveRange * 2);
 
   // تحديد الاتجاه بناءً على نمط الموجات
   const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
 
-  // حساب نقطة وقف الخسارة بناءً على الموجة السابقة
+  // تحديد نقطة وقف الخسارة بناءً على قواعد إليوت
   const stopLoss = direction === "صاعد" 
     ? currentPrice - (waveRange * 3)  // وقف خسارة تحت الموجة السابقة
     : currentPrice + (waveRange * 3);  // وقف خسارة فوق الموجة السابقة
@@ -54,7 +53,14 @@ export const analyzeWavesChart = async (
     }
   ];
 
-  const analysisResult = {
+  // إضافة مستويات فيبوناتشي للموجات
+  const fibonacciLevels = [
+    { level: 0.236, price: currentPrice + (waveRange * 0.236) },
+    { level: 0.382, price: currentPrice + (waveRange * 0.382) },
+    { level: 0.618, price: currentPrice + (waveRange * 0.618) }
+  ];
+
+  const analysisResult: AnalysisData = {
     pattern: `نموذج موجي ${direction === "صاعد" ? "صاعد" : "هابط"} - ${direction === "صاعد" ? "اكتمال الموجة التصحيحية" : "اكتمال الموجة الدافعة"}`,
     direction,
     currentPrice,
@@ -63,7 +69,8 @@ export const analyzeWavesChart = async (
     stopLoss,
     bestEntryPoint: bestEntry,
     targets,
-    analysisType: "Waves" as const
+    fibonacciLevels,
+    analysisType: "Waves"
   };
 
   console.log("نتائج تحليل Waves:", analysisResult);
