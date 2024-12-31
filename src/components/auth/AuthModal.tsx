@@ -18,15 +18,44 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success('تم تسجيل الدخول بنجاح');
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            // If email is not confirmed, show a message and option to resend confirmation
+            toast.error('البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني للحصول على رابط التأكيد');
+            const { error: resendError } = await supabase.auth.resend({
+              type: 'signup',
+              email,
+            });
+            if (!resendError) {
+              toast.success('تم إرسال رابط التأكيد مرة أخرى');
+            }
+          } else {
+            throw error;
+          }
+        } else {
+          toast.success('تم تسجيل الدخول بنجاح');
+          onClose();
+        }
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error, data } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
+        });
+        
         if (error) throw error;
-        toast.success('تم إنشاء الحساب بنجاح');
+        
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          toast.error('البريد الإلكتروني مسجل بالفعل');
+        } else {
+          toast.success('تم إرسال رابط التأكيد إلى بريدك الإلكتروني');
+          setIsLogin(true); // Switch to login view
+        }
       }
-      onClose();
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast.error(error.message);
     } finally {
       setLoading(false);
