@@ -43,7 +43,8 @@ export const ChartInput = ({
       return;
     }
 
-    const timeframe = isScalping ? "5" : "D";
+    // تحديد النطاق الزمني - 5 دقائق لتحليل Waves
+    const timeframe = isWaves ? "5" : isScalping ? "5" : "D";
     console.log(`تحليل ${isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
     onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC, isICT, isTurtleSoup, isGann, isWaves);
   };
