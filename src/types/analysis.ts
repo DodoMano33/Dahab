@@ -19,3 +19,14 @@ export interface AnalysisData {
   }[];
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann";
 }
+
+export interface SearchHistoryItem {
+  id: string;
+  date: Date;
+  symbol: string;
+  currentPrice: number;
+  analysis: AnalysisData;
+  targetHit?: boolean;
+  stopLossHit?: boolean;
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann";
+}
