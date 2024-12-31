@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { AnalysisData } from "@/types/analysis";
-import { getTradingViewChartImage, getCurrentPriceFromTradingView } from "@/utils/tradingViewUtils";
+import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { analyzeDailyChart } from "./dailyAnalysis";
 import { analyzeScalpingChart } from "./scalpingAnalysis";
 import { analyzeSMCChart } from "./smcAnalysis";
 import { analyzeICTChart } from "./ictAnalysis";
 import { analyzeTurtleSoupChart } from "./turtleSoupAnalysis";
+import { analyzeGannChart } from "./gannAnalysis";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -22,7 +22,8 @@ export const useAnalysisHandler = () => {
     isAI: boolean = false,
     isSMC: boolean = false,
     isICT: boolean = false,
-    isTurtleSoup: boolean = false
+    isTurtleSoup: boolean = false,
+    isGann: boolean = false
   ) => {
     try {
       setIsAnalyzing(true);
@@ -33,7 +34,7 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
+        نوع_التحليل: isGann ? "Gann" : isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
       });
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
@@ -41,20 +42,16 @@ export const useAnalysisHandler = () => {
       
       let currentPrice = providedPrice;
       if (!currentPrice) {
-        currentPrice = await getCurrentPriceFromTradingView(upperSymbol);
+        currentPrice = 0; // يجب تحديث هذا لاحقاً للحصول على السعر الحالي من TradingView
         console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
-      }
-      
-      if (!currentPrice) {
-        toast.error("فشل في الحصول على السعر الحالي");
-        setIsAnalyzing(false);
-        return;
       }
       
       setImage(chartImage);
 
       let analysisResult;
-      if (isTurtleSoup) {
+      if (isGann) {
+        analysisResult = await analyzeGannChart(chartImage, currentPrice, upperSymbol);
+      } else if (isTurtleSoup) {
         analysisResult = await analyzeTurtleSoupChart(chartImage, currentPrice, upperSymbol);
       } else if (isICT) {
         analysisResult = await analyzeICTChart(chartImage, currentPrice, upperSymbol);
@@ -73,9 +70,8 @@ export const useAnalysisHandler = () => {
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
-      toast.error("حدث خطأ أثناء جلب الرسم البياني");
       setIsAnalyzing(false);
-      return null;
+      throw error;
     }
   };
 

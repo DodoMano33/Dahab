@@ -16,7 +16,7 @@ type SearchHistoryItem = {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann";
 };
 
 export const ChartAnalyzer = () => {
@@ -93,7 +93,8 @@ export const ChartAnalyzer = () => {
     isAI?: boolean,
     isSMC?: boolean,
     isICT?: boolean,
-    isTurtleSoup?: boolean
+    isTurtleSoup?: boolean,
+    isGann?: boolean
   ) => {
     try {
       if (!user) {
@@ -101,7 +102,9 @@ export const ChartAnalyzer = () => {
         return;
       }
 
-      if (isAI) {
+      if (isGann) {
+        toast.info("جاري تحليل البيانات باستخدام نظرية غان...");
+      } else if (isAI) {
         toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
       } else if (isSMC) {
         toast.info("جاري تحليل البيانات باستخدام نموذج SMC...");
@@ -119,13 +122,15 @@ export const ChartAnalyzer = () => {
         isAI, 
         isSMC, 
         isICT,
-        isTurtleSoup
+        isTurtleSoup,
+        isGann
       );
       
       if (result) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isTurtleSoup ? "Turtle Soup" : 
+        const analysisType = isGann ? "Gann" :
+                           isTurtleSoup ? "Turtle Soup" : 
                            isICT ? "ICT" : 
                            isSMC ? "SMC" : 
                            isAI ? "ذكي" : 
@@ -162,7 +167,9 @@ export const ChartAnalyzer = () => {
         setSearchHistory(prev => [newHistoryEntry, ...prev]);
         console.log("تم تحديث سجل البحث:", newHistoryEntry);
 
-        if (isAI) {
+        if (isGann) {
+          toast.success("تم إكمال تحليل Gann بنجاح");
+        } else if (isAI) {
           toast.success("تم إكمال التحليل الذكي بنجاح");
         } else if (isSMC) {
           toast.success("تم إكمال تحليل SMC بنجاح");
