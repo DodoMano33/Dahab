@@ -1,30 +1,69 @@
-create table public.search_history (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  user_id uuid references auth.users(id) not null,
-  symbol text not null,
-  current_price numeric not null,
-  analysis jsonb not null,
-  analysis_type text not null check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup'))
+-- إنشاء نوع enum لأنواع التحليل
+CREATE TYPE analysis_type AS ENUM (
+  'عادي',
+  'سكالبينج',
+  'ذكي',
+  'SMC',
+  'ICT',
+  'Turtle Soup'
+  -- يمكن إضافة المزيد من الأنواع في المستقبل باستخدام:
+  -- ALTER TYPE analysis_type ADD VALUE 'نوع_جديد';
 );
 
--- Set up Row Level Security (RLS)
-alter table public.search_history enable row level security;
+-- إنشاء جدول سجل البحث
+CREATE TABLE public.search_history (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  user_id uuid REFERENCES auth.users(id) NOT NULL,
+  symbol text NOT NULL,
+  current_price numeric NOT NULL,
+  analysis jsonb NOT NULL,
+  analysis_type analysis_type NOT NULL
+);
 
--- Create policy to allow users to see only their own search history
-create policy "Users can view their own search history"
-  on public.search_history
-  for select
-  using (auth.uid() = user_id);
+-- إعداد سياسات أمان الصفوف (RLS)
+ALTER TABLE public.search_history ENABLE ROW LEVEL SECURITY;
 
--- Create policy to allow users to insert their own search history
-create policy "Users can insert their own search history"
-  on public.search_history
-  for insert
-  with check (auth.uid() = user_id);
+-- إنشاء سياسة للسماح للمستخدمين برؤية سجل البحث الخاص بهم فقط
+CREATE POLICY "Users can view their own search history"
+  ON public.search_history
+  FOR SELECT
+  USING (auth.uid() = user_id);
 
--- Create policy to allow users to delete their own search history
-create policy "Users can delete their own search history"
-  on public.search_history
-  for delete
-  using (auth.uid() = user_id);
+-- إنشاء سياسة للسماح للمستخدمين بإضافة سجلات بحث جديدة
+CREATE POLICY "Users can insert their own search history"
+  ON public.search_history
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- إنشاء سياسة للسماح للمستخدمين بحذف سجلات البحث الخاصة بهم
+CREATE POLICY "Users can delete their own search history"
+  ON public.search_history
+  FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- إنشاء فهرس للبحث السريع
+CREATE INDEX idx_search_history_user_id ON public.search_history(user_id);
+CREATE INDEX idx_search_history_symbol ON public.search_history(symbol);
+CREATE INDEX idx_search_history_created_at ON public.search_history(created_at);
+
+-- إضافة دالة مساعدة لإضافة أنواع تحليل جديدة
+CREATE OR REPLACE FUNCTION add_analysis_type(new_type text)
+RETURNS void AS $$
+BEGIN
+    -- التحقق مما إذا كان النوع موجود بالفعل
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_type 
+        WHERE typname = 'analysis_type' 
+        AND typelem = 0
+    ) THEN
+        RAISE EXCEPTION 'نوع analysis_type غير موجود';
+    END IF;
+
+    -- إضافة القيمة الجديدة إلى نوع enum
+    EXECUTE format('ALTER TYPE analysis_type ADD VALUE IF NOT EXISTS %L', new_type);
+END;
+$$ LANGUAGE plpgsql;
+
+-- مثال على كيفية إضافة نوع تحليل جديد:
+-- SELECT add_analysis_type('نوع_جديد');
