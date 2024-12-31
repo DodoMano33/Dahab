@@ -77,7 +77,7 @@ export const ChartInput = ({
           disabled={isAnalyzing}
           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
         >
-          {isAnalyzing ? "جاري التحليل..." : "تحليل"}
+          {isAnalyzing ? "جاري التحليل..." : "تحليل عادي"}
         </Button>
 
         <Button
