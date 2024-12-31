@@ -11,7 +11,6 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -24,7 +23,7 @@ interface SearchHistoryProps {
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup";
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann";
   }>;
   onDelete: (id: string) => void;
 }
