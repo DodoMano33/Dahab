@@ -23,6 +23,7 @@ interface SearchHistoryProps {
     targetHit?: boolean;
     stopLossHit?: boolean;
     analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+    timeframe: string;
   }>;
   onDelete: (id: string) => void;
 }
@@ -56,6 +57,7 @@ export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHist
 تاريخ التحليل: ${format(item.date, 'PPpp', { locale: ar })}
 الرمز: ${item.symbol}
 نوع التحليل: ${item.analysisType}
+الإطار الزمني: ${item.timeframe}
 السعر عند التحليل: ${item.currentPrice}
 ${formatAnalysisData(item.analysis)}
 ${'-'.repeat(50)}`
