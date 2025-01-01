@@ -16,7 +16,7 @@ interface HistoryRowProps {
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
   isSelected?: boolean;
   onSelect?: () => void;
   onDelete?: () => void;
