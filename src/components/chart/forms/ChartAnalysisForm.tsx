@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
+import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ export const ChartAnalysisForm = ({
 }: ChartAnalysisFormProps) => {
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
+  const [timeframe, setTimeframe] = useState("1d");
 
   const handleSubmit = (
     e: React.MouseEvent,
@@ -56,24 +58,14 @@ export const ChartAnalysisForm = ({
       return;
     }
 
-    const timeframe = "5";
-
-    const analysisType = isPatternAnalysis ? 'Patterns' : 
-                        isWaves ? 'Waves' : 
-                        isGann ? 'Gann' : 
-                        isTurtleSoup ? 'Turtle Soup' : 
-                        isICT ? 'ICT' : 
-                        isSMC ? 'SMC' : 
-                        isAI ? 'ذكي' : 
-                        isScalping ? 'سكالبينج' : 'عادي';
-
-    toast.info(`جاري تحليل البيانات باستخدام ${analysisType}...`);
+    // Override timeframe for pattern analysis to always be 4h
+    const actualTimeframe = isPatternAnalysis ? "4h" : timeframe;
     
-    console.log(`تحليل ${analysisType} للرمز ${symbol}`);
+    console.log(`تحليل ${currentAnalysis} للرمز ${symbol} على الإطار الزمني ${actualTimeframe}`);
     
     onSubmit(
       symbol,
-      timeframe,
+      actualTimeframe,
       providedPrice,
       isScalping,
       isAI,
@@ -90,6 +82,7 @@ export const ChartAnalysisForm = ({
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
       <SymbolInput value={symbol} onChange={setSymbol} />
       <PriceInput value={price} onChange={setPrice} />
+      <TimeframeInput value={timeframe} onChange={setTimeframe} />
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
         onSubmit={handleSubmit}

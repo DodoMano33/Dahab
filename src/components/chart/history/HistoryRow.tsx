@@ -17,10 +17,20 @@ interface HistoryRowProps {
   currentPrice: number;
   analysis: AnalysisData;
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+  timeframe: string;
   isSelected?: boolean;
   onSelect?: () => void;
   onDelete?: () => void;
 }
+
+const timeframeLabels: Record<string, string> = {
+  "1m": "1 دقيقة",
+  "5m": "5 دقائق",
+  "30m": "30 دقيقة",
+  "1h": "1 ساعة",
+  "4h": "4 ساعات",
+  "1d": "يومي",
+};
 
 export const HistoryRow = ({ 
   id,
@@ -29,6 +39,7 @@ export const HistoryRow = ({
   currentPrice, 
   analysis,
   analysisType,
+  timeframe,
   isSelected,
   onSelect,
   onDelete
@@ -48,6 +59,9 @@ export const HistoryRow = ({
       </TableCell>
       <TableCell className="text-right">
         {analysisType}
+      </TableCell>
+      <TableCell className="text-right">
+        {timeframeLabels[timeframe] || timeframe}
       </TableCell>
       <TableCell className="text-right">{currentPrice}</TableCell>
       <TableCell className="text-right">

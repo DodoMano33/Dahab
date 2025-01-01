@@ -17,6 +17,7 @@ export type Database = {
           current_price: number
           id: string
           symbol: string
+          timeframe: string
           user_id: string
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           current_price: number
           id?: string
           symbol: string
+          timeframe?: string
           user_id: string
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           current_price?: number
           id?: string
           symbol?: string
+          timeframe?: string
           user_id?: string
         }
         Relationships: []
@@ -44,16 +47,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      add_analysis_type: {
-        Args: {
-          p_user_id: string
-          p_symbol: string
-          p_current_price: number
-          p_analysis: Json
-          p_analysis_type: string
-        }
-        Returns: undefined
-      }
+      add_analysis_type:
+        | {
+            Args: {
+              p_user_id: string
+              p_symbol: string
+              p_current_price: number
+              p_analysis: Json
+              p_analysis_type: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_user_id: string
+              p_symbol: string
+              p_current_price: number
+              p_analysis: Json
+              p_analysis_type: string
+              p_timeframe?: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       [_ in never]: never
