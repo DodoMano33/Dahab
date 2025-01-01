@@ -20,7 +20,12 @@ export const ChartDisplay = ({
   symbol,
   currentAnalysis 
 }: ChartDisplayProps) => {
-  if (!image && !analysis) return null;
+  console.log("ChartDisplay - Received props:", { image, analysis, isAnalyzing, symbol, currentAnalysis });
+
+  if (!image && !analysis) {
+    console.log("ChartDisplay - No image or analysis data");
+    return null;
+  }
 
   return (
     <div className="space-y-8">

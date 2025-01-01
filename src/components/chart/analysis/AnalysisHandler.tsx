@@ -88,6 +88,8 @@ export const useAnalysisHandler = () => {
       console.log("تم إكمال التحليل:", analysisResult);
       setAnalysis(analysisResult);
       setIsAnalyzing(false);
+      
+      toast.success(`تم إكمال تحليل ${analysisType} بنجاح`);
       return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
       
     } catch (error) {
