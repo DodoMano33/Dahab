@@ -1,17 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Brain } from "lucide-react";
 import { toast } from "sonner";
-import { 
-  Brain, 
-  TrendingUp, 
-  Building2, 
-  Turtle, 
-  Activity, 
-  Waves,
-  Triangle,
-  BarChart
-} from "lucide-react";
+import { AnalysisButton } from "./buttons/AnalysisButton";
+import { PatternButton } from "./buttons/PatternButton";
+import { TechnicalButtons } from "./buttons/TechnicalButtons";
+import { SymbolInput } from "./inputs/SymbolInput";
+import { PriceInput } from "./inputs/PriceInput";
 
 interface ChartInputProps {
   mode: "tradingview";
@@ -67,6 +62,7 @@ export const ChartInput = ({
 
     const timeframe = isWaves ? "5" : isScalping ? "5" : "D";
     console.log(`تحليل ${isPatternAnalysis ? 'Patterns' : isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
+    
     onTradingViewConfig(
       symbol, 
       timeframe, 
@@ -84,54 +80,19 @@ export const ChartInput = ({
 
   return (
     <form onSubmit={(e) => handleSubmit(e)} className="space-y-4 bg-white p-6 rounded-lg shadow-md">
-      <div>
-        <label htmlFor="symbol" className="block text-sm font-medium text-gray-700 mb-1">
-          رمز العملة
-        </label>
-        <Input
-          id="symbol"
-          placeholder="مثال: XAUUSD"
-          value={symbol}
-          onChange={(e) => setSymbol(e.target.value)}
-          className="w-full"
-          dir="ltr"
-        />
-      </div>
-      
-      <div>
-        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-          السعر (اختياري)
-        </label>
-        <Input
-          id="price"
-          type="number"
-          step="any"
-          placeholder="أدخل السعر (اختياري)"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className="w-full"
-          dir="ltr"
-        />
-      </div>
+      <SymbolInput value={symbol} onChange={setSymbol} />
+      <PriceInput value={price} onChange={setPrice} />
 
       <div className="flex flex-wrap gap-2 pt-4">
-        <Button
-          type="submit"
-          disabled={isAnalyzing}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {isAnalyzing ? "جاري التحليل..." : "تحليل عادي"}
-        </Button>
+        <AnalysisButton 
+          isAnalyzing={isAnalyzing} 
+          onClick={(e) => handleSubmit(e)} 
+        />
 
-        <Button
-          type="button"
-          disabled={isAnalyzing}
+        <PatternButton 
+          isAnalyzing={isAnalyzing}
           onClick={(e) => handleSubmit(e, false, false, false, false, false, false, false, true)}
-          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
-        >
-          <Triangle className="w-4 h-4" />
-          تحليل Patterns
-        </Button>
+        />
 
         <Button
           type="button"
@@ -145,62 +106,21 @@ export const ChartInput = ({
         <Button
           type="button"
           disabled={isAnalyzing}
-          onClick={(e) => handleSubmit(e, false, false, true)}
-          className="flex-1 bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
-        >
-          <TrendingUp className="w-4 h-4" />
-          تحليل SMC
-        </Button>
-
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => handleSubmit(e, false, false, false, true)}
-          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
-        >
-          <Building2 className="w-4 h-4" />
-          تحليل ICT
-        </Button>
-
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => handleSubmit(e, false, false, false, false, true)}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-        >
-          <Turtle className="w-4 h-4" />
-          تحليل Turtle Soup
-        </Button>
-
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => handleSubmit(e, false, false, false, false, false, true)}
-          className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-2"
-        >
-          <Activity className="w-4 h-4" />
-          تحليل Gann
-        </Button>
-
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => handleSubmit(e, false, false, false, false, false, false, true)}
-          className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2"
-        >
-          <Waves className="w-4 h-4" />
-          تحليل Waves
-        </Button>
-
-        <Button
-          type="button"
-          disabled={isAnalyzing}
           onClick={(e) => handleSubmit(e, false, true)}
           className="flex-1 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
         >
           <Brain className="w-4 h-4" />
           تحليل ذكي
         </Button>
+
+        <TechnicalButtons
+          isAnalyzing={isAnalyzing}
+          onSMCClick={(e) => handleSubmit(e, false, false, true)}
+          onICTClick={(e) => handleSubmit(e, false, false, false, true)}
+          onTurtleSoupClick={(e) => handleSubmit(e, false, false, false, false, true)}
+          onGannClick={(e) => handleSubmit(e, false, false, false, false, false, true)}
+          onWavesClick={(e) => handleSubmit(e, false, false, false, false, false, false, true)}
+        />
         
         <Button
           type="button"

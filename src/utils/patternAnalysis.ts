@@ -28,7 +28,7 @@ export const analyzePattern = (
         currentPrice,
         support: currentPrice * 0.95,
         resistance: currentPrice * 1.05,
-        stopLoss: currentPrice * 1.14, // 14% فوق نقطة الدخول
+        stopLoss: currentPrice * 1.14,
         stopLossReason: "14% من قياس الهدف بعد وقف الخسارة المطلق، حيث أنه دعم هيكلي",
         bestEntryPoint: {
           price: currentPrice * 0.97,
@@ -44,7 +44,7 @@ export const analyzePattern = (
             expectedTime: addDays(new Date(), 14)
           }
         ],
-        analysisType: "Patterns"
+        analysisType: "عادي"
       };
       break;
 
@@ -58,7 +58,7 @@ export const analyzePattern = (
         currentPrice,
         support: currentPrice * 0.93,
         resistance: currentPrice * 1.07,
-        stopLoss: currentPrice * 1.21, // 21% في حالة النمط المائل
+        stopLoss: currentPrice * 1.21,
         stopLossReason: "21% من قياس الهدف بعد وقف الخسارة المطلق للأنماط المائلة",
         bestEntryPoint: {
           price: currentPrice * 0.95,
@@ -74,11 +74,9 @@ export const analyzePattern = (
             expectedTime: addDays(new Date(), 20)
           }
         ],
-        analysisType: "Patterns"
+        analysisType: "عادي"
       };
       break;
-
-    // ... المزيد من الأنماط سيتم إضافتها هنا
 
     default:
       throw new Error("نمط غير معروف");
