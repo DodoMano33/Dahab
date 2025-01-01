@@ -13,7 +13,7 @@ export const analyzePattern = async (
   currentPrice: number,
   pattern: string = "descending_triangle"
 ): Promise<PatternAnalysisResult> => {
-  console.log("تحليل النمط:", pattern);
+  console.log("بدء تحليل النمط:", pattern);
   
   let analysis: PatternAnalysisResult;
   
@@ -44,7 +44,12 @@ export const analyzePattern = async (
             expectedTime: addDays(new Date(), 14)
           }
         ],
-        analysisType: "Patterns"
+        analysisType: "Patterns",
+        fibonacciLevels: [
+          { level: 0.236, price: currentPrice * 0.98 },
+          { level: 0.382, price: currentPrice * 0.96 },
+          { level: 0.618, price: currentPrice * 0.94 }
+        ]
       };
       break;
 
@@ -74,7 +79,12 @@ export const analyzePattern = async (
             expectedTime: addDays(new Date(), 20)
           }
         ],
-        analysisType: "Patterns"
+        analysisType: "Patterns",
+        fibonacciLevels: [
+          { level: 0.236, price: currentPrice * 0.97 },
+          { level: 0.382, price: currentPrice * 0.95 },
+          { level: 0.618, price: currentPrice * 0.93 }
+        ]
       };
       break;
 
@@ -104,7 +114,12 @@ export const analyzePattern = async (
             expectedTime: addDays(new Date(), 10)
           }
         ],
-        analysisType: "Patterns"
+        analysisType: "Patterns",
+        fibonacciLevels: [
+          { level: 0.236, price: currentPrice * 1.02 },
+          { level: 0.382, price: currentPrice * 1.04 },
+          { level: 0.618, price: currentPrice * 1.06 }
+        ]
       };
   }
 
