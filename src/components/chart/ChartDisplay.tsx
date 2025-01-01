@@ -16,9 +16,9 @@ export const ChartDisplay = ({
   image, 
   analysis, 
   isAnalyzing, 
-  onClose,
+  onClose, 
   symbol,
-  currentAnalysis
+  currentAnalysis 
 }: ChartDisplayProps) => {
   if (!image && !analysis) return null;
 
