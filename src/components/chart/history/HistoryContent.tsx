@@ -13,6 +13,7 @@ interface HistoryContentProps {
     targetHit?: boolean;
     stopLossHit?: boolean;
     analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+    timeframe: string;
   }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;

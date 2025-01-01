@@ -60,7 +60,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
         isICT,
         isTurtleSoup,
         isGann,
-        isWaves
+        isWaves,
+        isPatternAnalysis
       );
       
       if (result && result.analysisResult) {
@@ -80,7 +81,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
           symbol: upperSymbol,
           current_price: currentPrice,
           analysis: analysisResult,
-          analysis_type: analysisType
+          analysis_type: analysisType,
+          timeframe: timeframe
         });
         
         const { data, error: saveError } = await supabase
@@ -90,7 +92,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
             symbol: upperSymbol,
             current_price: currentPrice,
             analysis: analysisResult,
-            analysis_type: analysisType
+            analysis_type: analysisType,
+            timeframe: timeframe
           })
           .select()
           .single();
@@ -112,7 +115,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
           analysis: analysisResult,
           targetHit: false,
           stopLossHit: false,
-          analysisType
+          analysisType,
+          timeframe: timeframe
         };
 
         onAnalysis(newHistoryEntry);

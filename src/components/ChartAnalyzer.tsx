@@ -48,7 +48,8 @@ export const ChartAnalyzer = () => {
         symbol: item.symbol,
         currentPrice: item.current_price,
         analysis: item.analysis,
-        analysisType: item.analysis_type
+        analysisType: item.analysis_type,
+        timeframe: item.timeframe || '1d' // إضافة الإطار الزمني مع قيمة افتراضية
       }));
 
       setSearchHistory(formattedHistory);
@@ -75,7 +76,7 @@ export const ChartAnalyzer = () => {
     }
   };
 
-  console.log("ChartAnalyzer - Current Analysis:", analysis); // إضافة سجل للتأكد من وصول البيانات
+  console.log("ChartAnalyzer - Current Analysis:", analysis);
 
   return (
     <div className="space-y-8">
