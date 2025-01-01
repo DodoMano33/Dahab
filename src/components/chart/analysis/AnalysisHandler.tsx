@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { AnalysisData } from "@/types/analysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { analyzeDailyChart } from "./dailyAnalysis";
 import { analyzeScalpingChart } from "./scalpingAnalysis";
 import { analyzeSMCChart } from "./smcAnalysis";
 import { analyzeICTChart } from "./ictAnalysis";
@@ -43,14 +42,13 @@ export const useAnalysisHandler = () => {
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت");
+      setImage(chartImage);
       
       let currentPrice = providedPrice;
       if (!currentPrice) {
         currentPrice = 0; // يجب تحديث هذا لاحقاً للحصول على السعر الحالي من TradingView
         console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
       }
-      
-      setImage(chartImage);
 
       let analysisResult;
       if (isPatternAnalysis) {
@@ -67,13 +65,14 @@ export const useAnalysisHandler = () => {
         analysisResult = await analyzeSMCChart(chartImage, currentPrice, upperSymbol);
       } else if (isScalping) {
         analysisResult = await analyzeScalpingChart(chartImage, currentPrice, upperSymbol);
-      } else {
-        analysisResult = await analyzeDailyChart(chartImage, currentPrice, upperSymbol);
       }
 
-      setAnalysis(analysisResult);
+      if (analysisResult) {
+        console.log("تم إكمال التحليل:", analysisResult);
+        setAnalysis(analysisResult);
+      }
+
       setIsAnalyzing(false);
-      
       return { analysisResult, currentPrice, symbol: upperSymbol };
       
     } catch (error) {

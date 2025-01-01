@@ -60,7 +60,9 @@ export const ChartInput = ({
       return;
     }
 
-    const timeframe = isWaves ? "5" : isScalping ? "5" : "D";
+    // تعيين الإطار الزمني إلى 5 دقائق لجميع التحليلات
+    const timeframe = "5";
+    
     console.log(`تحليل ${isPatternAnalysis ? 'Patterns' : isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
     
     onTradingViewConfig(
@@ -84,11 +86,6 @@ export const ChartInput = ({
       <PriceInput value={price} onChange={setPrice} />
 
       <div className="flex flex-wrap gap-2 pt-4">
-        <AnalysisButton 
-          isAnalyzing={isAnalyzing} 
-          onClick={(e) => handleSubmit(e)} 
-        />
-
         <PatternButton 
           isAnalyzing={isAnalyzing}
           onClick={(e) => handleSubmit(e, false, false, false, false, false, false, false, true)}
