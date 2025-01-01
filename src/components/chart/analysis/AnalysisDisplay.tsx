@@ -18,6 +18,8 @@ export const AnalysisDisplay = ({
   symbol,
   currentAnalysis
 }: AnalysisDisplayProps) => {
+  console.log("AnalysisDisplay - Analysis Data:", analysis); // إضافة سجل للتأكد من وصول البيانات
+
   return (
     <ChartDisplay
       image={image}

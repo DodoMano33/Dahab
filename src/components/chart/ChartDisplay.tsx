@@ -22,6 +22,8 @@ export const ChartDisplay = ({
 }: ChartDisplayProps) => {
   if (!image && !analysis) return null;
 
+  console.log("ChartDisplay - Analysis Data:", analysis); // إضافة سجل للتأكد من وصول البيانات
+
   return (
     <div className="space-y-8">
       {image && (
