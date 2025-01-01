@@ -53,31 +53,27 @@ export const useAnalysisHandler = () => {
         نوع_التحليل: analysisType
       });
 
-      if (!providedPrice || isNaN(providedPrice)) {
-        throw new Error("السعر الحالي غير صالح");
-      }
-      
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
 
       let analysisResult;
       
-      if (isPatternAnalysis) {
+      if (isPatternAnalysis && providedPrice) {
         console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
         analysisResult = await analyzePattern(chartImage, providedPrice);
       } else if (isWaves) {
-        analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeWavesChart(chartImage, providedPrice!, upperSymbol);
       } else if (isGann) {
-        analysisResult = await analyzeGannChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeGannChart(chartImage, providedPrice!, upperSymbol);
       } else if (isTurtleSoup) {
-        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice!, upperSymbol);
       } else if (isICT) {
-        analysisResult = await analyzeICTChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeICTChart(chartImage, providedPrice!, upperSymbol);
       } else if (isSMC) {
-        analysisResult = await analyzeSMCChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeSMCChart(chartImage, providedPrice!, upperSymbol);
       } else if (isScalping) {
-        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeScalpingChart(chartImage, providedPrice!, upperSymbol);
       }
 
       if (!analysisResult) {
