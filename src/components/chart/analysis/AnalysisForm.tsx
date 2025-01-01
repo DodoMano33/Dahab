@@ -10,9 +10,10 @@ interface AnalysisFormProps {
   onAnalysis: (item: SearchHistoryItem) => void;
   isAnalyzing: boolean;
   onHistoryClick: () => void;
+  currentAnalysis?: string;
 }
 
-export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: AnalysisFormProps) => {
+export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentAnalysis }: AnalysisFormProps) => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();
 
@@ -26,7 +27,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
     isICT?: boolean,
     isTurtleSoup?: boolean,
     isGann?: boolean,
-    isWaves?: boolean
+    isWaves?: boolean,
+    isPatternAnalysis?: boolean
   ) => {
     try {
       if (!user) {
@@ -81,7 +83,6 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
           analysis_type: analysisType
         });
         
-        // حفظ في Supabase
         const { data, error: saveError } = await supabase
           .from('search_history')
           .insert({
@@ -103,7 +104,6 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
           throw new Error("No data returned from insert operation");
         }
 
-        // تحديث الحالة المحلية
         const newHistoryEntry: SearchHistoryItem = {
           id: data.id,
           date: new Date(),
