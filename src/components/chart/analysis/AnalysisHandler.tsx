@@ -53,7 +53,9 @@ export const useAnalysisHandler = () => {
         نوع_التحليل: analysisType
       });
 
-      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
+      // تعديل الإطار الزمني إلى 4 ساعات لتحليل النماذج
+      const actualTimeframe = isPatternAnalysis ? "240" : timeframe;
+      const chartImage = await getTradingViewChartImage(upperSymbol, actualTimeframe);
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
 

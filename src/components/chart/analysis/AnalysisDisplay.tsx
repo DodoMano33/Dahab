@@ -1,4 +1,4 @@
-import { ChartDisplay } from "../ChartDisplay";
+import { ChartDisplay } from "../../ChartDisplay";
 import { AnalysisData } from "@/types/analysis";
 
 interface AnalysisDisplayProps {
@@ -18,7 +18,7 @@ export const AnalysisDisplay = ({
   symbol,
   currentAnalysis
 }: AnalysisDisplayProps) => {
-  console.log("AnalysisDisplay - Analysis Data:", analysis); // إضافة سجل للتأكد من وصول البيانات
+  console.log("AnalysisDisplay - Analysis Data:", analysis);
 
   return (
     <ChartDisplay

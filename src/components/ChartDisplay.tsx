@@ -22,11 +22,6 @@ export const ChartDisplay = ({
 }: ChartDisplayProps) => {
   console.log("ChartDisplay - Received props:", { image, analysis, isAnalyzing, symbol, currentAnalysis });
 
-  if (!image && !analysis) {
-    console.log("ChartDisplay - No image or analysis data");
-    return null;
-  }
-
   return (
     <div className="space-y-8">
       {image && (
@@ -45,10 +40,10 @@ export const ChartDisplay = ({
         </div>
       )}
 
-      {analysis && (
+      {(analysis || isAnalyzing) && (
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
-          <AnalysisResult analysis={analysis} isLoading={isAnalyzing} />
+          <AnalysisResult analysis={analysis!} isLoading={isAnalyzing} />
         </div>
       )}
     </div>
