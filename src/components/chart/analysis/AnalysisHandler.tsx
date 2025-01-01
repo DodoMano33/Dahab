@@ -66,6 +66,9 @@ export const useAnalysisHandler = () => {
       if (isPatternAnalysis) {
         console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
         analysisResult = await analyzePattern(chartImage, providedPrice);
+        if (!analysisResult) {
+          throw new Error("فشل في تحليل النمط");
+        }
         console.log("نتيجة تحليل النمط:", analysisResult);
       } else if (isWaves) {
         analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
