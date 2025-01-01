@@ -20,12 +20,14 @@ interface ChartAnalysisFormProps {
   ) => void;
   isAnalyzing: boolean;
   onHistoryClick: () => void;
+  currentAnalysis?: string;
 }
 
 export const ChartAnalysisForm = ({
   onSubmit,
   isAnalyzing,
-  onHistoryClick
+  onHistoryClick,
+  currentAnalysis
 }: ChartAnalysisFormProps) => {
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
@@ -55,8 +57,19 @@ export const ChartAnalysisForm = ({
     }
 
     const timeframe = "5";
+
+    const analysisType = isPatternAnalysis ? 'Patterns' : 
+                        isWaves ? 'Waves' : 
+                        isGann ? 'Gann' : 
+                        isTurtleSoup ? 'Turtle Soup' : 
+                        isICT ? 'ICT' : 
+                        isSMC ? 'SMC' : 
+                        isAI ? 'ذكي' : 
+                        isScalping ? 'سكالبينج' : 'عادي';
+
+    toast.info(`جاري تحليل البيانات باستخدام ${analysisType}...`);
     
-    console.log(`تحليل ${isPatternAnalysis ? 'Patterns' : isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
+    console.log(`تحليل ${analysisType} للرمز ${symbol}`);
     
     onSubmit(
       symbol,
@@ -81,6 +94,7 @@ export const ChartAnalysisForm = ({
         isAnalyzing={isAnalyzing}
         onSubmit={handleSubmit}
         onHistoryClick={onHistoryClick}
+        currentAnalysis={currentAnalysis}
       />
     </form>
   );

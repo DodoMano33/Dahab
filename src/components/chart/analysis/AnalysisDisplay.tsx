@@ -7,6 +7,7 @@ interface AnalysisDisplayProps {
   isAnalyzing: boolean;
   onClose: () => void;
   symbol?: string;
+  currentAnalysis?: string;
 }
 
 export const AnalysisDisplay = ({
@@ -14,7 +15,8 @@ export const AnalysisDisplay = ({
   analysis,
   isAnalyzing,
   onClose,
-  symbol
+  symbol,
+  currentAnalysis
 }: AnalysisDisplayProps) => {
   return (
     <ChartDisplay
@@ -23,6 +25,7 @@ export const AnalysisDisplay = ({
       isAnalyzing={isAnalyzing}
       onClose={onClose}
       symbol={symbol}
+      currentAnalysis={currentAnalysis}
     />
   );
 };

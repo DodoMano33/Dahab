@@ -15,6 +15,7 @@ export const ChartAnalyzer = () => {
     image,
     analysis,
     currentSymbol,
+    currentAnalysis,
     handleTradingViewConfig,
     setImage,
     setAnalysis,
@@ -81,6 +82,7 @@ export const ChartAnalyzer = () => {
           onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
           isAnalyzing={isAnalyzing}
           onHistoryClick={() => setIsHistoryOpen(true)}
+          currentAnalysis={currentAnalysis}
         />
         <AnalysisDisplay
           image={image}
@@ -92,6 +94,7 @@ export const ChartAnalyzer = () => {
             setIsAnalyzing(false);
           }}
           symbol={currentSymbol}
+          currentAnalysis={currentAnalysis}
         />
       </div>
       <HistoryDialog

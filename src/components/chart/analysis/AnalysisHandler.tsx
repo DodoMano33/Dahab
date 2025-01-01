@@ -15,6 +15,7 @@ export const useAnalysisHandler = () => {
   const [image, setImage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
+  const [currentAnalysis, setCurrentAnalysis] = useState<string>('');
 
   const handleTradingViewConfig = async (
     symbol: string, 
@@ -34,11 +35,22 @@ export const useAnalysisHandler = () => {
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
       
+      const analysisType = isPatternAnalysis ? 'Patterns' : 
+                          isWaves ? 'Waves' : 
+                          isGann ? 'Gann' : 
+                          isTurtleSoup ? 'Turtle Soup' : 
+                          isICT ? 'ICT' : 
+                          isSMC ? 'SMC' : 
+                          isAI ? 'ذكي' : 
+                          isScalping ? 'سكالبينج' : 'عادي';
+      
+      setCurrentAnalysis(analysisType);
+      
       console.log("بدء تحليل TradingView:", { 
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: isPatternAnalysis ? "Patterns" : isWaves ? "Waves" : isGann ? "Gann" : isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
+        نوع_التحليل: analysisType
       });
 
       if (!providedPrice || isNaN(providedPrice)) {
@@ -90,6 +102,7 @@ export const useAnalysisHandler = () => {
     image,
     analysis,
     currentSymbol,
+    currentAnalysis,
     handleTradingViewConfig,
     setImage,
     setAnalysis,
