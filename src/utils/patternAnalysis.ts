@@ -20,6 +20,11 @@ export const analyzePattern = async (
       throw new Error("السعر الحالي غير صالح");
     }
 
+    if (!chartImage) {
+      console.error("صورة الشارت غير صالحة");
+      throw new Error("صورة الشارت غير صالحة");
+    }
+
     // تحديد النمط بناءً على السعر الحالي
     const pattern = currentPrice > 2000 ? "head_and_shoulders" : "descending_triangle";
     console.log("النمط المحدد:", pattern);
@@ -106,6 +111,6 @@ export const analyzePattern = async (
     return analysis;
   } catch (error) {
     console.error("خطأ في تحليل النمط:", error);
-    throw new Error("فشل في تحليل النمط");
+    throw error;
   }
 };

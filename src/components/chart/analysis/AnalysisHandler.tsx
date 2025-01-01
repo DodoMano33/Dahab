@@ -40,48 +40,47 @@ export const useAnalysisHandler = () => {
         providedPrice,
         نوع_التحليل: isPatternAnalysis ? "Patterns" : isWaves ? "Waves" : isGann ? "Gann" : isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
       });
+
+      if (!providedPrice || isNaN(providedPrice)) {
+        throw new Error("السعر الحالي غير صالح");
+      }
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
-      
-      let currentPrice = providedPrice;
-      if (!currentPrice) {
-        currentPrice = 0; // يمكن تحديث هذا لاحقاً للحصول على السعر الحالي من API
-        console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
-      }
 
       let analysisResult;
+      
       if (isPatternAnalysis) {
-        console.log("بدء تحليل النمط مع البيانات:", { chartImage, currentPrice });
-        analysisResult = await analyzePattern(chartImage, currentPrice);
+        console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
+        analysisResult = await analyzePattern(chartImage, providedPrice);
       } else if (isWaves) {
-        analysisResult = await analyzeWavesChart(chartImage, currentPrice, upperSymbol);
+        analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
       } else if (isGann) {
-        analysisResult = await analyzeGannChart(chartImage, currentPrice, upperSymbol);
+        analysisResult = await analyzeGannChart(chartImage, providedPrice, upperSymbol);
       } else if (isTurtleSoup) {
-        analysisResult = await analyzeTurtleSoupChart(chartImage, currentPrice, upperSymbol);
+        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, upperSymbol);
       } else if (isICT) {
-        analysisResult = await analyzeICTChart(chartImage, currentPrice, upperSymbol);
+        analysisResult = await analyzeICTChart(chartImage, providedPrice, upperSymbol);
       } else if (isSMC) {
-        analysisResult = await analyzeSMCChart(chartImage, currentPrice, upperSymbol);
+        analysisResult = await analyzeSMCChart(chartImage, providedPrice, upperSymbol);
       } else if (isScalping) {
-        analysisResult = await analyzeScalpingChart(chartImage, currentPrice, upperSymbol);
+        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, upperSymbol);
       }
 
-      if (analysisResult) {
-        console.log("تم إكمال التحليل:", analysisResult);
-        setAnalysis(analysisResult);
-        return { analysisResult, currentPrice, symbol: upperSymbol };
+      if (!analysisResult) {
+        throw new Error("لم يتم العثور على نتائج التحليل");
       }
 
+      console.log("تم إكمال التحليل:", analysisResult);
+      setAnalysis(analysisResult);
       setIsAnalyzing(false);
-      throw new Error("فشل في تحليل النمط");
+      return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
-      toast.error("حدث خطأ أثناء التحليل");
       setIsAnalyzing(false);
+      toast.error("حدث خطأ أثناء التحليل");
       throw error;
     }
   };
