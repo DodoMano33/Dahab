@@ -29,4 +29,5 @@ export interface SearchHistoryItem {
   targetHit?: boolean;
   stopLossHit?: boolean;
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+  timeframe: string;
 }
