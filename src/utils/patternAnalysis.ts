@@ -20,6 +20,11 @@ export const analyzePattern = async (
       throw new Error("السعر الحالي غير صالح");
     }
 
+    if (!chartImage) {
+      console.error("خطأ: لم يتم استلام صورة الشارت");
+      throw new Error("لم يتم استلام صورة الشارت");
+    }
+
     // تحديد النمط والاتجاه
     const formattedPrice = Number(currentPrice.toFixed(2));
     console.log("السعر المنسق:", formattedPrice);

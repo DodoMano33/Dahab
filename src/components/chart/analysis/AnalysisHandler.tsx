@@ -66,6 +66,7 @@ export const useAnalysisHandler = () => {
       if (isPatternAnalysis) {
         console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
         analysisResult = await analyzePattern(chartImage, providedPrice);
+        console.log("نتيجة تحليل النمط:", analysisResult);
       } else if (isWaves) {
         analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
       } else if (isGann) {
@@ -93,7 +94,11 @@ export const useAnalysisHandler = () => {
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
       setIsAnalyzing(false);
-      toast.error("حدث خطأ أثناء التحليل");
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("حدث خطأ أثناء التحليل");
+      }
       throw error;
     }
   };
