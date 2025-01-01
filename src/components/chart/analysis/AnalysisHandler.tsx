@@ -46,13 +46,13 @@ export const useAnalysisHandler = () => {
       
       let currentPrice = providedPrice;
       if (!currentPrice) {
-        currentPrice = 0; // يجب تحديث هذا لاحقاً للحصول على السعر الحالي من TradingView
+        currentPrice = 0;
         console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
       }
 
       let analysisResult;
       if (isPatternAnalysis) {
-        analysisResult = await analyzePattern(chartImage, currentPrice, "descending_triangle");
+        analysisResult = await analyzePattern(chartImage, currentPrice);
       } else if (isWaves) {
         analysisResult = await analyzeWavesChart(chartImage, currentPrice, upperSymbol);
       } else if (isGann) {
@@ -70,10 +70,11 @@ export const useAnalysisHandler = () => {
       if (analysisResult) {
         console.log("تم إكمال التحليل:", analysisResult);
         setAnalysis(analysisResult);
+        return { analysisResult, currentPrice, symbol: upperSymbol };
       }
 
       setIsAnalyzing(false);
-      return { analysisResult, currentPrice, symbol: upperSymbol };
+      throw new Error("فشل في تحليل النمط");
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);

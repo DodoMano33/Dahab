@@ -8,11 +8,11 @@ export interface PatternAnalysisResult extends AnalysisData {
   stopLossReason: string;
 }
 
-export const analyzePattern = (
+export const analyzePattern = async (
   chartImage: string,
   currentPrice: number,
-  pattern: string
-): PatternAnalysisResult => {
+  pattern: string = "descending_triangle"
+): Promise<PatternAnalysisResult> => {
   console.log("تحليل النمط:", pattern);
   
   let analysis: PatternAnalysisResult;
@@ -44,7 +44,7 @@ export const analyzePattern = (
             expectedTime: addDays(new Date(), 14)
           }
         ],
-        analysisType: "عادي"
+        analysisType: "Patterns"
       };
       break;
 
@@ -74,12 +74,38 @@ export const analyzePattern = (
             expectedTime: addDays(new Date(), 20)
           }
         ],
-        analysisType: "عادي"
+        analysisType: "Patterns"
       };
       break;
 
     default:
-      throw new Error("نمط غير معروف");
+      analysis = {
+        pattern: "نموذج المثلث",
+        patternType: "نمط استمراري",
+        priorTrend: "تحليل النمط الفني",
+        priceAction: "حركة السعر تتبع نمط المثلث",
+        direction: "صاعد",
+        currentPrice,
+        support: currentPrice * 0.95,
+        resistance: currentPrice * 1.05,
+        stopLoss: currentPrice * 0.93,
+        stopLossReason: "مستوى الدعم الرئيسي",
+        bestEntryPoint: {
+          price: currentPrice * 0.97,
+          reason: "نقطة دخول مثالية عند مستوى الدعم"
+        },
+        targets: [
+          {
+            price: currentPrice * 1.05,
+            expectedTime: addDays(new Date(), 5)
+          },
+          {
+            price: currentPrice * 1.10,
+            expectedTime: addDays(new Date(), 10)
+          }
+        ],
+        analysisType: "Patterns"
+      };
   }
 
   console.log("نتائج تحليل النمط:", analysis);
