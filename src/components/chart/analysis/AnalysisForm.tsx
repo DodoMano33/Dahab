@@ -61,7 +61,7 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
         isWaves
       );
       
-      if (result) {
+      if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
         const analysisType = isWaves ? "Waves" :
@@ -72,6 +72,14 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
                            isAI ? "ذكي" : 
                            isScalping ? "سكالبينج" : 
                            "عادي";
+
+        console.log("Inserting analysis data:", {
+          user_id: user.id,
+          symbol: upperSymbol,
+          current_price: currentPrice,
+          analysis: analysisResult,
+          analysis_type: analysisType
+        });
         
         // حفظ في Supabase
         const { data, error: saveError } = await supabase
@@ -86,7 +94,14 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
           .select()
           .single();
 
-        if (saveError) throw saveError;
+        if (saveError) {
+          console.error("Error saving to Supabase:", saveError);
+          throw saveError;
+        }
+
+        if (!data) {
+          throw new Error("No data returned from insert operation");
+        }
 
         // تحديث الحالة المحلية
         const newHistoryEntry: SearchHistoryItem = {
@@ -102,6 +117,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick }: Analys
 
         onAnalysis(newHistoryEntry);
         console.log("تم تحديث سجل البحث:", newHistoryEntry);
+      } else {
+        throw new Error("لم يتم استلام نتائج التحليل");
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
