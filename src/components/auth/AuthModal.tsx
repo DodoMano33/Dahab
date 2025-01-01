@@ -11,52 +11,60 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const handleAuthError = (error: any) => {
+    console.error('Authentication error:', error);
+    
+    if (error.message.includes('Invalid login credentials')) {
+      toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+    } else if (error.message.includes('Email not confirmed')) {
+      toast.error('البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني للحصول على رابط التأكيد');
+    } else if (error.message.includes('Password should be at least 6 characters')) {
+      toast.error('يجب أن تكون كلمة المرور 6 أحرف على الأقل');
+    } else {
+      toast.error('حدث خطأ أثناء تسجيل الدخول');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          if (error.message.includes('Email not confirmed')) {
-            // If email is not confirmed, show a message and option to resend confirmation
-            toast.error('البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني للحصول على رابط التأكيد');
-            const { error: resendError } = await supabase.auth.resend({
-              type: 'signup',
-              email,
-            });
-            if (!resendError) {
-              toast.success('تم إرسال رابط التأكيد مرة أخرى');
-            }
-          } else {
-            throw error;
-          }
-        } else {
-          toast.success('تم تسجيل الدخول بنجاح');
-          onClose();
-        }
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password.trim()
+        });
+
+        if (error) throw error;
+
+        toast.success('تم تسجيل الدخول بنجاح');
+        onClose();
       } else {
-        const { error, data } = await supabase.auth.signUp({ 
-          email, 
-          password,
+        if (password.length < 6) {
+          toast.error('يجب أن تكون كلمة المرور 6 أحرف على الأقل');
+          return;
+        }
+
+        const { error, data } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password.trim(),
           options: {
             emailRedirectTo: window.location.origin
           }
         });
-        
+
         if (error) throw error;
-        
+
         if (data.user && data.user.identities && data.user.identities.length === 0) {
           toast.error('البريد الإلكتروني مسجل بالفعل');
         } else {
           toast.success('تم إرسال رابط التأكيد إلى بريدك الإلكتروني');
-          setIsLogin(true); // Switch to login view
+          setIsLogin(true);
         }
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
-      toast.error(error.message);
+      handleAuthError(error);
     } finally {
       setLoading(false);
     }
@@ -77,6 +85,8 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               onChange={(e) => setEmail(e.target.value)}
               required
               dir="ltr"
+              className="text-left"
+              placeholder="example@email.com"
             />
           </div>
           <div>
@@ -87,6 +97,9 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               onChange={(e) => setPassword(e.target.value)}
               required
               dir="ltr"
+              className="text-left"
+              placeholder="******"
+              minLength={6}
             />
           </div>
           <div className="flex flex-col gap-2">
