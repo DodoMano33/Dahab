@@ -10,7 +10,9 @@ interface HistoryContentProps {
     symbol: string;
     currentPrice: number;
     analysis: AnalysisData;
-    analysisType: string;
+    targetHit?: boolean;
+    stopLossHit?: boolean;
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
   }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
@@ -31,12 +33,7 @@ export const HistoryContent = ({
           {history.map((item) => (
             <HistoryRow
               key={item.id}
-              id={item.id}
-              date={item.date}
-              symbol={item.symbol}
-              currentPrice={item.currentPrice}
-              analysis={item.analysis}
-              analysisType={item.analysisType}
+              {...item}
               isSelected={selectedItems.has(item.id)}
               onSelect={() => onSelect(item.id)}
               onDelete={() => onDelete(item.id)}

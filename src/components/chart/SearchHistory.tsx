@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 import { ShareButtonGroup } from "./history/ShareButtonGroup";
 import { DateRangePicker } from "./history/DateRangePicker";
 import { HistoryContent } from "./history/HistoryContent";
@@ -20,7 +22,7 @@ interface SearchHistoryProps {
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann";
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
   }>;
   onDelete: (id: string) => void;
 }
