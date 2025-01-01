@@ -1,16 +1,13 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody } from "@/components/ui/table";
-import { AnalysisData } from "@/types/analysis";
-import { HistoryTableHeader } from "./history/HistoryTableHeader";
-import { HistoryRow } from "./history/HistoryRow";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Share2, MessageCircle, Facebook, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ShareButtonGroup } from "./history/ShareButtonGroup";
+import { DateRangePicker } from "./history/DateRangePicker";
+import { HistoryContent } from "./history/HistoryContent";
+import { formatAnalysisData, filterHistoryByDateRange } from "./history/historyUtils";
+import { AnalysisData } from "@/types/analysis";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -44,39 +41,16 @@ export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHist
     item.analysis
   );
 
-  const formatAnalysisData = (analysis: AnalysisData) => {
-    const targets = analysis.targets?.map((target, idx) => 
-      `الهدف ${idx + 1}: ${target.price} (${format(target.expectedTime, 'PPpp', { locale: ar })})`
-    ).join('\n') || 'لا توجد أهداف';
-
-    return `الاتجاه: ${analysis.direction}
-نقطة الدخول: ${analysis.bestEntryPoint?.price || 'غير محدد'}
-سبب الدخول: ${analysis.bestEntryPoint?.reason || 'غير محدد'}
-وقف الخسارة: ${analysis.stopLoss}
-الأهداف:
-${targets}`;
-  };
-
   const handleShare = async (platform: 'whatsapp' | 'facebook' | 'copy') => {
     try {
-      let shareText = "";
-      
-      const filteredHistory = validHistory.filter(item => {
-        if (selectedItems.size > 0) {
-          return selectedItems.has(`${item.symbol}-${item.date.getTime()}`);
-        }
-        if (dateRange.from && dateRange.to) {
-          return item.date >= dateRange.from && item.date <= dateRange.to;
-        }
-        return false;
-      });
+      const filteredHistory = filterHistoryByDateRange(validHistory, selectedItems, dateRange);
 
       if (filteredHistory.length === 0) {
         toast.error("الرجاء تحديد عناصر للمشاركة");
         return;
       }
 
-      shareText = filteredHistory.map(item => `
+      const shareText = filteredHistory.map(item => `
 تاريخ التحليل: ${format(item.date, 'PPpp', { locale: ar })}
 الرمز: ${item.symbol}
 نوع التحليل: ${item.analysisType}
@@ -123,6 +97,16 @@ ${'-'.repeat(50)}`
     }
   };
 
+  const handleSelect = (id: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl" dir="rtl">
@@ -130,86 +114,33 @@ ${'-'.repeat(50)}`
           <DialogTitle className="flex justify-between items-center">
             <span>سجل البحث</span>
             <div className="flex gap-2">
-              <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    {dateRange.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, 'P', { locale: ar })} -{' '}
-                          {format(dateRange.to, 'P', { locale: ar })}
-                        </>
-                      ) : (
-                        format(dateRange.from, 'P', { locale: ar })
-                      )
-                    ) : (
-                      'اختر التاريخ'
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange.from}
-                    selected={{ from: dateRange.from, to: dateRange.to }}
-                    onSelect={(range: any) => {
-                      setDateRange(range);
-                      if (range.from && range.to) {
-                        setIsDatePickerOpen(false);
-                      }
-                    }}
-                    locale={ar}
-                  />
-                </PopoverContent>
-              </Popover>
+              <DateRangePicker
+                dateRange={dateRange}
+                isOpen={isDatePickerOpen}
+                onOpenChange={setIsDatePickerOpen}
+                onSelect={(range: any) => {
+                  setDateRange(range);
+                  if (range.from && range.to) {
+                    setIsDatePickerOpen(false);
+                  }
+                }}
+              />
 
               <Button onClick={handleDeleteSelected} variant="destructive" size="icon">
                 <Trash2 className="h-4 w-4" />
               </Button>
 
-              <Button onClick={() => handleShare('whatsapp')} variant="outline" size="icon">
-                <MessageCircle className="h-4 w-4" />
-              </Button>
-              <Button onClick={() => handleShare('facebook')} variant="outline" size="icon">
-                <Facebook className="h-4 w-4" />
-              </Button>
-              <Button onClick={() => handleShare('copy')} variant="outline" size="icon">
-                <Share2 className="h-4 w-4" />
-              </Button>
+              <ShareButtonGroup onShare={handleShare} />
             </div>
           </DialogTitle>
         </DialogHeader>
-        <div className="max-h-[70vh] overflow-auto">
-          <Table>
-            <HistoryTableHeader showCheckbox={true} showDelete={true} />
-            <TableBody>
-              {validHistory.map((item) => (
-                <HistoryRow
-                  key={item.id}
-                  id={item.id}
-                  date={item.date}
-                  symbol={item.symbol}
-                  currentPrice={item.currentPrice}
-                  analysis={item.analysis}
-                  analysisType={item.analysisType}
-                  isSelected={selectedItems.has(item.id)}
-                  onSelect={() => {
-                    const newSelected = new Set(selectedItems);
-                    if (newSelected.has(item.id)) {
-                      newSelected.delete(item.id);
-                    } else {
-                      newSelected.add(item.id);
-                    }
-                    setSelectedItems(newSelected);
-                  }}
-                  onDelete={() => onDelete(item.id)}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        
+        <HistoryContent
+          history={validHistory}
+          selectedItems={selectedItems}
+          onSelect={handleSelect}
+          onDelete={onDelete}
+        />
       </DialogContent>
     </Dialog>
   );
