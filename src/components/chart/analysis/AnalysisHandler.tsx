@@ -57,26 +57,31 @@ export const useAnalysisHandler = () => {
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
 
+      if (!providedPrice) {
+        throw new Error("الرجاء إدخال السعر الحالي");
+      }
+
       let analysisResult;
       
-      if (isPatternAnalysis && providedPrice) {
+      if (isPatternAnalysis) {
         console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
         analysisResult = await analyzePattern(chartImage, providedPrice);
       } else if (isWaves) {
-        analysisResult = await analyzeWavesChart(chartImage, providedPrice!, upperSymbol);
+        analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
       } else if (isGann) {
-        analysisResult = await analyzeGannChart(chartImage, providedPrice!, upperSymbol);
+        analysisResult = await analyzeGannChart(chartImage, providedPrice, upperSymbol);
       } else if (isTurtleSoup) {
-        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice!, upperSymbol);
+        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, upperSymbol);
       } else if (isICT) {
-        analysisResult = await analyzeICTChart(chartImage, providedPrice!, upperSymbol);
+        analysisResult = await analyzeICTChart(chartImage, providedPrice, upperSymbol);
       } else if (isSMC) {
-        analysisResult = await analyzeSMCChart(chartImage, providedPrice!, upperSymbol);
+        analysisResult = await analyzeSMCChart(chartImage, providedPrice, upperSymbol);
       } else if (isScalping) {
-        analysisResult = await analyzeScalpingChart(chartImage, providedPrice!, upperSymbol);
+        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, upperSymbol);
       }
 
       if (!analysisResult) {
+        console.error("لم يتم العثور على نتائج التحليل");
         throw new Error("لم يتم العثور على نتائج التحليل");
       }
 
