@@ -61,15 +61,11 @@ export const useAnalysisHandler = () => {
         throw new Error("الرجاء إدخال السعر الحالي");
       }
 
-      let analysisResult;
+      let analysisResult: AnalysisData | null = null;
       
       if (isPatternAnalysis) {
         console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
         analysisResult = await analyzePattern(chartImage, providedPrice);
-        if (!analysisResult) {
-          throw new Error("فشل في تحليل النمط");
-        }
-        console.log("نتيجة تحليل النمط:", analysisResult);
       } else if (isWaves) {
         analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
       } else if (isGann) {
