@@ -1,6 +1,6 @@
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط";
+  direction: "صاعد" | "هابط" | "محايد";  // Updated to include "محايد"
   currentPrice: number;
   support: number;
   resistance: number;

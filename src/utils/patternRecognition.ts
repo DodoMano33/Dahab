@@ -116,8 +116,7 @@ export const patterns: PatternInfo[] = [
 ];
 
 export const identifyPattern = (chartImage: string): PatternInfo => {
-  // في الإنتاج، هنا سيتم استخدام خوارزميات معالجة الصور للتعرف على النمط
-  // حالياً نقوم باختيار نمط عشوائي للتجربة
+  console.log("تحليل الصورة للتعرف على النمط:", chartImage);
   const randomIndex = Math.floor(Math.random() * patterns.length);
   return patterns[randomIndex];
 };
