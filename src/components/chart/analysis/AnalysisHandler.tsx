@@ -8,6 +8,7 @@ import { analyzeTurtleSoupChart } from "./turtleSoupAnalysis";
 import { analyzeGannChart } from "./gannAnalysis";
 import { analyzeWavesChart } from "./wavesAnalysis";
 import { analyzePattern } from "@/utils/patternAnalysis";
+import { toast } from "sonner";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -46,12 +47,13 @@ export const useAnalysisHandler = () => {
       
       let currentPrice = providedPrice;
       if (!currentPrice) {
-        currentPrice = 0;
+        currentPrice = 0; // يمكن تحديث هذا لاحقاً للحصول على السعر الحالي من API
         console.log("تم جلب السعر الحالي من TradingView:", currentPrice);
       }
 
       let analysisResult;
       if (isPatternAnalysis) {
+        console.log("بدء تحليل النمط مع البيانات:", { chartImage, currentPrice });
         analysisResult = await analyzePattern(chartImage, currentPrice);
       } else if (isWaves) {
         analysisResult = await analyzeWavesChart(chartImage, currentPrice, upperSymbol);
@@ -78,6 +80,7 @@ export const useAnalysisHandler = () => {
       
     } catch (error) {
       console.error("خطأ في تحليل TradingView:", error);
+      toast.error("حدث خطأ أثناء التحليل");
       setIsAnalyzing(false);
       throw error;
     }
