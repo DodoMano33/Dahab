@@ -2,11 +2,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Brain, TrendingUp, Building2, Turtle, Activity, Waves } from "lucide-react";
+import { 
+  Brain, 
+  TrendingUp, 
+  Building2, 
+  Turtle, 
+  Activity, 
+  Waves,
+  Triangle,
+  BarChart
+} from "lucide-react";
 
 interface ChartInputProps {
   mode: "tradingview";
-  onTradingViewConfig: (symbol: string, timeframe: string, providedPrice?: number, isScalping?: boolean, isAI?: boolean, isSMC?: boolean, isICT?: boolean, isTurtleSoup?: boolean, isGann?: boolean, isWaves?: boolean) => void;
+  onTradingViewConfig: (
+    symbol: string, 
+    timeframe: string, 
+    providedPrice?: number, 
+    isScalping?: boolean, 
+    isAI?: boolean, 
+    isSMC?: boolean, 
+    isICT?: boolean, 
+    isTurtleSoup?: boolean, 
+    isGann?: boolean, 
+    isWaves?: boolean,
+    isPatternAnalysis?: boolean
+  ) => void;
   onHistoryClick: () => void;
   isAnalyzing: boolean;
 }
@@ -28,7 +49,8 @@ export const ChartInput = ({
     isICT: boolean = false, 
     isTurtleSoup: boolean = false, 
     isGann: boolean = false,
-    isWaves: boolean = false
+    isWaves: boolean = false,
+    isPatternAnalysis: boolean = false
   ) => {
     e.preventDefault();
     
@@ -43,10 +65,21 @@ export const ChartInput = ({
       return;
     }
 
-    // تحديد النطاق الزمني - 5 دقائق لتحليل Waves
     const timeframe = isWaves ? "5" : isScalping ? "5" : "D";
-    console.log(`تحليل ${isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
-    onTradingViewConfig(symbol, timeframe, providedPrice, isScalping, isAI, isSMC, isICT, isTurtleSoup, isGann, isWaves);
+    console.log(`تحليل ${isPatternAnalysis ? 'Patterns' : isWaves ? 'Waves' : isGann ? 'Gann' : isTurtleSoup ? 'Turtle Soup' : isICT ? 'ICT' : isSMC ? 'SMC' : isAI ? 'بالذكاء الاصطناعي' : isScalping ? 'سكالبينج' : 'عادي'} للرمز ${symbol}`);
+    onTradingViewConfig(
+      symbol, 
+      timeframe, 
+      providedPrice, 
+      isScalping, 
+      isAI, 
+      isSMC, 
+      isICT, 
+      isTurtleSoup, 
+      isGann, 
+      isWaves,
+      isPatternAnalysis
+    );
   };
 
   return (
@@ -88,6 +121,16 @@ export const ChartInput = ({
           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isAnalyzing ? "جاري التحليل..." : "تحليل عادي"}
+        </Button>
+
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => handleSubmit(e, false, false, false, false, false, false, false, true)}
+          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+        >
+          <Triangle className="w-4 h-4" />
+          تحليل Patterns
         </Button>
 
         <Button

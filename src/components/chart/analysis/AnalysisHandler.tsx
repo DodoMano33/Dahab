@@ -8,6 +8,7 @@ import { analyzeICTChart } from "./ictAnalysis";
 import { analyzeTurtleSoupChart } from "./turtleSoupAnalysis";
 import { analyzeGannChart } from "./gannAnalysis";
 import { analyzeWavesChart } from "./wavesAnalysis";
+import { analyzePattern } from "@/utils/patternAnalysis";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -25,7 +26,8 @@ export const useAnalysisHandler = () => {
     isICT: boolean = false,
     isTurtleSoup: boolean = false,
     isGann: boolean = false,
-    isWaves: boolean = false
+    isWaves: boolean = false,
+    isPatternAnalysis: boolean = false
   ) => {
     try {
       setIsAnalyzing(true);
@@ -36,7 +38,7 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: isWaves ? "Waves" : isGann ? "Gann" : isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
+        نوع_التحليل: isPatternAnalysis ? "Patterns" : isWaves ? "Waves" : isGann ? "Gann" : isTurtleSoup ? "Turtle Soup" : isICT ? "ICT" : isSMC ? "SMC" : isAI ? "ذكي" : isScalping ? "سكالبينج" : "عادي" 
       });
       
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
@@ -51,7 +53,9 @@ export const useAnalysisHandler = () => {
       setImage(chartImage);
 
       let analysisResult;
-      if (isWaves) {
+      if (isPatternAnalysis) {
+        analysisResult = await analyzePattern(chartImage, currentPrice, "descending_triangle");
+      } else if (isWaves) {
         analysisResult = await analyzeWavesChart(chartImage, currentPrice, upperSymbol);
       } else if (isGann) {
         analysisResult = await analyzeGannChart(chartImage, currentPrice, upperSymbol);
