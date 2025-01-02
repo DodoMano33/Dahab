@@ -81,14 +81,6 @@ export const ChartAnalyzer = () => {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
-        <div>
-          <AnalysisForm
-            onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
-            isAnalyzing={isAnalyzing}
-            onHistoryClick={() => setIsHistoryOpen(true)}
-            currentAnalysis={currentAnalysis}
-          />
-        </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
           <div className="sticky top-4">
@@ -111,6 +103,14 @@ export const ChartAnalyzer = () => {
               </div>
             )}
           </div>
+        </div>
+        <div>
+          <AnalysisForm
+            onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
+            isAnalyzing={isAnalyzing}
+            onHistoryClick={() => setIsHistoryOpen(true)}
+            currentAnalysis={currentAnalysis}
+          />
         </div>
       </div>
       <HistoryDialog

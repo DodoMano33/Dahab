@@ -39,7 +39,7 @@ export const AnalysisButtonGroup = ({
           type="button"
           disabled={isAnalyzing}
           onClick={(e) => onSubmit(e, true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5"
         >
           Scalping
         </Button>
@@ -61,7 +61,7 @@ export const AnalysisButtonGroup = ({
           type="button"
           variant="outline"
           onClick={onHistoryClick}
-          className="border-blue-600 text-blue-600 hover:bg-blue-50"
+          className="border-blue-600 text-blue-600 hover:bg-blue-50 text-sm py-1.5"
         >
           سجل البحث
         </Button>
@@ -77,7 +77,7 @@ export const AnalysisButtonGroup = ({
         type="button"
         disabled={isAnalyzing}
         onClick={(e) => onSubmit(e, false, true)}
-        className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 py-6"
+        className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 py-4"
       >
         <Brain className="w-6 h-6" />
         تحليل ذكي
