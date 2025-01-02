@@ -4,7 +4,7 @@ import { analyzeICTChart } from "../ictAnalysis";
 import { analyzeTurtleSoupChart } from "../turtleSoupAnalysis";
 import { analyzeGannChart } from "../gannAnalysis";
 import { analyzeWavesChart } from "../wavesAnalysis";
-import { analyzePatternChart } from "../patternAnalysis";
+import { analyzePattern } from "../patternAnalysis";
 import { analyzeDailyChart } from "../dailyAnalysis";
 import { analyzeScalpingChart } from "../scalpingAnalysis";
 
@@ -49,7 +49,7 @@ export const executeAnalysis = async (
     // For combined analysis
     const promises = selectedStrategies.map(strategy => {
       switch (strategy) {
-        case "Patterns": return analyzePatternChart(chartImage, currentPrice, timeframe);
+        case "Patterns": return analyzePattern(chartImage, currentPrice, timeframe);
         case "Waves": return analyzeWavesChart(chartImage, currentPrice, timeframe);
         case "Gann": return analyzeGannChart(chartImage, currentPrice, timeframe);
         case "Turtle Soup": return analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
@@ -73,7 +73,7 @@ export const executeAnalysis = async (
     const strategy = selectedStrategies[0] || "عادي";
     switch (strategy) {
       case "Patterns":
-        analysis = await analyzePatternChart(chartImage, currentPrice, timeframe);
+        analysis = await analyzePattern(chartImage, currentPrice, timeframe);
         break;
       case "Waves":
         analysis = await analyzeWavesChart(chartImage, currentPrice, timeframe);
