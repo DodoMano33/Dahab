@@ -40,7 +40,7 @@ export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHist
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-6" dir="rtl">
+      <DialogContent className="max-w-4xl max-h-[75vh] flex flex-col p-6" dir="rtl">
         <DialogHeader className="flex-shrink-0 mb-4">
           <DialogTitle className="flex justify-between items-center">
             <span>سجل البحث</span>
