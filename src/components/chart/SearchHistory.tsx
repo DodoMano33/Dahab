@@ -40,32 +40,34 @@ export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHist
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[75vh] flex flex-col p-6" dir="rtl">
-        <DialogHeader className="flex-shrink-0 mb-4">
-          <DialogTitle className="flex justify-between items-center">
-            <span>سجل البحث</span>
-            <div className="flex gap-2">
-              <DateRangePicker
-                dateRange={dateRange}
-                isOpen={isDatePickerOpen}
-                onOpenChange={setIsDatePickerOpen}
-                onSelect={(range: any) => {
-                  setDateRange(range);
-                  if (range.from && range.to) {
-                    setIsDatePickerOpen(false);
-                  }
-                }}
-              />
-              <HistoryActions
-                selectedItems={selectedItems}
-                onDelete={onDelete}
-                history={validHistory}
-              />
-            </div>
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-4xl h-[75vh] flex flex-col overflow-hidden p-0" dir="rtl">
+        <div className="sticky top-0 z-10 bg-background border-b px-6 py-4">
+          <DialogHeader>
+            <DialogTitle className="flex justify-between items-center">
+              <span>سجل البحث</span>
+              <div className="flex gap-2">
+                <DateRangePicker
+                  dateRange={dateRange}
+                  isOpen={isDatePickerOpen}
+                  onOpenChange={setIsDatePickerOpen}
+                  onSelect={(range: any) => {
+                    setDateRange(range);
+                    if (range.from && range.to) {
+                      setIsDatePickerOpen(false);
+                    }
+                  }}
+                />
+                <HistoryActions
+                  selectedItems={selectedItems}
+                  onDelete={onDelete}
+                  history={validHistory}
+                />
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+        </div>
         
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 overflow-y-auto p-6">
           <HistoryContent
             history={validHistory}
             selectedItems={selectedItems}
