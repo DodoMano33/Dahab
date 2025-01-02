@@ -3,7 +3,7 @@ import {
   calculateFibonacciLevels,
   calculateSupportResistance,
   detectTrend,
-} from "@/utils/technicalAnalysis";
+} from "@/utils/technicalAnalysis/calculations";
 import { addDays } from "date-fns";
 import { detectPrices } from "./smc/priceDetection";
 import { 
@@ -51,11 +51,10 @@ export const analyzeSMCChart = async (
         direction,
         support,
         resistance,
-        fibLevels,
         timeframe
       );
 
-      const pattern = detectSMCPattern(direction, prices, currentPrice);
+      const pattern = detectSMCPattern(direction, timeframe);
 
       const targets = targetPrices.map((price, index) => ({
         price,

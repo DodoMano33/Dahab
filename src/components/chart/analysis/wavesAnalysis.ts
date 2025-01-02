@@ -1,6 +1,6 @@
 import { AnalysisData } from "@/types/analysis";
 import { addMinutes, addHours, addDays } from "date-fns";
-import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis";
+import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
 
 export const analyzeWavesChart = async (
   chartImage: string,

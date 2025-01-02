@@ -1,4 +1,4 @@
-import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis";
+import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
 
 export const calculateSMCStopLoss = (
   currentPrice: number, 
