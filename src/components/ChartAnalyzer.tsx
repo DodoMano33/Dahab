@@ -81,29 +81,6 @@ export const ChartAnalyzer = () => {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
-          <div className="sticky top-4">
-            {analysis || isAnalyzing ? (
-              <AnalysisDisplay
-                image={image}
-                analysis={analysis}
-                isAnalyzing={isAnalyzing}
-                onClose={() => {
-                  setImage(null);
-                  setAnalysis(null);
-                  setIsAnalyzing(false);
-                }}
-                symbol={currentSymbol}
-                currentAnalysis={currentAnalysis}
-              />
-            ) : (
-              <div className="text-center text-gray-500 p-4">
-                اختر نوع التحليل لعرض النتائج هنا
-              </div>
-            )}
-          </div>
-        </div>
         <div>
           <AnalysisForm
             onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
