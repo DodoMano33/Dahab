@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { AnalysisData } from "@/types/analysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { analyzeScalpingChart } from "./scalpingAnalysis";
-import { analyzeSMCChart } from "./smcAnalysis";
-import { analyzeICTChart } from "./ictAnalysis";
-import { analyzeTurtleSoupChart } from "./turtleSoupAnalysis";
-import { analyzeGannChart } from "./gannAnalysis";
-import { analyzeWavesChart } from "./wavesAnalysis";
-import { analyzePattern } from "@/utils/patternAnalysis";
+import { detectAnalysisType } from "./utils/analysisTypeDetector";
+import { executeAnalysis } from "./utils/analysisExecutor";
 import { toast } from "sonner";
 
 export const useAnalysisHandler = () => {
@@ -35,14 +30,16 @@ export const useAnalysisHandler = () => {
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
       
-      const analysisType = isPatternAnalysis ? 'Patterns' : 
-                          isWaves ? 'Waves' : 
-                          isGann ? 'Gann' : 
-                          isTurtleSoup ? 'Turtle Soup' : 
-                          isICT ? 'ICT' : 
-                          isSMC ? 'SMC' : 
-                          isAI ? 'ذكي' : 
-                          isScalping ? 'سكالبينج' : 'عادي';
+      const analysisType = detectAnalysisType(
+        isPatternAnalysis,
+        isWaves,
+        isGann,
+        isTurtleSoup,
+        isICT,
+        isSMC,
+        isAI,
+        isScalping
+      );
       
       setCurrentAnalysis(analysisType);
       
@@ -61,24 +58,20 @@ export const useAnalysisHandler = () => {
         throw new Error("الرجاء إدخال السعر الحالي");
       }
 
-      let analysisResult: AnalysisData | null = null;
-      
-      if (isPatternAnalysis) {
-        console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice, timeframe });
-        analysisResult = await analyzePattern(chartImage, providedPrice, timeframe);
-      } else if (isWaves) {
-        analysisResult = await analyzeWavesChart(chartImage, providedPrice, timeframe);
-      } else if (isGann) {
-        analysisResult = await analyzeGannChart(chartImage, providedPrice, timeframe);
-      } else if (isTurtleSoup) {
-        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, timeframe);
-      } else if (isICT) {
-        analysisResult = await analyzeICTChart(chartImage, providedPrice, timeframe);
-      } else if (isSMC) {
-        analysisResult = await analyzeSMCChart(chartImage, providedPrice, timeframe);
-      } else if (isScalping) {
-        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, timeframe);
-      }
+      const analysisResult = await executeAnalysis(
+        chartImage,
+        providedPrice,
+        timeframe,
+        {
+          isPatternAnalysis,
+          isWaves,
+          isGann,
+          isTurtleSoup,
+          isICT,
+          isSMC,
+          isScalping
+        }
+      );
 
       if (!analysisResult) {
         console.error("لم يتم العثور على نتائج التحليل");
