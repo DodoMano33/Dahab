@@ -14,14 +14,23 @@ export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProp
       if (pattern.includes('تحليل مدمج')) {
         const typesMatch = pattern.match(/\((.*?)\)/);
         if (typesMatch && typesMatch[1]) {
-          // Extract the number and types
-          const types = typesMatch[1]
-            .replace(/\d+\s*استراتيجيات?/, '') // Remove the number of strategies text
-            .split(',')
-            .map(type => type.trim())
-            .filter(type => type) // Remove empty strings
-            .join(' + ');
-          return `(${types})`;
+          // Extract just the number from the text
+          const numberMatch = typesMatch[1].match(/(\d+)/);
+          const number = numberMatch ? parseInt(numberMatch[0]) : 0;
+          
+          // Get the strategy types after the number
+          const strategiesText = typesMatch[1].split('استراتيجيات')[1] || 
+                                typesMatch[1].split('استراتيجية')[1];
+          
+          if (strategiesText) {
+            const types = strategiesText
+              .split(',')
+              .map(type => type.trim())
+              .filter(type => type.length > 0)
+              .join(' + ');
+            
+            return `(${types})`;
+          }
         }
       }
     }
