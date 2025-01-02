@@ -12,7 +12,8 @@ import { addDays } from "date-fns";
 export const analyzeSMCChart = async (
   imageData: string,
   currentPrice: number,
-  symbol: string
+  symbol: string,
+  timeframe: string = "1d"
 ): Promise<AnalysisData> => {
   console.log("بدء تحليل SMC للرمز:", symbol);
 
@@ -36,23 +37,24 @@ export const analyzeSMCChart = async (
       console.log("الأسعار المكتشفة لتحليل SMC:", prices);
 
       const direction = detectTrend(prices) as "صاعد" | "هابط";
-      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, false);
+      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
       
       // تعديل حساب وقف الخسارة ليكون أكثر دقة في SMC
-      const stopLoss = calculateSMCStopLoss(currentPrice, direction, support, resistance);
+      const stopLoss = calculateSMCStopLoss(currentPrice, direction, support, resistance, timeframe);
       
       // حساب مستويات فيبوناتشي مع تركيز على مناطق السيولة
       const fibLevels = calculateFibonacciLevels(resistance, support);
       
       // حساب الأهداف مع مراعاة مناطق تجمع السيولة
-      const targetPrices = calculateSMCTargets(currentPrice, direction, support, resistance);
+      const targetPrices = calculateSMCTargets(currentPrice, direction, support, resistance, timeframe);
 
       const bestEntryPoint = calculateSMCEntryPoint(
         currentPrice,
         direction,
         support,
         resistance,
-        fibLevels
+        fibLevels,
+        timeframe
       );
 
       const pattern = detectSMCPattern(direction, prices, currentPrice);
@@ -123,33 +125,84 @@ const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): numb
   return prices;
 };
 
-const calculateSMCStopLoss = (currentPrice: number, direction: string, support: number, resistance: number): number => {
+const calculateSMCStopLoss = (
+  currentPrice: number, 
+  direction: string, 
+  support: number, 
+  resistance: number,
+  timeframe: string
+): number => {
   const range = resistance - support;
-  // حساب وقف الخسارة بناءً على مناطق السيولة
+  // حساب وقف الخسارة بناءً على مناطق السيولة والإطار الزمني
+  const stopLossMultiplier = getTimeframeStopLossMultiplier(timeframe);
+  
   if (direction === "صاعد") {
-    return currentPrice - (range * 0.15); // وقف خسارة تحت منطقة السيولة
+    return currentPrice - (range * stopLossMultiplier);
   } else {
-    return currentPrice + (range * 0.15); // وقف خسارة فوق منطقة السيولة
+    return currentPrice + (range * stopLossMultiplier);
   }
 };
 
-const calculateSMCTargets = (currentPrice: number, direction: string, support: number, resistance: number): number[] => {
+const calculateSMCTargets = (
+  currentPrice: number, 
+  direction: string, 
+  support: number, 
+  resistance: number,
+  timeframe: string
+): number[] => {
   const range = resistance - support;
+  const multipliers = getTimeframeTargetMultipliers(timeframe);
   const targets = [];
   
   if (direction === "صاعد") {
-    // أهداف صعودية تستهدف مناطق السيولة العلوية
-    targets.push(resistance + (range * 0.3));  // منطقة السيولة الأولى
-    targets.push(resistance + (range * 0.6));  // منطقة السيولة الثانية
-    targets.push(resistance + range);          // منطقة السيولة الرئيسية
+    targets.push(currentPrice + (range * multipliers[0]));
+    targets.push(currentPrice + (range * multipliers[1]));
+    targets.push(currentPrice + (range * multipliers[2]));
   } else {
-    // أهداف هبوطية تستهدف مناطق السيولة السفلية
-    targets.push(support - (range * 0.3));     // منطقة السيولة الأولى
-    targets.push(support - (range * 0.6));     // منطقة السيولة الثانية
-    targets.push(support - range);             // منطقة السيولة الرئيسية
+    targets.push(currentPrice - (range * multipliers[0]));
+    targets.push(currentPrice - (range * multipliers[1]));
+    targets.push(currentPrice - (range * multipliers[2]));
   }
   
   return targets;
+};
+
+const getTimeframeStopLossMultiplier = (timeframe: string): number => {
+  switch (timeframe) {
+    case "1m":
+      return 0.05;
+    case "5m":
+      return 0.08;
+    case "30m":
+      return 0.1;
+    case "1h":
+      return 0.15;
+    case "4h":
+      return 0.2;
+    case "1d":
+      return 0.25;
+    default:
+      return 0.2;
+  }
+};
+
+const getTimeframeTargetMultipliers = (timeframe: string): number[] => {
+  switch (timeframe) {
+    case "1m":
+      return [0.1, 0.2, 0.3];
+    case "5m":
+      return [0.15, 0.3, 0.45];
+    case "30m":
+      return [0.2, 0.4, 0.6];
+    case "1h":
+      return [0.3, 0.6, 0.9];
+    case "4h":
+      return [0.5, 1.0, 1.5];
+    case "1d":
+      return [0.8, 1.6, 2.4];
+    default:
+      return [0.5, 1.0, 1.5];
+  }
 };
 
 const calculateSMCEntryPoint = (
@@ -157,7 +210,8 @@ const calculateSMCEntryPoint = (
   direction: string,
   support: number,
   resistance: number,
-  fibLevels: { level: number; price: number }[]
+  fibLevels: { level: number; price: number }[],
+  timeframe: string
 ): { price: number; reason: string } => {
   const range = resistance - support;
   
