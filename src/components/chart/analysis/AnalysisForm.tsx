@@ -3,8 +3,10 @@ import { ChartInput } from "../ChartInput";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { SearchHistoryItem } from "@/types/analysis";
-import { supabase } from "@/lib/supabase";
 import { useAnalysisHandler } from "./AnalysisHandler";
+import { showAnalysisMessage } from "./utils/analysisMessages";
+import { getAnalysisType } from "./utils/analysisTypes";
+import { saveAnalysis } from "./utils/saveAnalysis";
 
 interface AnalysisFormProps {
   onAnalysis: (item: SearchHistoryItem) => void;
@@ -13,22 +15,27 @@ interface AnalysisFormProps {
   currentAnalysis?: string;
 }
 
-export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentAnalysis }: AnalysisFormProps) => {
+export const AnalysisForm = ({ 
+  onAnalysis, 
+  isAnalyzing, 
+  onHistoryClick, 
+  currentAnalysis 
+}: AnalysisFormProps) => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();
 
   const handleAnalysis = async (
     symbol: string, 
     timeframe: string, 
-    providedPrice?: number, 
-    isScalping?: boolean,
-    isAI?: boolean,
-    isSMC?: boolean,
-    isICT?: boolean,
-    isTurtleSoup?: boolean,
-    isGann?: boolean,
-    isWaves?: boolean,
-    isPatternAnalysis?: boolean
+    providedPrice?: number,
+    isScalping: boolean = false,
+    isAI: boolean = false,
+    isSMC: boolean = false,
+    isICT: boolean = false,
+    isTurtleSoup: boolean = false,
+    isGann: boolean = false,
+    isWaves: boolean = false,
+    isPatternAnalysis: boolean = false
   ) => {
     try {
       if (!user) {
@@ -36,21 +43,15 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
         return;
       }
 
-      if (isWaves) {
-        toast.info("جاري تحليل البيانات باستخدام نموذج Waves...");
-      } else if (isGann) {
-        toast.info("جاري تحليل البيانات باستخدام نظرية غان...");
-      } else if (isAI) {
-        toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
-      } else if (isSMC) {
-        toast.info("جاري تحليل البيانات باستخدام نموذج SMC...");
-      } else if (isICT) {
-        toast.info("جاري تحليل البيانات باستخدام نموذج ICT...");
-      } else if (isTurtleSoup) {
-        toast.info("جاري تحليل البيانات باستخدام نموذج Turtle Soup...");
-      } else if (isPatternAnalysis) {
-        toast.info("جاري تحليل البيانات باستخدام تحليل الأنماط...");
-      }
+      showAnalysisMessage(
+        isPatternAnalysis,
+        isWaves,
+        isGann,
+        isTurtleSoup,
+        isICT,
+        isSMC,
+        isAI
+      );
 
       const result = await handleTradingViewConfig(
         symbol, 
@@ -69,49 +70,28 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isPatternAnalysis ? "Patterns" :
-                           isWaves ? "Waves" :
-                           isGann ? "Gann" :
-                           isTurtleSoup ? "Turtle Soup" : 
-                           isICT ? "ICT" : 
-                           isSMC ? "SMC" : 
-                           isAI ? "ذكي" : 
-                           isScalping ? "سكالبينج" : 
-                           "عادي";
+        const analysisType = getAnalysisType(
+          isPatternAnalysis,
+          isWaves,
+          isGann,
+          isTurtleSoup,
+          isICT,
+          isSMC,
+          isAI,
+          isScalping
+        );
 
-        console.log("Inserting analysis data:", {
-          user_id: user.id,
+        const savedData = await saveAnalysis({
+          userId: user.id,
           symbol: upperSymbol,
-          current_price: currentPrice,
-          analysis: analysisResult,
-          analysis_type: analysisType,
-          timeframe: timeframe
+          currentPrice,
+          analysisResult,
+          analysisType,
+          timeframe
         });
-        
-        const { data, error: saveError } = await supabase
-          .from('search_history')
-          .insert({
-            user_id: user.id,
-            symbol: upperSymbol,
-            current_price: currentPrice,
-            analysis: analysisResult,
-            analysis_type: analysisType,
-            timeframe: timeframe
-          })
-          .select()
-          .single();
-
-        if (saveError) {
-          console.error("Error saving to Supabase:", saveError);
-          throw saveError;
-        }
-
-        if (!data) {
-          throw new Error("No data returned from insert operation");
-        }
 
         const newHistoryEntry: SearchHistoryItem = {
-          id: data.id,
+          id: savedData.id,
           date: new Date(),
           symbol: upperSymbol,
           currentPrice,
@@ -119,13 +99,11 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
           targetHit: false,
           stopLossHit: false,
           analysisType,
-          timeframe: timeframe
+          timeframe
         };
 
         onAnalysis(newHistoryEntry);
         console.log("تم تحديث سجل البحث:", newHistoryEntry);
-      } else {
-        throw new Error("لم يتم استلام نتائج التحليل");
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
