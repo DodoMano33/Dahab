@@ -1,3 +1,5 @@
+import { TableCell } from "@/components/ui/table";
+
 interface AnalysisTypeCellProps {
   analysisType: string;
   pattern?: string;
@@ -5,26 +7,24 @@ interface AnalysisTypeCellProps {
 
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
-    // Added console.log for debugging
-    console.log('analysisType:', analysisType, 'pattern:', pattern);
+    console.log('Formatting analysis type:', analysisType, 'pattern:', pattern);
     
-    if (analysisType.trim() === 'ذكي' && pattern) {
+    if (analysisType === "ذكي" && pattern) {
       const typesMatch = pattern.match(/\((.*?)\)/);
       if (typesMatch && typesMatch[1]) {
         const types = typesMatch[1]
           .split(',')
           .map(type => type.trim())
           .join(' + ');
-        return `Smart (${types})`;
+        return `(${types})`;
       }
-      return "Smart";
     }
     return analysisType;
   };
 
   return (
-    <td className="text-right">
+    <TableCell className="text-right">
       {formatAnalysisType()}
-    </td>
+    </TableCell>
   );
 };
