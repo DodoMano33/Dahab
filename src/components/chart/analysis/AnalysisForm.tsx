@@ -70,7 +70,8 @@ export const AnalysisForm = ({
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = getAnalysisType(
+        // تحديث: تعيين نوع التحليل إلى "Smart" عندما يكون التحليل ذكياً
+        const analysisType = isAI ? "Smart" : getAnalysisType(
           isPatternAnalysis,
           isWaves,
           isGann,
