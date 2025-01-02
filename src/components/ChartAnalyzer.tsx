@@ -80,17 +80,19 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
+        <div>
           <AnalysisForm
             onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
             isAnalyzing={isAnalyzing}
             onHistoryClick={() => setIsHistoryOpen(true)}
             currentAnalysis={currentAnalysis}
           />
-          {(analysis || isAnalyzing) && (
-            <div className="bg-white p-6 rounded-lg shadow-md lg:hidden">
-              <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
+          <div className="sticky top-4">
+            {analysis || isAnalyzing ? (
               <AnalysisDisplay
                 image={image}
                 analysis={analysis}
@@ -103,22 +105,12 @@ export const ChartAnalyzer = () => {
                 symbol={currentSymbol}
                 currentAnalysis={currentAnalysis}
               />
-            </div>
-          )}
-        </div>
-        <div className="hidden lg:block">
-          <AnalysisDisplay
-            image={image}
-            analysis={analysis}
-            isAnalyzing={isAnalyzing}
-            onClose={() => {
-              setImage(null);
-              setAnalysis(null);
-              setIsAnalyzing(false);
-            }}
-            symbol={currentSymbol}
-            currentAnalysis={currentAnalysis}
-          />
+            ) : (
+              <div className="text-center text-gray-500 p-4">
+                اختر نوع التحليل لعرض النتائج هنا
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <HistoryDialog
