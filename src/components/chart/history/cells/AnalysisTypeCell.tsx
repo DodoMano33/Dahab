@@ -9,14 +9,20 @@ export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProp
   const formatAnalysisType = () => {
     console.log('Formatting analysis type:', analysisType, 'pattern:', pattern);
     
-    if (analysisType === "ذكي" && pattern) {
-      const typesMatch = pattern.match(/\((.*?)\)/);
-      if (typesMatch && typesMatch[1]) {
-        const types = typesMatch[1]
-          .split(',')
-          .map(type => type.trim())
-          .join(' + ');
-        return `(${types})`;
+    if (pattern) {
+      // Check if pattern contains "تحليل مدمج"
+      if (pattern.includes('تحليل مدمج')) {
+        const typesMatch = pattern.match(/\((.*?)\)/);
+        if (typesMatch && typesMatch[1]) {
+          // Extract the number and types
+          const types = typesMatch[1]
+            .replace(/\d+\s*استراتيجيات?/, '') // Remove the number of strategies text
+            .split(',')
+            .map(type => type.trim())
+            .filter(type => type) // Remove empty strings
+            .join(' + ');
+          return `(${types})`;
+        }
       }
     }
     return analysisType;
