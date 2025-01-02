@@ -65,12 +65,13 @@ export const executeAnalysis = async (
     // Combine the results
     analysis = results[0]; // Start with the first analysis
     if (analysis.bestEntryPoint) {
-      analysis.bestEntryPoint.reason = `بناءً على دمج ${selectedStrategies.length} استراتيجيات (${selectedStrategies.join(', ')})`;
+      analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
-    analysis.pattern = `تحليل مدمج (${selectedStrategies.join(', ')})`;
+    analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
+    analysis.analysisType = "Smart"; // Set analysis type to Smart consistently
   } else {
     // For single strategy analysis
-    const strategy = selectedStrategies[0] || "عادي";
+    const strategy = selectedStrategies[0] || "Standard";
     switch (strategy) {
       case "Patterns":
         analysis = await analyzePattern(chartImage, currentPrice, timeframe);

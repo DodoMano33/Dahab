@@ -7,21 +7,18 @@ interface AnalysisTypeCellProps {
 
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
-    if (analysisType === "ذكي" && pattern) {
-      // Extract strategies from the pattern
-      const typesMatch = pattern.match(/\((.*?)\)/);
+    if (analysisType === "ذكي" || analysisType === "Smart") {
+      // Extract strategies from the pattern if available
+      const typesMatch = pattern?.match(/\((.*?)\)/);
       if (typesMatch && typesMatch[1]) {
         const strategies = typesMatch[1]
           .split(',')
           .map(s => s.trim())
           .filter(s => s);
-
-        const count = strategies.length;
-        const strategyNames = strategies.join(' + ');
         
-        // Return the formatted string with count and names
-        return `ذكي (${strategyNames})`;
+        return `Smart (${strategies.join(' + ')})`;
       }
+      return "Smart";
     }
     return analysisType;
   };
