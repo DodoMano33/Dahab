@@ -5,6 +5,7 @@ interface AnalysisTypeCellProps {
   pattern?: string;
 }
 
+
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
     if (analysisType === "ذكي" && pattern) {
