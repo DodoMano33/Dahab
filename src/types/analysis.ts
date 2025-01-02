@@ -31,3 +31,9 @@ export interface SearchHistoryItem {
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
   timeframe: string;
 }
+
+export interface ImageData {
+  height: number;
+  width: number;
+  data: Uint8ClampedArray;
+}

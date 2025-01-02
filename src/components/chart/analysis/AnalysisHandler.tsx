@@ -67,17 +67,17 @@ export const useAnalysisHandler = () => {
         console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice, timeframe });
         analysisResult = await analyzePattern(chartImage, providedPrice, timeframe);
       } else if (isWaves) {
-        analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol, timeframe);
+        analysisResult = await analyzeWavesChart(chartImage, providedPrice, timeframe);
       } else if (isGann) {
-        analysisResult = await analyzeGannChart(chartImage, providedPrice, upperSymbol, timeframe);
+        analysisResult = await analyzeGannChart(chartImage, providedPrice, timeframe);
       } else if (isTurtleSoup) {
-        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, upperSymbol, timeframe);
+        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, timeframe);
       } else if (isICT) {
-        analysisResult = await analyzeICTChart(chartImage, providedPrice, upperSymbol, timeframe);
+        analysisResult = await analyzeICTChart(chartImage, providedPrice, timeframe);
       } else if (isSMC) {
-        analysisResult = await analyzeSMCChart(chartImage, providedPrice, upperSymbol, timeframe);
+        analysisResult = await analyzeSMCChart(chartImage, providedPrice, timeframe);
       } else if (isScalping) {
-        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, upperSymbol, timeframe);
+        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, timeframe);
       }
 
       if (!analysisResult) {
