@@ -7,17 +7,20 @@ interface AnalysisTypeCellProps {
 
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
-    if (analysisType === "ذكي" && pattern) {
-      const typesMatch = pattern.match(/\((.*?)\)/); // البحث عن النصوص داخل الأقواس
-      if (typesMatch && typesMatch[1]) {
-        const types = typesMatch[1]
+    // التحقق إذا كان النوع "ذكي"
+    if (analysisType === "ذكي") {
+      // التأكد من وجود النص في pattern
+      if (pattern) {
+        const cleanedPattern = pattern
+          .replace(/[()]/g, '') // إزالة الأقواس
           .split(',')
-          .map(type => type.trim())
-          .join(' + '); // دمج الأنواع مع "+" للفصل
-        return `Smart (${types})`;
+          .map(type => type.trim()) // تنظيف النصوص
+          .join(' + '); // دمج الأنواع بعلامة "+"
+        return `Smart (${cleanedPattern})`; // النتيجة المطلوبة
       }
+      return "Smart"; // في حالة عدم وجود pattern
     }
-    return analysisType; // النص الافتراضي في حالة عدم تساوي النوع بـ "ذكي"
+    return analysisType; // النوع كما هو للحالات الأخرى
   };
 
   return (
