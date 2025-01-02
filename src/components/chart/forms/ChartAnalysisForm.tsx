@@ -3,6 +3,7 @@ import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
+import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
 import { toast } from "sonner";
 
 interface ChartAnalysisFormProps {
@@ -33,6 +34,7 @@ export const ChartAnalysisForm = ({
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
+  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
 
   const handleSubmit = (
     e: React.MouseEvent,
@@ -58,14 +60,16 @@ export const ChartAnalysisForm = ({
       return;
     }
 
-    // Override timeframe for pattern analysis to always be 4h
-    const actualTimeframe = isPatternAnalysis ? "4h" : timeframe;
+    if (isAI) {
+      setIsAIDialogOpen(true);
+      return;
+    }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${symbol} على الإطار الزمني ${actualTimeframe}`);
+    console.log(`تحليل ${currentAnalysis} للرمز ${symbol} على الإطار الزمني ${timeframe}`);
     
     onSubmit(
       symbol,
-      actualTimeframe,
+      timeframe,
       providedPrice,
       isScalping,
       isAI,
@@ -75,6 +79,42 @@ export const ChartAnalysisForm = ({
       isGann,
       isWaves,
       isPatternAnalysis
+    );
+  };
+
+  const handleCombinedAnalysis = (selectedTypes: string[]) => {
+    const providedPrice = price ? Number(price) : undefined;
+    if (!providedPrice) {
+      toast.error("الرجاء إدخال السعر الحالي للتحليل المدمج");
+      return;
+    }
+
+    console.log("Starting combined analysis with types:", selectedTypes);
+    
+    // Map selected types to boolean flags
+    const analysisFlags = {
+      isScalping: selectedTypes.includes("scalping"),
+      isAI: true,
+      isSMC: selectedTypes.includes("smc"),
+      isICT: selectedTypes.includes("ict"),
+      isTurtleSoup: selectedTypes.includes("turtleSoup"),
+      isGann: selectedTypes.includes("gann"),
+      isWaves: selectedTypes.includes("waves"),
+      isPatternAnalysis: selectedTypes.includes("patterns")
+    };
+
+    onSubmit(
+      symbol,
+      timeframe,
+      providedPrice,
+      analysisFlags.isScalping,
+      analysisFlags.isAI,
+      analysisFlags.isSMC,
+      analysisFlags.isICT,
+      analysisFlags.isTurtleSoup,
+      analysisFlags.isGann,
+      analysisFlags.isWaves,
+      analysisFlags.isPatternAnalysis
     );
   };
 
@@ -88,6 +128,11 @@ export const ChartAnalysisForm = ({
         onSubmit={handleSubmit}
         onHistoryClick={onHistoryClick}
         currentAnalysis={currentAnalysis}
+      />
+      <CombinedAnalysisDialog
+        isOpen={isAIDialogOpen}
+        onClose={() => setIsAIDialogOpen(false)}
+        onAnalyze={handleCombinedAnalysis}
       />
     </form>
   );

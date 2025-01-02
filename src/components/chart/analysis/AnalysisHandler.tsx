@@ -3,6 +3,7 @@ import { AnalysisData } from "@/types/analysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { detectAnalysisType } from "./utils/analysisTypeDetector";
 import { executeAnalysis } from "./utils/analysisExecutor";
+import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";
 import { toast } from "sonner";
 
 export const useAnalysisHandler = () => {
@@ -30,7 +31,16 @@ export const useAnalysisHandler = () => {
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
       
-      const analysisType = detectAnalysisType(
+      const selectedTypes = [];
+      if (isScalping) selectedTypes.push("scalping");
+      if (isSMC) selectedTypes.push("smc");
+      if (isICT) selectedTypes.push("ict");
+      if (isTurtleSoup) selectedTypes.push("turtleSoup");
+      if (isGann) selectedTypes.push("gann");
+      if (isWaves) selectedTypes.push("waves");
+      if (isPatternAnalysis) selectedTypes.push("patterns");
+      
+      const analysisType = isAI ? "ذكي" : detectAnalysisType(
         isPatternAnalysis,
         isWaves,
         isGann,
@@ -47,7 +57,8 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: analysisType
+        نوع_التحليل: analysisType,
+        selectedTypes
       });
 
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
@@ -58,20 +69,30 @@ export const useAnalysisHandler = () => {
         throw new Error("الرجاء إدخال السعر الحالي");
       }
 
-      const analysisResult = await executeAnalysis(
-        chartImage,
-        providedPrice,
-        timeframe,
-        {
-          isPatternAnalysis,
-          isWaves,
-          isGann,
-          isTurtleSoup,
-          isICT,
-          isSMC,
-          isScalping
-        }
-      );
+      let analysisResult;
+      if (isAI && selectedTypes.length > 0) {
+        analysisResult = await combinedAnalysis(
+          chartImage,
+          providedPrice,
+          timeframe,
+          selectedTypes
+        );
+      } else {
+        analysisResult = await executeAnalysis(
+          chartImage,
+          providedPrice,
+          timeframe,
+          {
+            isPatternAnalysis,
+            isWaves,
+            isGann,
+            isTurtleSoup,
+            isICT,
+            isSMC,
+            isScalping
+          }
+        );
+      }
 
       if (!analysisResult) {
         console.error("لم يتم العثور على نتائج التحليل");
