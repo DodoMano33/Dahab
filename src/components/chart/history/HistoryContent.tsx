@@ -27,21 +27,23 @@ export const HistoryContent = ({
   onDelete
 }: HistoryContentProps) => {
   return (
-    <div className="relative">
-      <Table>
-        <HistoryTableHeader showCheckbox={true} showDelete={true} />
-        <TableBody>
-          {history.map((item) => (
-            <HistoryRow
-              key={item.id}
-              {...item}
-              isSelected={selectedItems.has(item.id)}
-              onSelect={() => onSelect(item.id)}
-              onDelete={() => onDelete(item.id)}
-            />
-          ))}
-        </TableBody>
-      </Table>
+    <div className="relative rounded-md border">
+      <div className="overflow-x-auto">
+        <Table>
+          <HistoryTableHeader showCheckbox={true} showDelete={true} />
+          <TableBody>
+            {history.map((item) => (
+              <HistoryRow
+                key={item.id}
+                {...item}
+                isSelected={selectedItems.has(item.id)}
+                onSelect={() => onSelect(item.id)}
+                onDelete={() => onDelete(item.id)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
