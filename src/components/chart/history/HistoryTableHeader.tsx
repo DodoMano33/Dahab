@@ -6,9 +6,9 @@ interface HistoryTableHeaderProps {
 }
 
 export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }: HistoryTableHeaderProps) => (
-  <TableHeader>
+  <TableHeader className="sticky top-0 bg-background z-20">
     <TableRow>
-      {showCheckbox && <TableHead className="w-12"></TableHead>}
+      {showCheckbox && <TableHead className="w-12 text-center">تحديد</TableHead>}
       <TableHead className="text-right">التاريخ</TableHead>
       <TableHead className="text-right">الرمز</TableHead>
       <TableHead className="text-right">نوع التحليل</TableHead>
@@ -18,7 +18,7 @@ export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }:
       <TableHead className="text-right">أفضل نقطة دخول</TableHead>
       <TableHead className="text-right">الأهداف والتوقيت</TableHead>
       <TableHead className="text-right">وقف الخسارة</TableHead>
-      {showDelete && <TableHead className="w-12"></TableHead>}
+      {showDelete && <TableHead className="w-12 text-center">حذف</TableHead>}
     </TableRow>
   </TableHeader>
 );

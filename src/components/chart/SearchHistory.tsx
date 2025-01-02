@@ -30,15 +30,14 @@ export const SearchHistory = ({
 }: SearchHistoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-[75vh] flex flex-col overflow-hidden p-0" dir="rtl">
-        {/* العنوان وأزرار المشاركة */}
-        <div className="sticky top-0 z-10 bg-background border-b px-6 py-4 flex justify-between items-center">
-          <DialogHeader>
-            <DialogTitle>
-              <span>سجل البحث</span>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex gap-2">
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0" dir="rtl">
+        <div className="sticky top-0 z-50 bg-background border-b">
+          <div className="px-6 py-4">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">سجل البحث</DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="px-6 py-3 flex justify-end items-center gap-2 border-t bg-muted/50">
             <DateRangePicker
               dateRange={dateRange}
               isOpen={isDatePickerOpen}
@@ -58,14 +57,15 @@ export const SearchHistory = ({
           </div>
         </div>
 
-        {/* منطقة المحتوى القابلة للتمرير */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <HistoryContent
-            history={validHistory}
-            selectedItems={selectedItems}
-            onSelect={handleSelect}
-            onDelete={onDelete}
-          />
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <HistoryContent
+              history={validHistory}
+              selectedItems={selectedItems}
+              onSelect={handleSelect}
+              onDelete={onDelete}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
