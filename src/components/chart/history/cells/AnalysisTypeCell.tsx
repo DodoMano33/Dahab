@@ -5,21 +5,19 @@ interface AnalysisTypeCellProps {
   pattern?: string;
 }
 
-
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
     if (analysisType === "ذكي" && pattern) {
-      const typesMatch = pattern.match(/\((.*?)\)/);
+      const typesMatch = pattern.match(/\((.*?)\)/); // البحث عن النصوص داخل الأقواس
       if (typesMatch && typesMatch[1]) {
         const types = typesMatch[1]
           .split(',')
           .map(type => type.trim())
-          .join(' + ');
+          .join(' + '); // دمج الأنواع مع "+" للفصل
         return `Smart (${types})`;
       }
-      return "Smart"; // إذا لم تكن هناك أنماط، فقط اكتب "Smart".
     }
-    return analysisType; // إذا لم يكن النوع "ذكي"، أرجع النص كما هو.
+    return analysisType; // النص الافتراضي في حالة عدم تساوي النوع بـ "ذكي"
   };
 
   return (
