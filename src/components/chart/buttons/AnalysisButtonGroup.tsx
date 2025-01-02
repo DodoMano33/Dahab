@@ -41,17 +41,7 @@ export const AnalysisButtonGroup = ({
           onClick={(e) => onSubmit(e, true)}
           className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
         >
-          تحليل سكالبينج
-        </Button>
-
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => onSubmit(e, false, true)}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-        >
-          <Brain className="w-4 h-4" />
-          تحليل ذكي
+          Scalping
         </Button>
       </div>
 
@@ -82,6 +72,16 @@ export const AnalysisButtonGroup = ({
           </Badge>
         )}
       </div>
+
+      <Button
+        type="button"
+        disabled={isAnalyzing}
+        onClick={(e) => onSubmit(e, false, true)}
+        className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 py-6"
+      >
+        <Brain className="w-6 h-6" />
+        تحليل ذكي
+      </Button>
     </div>
   );
 };
