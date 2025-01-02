@@ -48,6 +48,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
         toast.info("جاري تحليل البيانات باستخدام نموذج ICT...");
       } else if (isTurtleSoup) {
         toast.info("جاري تحليل البيانات باستخدام نموذج Turtle Soup...");
+      } else if (isPatternAnalysis) {
+        toast.info("جاري تحليل البيانات باستخدام تحليل الأنماط...");
       }
 
       const result = await handleTradingViewConfig(
@@ -67,7 +69,8 @@ export const AnalysisForm = ({ onAnalysis, isAnalyzing, onHistoryClick, currentA
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isWaves ? "Waves" :
+        const analysisType = isPatternAnalysis ? "Patterns" :
+                           isWaves ? "Waves" :
                            isGann ? "Gann" :
                            isTurtleSoup ? "Turtle Soup" : 
                            isICT ? "ICT" : 
