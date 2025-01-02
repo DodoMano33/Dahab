@@ -49,12 +49,12 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
       
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          السعر الحالي (اختياري)
+          السعر (إجباري)
         </label>
         <Input
           type="number"
           step="any"
-          placeholder="أدخل السعر الحالي"
+          placeholder="أدخل السعر (إجباري)"
           value={currentPrice}
           onChange={(e) => setCurrentPrice(e.target.value)}
           className="w-full"
