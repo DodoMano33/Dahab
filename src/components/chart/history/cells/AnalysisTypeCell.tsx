@@ -8,17 +8,21 @@ interface AnalysisTypeCellProps {
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
     if (analysisType === "ذكي" && pattern) {
-      // استخراج الأنواع فقط من الـ pattern
-      const types = pattern
-        .replace(/[()]/g, "") // إزالة الأقواس
-        .split(",") // تقسيم النصوص بناءً على الفاصلة
-        .map(type => type.trim()) // تنظيف النصوص من المسافات الزائدة
-        .join(" + "); // دمج الأنواع باستخدام علامة "+"
+      // Extract strategies from the pattern
+      const typesMatch = pattern.match(/\((.*?)\)/);
+      if (typesMatch && typesMatch[1]) {
+        const strategies = typesMatch[1]
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s);
 
-      return types; // إرجاع الأنواع فقط
+        const count = strategies.length;
+        const strategyNames = strategies.join(' + ');
+        
+        // Return the formatted string with count and names
+        return `ذكي (${strategyNames})`;
+      }
     }
-
-    // إذا لم يكن النوع "ذكي" أو لم يكن هناك pattern
     return analysisType;
   };
 

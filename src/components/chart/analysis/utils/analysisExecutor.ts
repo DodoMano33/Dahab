@@ -1,26 +1,29 @@
 import { AnalysisData } from "@/types/analysis";
-import { analyzePattern } from "@/utils/patternAnalysis";
-import { analyzeWavesChart } from "../wavesAnalysis";
-import { analyzeGannChart } from "../gannAnalysis";
-import { analyzeTurtleSoupChart } from "../turtleSoupAnalysis";
-import { analyzeICTChart } from "../ictAnalysis";
 import { analyzeSMCChart } from "../smcAnalysis";
+import { analyzeICTChart } from "../ictAnalysis";
+import { analyzeTurtleSoupChart } from "../turtleSoupAnalysis";
+import { analyzeGannChart } from "../gannAnalysis";
+import { analyzeWavesChart } from "../wavesAnalysis";
+import { analyzePatternChart } from "../patternAnalysis";
+import { analyzeDailyChart } from "../dailyAnalysis";
 import { analyzeScalpingChart } from "../scalpingAnalysis";
+
+interface AnalysisOptions {
+  isPatternAnalysis: boolean;
+  isWaves: boolean;
+  isGann: boolean;
+  isTurtleSoup: boolean;
+  isICT: boolean;
+  isSMC: boolean;
+  isScalping: boolean;
+}
 
 export const executeAnalysis = async (
   chartImage: string,
-  providedPrice: number,
+  currentPrice: number,
   timeframe: string,
-  analysisFlags: {
-    isPatternAnalysis: boolean;
-    isWaves: boolean;
-    isGann: boolean;
-    isTurtleSoup: boolean;
-    isICT: boolean;
-    isSMC: boolean;
-    isScalping: boolean;
-  }
-): Promise<AnalysisData | null> => {
+  options: AnalysisOptions
+): Promise<AnalysisData> => {
   const {
     isPatternAnalysis,
     isWaves,
@@ -29,19 +32,71 @@ export const executeAnalysis = async (
     isICT,
     isSMC,
     isScalping
-  } = analysisFlags;
+  } = options;
 
-  if (isPatternAnalysis) {
-    console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice, timeframe });
-    return await analyzePattern(chartImage, providedPrice, timeframe);
+  let selectedStrategies = [];
+  if (isPatternAnalysis) selectedStrategies.push("Patterns");
+  if (isWaves) selectedStrategies.push("Waves");
+  if (isGann) selectedStrategies.push("Gann");
+  if (isTurtleSoup) selectedStrategies.push("Turtle Soup");
+  if (isICT) selectedStrategies.push("ICT");
+  if (isSMC) selectedStrategies.push("SMC");
+  if (isScalping) selectedStrategies.push("Scalping");
+
+  let analysis: AnalysisData;
+
+  if (selectedStrategies.length > 1) {
+    // For combined analysis
+    const promises = selectedStrategies.map(strategy => {
+      switch (strategy) {
+        case "Patterns": return analyzePatternChart(chartImage, currentPrice, timeframe);
+        case "Waves": return analyzeWavesChart(chartImage, currentPrice, timeframe);
+        case "Gann": return analyzeGannChart(chartImage, currentPrice, timeframe);
+        case "Turtle Soup": return analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+        case "ICT": return analyzeICTChart(chartImage, currentPrice, timeframe);
+        case "SMC": return analyzeSMCChart(chartImage, currentPrice, timeframe);
+        case "Scalping": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
+        default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
+      }
+    });
+
+    const results = await Promise.all(promises);
+    
+    // Combine the results
+    analysis = results[0]; // Start with the first analysis
+    if (analysis.bestEntryPoint) {
+      analysis.bestEntryPoint.reason = `بناءً على دمج ${selectedStrategies.length} استراتيجيات (${selectedStrategies.join(', ')})`;
+    }
+    analysis.pattern = `تحليل مدمج (${selectedStrategies.join(', ')})`;
+  } else {
+    // For single strategy analysis
+    const strategy = selectedStrategies[0] || "عادي";
+    switch (strategy) {
+      case "Patterns":
+        analysis = await analyzePatternChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Waves":
+        analysis = await analyzeWavesChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Gann":
+        analysis = await analyzeGannChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Turtle Soup":
+        analysis = await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+        break;
+      case "ICT":
+        analysis = await analyzeICTChart(chartImage, currentPrice, timeframe);
+        break;
+      case "SMC":
+        analysis = await analyzeSMCChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Scalping":
+        analysis = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
+        break;
+      default:
+        analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
+    }
   }
-  
-  if (isWaves) return await analyzeWavesChart(chartImage, providedPrice, timeframe);
-  if (isGann) return await analyzeGannChart(chartImage, providedPrice, timeframe);
-  if (isTurtleSoup) return await analyzeTurtleSoupChart(chartImage, providedPrice, timeframe);
-  if (isICT) return await analyzeICTChart(chartImage, providedPrice, timeframe);
-  if (isSMC) return await analyzeSMCChart(chartImage, providedPrice, timeframe);
-  if (isScalping) return await analyzeScalpingChart(chartImage, providedPrice, timeframe);
 
-  return null;
+  return analysis;
 };
