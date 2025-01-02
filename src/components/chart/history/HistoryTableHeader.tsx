@@ -6,7 +6,7 @@ interface HistoryTableHeaderProps {
 }
 
 export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }: HistoryTableHeaderProps) => (
-  <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20 border-b">
+  <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
     <TableRow>
       {showCheckbox && <TableHead className="w-12 text-center">تحديد</TableHead>}
       <TableHead className="text-right font-bold">التاريخ</TableHead>

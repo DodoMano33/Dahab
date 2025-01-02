@@ -11,6 +11,7 @@ import { SearchHistoryItem, AnalysisData } from "@/types/analysis";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
 import { ShareButtons } from "./ShareButtons";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SearchHistoryContentProps {
   history: SearchHistoryItem[];
@@ -35,7 +36,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 sticky top-0 bg-background z-50 py-4">
         <ShareButtons
           selectedItems={selectedItems}
           dateRange={dateRange}
@@ -79,8 +80,8 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
         </div>
       </div>
 
-      <div className="rounded-md border overflow-hidden">
-        <div className="overflow-x-auto">
+      <ScrollArea className="h-[calc(85vh-12rem)] rounded-md border">
+        <div className="relative rounded-md bg-background">
           <Table>
             <HistoryTableHeader showCheckbox={true} showDelete={true} />
             <TableBody>
@@ -104,7 +105,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             </TableBody>
           </Table>
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };
