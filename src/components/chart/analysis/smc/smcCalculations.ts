@@ -1,4 +1,4 @@
-import { getTimeframeStopLossMultiplier, getTimeframeTargetMultipliers } from "./timeframeCalculations";
+import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis";
 
 export const calculateSMCStopLoss = (
   currentPrice: number, 
@@ -8,7 +8,7 @@ export const calculateSMCStopLoss = (
   timeframe: string
 ): number => {
   const range = resistance - support;
-  const stopLossMultiplier = getTimeframeStopLossMultiplier(timeframe);
+  const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
   if (direction === "صاعد") {
     return currentPrice - (range * stopLossMultiplier);
@@ -25,7 +25,7 @@ export const calculateSMCTargets = (
   timeframe: string
 ): number[] => {
   const range = resistance - support;
-  const multipliers = getTimeframeTargetMultipliers(timeframe);
+  const multipliers = getTimeframeMultipliers(timeframe);
   const targets = [];
   
   if (direction === "صاعد") {
@@ -46,30 +46,30 @@ export const calculateSMCEntryPoint = (
   direction: string,
   support: number,
   resistance: number,
-  fibLevels: { level: number; price: number }[],
   timeframe: string
 ): { price: number; reason: string } => {
   const range = resistance - support;
+  const multiplier = getStopLossMultiplier(timeframe);
   
   if (direction === "صاعد") {
-    const entryPrice = currentPrice - (range * 0.1);
+    const entryPrice = currentPrice - (range * multiplier);
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "نقطة دخول عند منطقة تجمع السيولة السفلية مع احتمالية اختراق صعودي"
+      reason: `نقطة دخول عند منطقة تجمع السيولة السفلية على الإطار الزمني ${timeframe}`
     };
   } else {
-    const entryPrice = currentPrice + (range * 0.1);
+    const entryPrice = currentPrice + (range * multiplier);
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "نقطة دخول عند منطقة تجمع السيولة العلوية مع احتمالية اختراق هبوطي"
+      reason: `نقطة دخول عند منطقة تجمع السيولة العلوية على الإطار الزمني ${timeframe}`
     };
   }
 };
 
-export const detectSMCPattern = (direction: string, prices: number[], currentPrice: number): string => {
+export const detectSMCPattern = (direction: string, timeframe: string): string => {
   if (direction === "صاعد") {
-    return "نموذج تجميع سيولة قبل الاختراق الصعودي";
+    return `نموذج تجميع سيولة قبل الاختراق الصعودي على الإطار الزمني ${timeframe}`;
   } else {
-    return "نموذج تجميع سيولة قبل الاختراق الهبوطي";
+    return `نموذج تجميع سيولة قبل الاختراق الهبوطي على الإطار الزمني ${timeframe}`;
   }
 };
