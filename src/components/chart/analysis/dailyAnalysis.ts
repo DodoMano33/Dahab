@@ -12,7 +12,8 @@ import { addDays } from "date-fns";
 export const analyzeDailyChart = async (
   imageData: string,
   currentPrice: number,
-  symbol: string
+  symbol: string,
+  timeframe: string = "1d"
 ): Promise<AnalysisData> => {
   console.log("بدء التحليل اليومي للرمز:", symbol);
 
@@ -36,10 +37,10 @@ export const analyzeDailyChart = async (
       console.log("الأسعار المكتشفة للتحليل اليومي:", prices);
 
       const direction = detectTrend(prices) as "صاعد" | "هابط";
-      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, false);
-      const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, false);
+      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
+      const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
       const fibLevels = calculateFibonacciLevels(resistance, support);
-      const targetPrices = calculateTargets(currentPrice, direction, support, resistance, false);
+      const targetPrices = calculateTargets(currentPrice, direction, support, resistance, timeframe);
 
       const bestEntryPoint = calculateBestEntryPoint(
         currentPrice,
@@ -47,7 +48,7 @@ export const analyzeDailyChart = async (
         support,
         resistance,
         fibLevels,
-        false
+        timeframe
       );
 
       const pattern = direction === "صاعد" ? 
