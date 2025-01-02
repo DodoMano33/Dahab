@@ -24,7 +24,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onSMCClick}
-        className="flex-1 bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
+        className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
       >
         <TrendingUp className="w-4 h-4" />
         تحليل SMC
@@ -34,7 +34,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onICTClick}
-        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
       >
         <Building2 className="w-4 h-4" />
         تحليل ICT
@@ -44,7 +44,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onTurtleSoupClick}
-        className="flex-1 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
       >
         <Turtle className="w-4 h-4" />
         تحليل Turtle Soup
@@ -54,7 +54,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onGannClick}
-        className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-2"
+        className="bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-2"
       >
         <Activity className="w-4 h-4" />
         تحليل Gann
@@ -64,7 +64,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onWavesClick}
-        className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2"
+        className="col-span-2 bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2 justify-center"
       >
         <Waves className="w-4 h-4" />
         تحليل Waves

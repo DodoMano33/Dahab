@@ -29,7 +29,7 @@ export const AnalysisButtonGroup = ({
 }: AnalysisButtonGroupProps) => {
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <PatternButton 
           isAnalyzing={isAnalyzing}
           onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, true)}
@@ -39,13 +39,13 @@ export const AnalysisButtonGroup = ({
           type="button"
           disabled={isAnalyzing}
           onClick={(e) => onSubmit(e, true)}
-          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+          className="bg-purple-600 hover:bg-purple-700 text-white"
         >
           Scalping
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <TechnicalButtons
           isAnalyzing={isAnalyzing}
           onSMCClick={(e) => onSubmit(e, false, false, true)}
