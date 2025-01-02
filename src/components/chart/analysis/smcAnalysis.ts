@@ -4,7 +4,7 @@ import {
   calculateSupportResistance,
   detectTrend,
 } from "@/utils/technicalAnalysis/calculations";
-import { addDays } from "date-fns";
+import { addDays, addHours, addMinutes } from "date-fns";
 import { detectPrices } from "./smc/priceDetection";
 import { 
   calculateSMCStopLoss, 
@@ -16,10 +16,9 @@ import {
 export const analyzeSMCChart = async (
   imageData: string,
   currentPrice: number,
-  symbol: string,
   timeframe: string = "1d"
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل SMC للرمز:", symbol);
+  console.log(`Starting SMC analysis for timeframe: ${timeframe}`);
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -33,12 +32,12 @@ export const analyzeSMCChart = async (
 
       const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
       if (!imageData) {
-        reject(new Error("فشل في معالجة الصورة"));
+        reject(new Error("Failed to process image"));
         return;
       }
 
       const prices = detectPrices(imageData, currentPrice);
-      console.log("الأسعار المكتشفة لتحليل SMC:", prices);
+      console.log("Detected prices for SMC analysis:", prices);
 
       const direction = detectTrend(prices) as "صاعد" | "هابط";
       const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
@@ -56,9 +55,29 @@ export const analyzeSMCChart = async (
 
       const pattern = detectSMCPattern(direction, timeframe);
 
+      const getExpectedTime = (index: number) => {
+        const now = new Date();
+        switch (timeframe) {
+          case "1m":
+            return addMinutes(now, (index + 1) * 5);
+          case "5m":
+            return addMinutes(now, (index + 1) * 15);
+          case "30m":
+            return addMinutes(now, (index + 1) * 60);
+          case "1h":
+            return addHours(now, index + 1);
+          case "4h":
+            return addHours(now, (index + 1) * 4);
+          case "1d":
+            return addDays(now, index + 3);
+          default:
+            return addDays(now, index + 3);
+        }
+      };
+
       const targets = targetPrices.map((price, index) => ({
         price,
-        expectedTime: addDays(new Date(), (index + 1) * 3)
+        expectedTime: getExpectedTime(index)
       }));
 
       const analysisResult: AnalysisData = {
@@ -74,12 +93,12 @@ export const analyzeSMCChart = async (
         analysisType: "SMC"
       };
 
-      console.log("نتائج تحليل SMC:", analysisResult);
+      console.log("SMC Analysis Results:", analysisResult);
       resolve(analysisResult);
     };
 
     img.onerror = () => {
-      reject(new Error("فشل في تحميل الصورة"));
+      reject(new Error("Failed to load image"));
     };
 
     img.src = imageData;
