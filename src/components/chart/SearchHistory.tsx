@@ -40,8 +40,8 @@ export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHist
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col" dir="rtl">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-6" dir="rtl">
+        <DialogHeader className="flex-shrink-0 mb-4">
           <DialogTitle className="flex justify-between items-center">
             <span>سجل البحث</span>
             <div className="flex gap-2">
@@ -65,7 +65,7 @@ export const SearchHistory = ({ isOpen, onClose, history, onDelete }: SearchHist
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-grow overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <HistoryContent
             history={validHistory}
             selectedItems={selectedItems}
