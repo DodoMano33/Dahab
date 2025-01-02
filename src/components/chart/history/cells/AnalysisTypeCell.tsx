@@ -12,17 +12,15 @@ export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProp
     if (pattern) {
       // Check if pattern contains "تحليل مدمج"
       if (pattern.includes('تحليل مدمج')) {
+        // Extract all text between parentheses
         const typesMatch = pattern.match(/\((.*?)\)/);
         if (typesMatch && typesMatch[1]) {
-          // Extract just the number from the text
-          const numberMatch = typesMatch[1].match(/(\d+)/);
-          const number = numberMatch ? parseInt(numberMatch[0]) : 0;
-          
-          // Get the strategy types after the number
-          const strategiesText = typesMatch[1].split('استراتيجيات')[1] || 
-                                typesMatch[1].split('استراتيجية')[1];
+          // Split the text after "استراتيجيات" or "استراتيجية"
+          const fullText = typesMatch[1];
+          const strategiesText = fullText.split(/استراتيجيات|استراتيجية/).pop();
           
           if (strategiesText) {
+            // Clean and format the types
             const types = strategiesText
               .split(',')
               .map(type => type.trim())
@@ -32,6 +30,9 @@ export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProp
             return `(${types})`;
           }
         }
+      } else {
+        // For non-combined analysis, return the original type
+        return analysisType;
       }
     }
     return analysisType;
