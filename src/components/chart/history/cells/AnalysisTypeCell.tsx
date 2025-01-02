@@ -5,7 +5,10 @@ interface AnalysisTypeCellProps {
 
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
-    if (analysisType === "ذكي" && pattern) {
+    // Added console.log for debugging
+    console.log('analysisType:', analysisType, 'pattern:', pattern);
+    
+    if (analysisType.trim() === 'ذكي' && pattern) {
       const typesMatch = pattern.match(/\((.*?)\)/);
       if (typesMatch && typesMatch[1]) {
         const types = typesMatch[1]
