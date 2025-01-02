@@ -7,34 +7,18 @@ interface AnalysisTypeCellProps {
 
 export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProps) => {
   const formatAnalysisType = () => {
-    console.log('Formatting analysis type:', analysisType, 'pattern:', pattern);
-    
-    if (pattern) {
-      // Check if pattern contains "تحليل مدمج"
-      if (pattern.includes('تحليل مدمج')) {
-        // Extract all text between parentheses
-        const typesMatch = pattern.match(/\((.*?)\)/);
-        if (typesMatch && typesMatch[1]) {
-          // Split the text after "استراتيجيات" or "استراتيجية"
-          const fullText = typesMatch[1];
-          const strategiesText = fullText.split(/استراتيجيات|استراتيجية/).pop();
-          
-          if (strategiesText) {
-            // Clean and format the types
-            const types = strategiesText
-              .split(',')
-              .map(type => type.trim())
-              .filter(type => type.length > 0)
-              .join(' + ');
-            
-            return `(${types})`;
-          }
-        }
-      } else {
-        // For non-combined analysis, return the original type
-        return analysisType;
-      }
+    if (analysisType === "ذكي" && pattern) {
+      // استخراج الأنواع فقط من الـ pattern
+      const types = pattern
+        .replace(/[()]/g, "") // إزالة الأقواس
+        .split(",") // تقسيم النصوص بناءً على الفاصلة
+        .map(type => type.trim()) // تنظيف النصوص من المسافات الزائدة
+        .join(" + "); // دمج الأنواع باستخدام علامة "+"
+
+      return types; // إرجاع الأنواع فقط
     }
+
+    // إذا لم يكن النوع "ذكي" أو لم يكن هناك pattern
     return analysisType;
   };
 
