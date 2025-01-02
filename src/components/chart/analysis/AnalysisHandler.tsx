@@ -53,9 +53,7 @@ export const useAnalysisHandler = () => {
         نوع_التحليل: analysisType
       });
 
-      // تعديل الإطار الزمني إلى 4 ساعات لتحليل النماذج
-      const actualTimeframe = isPatternAnalysis ? "240" : timeframe;
-      const chartImage = await getTradingViewChartImage(upperSymbol, actualTimeframe);
+      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
 
@@ -66,20 +64,20 @@ export const useAnalysisHandler = () => {
       let analysisResult: AnalysisData | null = null;
       
       if (isPatternAnalysis) {
-        console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice });
-        analysisResult = await analyzePattern(chartImage, providedPrice);
+        console.log("بدء تحليل النمط مع البيانات:", { chartImage, providedPrice, timeframe });
+        analysisResult = await analyzePattern(chartImage, providedPrice, timeframe);
       } else if (isWaves) {
-        analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeWavesChart(chartImage, providedPrice, upperSymbol, timeframe);
       } else if (isGann) {
-        analysisResult = await analyzeGannChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeGannChart(chartImage, providedPrice, upperSymbol, timeframe);
       } else if (isTurtleSoup) {
-        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeTurtleSoupChart(chartImage, providedPrice, upperSymbol, timeframe);
       } else if (isICT) {
-        analysisResult = await analyzeICTChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeICTChart(chartImage, providedPrice, upperSymbol, timeframe);
       } else if (isSMC) {
-        analysisResult = await analyzeSMCChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeSMCChart(chartImage, providedPrice, upperSymbol, timeframe);
       } else if (isScalping) {
-        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, upperSymbol);
+        analysisResult = await analyzeScalpingChart(chartImage, providedPrice, upperSymbol, timeframe);
       }
 
       if (!analysisResult) {
@@ -91,7 +89,7 @@ export const useAnalysisHandler = () => {
       setAnalysis(analysisResult);
       setIsAnalyzing(false);
       
-      toast.success(`تم إكمال تحليل ${analysisType} بنجاح`);
+      toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`);
       return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
       
     } catch (error) {

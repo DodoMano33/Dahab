@@ -1,11 +1,13 @@
 import { AnalysisData } from "@/types/analysis";
 import { analyzePatternWithPrice } from "./patternRecognition";
+import { getExpectedTime } from "./technicalAnalysis";
 
 export const analyzePattern = async (
   chartImage: string,
-  currentPrice: number
+  currentPrice: number,
+  timeframe: string = "1d"
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل النمط - البيانات المستلمة:", { chartImage, currentPrice });
+  console.log("بدء تحليل النمط - البيانات المستلمة:", { chartImage, currentPrice, timeframe });
   
   try {
     if (!currentPrice || isNaN(currentPrice)) {
@@ -18,7 +20,7 @@ export const analyzePattern = async (
       throw new Error("لم يتم استلام صورة الشارت");
     }
 
-    const analysis = analyzePatternWithPrice(chartImage, currentPrice);
+    const analysis = analyzePatternWithPrice(chartImage, currentPrice, timeframe);
     console.log("تم إكمال تحليل النمط بنجاح:", analysis);
     return analysis;
 

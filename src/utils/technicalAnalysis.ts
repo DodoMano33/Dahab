@@ -10,64 +10,65 @@ export const calculateFibonacciLevels = (high: number, low: number) => {
   }));
 };
 
-export const calculateTargets = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {
+export const calculateTargets = (
+  currentPrice: number, 
+  direction: string, 
+  support: number, 
+  resistance: number, 
+  timeframe: string
+) => {
   const range = resistance - support;
   const targets = [];
   
-  if (isScalping) {
-    // أهداف أقصر للسكالبينج
-    if (direction === "صاعد") {
-      targets.push(currentPrice + (range * 0.2));  // هدف قصير المدى
-      targets.push(currentPrice + (range * 0.4));  // هدف متوسط المدى
-    } else {
-      targets.push(currentPrice - (range * 0.2));
-      targets.push(currentPrice - (range * 0.4));
-    }
+  // تعديل الأهداف بناءً على الإطار الزمني
+  const multipliers = getTimeframeMultipliers(timeframe);
+  
+  if (direction === "صاعد") {
+    targets.push(currentPrice + (range * multipliers[0]));
+    targets.push(currentPrice + (range * multipliers[1]));
+    targets.push(currentPrice + (range * multipliers[2]));
   } else {
-    // أهداف التحليل العادي
-    if (direction === "صاعد") {
-      targets.push(resistance + (range * 0.5));
-      targets.push(resistance + range);
-    } else {
-      targets.push(support - (range * 0.5));
-      targets.push(support - range);
-    }
+    targets.push(currentPrice - (range * multipliers[0]));
+    targets.push(currentPrice - (range * multipliers[1]));
+    targets.push(currentPrice - (range * multipliers[2]));
   }
   
   return targets;
 };
 
-export const calculateStopLoss = (currentPrice: number, direction: string, support: number, resistance: number, isScalping: boolean = false) => {
+export const calculateStopLoss = (
+  currentPrice: number, 
+  direction: string, 
+  support: number, 
+  resistance: number, 
+  timeframe: string
+) => {
   const range = resistance - support;
+  const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
-  if (isScalping) {
-    // وقف خسارة أقرب للسكالبينج
-    return direction === "صاعد" ? 
-      currentPrice - (range * 0.1) : // 10% من المدى للسكالبينج
-      currentPrice + (range * 0.1);
-  }
-  
-  // وقف الخسارة للتحليل العادي
-  return direction === "صاعد" ? support : resistance;
+  return direction === "صاعد" ? 
+    currentPrice - (range * stopLossMultiplier) : 
+    currentPrice + (range * stopLossMultiplier);
 };
 
-export const calculateSupportResistance = (prices: number[], currentPrice: number, direction: string, isScalping: boolean = false) => {
+export const calculateSupportResistance = (
+  prices: number[], 
+  currentPrice: number, 
+  direction: string, 
+  timeframe: string
+) => {
   const sortedPrices = [...prices].sort((a, b) => a - b);
-  let support, resistance;
-
-  if (isScalping) {
-    // حساب مستويات أقرب للسعر الحالي في السكالبينج
-    const priceIndex = sortedPrices.findIndex(p => p >= currentPrice);
-    const nearestLower = sortedPrices.slice(Math.max(0, priceIndex - 3), priceIndex);
-    const nearestHigher = sortedPrices.slice(priceIndex, Math.min(priceIndex + 3, sortedPrices.length));
-    
-    support = Math.min(...nearestLower);
-    resistance = Math.max(...nearestHigher);
-  } else {
-    // التحليل العادي
-    support = Math.min(...sortedPrices);
-    resistance = Math.max(...sortedPrices);
-  }
+  const priceIndex = sortedPrices.findIndex(p => p >= currentPrice);
+  
+  // تعديل نطاق البحث عن مستويات الدعم والمقاومة بناءً على الإطار الزمني
+  const rangeMultiplier = getRangeMultiplier(timeframe);
+  const range = Math.floor(sortedPrices.length * rangeMultiplier);
+  
+  const nearestLower = sortedPrices.slice(Math.max(0, priceIndex - range), priceIndex);
+  const nearestHigher = sortedPrices.slice(priceIndex, Math.min(priceIndex + range, sortedPrices.length));
+  
+  const support = Math.min(...nearestLower);
+  const resistance = Math.max(...nearestHigher);
 
   return { support, resistance };
 };
@@ -77,67 +78,144 @@ export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
   return isUptrend ? "صاعد" : "هابط";
 };
 
-export const getCurrentPriceFromTradingView = async (symbol: string): Promise<number> => {
-  try {
-    const mockPrice = Math.random() * 1000 + 100;
-    return Number(mockPrice.toFixed(2));
-  } catch (error) {
-    console.error("Error fetching current price:", error);
-    throw error;
-  }
-};
-
 export const calculateBestEntryPoint = (
   currentPrice: number,
   direction: string,
   support: number,
   resistance: number,
   fibLevels: { level: number; price: number }[],
-  isScalping: boolean = false
+  timeframe: string
 ): { price: number; reason: string } => {
-  console.log("حساب أفضل نقطة دخول للسكالبينج:", { currentPrice, direction, support, resistance, fibLevels, isScalping });
+  const range = resistance - support;
+  const entryMultiplier = getEntryMultiplier(timeframe);
   
-  if (isScalping) {
-    const range = resistance - support;
-    if (direction === "صاعد") {
-      const entryPrice = currentPrice - (range * 0.05); // دخول قريب من السعر الحالي
-      return {
-        price: Number(entryPrice.toFixed(2)),
-        reason: "نقطة دخول قريبة من السعر الحالي مع اتجاه صاعد قصير المدى"
-      };
-    } else {
-      const entryPrice = currentPrice + (range * 0.05);
-      return {
-        price: Number(entryPrice.toFixed(2)),
-        reason: "نقطة دخول قريبة من السعر الحالي مع اتجاه هابط قصير المدى"
-      };
-    }
-  }
-  
-  // التحليل العادي
   if (direction === "صاعد") {
-    const nearestFib = fibLevels.find(level => level.price < currentPrice);
-    if (nearestFib) {
-      return {
-        price: nearestFib.price,
-        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى دعم قوي`
-      };
-    }
+    const entryPrice = currentPrice - (range * entryMultiplier);
     return {
-      price: support,
-      reason: "أفضل نقطة دخول عند مستوى الدعم الرئيسي"
+      price: Number(entryPrice.toFixed(2)),
+      reason: `نقطة دخول محسوبة على الإطار الزمني ${getTimeframeLabel(timeframe)} مع اتجاه صاعد`
     };
   } else {
-    const nearestFib = fibLevels.find(level => level.price > currentPrice);
-    if (nearestFib) {
-      return {
-        price: nearestFib.price,
-        reason: `أفضل نقطة دخول عند مستوى فيبوناتشي ${nearestFib.level * 100}% حيث يتوقع أن يكون مستوى مقاومة قوي`
-      };
-    }
+    const entryPrice = currentPrice + (range * entryMultiplier);
     return {
-      price: resistance,
-      reason: "أفضل نقطة دخول عند مستوى المقاومة الرئيسي"
+      price: Number(entryPrice.toFixed(2)),
+      reason: `نقطة دخول محسوبة على الإطار الزمني ${getTimeframeLabel(timeframe)} مع اتجاه هابط`
     };
+  }
+};
+
+export const getExpectedTime = (timeframe: string, targetIndex: number) => {
+  const now = new Date();
+  
+  switch (timeframe) {
+    case "1m":
+      return addMinutes(now, (targetIndex + 1) * 1);
+    case "5m":
+      return addMinutes(now, (targetIndex + 1) * 5);
+    case "30m":
+      return addMinutes(now, (targetIndex + 1) * 30);
+    case "1h":
+      return addHours(now, targetIndex + 1);
+    case "4h":
+      return addHours(now, (targetIndex + 1) * 4);
+    case "1d":
+      return addDays(now, targetIndex + 1);
+    default:
+      return addHours(now, (targetIndex + 1) * 4);
+  }
+};
+
+const getTimeframeMultipliers = (timeframe: string): number[] => {
+  switch (timeframe) {
+    case "1m":
+      return [0.1, 0.2, 0.3];  // أهداف قصيرة جداً للإطار الزمني 1 دقيقة
+    case "5m":
+      return [0.15, 0.3, 0.45];  // أهداف قصيرة للإطار الزمني 5 دقائق
+    case "30m":
+      return [0.2, 0.4, 0.6];  // أهداف متوسطة للإطار الزمني 30 دقيقة
+    case "1h":
+      return [0.3, 0.6, 0.9];  // أهداف متوسطة للإطار الزمني ساعة
+    case "4h":
+      return [0.5, 1.0, 1.5];  // أهداف أكبر للإطار الزمني 4 ساعات
+    case "1d":
+      return [0.8, 1.6, 2.4];  // أهداف كبيرة للإطار الزمني اليومي
+    default:
+      return [0.5, 1.0, 1.5];
+  }
+};
+
+const getStopLossMultiplier = (timeframe: string): number => {
+  switch (timeframe) {
+    case "1m":
+      return 0.05;  // وقف خسارة قريب جداً
+    case "5m":
+      return 0.08;
+    case "30m":
+      return 0.1;
+    case "1h":
+      return 0.15;
+    case "4h":
+      return 0.2;
+    case "1d":
+      return 0.25;  // وقف خسارة أبعد للإطار الزمني اليومي
+    default:
+      return 0.2;
+  }
+};
+
+const getRangeMultiplier = (timeframe: string): number => {
+  switch (timeframe) {
+    case "1m":
+      return 0.1;  // نطاق ضيق للغاية
+    case "5m":
+      return 0.15;
+    case "30m":
+      return 0.2;
+    case "1h":
+      return 0.25;
+    case "4h":
+      return 0.3;
+    case "1d":
+      return 0.4;  // نطاق أوسع
+    default:
+      return 0.3;
+  }
+};
+
+const getEntryMultiplier = (timeframe: string): number => {
+  switch (timeframe) {
+    case "1m":
+      return 0.02;  // دخول قريب جداً
+    case "5m":
+      return 0.03;
+    case "30m":
+      return 0.05;
+    case "1h":
+      return 0.08;
+    case "4h":
+      return 0.1;
+    case "1d":
+      return 0.15;  // دخول أبعد
+    default:
+      return 0.1;
+  }
+};
+
+const getTimeframeLabel = (timeframe: string): string => {
+  switch (timeframe) {
+    case "1m":
+      return "دقيقة واحدة";
+    case "5m":
+      return "5 دقائق";
+    case "30m":
+      return "30 دقيقة";
+    case "1h":
+      return "ساعة واحدة";
+    case "4h":
+      return "4 ساعات";
+    case "1d":
+      return "يومي";
+    default:
+      return timeframe;
   }
 };

@@ -1,5 +1,5 @@
 import { AnalysisData } from "@/types/analysis";
-import { addDays } from "date-fns";
+import { getExpectedTime } from "./technicalAnalysis";
 
 export interface PatternInfo {
   name: string;
@@ -123,15 +123,21 @@ export const identifyPattern = (chartImage: string): PatternInfo => {
 
 export const analyzePatternWithPrice = (
   chartImage: string,
-  currentPrice: number
+  currentPrice: number,
+  timeframe: string = "1d"
 ): AnalysisData => {
-  console.log("تحليل النمط مع السعر الحالي:", currentPrice);
+  console.log("تحليل النمط مع السعر الحالي والإطار الزمني:", { currentPrice, timeframe });
   
   const pattern = identifyPattern(chartImage);
   console.log("النمط المكتشف:", pattern);
 
-  const support = Number((currentPrice * (1 - pattern.stopLossPercent / 100)).toFixed(2));
-  const resistance = Number((currentPrice * (1 + pattern.targetPercent / 100)).toFixed(2));
+  // تعديل النسب بناءً على الإطار الزمني
+  const timeframeMultiplier = getTimeframeMultiplier(timeframe);
+  const stopLossPercent = pattern.stopLossPercent * timeframeMultiplier;
+  const targetPercent = pattern.targetPercent * timeframeMultiplier;
+
+  const support = Number((currentPrice * (1 - stopLossPercent / 100)).toFixed(2));
+  const resistance = Number((currentPrice * (1 + targetPercent / 100)).toFixed(2));
   
   const analysis: AnalysisData = {
     pattern: `${pattern.arabicName} (${pattern.name})`,
@@ -139,19 +145,19 @@ export const analyzePatternWithPrice = (
     currentPrice: currentPrice,
     support: support,
     resistance: resistance,
-    stopLoss: Number((currentPrice * (1 - pattern.stopLossPercent / 100)).toFixed(2)),
+    stopLoss: Number((currentPrice * (1 - stopLossPercent / 100)).toFixed(2)),
     bestEntryPoint: {
       price: pattern.expectedMove === "صاعد" ? support : resistance,
-      reason: `أفضل نقطة دخول بناءً على نمط ${pattern.arabicName} مع موثوقية ${pattern.reliability}/10`
+      reason: `أفضل نقطة دخول بناءً على نمط ${pattern.arabicName} مع موثوقية ${pattern.reliability}/10 على الإطار الزمني ${timeframe}`
     },
     targets: [
       {
-        price: Number((currentPrice * (1 + (pattern.targetPercent / 2) / 100)).toFixed(2)),
-        expectedTime: addDays(new Date(), Math.floor(pattern.timeframe / 2))
+        price: Number((currentPrice * (1 + (targetPercent / 2) / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 0)
       },
       {
-        price: Number((currentPrice * (1 + pattern.targetPercent / 100)).toFixed(2)),
-        expectedTime: addDays(new Date(), pattern.timeframe)
+        price: Number((currentPrice * (1 + targetPercent / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 1)
       }
     ],
     fibonacciLevels: [
@@ -164,4 +170,23 @@ export const analyzePatternWithPrice = (
 
   console.log("نتائج التحليل:", analysis);
   return analysis;
+};
+
+const getTimeframeMultiplier = (timeframe: string): number => {
+  switch (timeframe) {
+    case "1m":
+      return 0.2;  // نسب صغيرة جداً للإطار الزمني 1 دقيقة
+    case "5m":
+      return 0.4;
+    case "30m":
+      return 0.6;
+    case "1h":
+      return 0.8;
+    case "4h":
+      return 1.0;
+    case "1d":
+      return 1.2;  // نسب أكبر للإطار الزمني اليومي
+    default:
+      return 1.0;
+  }
 };
