@@ -49,7 +49,7 @@ export const ChartAnalyzer = () => {
         currentPrice: item.current_price,
         analysis: item.analysis,
         analysisType: item.analysis_type,
-        timeframe: item.timeframe || '1d' // إضافة الإطار الزمني مع قيمة افتراضية
+        timeframe: item.timeframe || '1d'
       }));
 
       setSearchHistory(formattedHistory);
@@ -80,25 +80,46 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <AnalysisForm
-          onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
-          isAnalyzing={isAnalyzing}
-          onHistoryClick={() => setIsHistoryOpen(true)}
-          currentAnalysis={currentAnalysis}
-        />
-        <AnalysisDisplay
-          image={image}
-          analysis={analysis}
-          isAnalyzing={isAnalyzing}
-          onClose={() => {
-            setImage(null);
-            setAnalysis(null);
-            setIsAnalyzing(false);
-          }}
-          symbol={currentSymbol}
-          currentAnalysis={currentAnalysis}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="space-y-8">
+          <AnalysisForm
+            onAnalysis={(item) => setSearchHistory(prev => [item, ...prev])}
+            isAnalyzing={isAnalyzing}
+            onHistoryClick={() => setIsHistoryOpen(true)}
+            currentAnalysis={currentAnalysis}
+          />
+          {(analysis || isAnalyzing) && (
+            <div className="bg-white p-6 rounded-lg shadow-md lg:hidden">
+              <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
+              <AnalysisDisplay
+                image={image}
+                analysis={analysis}
+                isAnalyzing={isAnalyzing}
+                onClose={() => {
+                  setImage(null);
+                  setAnalysis(null);
+                  setIsAnalyzing(false);
+                }}
+                symbol={currentSymbol}
+                currentAnalysis={currentAnalysis}
+              />
+            </div>
+          )}
+        </div>
+        <div className="hidden lg:block">
+          <AnalysisDisplay
+            image={image}
+            analysis={analysis}
+            isAnalyzing={isAnalyzing}
+            onClose={() => {
+              setImage(null);
+              setAnalysis(null);
+              setIsAnalyzing(false);
+            }}
+            symbol={currentSymbol}
+            currentAnalysis={currentAnalysis}
+          />
+        </div>
       </div>
       <HistoryDialog
         isOpen={isHistoryOpen}
