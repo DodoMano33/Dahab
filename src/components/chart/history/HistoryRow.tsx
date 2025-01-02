@@ -1,14 +1,15 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
 import { Trash2 } from "lucide-react";
 import { DirectionIndicator } from "./DirectionIndicator";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { TargetsList } from "./TargetsList";
 import { StopLoss } from "./StopLoss";
 import { AnalysisData } from "@/types/analysis";
+import { DateCell } from "./cells/DateCell";
+import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
+import { TimeframeCell } from "./cells/TimeframeCell";
 
 interface HistoryRowProps {
   id: string;
@@ -22,40 +23,6 @@ interface HistoryRowProps {
   onSelect?: () => void;
   onDelete?: () => void;
 }
-
-const timeframeLabels: Record<string, string> = {
-  "1m": "1 دقيقة",
-  "5m": "5 دقائق",
-  "30m": "30 دقيقة",
-  "1h": "1 ساعة",
-  "4h": "4 ساعات",
-  "1d": "يومي",
-};
-
-const formatAnalysisType = (analysisType: string, pattern: string) => {
-  if (analysisType === "ذكي") {
-    // Extract types from pattern string (e.g., "تحليل مدمج (scalping, ict, smc)")
-    const typesMatch = pattern.match(/\((.*?)\)/);
-    if (typesMatch) {
-      const types = typesMatch[1]
-        .split(',')
-        .map(type => {
-          // Map Arabic type names to English
-          const typeMap: Record<string, string> = {
-            'سكالبينج': 'Scalping',
-            'موجات': 'Waves',
-            'أنماط': 'Patterns'
-          };
-          const trimmedType = type.trim();
-          return typeMap[trimmedType] || trimmedType;
-        })
-        .join(' + ');
-      return `Smart (${types})`;
-    }
-    return "Smart";
-  }
-  return analysisType;
-};
 
 export const HistoryRow = ({ 
   id,
@@ -76,18 +43,12 @@ export const HistoryRow = ({
           <Checkbox checked={isSelected} onCheckedChange={onSelect} />
         </TableCell>
       )}
-      <TableCell className="text-right">
-        {format(date, 'PPpp', { locale: ar })}
-      </TableCell>
+      <DateCell date={date} />
       <TableCell className="text-right font-medium">
         {symbol.toUpperCase()}
       </TableCell>
-      <TableCell className="text-right">
-        {formatAnalysisType(analysisType, analysis.pattern)}
-      </TableCell>
-      <TableCell className="text-right">
-        {timeframeLabels[timeframe] || timeframe}
-      </TableCell>
+      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
+      <TimeframeCell timeframe={timeframe} />
       <TableCell className="text-right">{currentPrice}</TableCell>
       <TableCell className="text-right">
         <DirectionIndicator direction={analysis.direction} />
