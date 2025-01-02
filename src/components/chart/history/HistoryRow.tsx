@@ -34,8 +34,25 @@ const timeframeLabels: Record<string, string> = {
 
 const formatAnalysisType = (analysisType: string, pattern: string) => {
   if (analysisType === "ذكي") {
-    const combinedTypes = pattern.match(/\((.*?)\)/)?.[1] || "";
-    return `Smart (${combinedTypes})`;
+    // Extract types from pattern string (e.g., "تحليل مدمج (scalping, ict, smc)")
+    const typesMatch = pattern.match(/\((.*?)\)/);
+    if (typesMatch) {
+      const types = typesMatch[1]
+        .split(',')
+        .map(type => {
+          // Map Arabic type names to English
+          const typeMap: Record<string, string> = {
+            'سكالبينج': 'Scalping',
+            'موجات': 'Waves',
+            'أنماط': 'Patterns'
+          };
+          const trimmedType = type.trim();
+          return typeMap[trimmedType] || trimmedType;
+        })
+        .join(' + ');
+      return `Smart (${types})`;
+    }
+    return "Smart";
   }
   return analysisType;
 };
