@@ -20,12 +20,12 @@ export const ChartDisplay = ({
   symbol,
   currentAnalysis 
 }: ChartDisplayProps) => {
-  console.log("ChartDisplay - Received props:", { image, analysis, isAnalyzing, symbol, currentAnalysis });
+  console.log("ChartDisplay - Analysis Data:", analysis);
 
   return (
     <div className="space-y-8">
       {image && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white rounded-lg">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">
               تحليل الشارت {symbol && `(${symbol})`}
@@ -41,8 +41,7 @@ export const ChartDisplay = ({
       )}
 
       {(analysis || isAnalyzing) && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
+        <div className="bg-white rounded-lg">
           <AnalysisResult analysis={analysis!} isLoading={isAnalyzing} />
         </div>
       )}
