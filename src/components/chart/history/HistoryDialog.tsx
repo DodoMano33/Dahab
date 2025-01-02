@@ -12,11 +12,13 @@ interface HistoryDialogProps {
 export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl" dir="rtl">
+      <DialogContent className="max-w-[95vw] w-[1200px] p-6" dir="rtl">
         <DialogHeader>
           <DialogTitle>سجل البحث</DialogTitle>
         </DialogHeader>
-        <SearchHistoryContent history={history} onDelete={onDelete} />
+        <div className="mt-4">
+          <SearchHistoryContent history={history} onDelete={onDelete} />
+        </div>
       </DialogContent>
     </Dialog>
   );

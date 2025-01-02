@@ -3,7 +3,7 @@ import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Share2, MessageCircle, Facebook, Trash2 } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { toast } from "sonner";
@@ -33,68 +33,9 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
     item.analysis
   );
 
-  const formatAnalysisData = (analysis: AnalysisData) => {
-    const targets = analysis.targets?.map((target, idx) => 
-      `الهدف ${idx + 1}: ${target.price} (${format(target.expectedTime, 'PPpp', { locale: ar })})`
-    ).join('\n') || 'لا توجد أهداف';
-
-    return `الاتجاه: ${analysis.direction}
-نقطة الدخول: ${analysis.bestEntryPoint?.price || 'غير محدد'}
-سبب الدخول: ${analysis.bestEntryPoint?.reason || 'غير محدد'}
-وقف الخسارة: ${analysis.stopLoss}
-الأهداف:
-${targets}`;
-  };
-
-  const handleShare = async (platform: 'whatsapp' | 'facebook' | 'copy') => {
-    try {
-      let shareText = "";
-      
-      const filteredHistory = validHistory.filter(item => {
-        if (selectedItems.size > 0) {
-          return selectedItems.has(`${item.symbol}-${item.date.getTime()}`);
-        }
-        if (dateRange.from && dateRange.to) {
-          return item.date >= dateRange.from && item.date <= dateRange.to;
-        }
-        return false;
-      });
-
-      if (filteredHistory.length === 0) {
-        toast.error("الرجاء تحديد عناصر للمشاركة");
-        return;
-      }
-
-      shareText = filteredHistory.map(item => `
-تاريخ التحليل: ${format(item.date, 'PPpp', { locale: ar })}
-الرمز: ${item.symbol}
-نوع التحليل: ${item.analysisType}
-السعر عند التحليل: ${item.currentPrice}
-${formatAnalysisData(item.analysis)}
-${'-'.repeat(50)}`
-      ).join('\n');
-
-      switch (platform) {
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'facebook':
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'copy':
-          await navigator.clipboard.writeText(shareText);
-          toast.success("تم نسخ المحتوى إلى الحافظة");
-          break;
-      }
-    } catch (error) {
-      console.error("خطأ في المشاركة:", error);
-      toast.error("حدث خطأ أثناء المشاركة");
-    }
-  };
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4">
         <ShareButtons
           selectedItems={selectedItems}
           dateRange={dateRange}
@@ -138,29 +79,31 @@ ${'-'.repeat(50)}`
         </div>
       </div>
 
-      <div className="max-h-[70vh] overflow-auto">
-        <Table>
-          <HistoryTableHeader showCheckbox={true} showDelete={true} />
-          <TableBody>
-            {history.map((item) => (
-              <HistoryRow
-                key={item.id}
-                {...item}
-                isSelected={selectedItems.has(item.id)}
-                onSelect={() => {
-                  const newSelected = new Set(selectedItems);
-                  if (newSelected.has(item.id)) {
-                    newSelected.delete(item.id);
-                  } else {
-                    newSelected.add(item.id);
-                  }
-                  setSelectedItems(newSelected);
-                }}
-                onDelete={() => onDelete(item.id)}
-              />
-            ))}
-          </TableBody>
-        </Table>
+      <div className="rounded-md border overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <HistoryTableHeader showCheckbox={true} showDelete={true} />
+            <TableBody>
+              {validHistory.map((item) => (
+                <HistoryRow
+                  key={item.id}
+                  {...item}
+                  isSelected={selectedItems.has(item.id)}
+                  onSelect={() => {
+                    const newSelected = new Set(selectedItems);
+                    if (newSelected.has(item.id)) {
+                      newSelected.delete(item.id);
+                    } else {
+                      newSelected.add(item.id);
+                    }
+                    setSelectedItems(newSelected);
+                  }}
+                  onDelete={() => onDelete(item.id)}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
