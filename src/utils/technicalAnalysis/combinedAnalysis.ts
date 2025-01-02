@@ -7,17 +7,31 @@ import { analyzeGannChart } from "@/components/chart/analysis/gannAnalysis";
 import { analyzeWavesChart } from "@/components/chart/analysis/wavesAnalysis";
 import { analyzePattern } from "@/utils/patternAnalysis";
 
+const getStrategyName = (type: string): string => {
+  switch (type) {
+    case "scalping": return "سكالبينج";
+    case "smc": return "SMC";
+    case "ict": return "ICT";
+    case "turtleSoup": return "Turtle Soup";
+    case "gann": return "Gann";
+    case "waves": return "موجات إليوت";
+    case "patterns": return "أنماط السعر";
+    default: return type;
+  }
+};
+
 export const combinedAnalysis = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string,
   selectedTypes: string[]
 ): Promise<AnalysisData> => {
-  console.log("Starting combined analysis with types:", selectedTypes);
+  console.log("بدء التحليل المدمج مع الأنواع:", selectedTypes);
 
   const analysisResults: AnalysisData[] = [];
+  const strategyNames = selectedTypes.map(getStrategyName);
 
-  // Collect all analysis results
+  // جمع نتائج التحليل من كل استراتيجية
   for (const type of selectedTypes) {
     try {
       let result: AnalysisData;
@@ -44,29 +58,46 @@ export const combinedAnalysis = async (
           result = await analyzePattern(chartImage, currentPrice, timeframe);
           break;
       }
-      analysisResults.push(result!);
+      if (result) analysisResults.push(result);
     } catch (error) {
-      console.error(`Error in ${type} analysis:`, error);
+      console.error(`خطأ في تحليل ${type}:`, error);
     }
   }
 
-  // Combine the results
+  // حساب المتوسطات المرجحة للقيم المهمة
+  const weightedValues = analysisResults.reduce((acc, result, index) => {
+    const weight = (analysisResults.length - index) / analysisResults.length; // الأوزان تتناقص تدريجياً
+    return {
+      support: acc.support + (result.support * weight),
+      resistance: acc.resistance + (result.resistance * weight),
+      stopLoss: acc.stopLoss + (result.stopLoss * weight),
+      entryPrice: acc.entryPrice + ((result.bestEntryPoint?.price || currentPrice) * weight),
+      totalWeight: acc.totalWeight + weight
+    };
+  }, { support: 0, resistance: 0, stopLoss: 0, entryPrice: 0, totalWeight: 0 });
+
+  // تحديد الاتجاه بناءً على تحليل مدمج
+  const direction = calculateCombinedDirection(analysisResults);
+
+  // دمج الأهداف مع إزالة التكرار
+  const combinedTargets = combineAndSortTargets(analysisResults);
+
   const combinedResult: AnalysisData = {
-    pattern: `تحليل مدمج (${selectedTypes.length} استراتيجيات)`,
-    direction: calculateCombinedDirection(analysisResults),
+    pattern: `تحليل ذكي مدمج (${strategyNames.join(' + ')})`,
+    direction,
     currentPrice,
-    support: calculateAverageValue(analysisResults.map(r => r.support)),
-    resistance: calculateAverageValue(analysisResults.map(r => r.resistance)),
-    stopLoss: calculateAverageValue(analysisResults.map(r => r.stopLoss)),
-    targets: combinedTargets(analysisResults),
+    support: Number((weightedValues.support / weightedValues.totalWeight).toFixed(2)),
+    resistance: Number((weightedValues.resistance / weightedValues.totalWeight).toFixed(2)),
+    stopLoss: Number((weightedValues.stopLoss / weightedValues.totalWeight).toFixed(2)),
+    targets: combinedTargets.slice(0, 3), // أخذ أفضل 3 أهداف
     bestEntryPoint: {
-      price: calculateAverageValue(analysisResults.map(r => r.bestEntryPoint?.price || 0)),
-      reason: `نقطة دخول محسوبة بناءً على دمج ${selectedTypes.length} استراتيجيات مختلفة`
+      price: Number((weightedValues.entryPrice / weightedValues.totalWeight).toFixed(2)),
+      reason: `تحليل مدمج يعتمد على ${selectedTypes.length} استراتيجيات (${strategyNames.join('، ')})`
     },
     analysisType: "ذكي"
   };
 
-  console.log("Combined analysis result:", combinedResult);
+  console.log("نتيجة التحليل المدمج:", combinedResult);
   return combinedResult;
 };
 
@@ -80,15 +111,11 @@ const calculateCombinedDirection = (results: AnalysisData[]): "صاعد" | "ها
   return "محايد";
 };
 
-const calculateAverageValue = (values: number[]): number => {
-  return Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(2));
-};
-
-const combinedTargets = (results: AnalysisData[]): { price: number; expectedTime: Date; }[] => {
+const combineAndSortTargets = (results: AnalysisData[]): { price: number; expectedTime: Date; }[] => {
+  // جمع كل الأهداف من جميع التحليلات
   const allTargets = results.flatMap(r => r.targets || []);
-  if (allTargets.length === 0) return [];
-
-  // Group targets by similar price levels
+  
+  // تجميع الأهداف المتشابهة وحساب متوسطاتها
   const groupedTargets = allTargets.reduce((groups: any[], target) => {
     const existingGroup = groups.find(g => 
       Math.abs(g.price - target.price) / target.price < 0.01
@@ -106,8 +133,11 @@ const combinedTargets = (results: AnalysisData[]): { price: number; expectedTime
     return groups;
   }, []);
 
-  return groupedTargets.map(group => ({
-    price: calculateAverageValue(group.prices),
-    expectedTime: new Date(Math.max(...group.times.map(t => t.getTime())))
-  }));
+  // حساب المتوسطات وترتيب الأهداف
+  return groupedTargets
+    .map(group => ({
+      price: Number((group.prices.reduce((a: number, b: number) => a + b, 0) / group.prices.length).toFixed(2)),
+      expectedTime: new Date(Math.max(...group.times.map((t: Date) => t.getTime())))
+    }))
+    .sort((a, b) => Math.abs(a.price) - Math.abs(b.price));
 };
