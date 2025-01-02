@@ -16,8 +16,9 @@ export const AnalysisTypeCell = ({ analysisType, pattern }: AnalysisTypeCellProp
           .join(' + ');
         return `Smart (${types})`;
       }
+      return "Smart"; // إذا لم تكن هناك أنماط، فقط اكتب "Smart".
     }
-    return analysisType;
+    return analysisType; // إذا لم يكن النوع "ذكي"، أرجع النص كما هو.
   };
 
   return (
