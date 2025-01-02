@@ -30,14 +30,19 @@ export const SearchHistory = ({
 }: SearchHistoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0" dir="rtl">
-        <div className="sticky top-0 z-50 bg-background border-b">
+      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
+        <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
           <div className="px-6 py-4">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">سجل البحث</DialogTitle>
             </DialogHeader>
           </div>
-          <div className="px-6 py-3 flex justify-end items-center gap-2 border-t bg-muted/50">
+          <div className="px-6 py-3 flex justify-between items-center gap-2 border-t bg-muted/50">
+            <HistoryActions
+              selectedItems={selectedItems}
+              onDelete={onDelete}
+              history={validHistory}
+            />
             <DateRangePicker
               dateRange={dateRange}
               isOpen={isDatePickerOpen}
@@ -48,11 +53,6 @@ export const SearchHistory = ({
                   setIsDatePickerOpen(false);
                 }
               }}
-            />
-            <HistoryActions
-              selectedItems={selectedItems}
-              onDelete={onDelete}
-              history={validHistory}
             />
           </div>
         </div>
