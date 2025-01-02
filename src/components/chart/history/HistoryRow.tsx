@@ -32,6 +32,14 @@ const timeframeLabels: Record<string, string> = {
   "1d": "يومي",
 };
 
+const formatAnalysisType = (analysisType: string, pattern: string) => {
+  if (analysisType === "ذكي") {
+    const combinedTypes = pattern.match(/\((.*?)\)/)?.[1] || "";
+    return `Smart (${combinedTypes})`;
+  }
+  return analysisType;
+};
+
 export const HistoryRow = ({ 
   id,
   date, 
@@ -58,7 +66,7 @@ export const HistoryRow = ({
         {symbol.toUpperCase()}
       </TableCell>
       <TableCell className="text-right">
-        {analysisType}
+        {formatAnalysisType(analysisType, analysis.pattern)}
       </TableCell>
       <TableCell className="text-right">
         {timeframeLabels[timeframe] || timeframe}
@@ -75,7 +83,7 @@ export const HistoryRow = ({
       </TableCell>
       <TableCell className="text-right">
         <TargetsList 
-          targets={analysis.targets || []} 
+          targets={analysis.targets?.slice(0, 3) || []} 
           isTargetHit={false}
         />
       </TableCell>
