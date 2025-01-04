@@ -16,7 +16,7 @@ export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }:
       <TableHead className="w-[120px] text-center p-2 font-bold">السعر عند التحليل</TableHead>
       <TableHead className="w-[80px] text-center p-2 font-bold">الاتجاه</TableHead>
       <TableHead className="w-[160px] text-center p-2 font-bold">أفضل نقطة دخول</TableHead>
-      <TableHead className="w-[140px] text-center p-2 font-bold">الأهداف والتوقيت</TableHead>
+      <TableHead className="w-[140px] text-center p-2 font-bold">الأهداف</TableHead>
       <TableHead className="w-[120px] text-center p-2 font-bold">وقف الخسارة</TableHead>
       {showDelete && <TableHead className="w-[60px] text-center p-2">حذف</TableHead>}
     </TableRow>

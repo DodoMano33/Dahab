@@ -1,6 +1,3 @@
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-
 interface Target {
   price: number;
   expectedTime: Date;
@@ -20,8 +17,6 @@ export const TargetsList = ({ targets, isTargetHit }: TargetsListProps) => (
           className={`relative ${isTargetHit && idx === 0 ? 'pb-4' : ''}`}
         >
           الهدف {idx + 1}: {target.price}
-          <br />
-          التوقيت: {format(target.expectedTime, 'PPpp', { locale: ar })}
           {isTargetHit && idx === 0 && (
             <div className="absolute bottom-0 left-0 right-0 h-2 bg-green-500 rounded-sm" />
           )}
