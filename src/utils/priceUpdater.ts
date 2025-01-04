@@ -1,4 +1,5 @@
 import axios from "axios";
+import { FINNHUB_API_KEY } from './price/config';
 
 interface PriceSubscription {
   symbol: string;
@@ -12,7 +13,6 @@ class PriceUpdater {
   private pollingInterval: number = 5000; // 5 seconds
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, { price: number; timestamp: number }> = new Map();
-  private finnhubApiKey: string = "ctshuopr01qh9oetd18gctshuopr01qh9oetd190";
 
   async fetchPrice(symbol: string): Promise<number> {
     try {
@@ -40,7 +40,7 @@ class PriceUpdater {
           symbol: 'OANDA:XAU_USD',
           resolution: '1',
           count: 1,
-          token: this.finnhubApiKey
+          token: FINNHUB_API_KEY
         };
         console.log("استخدام نقطة نهاية الفوركس للذهب:", params);
       } else if (symbol.includes('USD')) {
@@ -51,14 +51,14 @@ class PriceUpdater {
           symbol: `OANDA:${base}_${quote}`,
           resolution: '1',
           count: 1,
-          token: this.finnhubApiKey
+          token: FINNHUB_API_KEY
         };
         console.log("استخدام نقطة نهاية الفوركس للعملات:", params);
       } else {
         url = `${endpoint}/quote`;
         params = {
           symbol: symbol,
-          token: this.finnhubApiKey
+          token: FINNHUB_API_KEY
         };
         console.log("استخدام نقطة نهاية الأسهم:", params);
       }
@@ -95,25 +95,7 @@ class PriceUpdater {
 
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      
-      if (axios.isAxiosError(error)) {
-        console.log("تفاصيل خطأ Axios:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          config: error.config
-        });
-
-        if (error.code === 'ECONNABORTED') {
-          throw new Error('انتهت مهلة الاتصال. الرجاء المحاولة مرة أخرى.');
-        }
-        if (error.response?.status === 403) {
-          throw new Error('خطأ في المصادقة. الرجاء التحقق من مفتاح API.');
-        }
-        if (error.response?.status === 429) {
-          throw new Error('تم تجاوز حد الطلبات. الرجاء المحاولة لاحقاً.');
-        }
-      }
-      throw new Error(`فشل في جلب السعر للرمز ${symbol}. ${error.message}`);
+      throw error;
     }
   }
 
