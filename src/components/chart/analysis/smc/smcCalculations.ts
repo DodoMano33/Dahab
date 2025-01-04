@@ -8,15 +8,22 @@ export const calculateSMCStopLoss = (
   timeframe: string
 ): number => {
   const range = Math.abs(resistance - support);
-  const stopLossMultiplier = getStopLossMultiplier(timeframe);
-  console.log(`SMC Stop Loss calculation for ${timeframe}:`, { currentPrice, direction, stopLossMultiplier });
+  // نستخدم 30% من المدى بين الدعم والمقاومة لتحديد وقف الخسارة
+  const stopLossRange = range * 0.3;
+  
+  console.log(`SMC Stop Loss calculation for ${timeframe}:`, { 
+    currentPrice, 
+    direction, 
+    range,
+    stopLossRange 
+  });
   
   if (direction === "صاعد") {
-    // للاتجاه الصاعد، وقف الخسارة يكون تحت السعر الحالي بنسبة من المدى
-    return Number((currentPrice * (1 - stopLossMultiplier)).toFixed(2));
+    // للاتجاه الصاعد، نضع وقف الخسارة تحت منطقة تجمع السيولة السفلية
+    return Number((support - stopLossRange).toFixed(2));
   } else {
-    // للاتجاه الهابط، وقف الخسارة يكون فوق السعر الحالي بنسبة من المدى
-    return Number((currentPrice * (1 + stopLossMultiplier)).toFixed(2));
+    // للاتجاه الهابط، نضع وقف الخسارة فوق منطقة تجمع السيولة العلوية
+    return Number((resistance + stopLossRange).toFixed(2));
   }
 };
 
@@ -27,18 +34,26 @@ export const calculateSMCTargets = (
   resistance: number,
   timeframe: string
 ): number[] => {
-  const multipliers = getTimeframeMultipliers(timeframe);
-  console.log(`SMC Targets calculation for ${timeframe}:`, { currentPrice, direction, multipliers });
+  const range = Math.abs(resistance - support);
+  // نستخدم مضاعفات المدى لتحديد الأهداف بناءً على مناطق عدم التوازن
+  const targetMultipliers = [1.5, 2.5, 3.5];
+  
+  console.log(`SMC Targets calculation for ${timeframe}:`, { 
+    currentPrice, 
+    direction, 
+    range,
+    targetMultipliers 
+  });
   
   if (direction === "صاعد") {
-    // للاتجاه الصاعد، الأهداف تكون أعلى من السعر الحالي
-    return multipliers.map(multiplier => 
-      Number((currentPrice * (1 + multiplier)).toFixed(2))
+    // للاتجاه الصاعد، نحدد الأهداف فوق مستوى المقاومة
+    return targetMultipliers.map(multiplier => 
+      Number((resistance + (range * multiplier)).toFixed(2))
     );
   } else {
-    // للاتجاه الهابط، الأهداف تكون أقل من السعر الحالي
-    return multipliers.map(multiplier => 
-      Number((currentPrice * (1 - multiplier)).toFixed(2))
+    // للاتجاه الهابط، نحدد الأهداف تحت مستوى الدعم
+    return targetMultipliers.map(multiplier => 
+      Number((support - (range * multiplier)).toFixed(2))
     );
   }
 };
@@ -50,29 +65,38 @@ export const calculateSMCEntryPoint = (
   resistance: number,
   timeframe: string
 ): { price: number; reason: string } => {
-  const entryMultiplier = getStopLossMultiplier(timeframe) * 0.5; // نصف مسافة وقف الخسارة للدخول
-  console.log(`SMC Entry Point calculation for ${timeframe}:`, { currentPrice, direction, entryMultiplier });
+  const range = Math.abs(resistance - support);
+  // نستخدم 20% من المدى للدخول قرب مناطق الطلب/العرض
+  const entryRange = range * 0.2;
+  
+  console.log(`SMC Entry Point calculation for ${timeframe}:`, { 
+    currentPrice, 
+    direction, 
+    range,
+    entryRange 
+  });
 
-  let entryPrice: number;
   if (direction === "صاعد") {
-    // للاتجاه الصاعد، نقطة الدخول تكون أقل من السعر الحالي
-    entryPrice = Number((currentPrice * (1 - entryMultiplier)).toFixed(2));
+    // للاتجاه الصاعد، ندخل عند منطقة الطلب فوق الدعم مباشرة
+    const entryPrice = Number((support + entryRange).toFixed(2));
     return {
       price: entryPrice,
-      reason: `نقطة دخول عند منطقة تجمع السيولة السفلية على الإطار الزمني ${timeframe}`
+      reason: `نقطة دخول عند منطقة الطلب (Demand Zone) فوق مستوى تجمع السيولة السفلي على الإطار الزمني ${timeframe}`
     };
   } else {
-    // للاتجاه الهابط، نقطة الدخول تكون أعلى من السعر الحالي
-    entryPrice = Number((currentPrice * (1 + entryMultiplier)).toFixed(2));
+    // للاتجاه الهابط، ندخل عند منطقة العرض تحت المقاومة مباشرة
+    const entryPrice = Number((resistance - entryRange).toFixed(2));
     return {
       price: entryPrice,
-      reason: `نقطة دخول عند منطقة تجمع السيولة العلوية على الإطار الزمني ${timeframe}`
+      reason: `نقطة دخول عند منطقة العرض (Supply Zone) تحت مستوى تجمع السيولة العلوي على الإطار الزمني ${timeframe}`
     };
   }
 };
 
 export const detectSMCPattern = (direction: string, timeframe: string): string => {
-  return direction === "صاعد"
-    ? `نموذج تجميع سيولة قبل الاختراق الصعودي على الإطار الزمني ${timeframe}`
-    : `نموذج تجميع سيولة قبل الاختراق الهبوطي على الإطار الزمني ${timeframe}`;
+  if (direction === "صاعد") {
+    return `نموذج تجمع سيولة سفلي مع منطقة طلب نشطة على الإطار الزمني ${timeframe}`;
+  } else {
+    return `نموذج تجمع سيولة علوي مع منطقة عرض نشطة على الإطار الزمني ${timeframe}`;
+  }
 };
