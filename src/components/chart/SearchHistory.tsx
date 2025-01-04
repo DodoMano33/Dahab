@@ -65,6 +65,14 @@ export const SearchHistory = ({
               history={validHistory}
             />
             <div className="flex items-center gap-2">
+              <Button
+                onClick={handleDeleteSelected}
+                variant="destructive"
+                size="icon"
+                className="hover:bg-destructive/90"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
               <DateRangePicker
                 dateRange={dateRange}
                 isOpen={isDatePickerOpen}
@@ -76,14 +84,6 @@ export const SearchHistory = ({
                   }
                 }}
               />
-              <Button
-                onClick={handleDeleteSelected}
-                variant="destructive"
-                size="icon"
-                className="hover:bg-destructive/90"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </div>
