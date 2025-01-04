@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CheckSquare, Square } from "lucide-react";
 
 interface CombinedAnalysisDialogProps {
   isOpen: boolean;
@@ -26,6 +27,14 @@ export const CombinedAnalysisDialog = ({
     { id: "patterns", label: "Patterns" },
     { id: "priceAction", label: "Price Action" }
   ];
+
+  const handleSelectAll = () => {
+    if (selectedTypes.length === analysisTypes.length) {
+      setSelectedTypes([]);
+    } else {
+      setSelectedTypes(analysisTypes.map(type => type.id));
+    }
+  };
 
   const handleTypeToggle = (type: string) => {
     setSelectedTypes(prev =>
@@ -53,22 +62,37 @@ export const CombinedAnalysisDialog = ({
         <DialogHeader>
           <DialogTitle className="text-right">اختر أنواع التحليل</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          {analysisTypes.map(type => (
-            <div key={type.id} className="flex items-center space-x-2 space-x-reverse">
-              <Checkbox
-                id={type.id}
-                checked={selectedTypes.includes(type.id)}
-                onCheckedChange={() => handleTypeToggle(type.id)}
-              />
-              <label
-                htmlFor={type.id}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {type.label}
-              </label>
-            </div>
-          ))}
+        <div className="space-y-4 mt-4">
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <Checkbox
+              id="select-all"
+              checked={selectedTypes.length === analysisTypes.length}
+              onCheckedChange={handleSelectAll}
+            />
+            <label
+              htmlFor="select-all"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              تحديد الكل
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {analysisTypes.map(type => (
+              <div key={type.id} className="flex items-center space-x-2 space-x-reverse">
+                <Checkbox
+                  id={type.id}
+                  checked={selectedTypes.includes(type.id)}
+                  onCheckedChange={() => handleTypeToggle(type.id)}
+                />
+                <label
+                  htmlFor={type.id}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {type.label}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="mt-4 flex justify-end">
           <Button

@@ -39,7 +39,7 @@ export const HistoryRow = ({
   return (
     <TableRow>
       {onDelete && (
-        <TableCell className="w-[60px] text-center">
+        <TableCell className="w-[60px] text-center p-2">
           <Button
             variant="ghost"
             size="icon"
@@ -50,36 +50,36 @@ export const HistoryRow = ({
           </Button>
         </TableCell>
       )}
-      <TableCell className="w-[120px] text-center whitespace-normal">
+      <TableCell className="w-[120px] text-center p-2 whitespace-normal">
         <StopLoss 
           value={analysis.stopLoss} 
           isHit={false}
         />
       </TableCell>
-      <TableCell className="w-[140px] text-center whitespace-normal">
+      <TableCell className="w-[140px] text-center p-2 whitespace-normal">
         <TargetsList 
           targets={analysis.targets?.slice(0, 3) || []} 
           isTargetHit={false}
         />
       </TableCell>
-      <TableCell className="w-[160px] text-center whitespace-normal">
+      <TableCell className="w-[160px] text-center p-2 whitespace-normal">
         <BestEntryPoint 
           price={analysis.bestEntryPoint?.price} 
           reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
-      <TableCell className="w-[80px] text-center">
+      <TableCell className="w-[80px] text-center p-2">
         <DirectionIndicator direction={analysis.direction} />
       </TableCell>
-      <TableCell className="w-[120px] text-center">{currentPrice}</TableCell>
+      <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
       <TimeframeCell timeframe={timeframe} />
       <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
-      <TableCell className="w-[100px] text-center font-medium">
+      <TableCell className="w-[100px] text-center p-2 font-medium">
         {symbol.toUpperCase()}
       </TableCell>
       <DateCell date={date} />
       {onSelect !== undefined && (
-        <TableCell className="w-[60px] text-center">
+        <TableCell className="w-[60px] text-center p-2">
           <Checkbox checked={isSelected} onCheckedChange={onSelect} />
         </TableCell>
       )}
