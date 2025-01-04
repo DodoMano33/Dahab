@@ -14,33 +14,21 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
   const [symbol, setSymbol] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      if (!symbol) {
-        toast.error("الرجاء إدخال رمز العملة أو الزوج");
-        return;
-      }
-      
-      if (!currentPrice) {
-        toast.error("الرجاء إدخال السعر الحالي");
-        return;
-      }
-      
-      const price = Number(currentPrice);
-      if (isNaN(price) || price <= 0) {
-        toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
-        return;
-      }
-      
-      console.log("Submitting TradingView config:", { symbol, currentPrice: price });
-      await onConfigSubmit(symbol, "1d", price);
-      
-    } catch (error) {
-      console.error("Error submitting analysis:", error);
-      toast.error("حدث خطأ أثناء تحليل الرسم البياني");
+    if (!symbol) {
+      toast.error("الرجاء إدخال رمز العملة أو الزوج");
+      return;
     }
+    
+    const price = currentPrice ? Number(currentPrice) : undefined;
+    if (currentPrice && (isNaN(price!) || price! <= 0)) {
+      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      return;
+    }
+    
+    console.log("Submitting TradingView config:", { symbol, currentPrice: price });
+    onConfigSubmit(symbol, "1d", price); // Using default timeframe "1d"
   };
 
   return (
