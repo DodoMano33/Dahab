@@ -24,8 +24,7 @@ export const useAnalysisHandler = () => {
     isTurtleSoup: boolean = false,
     isGann: boolean = false,
     isWaves: boolean = false,
-    isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false
+    isPatternAnalysis: boolean = false
   ) => {
     try {
       if (!symbol || !timeframe || !providedPrice) {
@@ -44,7 +43,6 @@ export const useAnalysisHandler = () => {
       if (isGann) selectedTypes.push("gann");
       if (isWaves) selectedTypes.push("waves");
       if (isPatternAnalysis) selectedTypes.push("patterns");
-      if (isPriceAction) selectedTypes.push("priceAction");
       
       const analysisType = isAI ? "ذكي" : detectAnalysisType(
         isPatternAnalysis,
@@ -54,8 +52,7 @@ export const useAnalysisHandler = () => {
         isICT,
         isSMC,
         isAI,
-        isScalping,
-        isPriceAction
+        isScalping
       );
       
       setCurrentAnalysis(analysisType);
@@ -92,8 +89,7 @@ export const useAnalysisHandler = () => {
             isTurtleSoup,
             isICT,
             isSMC,
-            isScalping,
-            isPriceAction
+            isScalping
           }
         );
       }

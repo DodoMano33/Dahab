@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Building2, Turtle, Activity } from "lucide-react";
+import { TrendingUp, Building2, Turtle, Activity, Waves } from "lucide-react";
 
 interface TechnicalButtonsProps {
   isAnalyzing: boolean;
@@ -7,6 +7,7 @@ interface TechnicalButtonsProps {
   onICTClick: (e: React.MouseEvent) => void;
   onTurtleSoupClick: (e: React.MouseEvent) => void;
   onGannClick: (e: React.MouseEvent) => void;
+  onWavesClick: (e: React.MouseEvent) => void;
 }
 
 export const TechnicalButtons = ({
@@ -14,7 +15,8 @@ export const TechnicalButtons = ({
   onSMCClick,
   onICTClick,
   onTurtleSoupClick,
-  onGannClick
+  onGannClick,
+  onWavesClick
 }: TechnicalButtonsProps) => {
   return (
     <>
@@ -56,6 +58,16 @@ export const TechnicalButtons = ({
       >
         <Activity className="w-4 h-4" />
         تحليل Gann
+      </Button>
+
+      <Button
+        type="button"
+        disabled={isAnalyzing}
+        onClick={onWavesClick}
+        className="col-span-2 bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
+      >
+        <Waves className="w-4 h-4" />
+        تحليل Waves
       </Button>
     </>
   );

@@ -7,7 +7,6 @@ import { analyzeWavesChart } from "../wavesAnalysis";
 import { analyzePattern } from "../patternAnalysis";
 import { analyzeDailyChart } from "../dailyAnalysis";
 import { analyzeScalpingChart } from "../scalpingAnalysis";
-import { analyzePriceAction } from "../priceActionAnalysis";
 
 interface AnalysisOptions {
   isPatternAnalysis: boolean;
@@ -17,7 +16,6 @@ interface AnalysisOptions {
   isICT: boolean;
   isSMC: boolean;
   isScalping: boolean;
-  isPriceAction: boolean;
 }
 
 export const executeAnalysis = async (
@@ -33,8 +31,7 @@ export const executeAnalysis = async (
     isTurtleSoup,
     isICT,
     isSMC,
-    isScalping,
-    isPriceAction
+    isScalping
   } = options;
 
   let selectedStrategies = [];
@@ -45,11 +42,11 @@ export const executeAnalysis = async (
   if (isICT) selectedStrategies.push("ICT");
   if (isSMC) selectedStrategies.push("SMC");
   if (isScalping) selectedStrategies.push("Scalping");
-  if (isPriceAction) selectedStrategies.push("Price Action");
 
   let analysis: AnalysisData;
 
   if (selectedStrategies.length > 1) {
+    // For combined analysis
     const promises = selectedStrategies.map(strategy => {
       switch (strategy) {
         case "Patterns": return analyzePattern(chartImage, currentPrice, timeframe);
@@ -59,20 +56,21 @@ export const executeAnalysis = async (
         case "ICT": return analyzeICTChart(chartImage, currentPrice, timeframe);
         case "SMC": return analyzeSMCChart(chartImage, currentPrice, timeframe);
         case "Scalping": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
-        case "Price Action": return analyzePriceAction(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
 
     const results = await Promise.all(promises);
     
-    analysis = results[0];
+    // Combine the results
+    analysis = results[0]; // Start with the first analysis
     if (analysis.bestEntryPoint) {
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "Smart";
+    analysis.analysisType = "Smart"; // Set analysis type to Smart consistently
   } else {
+    // For single strategy analysis
     const strategy = selectedStrategies[0] || "Standard";
     switch (strategy) {
       case "Patterns":
@@ -95,9 +93,6 @@ export const executeAnalysis = async (
         break;
       case "Scalping":
         analysis = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
-        break;
-      case "Price Action":
-        analysis = await analyzePriceAction(chartImage, currentPrice, timeframe);
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);

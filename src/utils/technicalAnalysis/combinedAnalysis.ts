@@ -6,7 +6,6 @@ import { analyzeTurtleSoupChart } from "@/components/chart/analysis/turtleSoupAn
 import { analyzeGannChart } from "@/components/chart/analysis/gannAnalysis";
 import { analyzeWavesChart } from "@/components/chart/analysis/wavesAnalysis";
 import { analyzePattern } from "@/utils/patternAnalysis";
-import { analyzePriceAction } from "@/components/chart/analysis/priceActionAnalysis";
 
 const getStrategyName = (type: string): string => {
   switch (type) {
@@ -17,7 +16,6 @@ const getStrategyName = (type: string): string => {
     case "gann": return "Gann";
     case "waves": return "Waves";
     case "patterns": return "Patterns";
-    case "priceAction": return "Price Action";
     default: return type;
   }
 };
@@ -59,9 +57,6 @@ export const combinedAnalysis = async (
         case "patterns":
           result = await analyzePattern(chartImage, currentPrice, timeframe);
           break;
-        case "priceAction":
-          result = await analyzePriceAction(chartImage, currentPrice, timeframe);
-          break;
       }
       if (result) analysisResults.push(result);
     } catch (error) {
@@ -99,7 +94,7 @@ export const combinedAnalysis = async (
       price: Number((weightedValues.entryPrice / weightedValues.totalWeight).toFixed(2)),
       reason: `Based on combining ${selectedTypes.length} strategies (${strategyNames.join(', ')})`
     },
-    analysisType: "Smart"
+    analysisType: "Smart" // Consistently using "Smart" as the analysis type
   };
 
   console.log("Combined analysis result:", combinedResult);
@@ -117,8 +112,10 @@ const calculateCombinedDirection = (results: AnalysisData[]): "صاعد" | "ها
 };
 
 const combineAndSortTargets = (results: AnalysisData[]): { price: number; expectedTime: Date; }[] => {
+  // Collect all targets from all analyses
   const allTargets = results.flatMap(r => r.targets || []);
   
+  // Group similar targets and calculate averages
   const groupedTargets = allTargets.reduce((groups: any[], target) => {
     const existingGroup = groups.find(g => 
       Math.abs(g.price - target.price) / target.price < 0.01
@@ -136,6 +133,7 @@ const combineAndSortTargets = (results: AnalysisData[]): { price: number; expect
     return groups;
   }, []);
 
+  // Calculate averages and sort targets
   return groupedTargets
     .map(group => ({
       price: Number((group.prices.reduce((a: number, b: number) => a + b, 0) / group.prices.length).toFixed(2)),
