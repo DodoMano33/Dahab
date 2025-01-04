@@ -69,9 +69,16 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
       <Button onClick={() => handleShare('copy')} variant="outline" size="icon">
         <Share2 className="h-4 w-4" />
       </Button>
-      <Button onClick={handleDeleteSelected} variant="destructive" size="icon">
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {selectedItems.size > 0 && (
+        <Button 
+          onClick={handleDeleteSelected} 
+          variant="destructive" 
+          size="icon"
+          className="transition-all duration-200 ease-in-out hover:bg-red-600"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 };
