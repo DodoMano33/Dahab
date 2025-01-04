@@ -6,10 +6,8 @@ interface DateCellProps {
   date: Date;
 }
 
-export const DateCell = ({ date }: DateCellProps) => {
-  return (
-    <TableCell className="text-right">
-      {format(date, 'PPpp', { locale: ar })}
-    </TableCell>
-  );
-};
+export const DateCell = ({ date }: DateCellProps) => (
+  <TableCell className="w-[120px] text-center whitespace-normal">
+    {format(date, 'PPpp', { locale: ar })}
+  </TableCell>
+);
