@@ -1,4 +1,4 @@
-import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
+import { getTimeframeMultipliers } from "@/utils/technicalAnalysis/timeframe";
 
 export const calculateSMCStopLoss = (
   currentPrice: number, 
@@ -7,23 +7,27 @@ export const calculateSMCStopLoss = (
   resistance: number,
   timeframe: string
 ): number => {
-  const range = Math.abs(resistance - support);
-  // نستخدم 30% من المدى بين الدعم والمقاومة لتحديد وقف الخسارة
-  const stopLossRange = range * 0.3;
-  
-  console.log(`SMC Stop Loss calculation for ${timeframe}:`, { 
-    currentPrice, 
-    direction, 
-    range,
-    stopLossRange 
+  console.log("SMC Stop Loss Calculation Input:", {
+    currentPrice,
+    direction,
+    support,
+    resistance,
+    timeframe
   });
+
+  const range = Math.abs(resistance - support);
+  const stopLossPercentage = 0.02; // 2% for tight stop loss in SMC
   
   if (direction === "صاعد") {
-    // للاتجاه الصاعد، نضع وقف الخسارة تحت منطقة تجمع السيولة السفلية
-    return Number((support - stopLossRange).toFixed(2));
+    // For bullish trend, place stop loss below the last low
+    const stopLoss = currentPrice - (currentPrice * stopLossPercentage);
+    console.log("Bullish Stop Loss:", stopLoss);
+    return Number(stopLoss.toFixed(2));
   } else {
-    // للاتجاه الهابط، نضع وقف الخسارة فوق منطقة تجمع السيولة العلوية
-    return Number((resistance + stopLossRange).toFixed(2));
+    // For bearish trend, place stop loss above the last high
+    const stopLoss = currentPrice + (currentPrice * stopLossPercentage);
+    console.log("Bearish Stop Loss:", stopLoss);
+    return Number(stopLoss.toFixed(2));
   }
 };
 
@@ -34,27 +38,33 @@ export const calculateSMCTargets = (
   resistance: number,
   timeframe: string
 ): number[] => {
-  const range = Math.abs(resistance - support);
-  // نستخدم مضاعفات المدى لتحديد الأهداف بناءً على مناطق عدم التوازن
-  const targetMultipliers = [1.5, 2.5, 3.5];
-  
-  console.log(`SMC Targets calculation for ${timeframe}:`, { 
-    currentPrice, 
-    direction, 
-    range,
-    targetMultipliers 
+  console.log("SMC Targets Calculation Input:", {
+    currentPrice,
+    direction,
+    support,
+    resistance,
+    timeframe
   });
+
+  const range = Math.abs(resistance - support);
+  
+  // SMC target multipliers based on market structure
+  const targetMultipliers = [0.015, 0.03, 0.05]; // 1.5%, 3%, 5%
   
   if (direction === "صاعد") {
-    // للاتجاه الصاعد، نحدد الأهداف فوق مستوى المقاومة
-    return targetMultipliers.map(multiplier => 
-      Number((resistance + (range * multiplier)).toFixed(2))
+    // For bullish trend, calculate targets above current price
+    const targets = targetMultipliers.map(multiplier => 
+      Number((currentPrice + (currentPrice * multiplier)).toFixed(2))
     );
+    console.log("Bullish Targets:", targets);
+    return targets;
   } else {
-    // للاتجاه الهابط، نحدد الأهداف تحت مستوى الدعم
-    return targetMultipliers.map(multiplier => 
-      Number((support - (range * multiplier)).toFixed(2))
+    // For bearish trend, calculate targets below current price
+    const targets = targetMultipliers.map(multiplier => 
+      Number((currentPrice - (currentPrice * multiplier)).toFixed(2))
     );
+    console.log("Bearish Targets:", targets);
+    return targets;
   }
 };
 
@@ -65,30 +75,32 @@ export const calculateSMCEntryPoint = (
   resistance: number,
   timeframe: string
 ): { price: number; reason: string } => {
-  const range = Math.abs(resistance - support);
-  // نستخدم 20% من المدى للدخول قرب مناطق الطلب/العرض
-  const entryRange = range * 0.2;
-  
-  console.log(`SMC Entry Point calculation for ${timeframe}:`, { 
-    currentPrice, 
-    direction, 
-    range,
-    entryRange 
+  console.log("SMC Entry Point Calculation Input:", {
+    currentPrice,
+    direction,
+    support,
+    resistance,
+    timeframe
   });
 
+  const range = Math.abs(resistance - support);
+  const entryOffset = 0.005; // 0.5% offset for entry
+  
   if (direction === "صاعد") {
-    // للاتجاه الصاعد، ندخل عند منطقة الطلب فوق الدعم مباشرة
-    const entryPrice = Number((support + entryRange).toFixed(2));
+    // For bullish trend, enter near support
+    const entryPrice = Number((support + (range * entryOffset)).toFixed(2));
+    console.log("Bullish Entry Point:", entryPrice);
     return {
       price: entryPrice,
-      reason: `نقطة دخول عند منطقة الطلب (Demand Zone) فوق مستوى تجمع السيولة السفلي على الإطار الزمني ${timeframe}`
+      reason: `نقطة دخول عند منطقة الطلب القوية (Demand Zone) مع وجود تجمع سيولة سفلي على الإطار الزمني ${timeframe}`
     };
   } else {
-    // للاتجاه الهابط، ندخل عند منطقة العرض تحت المقاومة مباشرة
-    const entryPrice = Number((resistance - entryRange).toFixed(2));
+    // For bearish trend, enter near resistance
+    const entryPrice = Number((resistance - (range * entryOffset)).toFixed(2));
+    console.log("Bearish Entry Point:", entryPrice);
     return {
       price: entryPrice,
-      reason: `نقطة دخول عند منطقة العرض (Supply Zone) تحت مستوى تجمع السيولة العلوي على الإطار الزمني ${timeframe}`
+      reason: `نقطة دخول عند منطقة العرض القوية (Supply Zone) مع وجود تجمع سيولة علوي على الإطار الزمني ${timeframe}`
     };
   }
 };
