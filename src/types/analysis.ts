@@ -17,7 +17,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
 }
 
 export interface SearchHistoryItem {
@@ -28,7 +28,7 @@ export interface SearchHistoryItem {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
   timeframe: string;
 }
 

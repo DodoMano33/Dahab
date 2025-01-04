@@ -6,7 +6,8 @@ export const detectAnalysisType = (
   isICT: boolean,
   isSMC: boolean,
   isAI: boolean,
-  isScalping: boolean
+  isScalping: boolean,
+  isPriceAction: boolean = false
 ): string => {
   if (isPatternAnalysis) return 'Patterns';
   if (isWaves) return 'Waves';
@@ -16,5 +17,6 @@ export const detectAnalysisType = (
   if (isSMC) return 'SMC';
   if (isAI) return 'ذكي';
   if (isScalping) return 'سكالبينج';
+  if (isPriceAction) return 'Price Action';
   return 'عادي';
 };
