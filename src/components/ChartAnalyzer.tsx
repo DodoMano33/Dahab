@@ -35,12 +35,18 @@ export const ChartAnalyzer = () => {
 
   const fetchSearchHistory = async () => {
     try {
+      console.log("Fetching search history...");
       const { data, error } = await supabase
         .from('search_history')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching search history:", error);
+        throw error;
+      }
+
+      console.log("Received search history data:", data);
 
       const formattedHistory: SearchHistoryItem[] = data.map(item => ({
         id: item.id,
