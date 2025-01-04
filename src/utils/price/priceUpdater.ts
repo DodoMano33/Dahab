@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { PriceSubscription, CachedPrice } from './types';
 import { POLLING_INTERVAL, CACHE_DURATION, SUPPORTED_SYMBOLS } from './config';
 import { fetchForexPrice, fetchQuotePrice } from './api';
@@ -25,7 +24,7 @@ class PriceUpdater {
       }
 
       let price: number;
-      if (symbol.includes('USD')) {
+      if (symbol === 'XAUUSD' || symbol.includes('USD')) {
         price = await fetchForexPrice(symbol);
       } else {
         price = await fetchQuotePrice(symbol);
@@ -41,21 +40,14 @@ class PriceUpdater {
 
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 403) {
-          throw new Error('خطأ في المصادقة مع Finnhub API. يرجى التحقق من صلاحية المفتاح.');
-        }
-        if (error.response?.status === 429) {
-          throw new Error('تم تجاوز حد الطلبات. يرجى المحاولة بعد دقيقة.');
-        }
-      }
       throw error;
     }
   }
 
   subscribe(subscription: PriceSubscription) {
     const { symbol } = subscription;
+    console.log(`اشتراك جديد للرمز ${symbol}`);
+    
     if (!this.subscriptions.has(symbol)) {
       this.subscriptions.set(symbol, []);
     }
@@ -71,6 +63,8 @@ class PriceUpdater {
   }
 
   unsubscribe(symbol: string, onUpdate: (price: number) => void) {
+    console.log(`إلغاء اشتراك للرمز ${symbol}`);
+    
     const subs = this.subscriptions.get(symbol);
     if (subs) {
       const index = subs.findIndex(sub => sub.onUpdate === onUpdate);
@@ -89,11 +83,14 @@ class PriceUpdater {
   }
 
   private async updatePrices() {
+    console.log('تحديث الأسعار لجميع الاشتراكات النشطة');
+    
     for (const [symbol, subs] of this.subscriptions.entries()) {
       try {
         const price = await this.fetchPrice(symbol);
         subs.forEach(sub => sub.onUpdate(price));
       } catch (error) {
+        console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
         subs.forEach(sub => sub.onError(error as Error));
       }
     }
@@ -101,6 +98,7 @@ class PriceUpdater {
 
   private startPolling() {
     if (!this.polling) {
+      console.log('بدء التحديث التلقائي للأسعار');
       this.polling = true;
       this.updatePrices();
       this.intervalId = setInterval(() => this.updatePrices(), POLLING_INTERVAL);
@@ -109,6 +107,7 @@ class PriceUpdater {
 
   private stopPolling() {
     if (this.intervalId) {
+      console.log('إيقاف التحديث التلقائي للأسعار');
       clearInterval(this.intervalId);
       this.intervalId = undefined;
     }
