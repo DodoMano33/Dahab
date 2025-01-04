@@ -18,7 +18,7 @@ export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }:
       <TableHead className="text-right font-bold">أفضل نقطة دخول</TableHead>
       <TableHead className="text-right font-bold">الأهداف والتوقيت</TableHead>
       <TableHead className="text-right font-bold">وقف الخسارة</TableHead>
-      {showDelete && <TableHead className="w-12 text-right">حذف</TableHead>}
+      {showDelete && <TableHead className="w-12 text-left">حذف</TableHead>}
     </TableRow>
   </TableHeader>
 );

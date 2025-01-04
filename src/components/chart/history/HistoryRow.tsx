@@ -39,7 +39,7 @@ export const HistoryRow = ({
   return (
     <TableRow>
       {onSelect !== undefined && (
-        <TableCell>
+        <TableCell className="text-right">
           <Checkbox checked={isSelected} onCheckedChange={onSelect} />
         </TableCell>
       )}
@@ -72,7 +72,7 @@ export const HistoryRow = ({
         />
       </TableCell>
       {onDelete && (
-        <TableCell>
+        <TableCell className="text-left">
           <Button
             variant="ghost"
             size="icon"
