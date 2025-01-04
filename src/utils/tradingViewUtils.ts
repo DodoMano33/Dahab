@@ -1,7 +1,25 @@
 import { priceUpdater } from "./priceUpdater";
 
-// صورة افتراضية للتطوير والعرض التجريبي
 const PLACEHOLDER_CHART = "/placeholder.svg";
+
+const isValidSymbol = (symbol: string): boolean => {
+  // قائمة الرموز المدعومة
+  const validSymbols = [
+    "XAUUSD", // الذهب
+    "EURUSD", // اليورو/دولار
+    "GBPUSD", // الجنيه/دولار
+    "USDJPY", // الدولار/ين
+    "USDCHF", // الدولار/فرنك
+    "AUDUSD", // الدولار الأسترالي/دولار
+    "NZDUSD", // الدولار النيوزيلندي/دولار
+    "USDCAD", // الدولار/دولار كندي
+    "BTCUSD", // بيتكوين/دولار
+    "ETHUSD"  // إيثريوم/دولار
+  ];
+
+  const formattedSymbol = symbol.toUpperCase();
+  return validSymbols.includes(formattedSymbol);
+};
 
 export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
   console.log("محاولة جلب صورة الشارت:", { symbol, timeframe });
@@ -12,9 +30,13 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
       throw new Error("يجب تحديد الرمز والإطار الزمني");
     }
 
-    // تنظيف وتنسيق الرمز
     const formattedSymbol = symbol.trim().toUpperCase();
     console.log("الرمز المنسق:", formattedSymbol);
+
+    // التحقق من صحة الرمز
+    if (!isValidSymbol(formattedSymbol)) {
+      throw new Error(`الرمز ${formattedSymbol} غير مدعوم. الرجاء استخدام أحد الرموز المدعومة مثل XAUUSD أو EURUSD`);
+    }
 
     try {
       // محاولة جلب السعر الحالي للتأكد من صحة الرمز
@@ -22,10 +44,9 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
       console.log("تم التحقق من صحة الرمز:", formattedSymbol);
     } catch (priceError) {
       console.error("خطأ في جلب السعر:", priceError);
-      throw new Error("الرمز غير صالح أو غير متوفر. الرجاء التحقق من صحة الرمز.");
+      throw new Error(`لا يمكن جلب السعر للرمز ${formattedSymbol}. الرجاء التأكد من اتصال الإنترنت والمحاولة مرة أخرى.`);
     }
     
-    // استخدام الصورة الافتراضية للتطوير
     console.log("تم جلب صورة الشارت بنجاح:", PLACEHOLDER_CHART);
     return PLACEHOLDER_CHART;
     
@@ -44,12 +65,18 @@ export const getCurrentPriceFromTradingView = async (symbol: string): Promise<nu
     }
 
     const formattedSymbol = symbol.trim().toUpperCase();
+    
+    // التحقق من صحة الرمز
+    if (!isValidSymbol(formattedSymbol)) {
+      throw new Error(`الرمز ${formattedSymbol} غير مدعوم. الرجاء استخدام أحد الرموز المدعومة مثل XAUUSD أو EURUSD`);
+    }
+
     const price = await priceUpdater.fetchPrice(formattedSymbol);
     console.log("تم جلب السعر الحالي بنجاح:", price);
     return price;
     
   } catch (error) {
     console.error("خطأ في جلب السعر الحالي:", error);
-    throw new Error("فشل في جلب السعر الحالي. الرجاء التحقق من صحة الرمز والمحاولة مرة أخرى.");
+    throw new Error(error instanceof Error ? error.message : "فشل في جلب السعر الحالي");
   }
 };
