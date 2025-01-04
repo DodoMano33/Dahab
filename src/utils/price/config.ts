@@ -5,7 +5,7 @@ export const API_CONFIG = {
   headers: {
     'X-Finnhub-Token': FINNHUB_API_KEY
   },
-  timeout: 60000 // زيادة مهلة الانتظار إلى 60 ثانية
+  timeout: 5000 // تقليل مهلة الانتظار إلى 5 ثواني
 };
 
 export const FOREX_SYMBOLS = {
