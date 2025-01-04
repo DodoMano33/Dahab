@@ -1,4 +1,4 @@
-import { Brain, ChartLine } from "lucide-react";
+import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
@@ -53,18 +53,29 @@ export const AnalysisButtonGroup = ({
           onICTClick={(e) => onSubmit(e, false, false, false, true)}
           onTurtleSoupClick={(e) => onSubmit(e, false, false, false, false, true)}
           onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
-          onWavesClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
         />
         
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
-          className="col-span-2 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
-        >
-          <ChartLine className="w-4 h-4" />
-          تحليل Price Action
-        </Button>
+        <div className="col-span-2 grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            disabled={isAnalyzing}
+            onClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
+          >
+            <Waves className="w-4 h-4" />
+            تحليل Waves
+          </Button>
+
+          <Button
+            type="button"
+            disabled={isAnalyzing}
+            onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
+          >
+            <CandlestickChart className="w-4 h-4" />
+            تحليل Price Action
+          </Button>
+        </div>
       </div>
 
       <div className="flex justify-between items-center">
