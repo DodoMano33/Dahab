@@ -1,28 +1,58 @@
-// صورة افتراضية للتطوير والعرض التجريبي
+import { priceUpdater } from "./priceUpdater";
+
 const PLACEHOLDER_CHART = "/placeholder.svg";
+
+const isValidSymbol = (symbol: string): boolean => {
+  // قائمة الرموز المدعومة
+  const validSymbols = [
+    "XAUUSD", // الذهب
+    "EURUSD", // اليورو/دولار
+    "GBPUSD", // الجنيه/دولار
+    "USDJPY", // الدولار/ين
+    "USDCHF", // الدولار/فرنك
+    "AUDUSD", // الدولار الأسترالي/دولار
+    "NZDUSD", // الدولار النيوزيلندي/دولار
+    "USDCAD", // الدولار/دولار كندي
+    "BTCUSD", // بيتكوين/دولار
+    "ETHUSD"  // إيثريوم/دولار
+  ];
+
+  const formattedSymbol = symbol.toUpperCase();
+  return validSymbols.includes(formattedSymbol);
+};
 
 export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
   console.log("محاولة جلب صورة الشارت:", { symbol, timeframe });
   
   try {
     if (!symbol || !timeframe) {
+      console.error("بيانات غير صالحة:", { symbol, timeframe });
       throw new Error("يجب تحديد الرمز والإطار الزمني");
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const chartUrl = PLACEHOLDER_CHART;
-    
-    const response = await fetch(chartUrl);
-    if (!response.ok) {
-      throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
+    const formattedSymbol = symbol.trim().toUpperCase();
+    console.log("الرمز المنسق:", formattedSymbol);
+
+    // التحقق من صحة الرمز
+    if (!isValidSymbol(formattedSymbol)) {
+      throw new Error(`الرمز ${formattedSymbol} غير مدعوم. الرجاء استخدام أحد الرموز المدعومة مثل XAUUSD أو EURUSD`);
+    }
+
+    try {
+      // محاولة جلب السعر الحالي للتأكد من صحة الرمز
+      await priceUpdater.fetchPrice(formattedSymbol);
+      console.log("تم التحقق من صحة الرمز:", formattedSymbol);
+    } catch (priceError) {
+      console.error("خطأ في جلب السعر:", priceError);
+      throw new Error(`لا يمكن جلب السعر للرمز ${formattedSymbol}. الرجاء التأكد من اتصال الإنترنت والمحاولة مرة أخرى.`);
     }
     
-    console.log("تم جلب صورة الشارت بنجاح:", chartUrl);
-    return chartUrl;
+    console.log("تم جلب صورة الشارت بنجاح:", PLACEHOLDER_CHART);
+    return PLACEHOLDER_CHART;
     
   } catch (error) {
     console.error("خطأ في جلب صورة الشارت:", error);
-    throw error;
+    throw new Error(error instanceof Error ? error.message : "حدث خطأ غير متوقع");
   }
 };
 
@@ -30,27 +60,23 @@ export const getCurrentPriceFromTradingView = async (symbol: string): Promise<nu
   console.log("محاولة جلب السعر الحالي من TradingView:", symbol);
   
   try {
-    // في الإنتاج، هذا سيكون استدعاء حقيقي لـ TradingView API
-    // حالياً نقوم بمحاكاة السعر بشكل أكثر واقعية
-    const mockPrices: { [key: string]: number } = {
-      'XAUUSD': 2023.50,
-      'BTCUSD': 42150.75,
-      'ETHUSD': 2245.30,
-      'EURUSD': 1.0925,
-      'GBPUSD': 1.2715,
-    };
+    if (!symbol) {
+      throw new Error("الرجاء إدخال رمز صالح");
+    }
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const formattedSymbol = symbol.trim().toUpperCase();
     
-    const basePrice = mockPrices[symbol.toUpperCase()] || 100;
-    const randomVariation = (Math.random() - 0.5) * 0.001 * basePrice; // 0.1% variation
-    const price = basePrice + randomVariation;
-    
-    console.log("تم جلب السعر الحالي بنجاح:", price.toFixed(2));
-    return Number(price.toFixed(2));
+    // التحقق من صحة الرمز
+    if (!isValidSymbol(formattedSymbol)) {
+      throw new Error(`الرمز ${formattedSymbol} غير مدعوم. الرجاء استخدام أحد الرموز المدعومة مثل XAUUSD أو EURUSD`);
+    }
+
+    const price = await priceUpdater.fetchPrice(formattedSymbol);
+    console.log("تم جلب السعر الحالي بنجاح:", price);
+    return price;
     
   } catch (error) {
     console.error("خطأ في جلب السعر الحالي:", error);
-    throw error;
+    throw new Error(error instanceof Error ? error.message : "فشل في جلب السعر الحالي");
   }
 };

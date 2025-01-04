@@ -24,9 +24,14 @@ export const useAnalysisHandler = () => {
     isTurtleSoup: boolean = false,
     isGann: boolean = false,
     isWaves: boolean = false,
-    isPatternAnalysis: boolean = false
+    isPatternAnalysis: boolean = false,
+    isPriceAction: boolean = false
   ) => {
     try {
+      if (!symbol || !timeframe || !providedPrice) {
+        throw new Error("جميع الحقول مطلوبة");
+      }
+
       setIsAnalyzing(true);
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
@@ -39,6 +44,7 @@ export const useAnalysisHandler = () => {
       if (isGann) selectedTypes.push("gann");
       if (isWaves) selectedTypes.push("waves");
       if (isPatternAnalysis) selectedTypes.push("patterns");
+      if (isPriceAction) selectedTypes.push("priceAction");
       
       const analysisType = isAI ? "ذكي" : detectAnalysisType(
         isPatternAnalysis,
@@ -48,7 +54,8 @@ export const useAnalysisHandler = () => {
         isICT,
         isSMC,
         isAI,
-        isScalping
+        isScalping,
+        isPriceAction
       );
       
       setCurrentAnalysis(analysisType);
@@ -64,10 +71,6 @@ export const useAnalysisHandler = () => {
       const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
-
-      if (!providedPrice) {
-        throw new Error("الرجاء إدخال السعر الحالي");
-      }
 
       let analysisResult;
       if (isAI && selectedTypes.length > 0) {
@@ -89,13 +92,13 @@ export const useAnalysisHandler = () => {
             isTurtleSoup,
             isICT,
             isSMC,
-            isScalping
+            isScalping,
+            isPriceAction
           }
         );
       }
 
       if (!analysisResult) {
-        console.error("لم يتم العثور على نتائج التحليل");
         throw new Error("لم يتم العثور على نتائج التحليل");
       }
 

@@ -6,7 +6,8 @@ const TYPE_MAPPINGS: TypeMapping = {
   'سكالبينج': 'Scalping',
   'موجات': 'Waves',
   'أنماط': 'Patterns',
-  'ذكي': 'Smart'
+  'ذكي': 'Smart',
+  'Price Action': 'Price Action'
 };
 
 export const formatAnalysisType = (analysisType: string, pattern: string) => {

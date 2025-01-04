@@ -17,7 +17,6 @@ export type Database = {
           current_price: number
           id: string
           symbol: string
-          timeframe: string
           user_id: string
         }
         Insert: {
@@ -27,7 +26,6 @@ export type Database = {
           current_price: number
           id?: string
           symbol: string
-          timeframe?: string
           user_id: string
         }
         Update: {
@@ -37,7 +35,6 @@ export type Database = {
           current_price?: number
           id?: string
           symbol?: string
-          timeframe?: string
           user_id?: string
         }
         Relationships: []
