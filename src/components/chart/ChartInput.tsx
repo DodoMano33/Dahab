@@ -13,7 +13,8 @@ interface ChartInputProps {
     isTurtleSoup?: boolean,
     isGann?: boolean,
     isWaves?: boolean,
-    isPatternAnalysis?: boolean
+    isPatternAnalysis?: boolean,
+    isPriceAction?: boolean
   ) => void;
   onHistoryClick: () => void;
   isAnalyzing: boolean;

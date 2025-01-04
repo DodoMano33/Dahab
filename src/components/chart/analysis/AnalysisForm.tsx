@@ -35,7 +35,8 @@ export const AnalysisForm = ({
     isTurtleSoup: boolean = false,
     isGann: boolean = false,
     isWaves: boolean = false,
-    isPatternAnalysis: boolean = false
+    isPatternAnalysis: boolean = false,
+    isPriceAction: boolean = false
   ) => {
     try {
       if (!user) {
@@ -64,13 +65,13 @@ export const AnalysisForm = ({
         isTurtleSoup,
         isGann,
         isWaves,
-        isPatternAnalysis
+        isPatternAnalysis,
+        isPriceAction
       );
       
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        // تحديث: تعيين نوع التحليل إلى "Smart" عندما يكون التحليل ذكياً
         const analysisType = isAI ? "Smart" : getAnalysisType(
           isPatternAnalysis,
           isWaves,
@@ -79,7 +80,8 @@ export const AnalysisForm = ({
           isICT,
           isSMC,
           isAI,
-          isScalping
+          isScalping,
+          isPriceAction
         );
 
         const savedData = await saveAnalysis({
