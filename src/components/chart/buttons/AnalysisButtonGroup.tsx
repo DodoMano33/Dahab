@@ -1,4 +1,4 @@
-import { Brain } from "lucide-react";
+import { Brain, ChartLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
@@ -15,7 +15,8 @@ interface AnalysisButtonGroupProps {
     isTurtleSoup?: boolean,
     isGann?: boolean,
     isWaves?: boolean,
-    isPatternAnalysis?: boolean
+    isPatternAnalysis?: boolean,
+    isPriceAction?: boolean
   ) => void;
   onHistoryClick: () => void;
   currentAnalysis?: string;
@@ -54,6 +55,16 @@ export const AnalysisButtonGroup = ({
           onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
           onWavesClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
         />
+        
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
+          className="col-span-2 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
+        >
+          <ChartLine className="w-4 h-4" />
+          تحليل Price Action
+        </Button>
       </div>
 
       <div className="flex justify-between items-center">

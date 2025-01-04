@@ -18,7 +18,8 @@ interface ChartAnalysisFormProps {
     isTurtleSoup?: boolean,
     isGann?: boolean,
     isWaves?: boolean,
-    isPatternAnalysis?: boolean
+    isPatternAnalysis?: boolean,
+    isPriceAction?: boolean
   ) => void;
   isAnalyzing: boolean;
   onHistoryClick: () => void;
@@ -45,7 +46,8 @@ export const ChartAnalysisForm = ({
     isTurtleSoup: boolean = false,
     isGann: boolean = false,
     isWaves: boolean = false,
-    isPatternAnalysis: boolean = false
+    isPatternAnalysis: boolean = false,
+    isPriceAction: boolean = false
   ) => {
     e.preventDefault();
     
@@ -78,7 +80,8 @@ export const ChartAnalysisForm = ({
       isTurtleSoup,
       isGann,
       isWaves,
-      isPatternAnalysis
+      isPatternAnalysis,
+      isPriceAction
     );
   };
 
@@ -91,7 +94,6 @@ export const ChartAnalysisForm = ({
 
     console.log("Starting combined analysis with types:", selectedTypes);
     
-    // Map selected types to boolean flags
     const analysisFlags = {
       isScalping: selectedTypes.includes("scalping"),
       isAI: true,
@@ -100,7 +102,8 @@ export const ChartAnalysisForm = ({
       isTurtleSoup: selectedTypes.includes("turtleSoup"),
       isGann: selectedTypes.includes("gann"),
       isWaves: selectedTypes.includes("waves"),
-      isPatternAnalysis: selectedTypes.includes("patterns")
+      isPatternAnalysis: selectedTypes.includes("patterns"),
+      isPriceAction: selectedTypes.includes("priceAction")
     };
 
     onSubmit(
@@ -114,7 +117,8 @@ export const ChartAnalysisForm = ({
       analysisFlags.isTurtleSoup,
       analysisFlags.isGann,
       analysisFlags.isWaves,
-      analysisFlags.isPatternAnalysis
+      analysisFlags.isPatternAnalysis,
+      analysisFlags.isPriceAction
     );
   };
 
