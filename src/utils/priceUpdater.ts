@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FINNHUB_API_KEY } from './price/config';
+import { ALPHA_VANTAGE_API_KEY } from './price/config';
 
 interface PriceSubscription {
   symbol: string;
@@ -30,35 +30,34 @@ class PriceUpdater {
       }
 
       // تحديد نوع الرمز وتكوين طلب API المناسب
-      let endpoint = 'https://finnhub.io/api/v1';
-      let url = '';
-      let params: any = {};
+      let url = 'https://www.alphavantage.co/query';
+      let params: any = {
+        apikey: ALPHA_VANTAGE_API_KEY
+      };
 
       if (symbol === 'XAUUSD') {
-        url = `${endpoint}/forex/candle`;
         params = {
-          symbol: 'OANDA:XAU_USD',
-          resolution: '1',
-          count: 1,
-          token: FINNHUB_API_KEY
+          ...params,
+          function: 'CURRENCY_EXCHANGE_RATE',
+          from_currency: 'XAU',
+          to_currency: 'USD'
         };
         console.log("استخدام نقطة نهاية الفوركس للذهب:", params);
       } else if (symbol.includes('USD')) {
-        url = `${endpoint}/forex/candle`;
         const base = symbol.slice(0, 3);
         const quote = symbol.slice(3);
         params = {
-          symbol: `OANDA:${base}_${quote}`,
-          resolution: '1',
-          count: 1,
-          token: FINNHUB_API_KEY
+          ...params,
+          function: 'CURRENCY_EXCHANGE_RATE',
+          from_currency: base,
+          to_currency: quote
         };
         console.log("استخدام نقطة نهاية الفوركس للعملات:", params);
       } else {
-        url = `${endpoint}/quote`;
         params = {
-          symbol: symbol,
-          token: FINNHUB_API_KEY
+          ...params,
+          function: 'GLOBAL_QUOTE',
+          symbol: symbol
         };
         console.log("استخدام نقطة نهاية الأسهم:", params);
       }
@@ -69,16 +68,18 @@ class PriceUpdater {
 
       let price: number;
 
-      if (url.includes('/forex/candle')) {
-        if (response.data.c && response.data.c.length > 0) {
-          price = response.data.c[response.data.c.length - 1];
-          console.log(`تم استخراج سعر الفوركس: ${price}`);
+      if (params.function === 'CURRENCY_EXCHANGE_RATE') {
+        const data = response.data['Realtime Currency Exchange Rate'];
+        if (data && data['5. Exchange Rate']) {
+          price = parseFloat(data['5. Exchange Rate']);
+          console.log(`تم استخراج سعر العملة: ${price}`);
         } else {
           throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
         }
       } else {
-        if (response.data.c) {
-          price = response.data.c;
+        const data = response.data['Global Quote'];
+        if (data && data['05. price']) {
+          price = parseFloat(data['05. price']);
           console.log(`تم استخراج سعر السهم: ${price}`);
         } else {
           throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
