@@ -1,7 +1,7 @@
 import { TableCell } from "@/components/ui/table";
 
 interface AnalysisTypeCellProps {
-  analysisType: string;
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
   pattern?: string;
 }
 
