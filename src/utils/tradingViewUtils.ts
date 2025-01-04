@@ -1,3 +1,5 @@
+import { priceUpdater } from "./priceUpdater";
+
 // صورة افتراضية للتطوير والعرض التجريبي
 const PLACEHOLDER_CHART = "/placeholder.svg";
 
@@ -9,20 +11,16 @@ export const getTradingViewChartImage = async (symbol: string, timeframe: string
       throw new Error("يجب تحديد الرمز والإطار الزمني");
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const chartUrl = PLACEHOLDER_CHART;
+    // محاولة جلب السعر الحالي للتأكد من صحة الرمز
+    await priceUpdater.fetchPrice(symbol);
     
-    const response = await fetch(chartUrl);
-    if (!response.ok) {
-      throw new Error(`فشل في تحميل الصورة: ${response.statusText}`);
-    }
-    
-    console.log("تم جلب صورة الشارت بنجاح:", chartUrl);
-    return chartUrl;
+    // استخدام الصورة الافتراضية للتطوير
+    console.log("تم جلب صورة الشارت بنجاح:", PLACEHOLDER_CHART);
+    return PLACEHOLDER_CHART;
     
   } catch (error) {
     console.error("خطأ في جلب صورة الشارت:", error);
-    throw error;
+    throw new Error("فشل في جلب صورة الشارت. الرجاء التحقق من صحة الرمز والمحاولة مرة أخرى.");
   }
 };
 
@@ -30,27 +28,12 @@ export const getCurrentPriceFromTradingView = async (symbol: string): Promise<nu
   console.log("محاولة جلب السعر الحالي من TradingView:", symbol);
   
   try {
-    // في الإنتاج، هذا سيكون استدعاء حقيقي لـ TradingView API
-    // حالياً نقوم بمحاكاة السعر بشكل أكثر واقعية
-    const mockPrices: { [key: string]: number } = {
-      'XAUUSD': 2023.50,
-      'BTCUSD': 42150.75,
-      'ETHUSD': 2245.30,
-      'EURUSD': 1.0925,
-      'GBPUSD': 1.2715,
-    };
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const basePrice = mockPrices[symbol.toUpperCase()] || 100;
-    const randomVariation = (Math.random() - 0.5) * 0.001 * basePrice; // 0.1% variation
-    const price = basePrice + randomVariation;
-    
-    console.log("تم جلب السعر الحالي بنجاح:", price.toFixed(2));
-    return Number(price.toFixed(2));
+    const price = await priceUpdater.fetchPrice(symbol);
+    console.log("تم جلب السعر الحالي بنجاح:", price);
+    return price;
     
   } catch (error) {
     console.error("خطأ في جلب السعر الحالي:", error);
-    throw error;
+    throw new Error("فشل في جلب السعر الحالي. الرجاء التحقق من صحة الرمز والمحاولة مرة أخرى.");
   }
 };

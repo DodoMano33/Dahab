@@ -27,6 +27,10 @@ export const useAnalysisHandler = () => {
     isPatternAnalysis: boolean = false
   ) => {
     try {
+      if (!symbol || !timeframe || !providedPrice) {
+        throw new Error("جميع الحقول مطلوبة");
+      }
+
       setIsAnalyzing(true);
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
@@ -65,10 +69,6 @@ export const useAnalysisHandler = () => {
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
 
-      if (!providedPrice) {
-        throw new Error("الرجاء إدخال السعر الحالي");
-      }
-
       let analysisResult;
       if (isAI && selectedTypes.length > 0) {
         analysisResult = await combinedAnalysis(
@@ -95,7 +95,6 @@ export const useAnalysisHandler = () => {
       }
 
       if (!analysisResult) {
-        console.error("لم يتم العثور على نتائج التحليل");
         throw new Error("لم يتم العثور على نتائج التحليل");
       }
 
