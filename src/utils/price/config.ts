@@ -3,11 +3,9 @@ export const FINNHUB_API_KEY = 'ctshuopr01qh9oetd18gctshuopr01qh9oetd190';
 export const API_CONFIG = {
   baseUrl: 'https://finnhub.io/api/v1',
   headers: {
-    'X-Finnhub-Token': FINNHUB_API_KEY,
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
+    'X-Finnhub-Token': FINNHUB_API_KEY
   },
-  timeout: 30000 // زيادة مهلة الانتظار إلى 30 ثانية
+  timeout: 60000 // زيادة مهلة الانتظار إلى 60 ثانية
 };
 
 export const FOREX_SYMBOLS = {
@@ -28,3 +26,5 @@ export const CRYPTO_SYMBOLS = {
 
 export const CACHE_DURATION = 5000; // 5 seconds
 export const POLLING_INTERVAL = 5000; // 5 seconds
+export const MAX_RETRIES = 3; // عدد محاولات إعادة المحاولة
+export const RETRY_DELAY = 2000; // التأخير بين المحاولات (2 ثواني)
