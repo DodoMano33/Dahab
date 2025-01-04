@@ -1,47 +1,28 @@
-import { priceUpdater } from "./price/priceUpdater";
+import { priceUpdater } from './price/priceUpdater';
 
-const PLACEHOLDER_CHART = "/placeholder.svg";
-
-export const getTradingViewChartImage = async (symbol: string, timeframe: string): Promise<string> => {
+export const getTradingViewChartImage = async (
+  symbol: string,
+  timeframe: string,
+  providedPrice?: number
+): Promise<string> => {
   console.log("محاولة جلب صورة الشارت:", { symbol, timeframe });
   
   try {
-    if (!symbol || !timeframe) {
-      throw new Error("يجب تحديد الرمز والإطار الزمني");
-    }
+    // محاولة جلب السعر مع استخدام السعر المقدم من المستخدم كاحتياطي
+    const price = await priceUpdater.fetchPrice(symbol, providedPrice);
+    console.log("تم جلب السعر:", price);
 
-    const formattedSymbol = symbol.trim().toUpperCase();
-    console.log("الرمز المنسق:", formattedSymbol);
-
-    try {
-      await priceUpdater.fetchPrice(formattedSymbol);
-      console.log("تم التحقق من صحة الرمز:", formattedSymbol);
-    } catch (error) {
-      console.error("خطأ في جلب السعر:", error);
-      throw error;
-    }
-    
-    return PLACEHOLDER_CHART;
-    
+    // في هذه المرحلة نقوم بإرجاع صورة وهمية للتجربة
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
   } catch (error) {
-    console.error("خطأ في جلب صورة الشارت:", error);
-    throw error;
-  }
-};
-
-export const getCurrentPriceFromTradingView = async (symbol: string): Promise<number> => {
-  console.log("محاولة جلب السعر الحالي من TradingView:", symbol);
-  
-  try {
-    if (!symbol) {
-      throw new Error("الرجاء إدخال رمز صالح");
-    }
-
-    const formattedSymbol = symbol.trim().toUpperCase();
-    return await priceUpdater.fetchPrice(formattedSymbol);
+    console.error("خطأ في جلب السعر:", error);
     
-  } catch (error) {
-    console.error("خطأ في جلب السعر الحالي:", error);
+    // إذا كان هناك سعر مقدم من المستخدم، نستمر في التحليل باستخدامه
+    if (providedPrice !== undefined) {
+      console.log("استخدام السعر المقدم من المستخدم للتحليل:", providedPrice);
+      return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+    }
+    
     throw error;
   }
 };

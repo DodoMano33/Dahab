@@ -2,12 +2,10 @@ import axios from 'axios';
 import { ALPHA_VANTAGE_API_KEY } from './config';
 import { FOREX_SYMBOLS, CRYPTO_SYMBOLS } from './config';
 
-// إنشاء نسخة من axios مع الإعدادات الأساسية
 const api = axios.create({
   baseURL: 'https://www.alphavantage.co/query',
 });
 
-// إضافة معترضات للطلبات
 api.interceptors.request.use(
   (config) => {
     console.log('إرسال طلب:', {
@@ -23,7 +21,6 @@ api.interceptors.request.use(
   }
 );
 
-// إضافة معترضات للاستجابات
 api.interceptors.response.use(
   (response) => {
     console.log('استجابة ناجحة:', {
@@ -32,9 +29,9 @@ api.interceptors.response.use(
       data: response.data
     });
     
-    // التحقق من وجود رسالة خطأ في الاستجابة
     if (response.data && response.data.Note) {
-      throw new Error(`خطأ من Alpha Vantage: ${response.data.Note}`);
+      // استخدام السعر المقدم من المستخدم في حالة وجود خطأ من API
+      return response;
     }
     
     return response;
@@ -45,9 +42,15 @@ api.interceptors.response.use(
   }
 );
 
-export async function fetchCryptoPrice(symbol: string): Promise<number> {
+export async function fetchCryptoPrice(symbol: string, providedPrice?: number): Promise<number> {
   console.log(`بدء طلب سعر العملة المشفرة للرمز ${symbol}`);
   
+  // إذا تم توفير سعر من المستخدم، نستخدمه مباشرة
+  if (providedPrice !== undefined) {
+    console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
+    return providedPrice;
+  }
+
   const cryptoSymbol = CRYPTO_SYMBOLS[symbol as keyof typeof CRYPTO_SYMBOLS];
   if (!cryptoSymbol) {
     throw new Error(`الرمز ${symbol} غير مدعوم في العملات المشفرة`);
@@ -65,21 +68,35 @@ export async function fetchCryptoPrice(symbol: string): Promise<number> {
 
     const data = response.data['Realtime Currency Exchange Rate'];
     if (!data || !data['5. Exchange Rate']) {
-      throw new Error('بيانات غير صالحة من API');
+      if (providedPrice !== undefined) {
+        return providedPrice;
+      }
+      throw new Error('لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً');
     }
 
     return parseFloat(data['5. Exchange Rate']);
   } catch (error) {
-    console.error('خطأ في جلب سعر العملة المشفرة:', error);
-    throw error;
+    if (providedPrice !== undefined) {
+      return providedPrice;
+    }
+    throw new Error('حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً');
   }
 }
 
-export async function fetchForexPrice(symbol: string): Promise<number> {
+export async function fetchForexPrice(symbol: string, providedPrice?: number): Promise<number> {
   console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
+
+  // إذا تم توفير سعر من المستخدم، نستخدمه مباشرة
+  if (providedPrice !== undefined) {
+    console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
+    return providedPrice;
+  }
 
   const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
   if (!forexSymbol) {
+    if (symbol === 'XAUUSD' && providedPrice !== undefined) {
+      return providedPrice;
+    }
     throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
   }
 
@@ -95,12 +112,17 @@ export async function fetchForexPrice(symbol: string): Promise<number> {
 
     const data = response.data['Realtime Currency Exchange Rate'];
     if (!data || !data['5. Exchange Rate']) {
-      throw new Error('بيانات غير صالحة من API');
+      if (providedPrice !== undefined) {
+        return providedPrice;
+      }
+      throw new Error('لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً');
     }
 
     return parseFloat(data['5. Exchange Rate']);
   } catch (error) {
-    console.error('خطأ في جلب سعر الفوركس:', error);
-    throw error;
+    if (providedPrice !== undefined) {
+      return providedPrice;
+    }
+    throw new Error('حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً');
   }
 }
