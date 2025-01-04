@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { API_CONFIG, FOREX_SYMBOLS, CRYPTO_SYMBOLS, MAX_RETRIES, RETRY_DELAY } from './config';
+import { API_CONFIG, FOREX_SYMBOLS, CRYPTO_SYMBOLS, MAX_RETRIES, RETRY_DELAY, ALPHA_VANTAGE_API_KEY } from './config';
 
 const api = axios.create({
   baseURL: API_CONFIG.baseUrl,
-  headers: API_CONFIG.headers,
   timeout: API_CONFIG.timeout
 });
 
@@ -65,10 +64,6 @@ api.interceptors.response.use(
       throw new Error('فشل الاتصال بالخدمة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
     }
 
-    if (error.response?.status === 429) {
-      throw new Error('تم تجاوز حد الطلبات. يرجى الانتظار قليلاً والمحاولة مرة أخرى.');
-    }
-
     throw new Error(error.response?.data?.error || error.message || 'حدث خطأ غير متوقع');
   }
 );
@@ -81,22 +76,26 @@ export async function fetchForexPrice(symbol: string): Promise<number> {
     throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
   }
 
+  const [fromCurrency, toCurrency] = forexSymbol.split('/');
+
   return retryRequest(async () => {
     const params = {
-      symbol: forexSymbol,
-      resolution: '1',
-      count: 1
+      function: 'CURRENCY_EXCHANGE_RATE',
+      from_currency: fromCurrency,
+      to_currency: toCurrency,
+      apikey: ALPHA_VANTAGE_API_KEY
     };
     
-    console.log(`إرسال طلب Finnhub مع المعلمات:`, params);
+    console.log(`إرسال طلب Alpha Vantage مع المعلمات:`, params);
     
-    const response = await api.get('/forex/candle', { params });
-
-    if (!response.data.c || response.data.c.length === 0) {
+    const response = await api.get('', { params });
+    const data = response.data['Realtime Currency Exchange Rate'];
+    
+    if (!data || !data['5. Exchange Rate']) {
       throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
     }
 
-    const price = response.data.c[response.data.c.length - 1];
+    const price = parseFloat(data['5. Exchange Rate']);
     console.log(`تم استلام السعر بنجاح للرمز ${symbol}: ${price}`);
     return price;
   });
@@ -110,22 +109,26 @@ export async function fetchCryptoPrice(symbol: string): Promise<number> {
     throw new Error(`الرمز ${symbol} غير مدعوم في العملات الرقمية`);
   }
 
+  const [fromCurrency, toCurrency] = cryptoSymbol.split('/');
+
   return retryRequest(async () => {
     const params = {
-      symbol: cryptoSymbol,
-      resolution: '1',
-      count: 1
+      function: 'CURRENCY_EXCHANGE_RATE',
+      from_currency: fromCurrency,
+      to_currency: toCurrency,
+      apikey: ALPHA_VANTAGE_API_KEY
     };
     
-    console.log(`إرسال طلب Finnhub مع المعلمات:`, params);
+    console.log(`إرسال طلب Alpha Vantage مع المعلمات:`, params);
     
-    const response = await api.get('/crypto/candle', { params });
-
-    if (!response.data.c || response.data.c.length === 0) {
+    const response = await api.get('', { params });
+    const data = response.data['Realtime Currency Exchange Rate'];
+    
+    if (!data || !data['5. Exchange Rate']) {
       throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
     }
 
-    const price = response.data.c[response.data.c.length - 1];
+    const price = parseFloat(data['5. Exchange Rate']);
     console.log(`تم استلام السعر بنجاح للرمز ${symbol}: ${price}`);
     return price;
   });

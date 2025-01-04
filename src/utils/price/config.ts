@@ -1,30 +1,27 @@
-export const FINNHUB_API_KEY = 'ctsic21r01qh9oetedhgctsic21r01qh9oetedi0';
+export const ALPHA_VANTAGE_API_KEY = 'demo'; // استخدام المفتاح المجاني للتجربة
 
 export const API_CONFIG = {
-  baseUrl: 'https://finnhub.io/api/v1',
-  headers: {
-    'X-Finnhub-Token': FINNHUB_API_KEY
-  },
-  timeout: 5000 // تقليل مهلة الانتظار إلى 5 ثواني
+  baseUrl: 'https://www.alphavantage.co/query',
+  timeout: 5000 // 5 seconds timeout
 };
 
 export const FOREX_SYMBOLS = {
-  XAUUSD: 'OANDA:XAU_USD',
-  EURUSD: 'OANDA:EUR_USD',
-  GBPUSD: 'OANDA:GBP_USD',
-  USDJPY: 'OANDA:USD_JPY',
-  USDCHF: 'OANDA:USD_CHF',
-  AUDUSD: 'OANDA:AUD_USD',
-  NZDUSD: 'OANDA:NZD_USD',
-  USDCAD: 'OANDA:USD_CAD'
+  XAUUSD: 'XAU/USD',
+  EURUSD: 'EUR/USD',
+  GBPUSD: 'GBP/USD',
+  USDJPY: 'USD/JPY',
+  USDCHF: 'USD/CHF',
+  AUDUSD: 'AUD/USD',
+  NZDUSD: 'NZD/USD',
+  USDCAD: 'USD/CAD'
 } as const;
 
 export const CRYPTO_SYMBOLS = {
-  BTCUSD: 'BINANCE:BTCUSDT',
-  ETHUSD: 'BINANCE:ETHUSDT'
+  BTCUSD: 'BTC/USD',
+  ETHUSD: 'ETH/USD'
 } as const;
 
 export const CACHE_DURATION = 5000; // 5 seconds
 export const POLLING_INTERVAL = 5000; // 5 seconds
-export const MAX_RETRIES = 3; // عدد محاولات إعادة المحاولة
-export const RETRY_DELAY = 2000; // التأخير بين المحاولات (2 ثواني)
+export const MAX_RETRIES = 3;
+export const RETRY_DELAY = 2000; // 2 seconds delay between retries
