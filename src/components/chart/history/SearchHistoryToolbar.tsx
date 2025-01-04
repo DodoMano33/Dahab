@@ -43,32 +43,29 @@ export const SearchHistoryToolbar = ({
 
   return (
     <div className="px-6 py-3 flex justify-between items-center gap-2 border-t bg-muted/50">
-      <HistoryActions
-        selectedItems={selectedItems}
-        onDelete={onDelete}
-        history={validHistory}
-      />
       <div className="flex items-center gap-2">
-        <Button
-          onClick={handleDeleteSelected}
-          variant="destructive"
-          size="icon"
-          className="hover:bg-destructive/90"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-        <DateRangePicker
-          dateRange={dateRange}
-          isOpen={isDatePickerOpen}
-          onOpenChange={setIsDatePickerOpen}
-          onSelect={(range: any) => {
-            setDateRange(range);
-            if (range.from && range.to) {
-              setIsDatePickerOpen(false);
-            }
-          }}
+        <HistoryActions
+          selectedItems={selectedItems}
+          onDelete={onDelete}
+          history={validHistory}
         />
+        {selectedItems.size > 0 && (
+          <Button 
+            onClick={handleDeleteSelected} 
+            variant="destructive" 
+            size="icon"
+            className="transition-all duration-200 ease-in-out hover:bg-red-600"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </div>
+      <DateRangePicker
+        dateRange={dateRange}
+        isOpen={isDatePickerOpen}
+        onOpenChange={setIsDatePickerOpen}
+        onSelect={setDateRange}
+      />
     </div>
   );
 };
