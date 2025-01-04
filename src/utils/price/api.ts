@@ -1,29 +1,13 @@
 import axios from 'axios';
-import { API_CONFIG, FOREX_SYMBOLS, CRYPTO_SYMBOLS, MAX_RETRIES, RETRY_DELAY, ALPHA_VANTAGE_API_KEY } from './config';
+import { ALPHA_VANTAGE_API_KEY } from './config';
+import { FOREX_SYMBOLS, CRYPTO_SYMBOLS } from './config';
 
+// إنشاء نسخة من axios مع الإعدادات الأساسية
 const api = axios.create({
-  baseURL: API_CONFIG.baseUrl,
-  timeout: API_CONFIG.timeout
+  baseURL: 'https://www.alphavantage.co/query',
 });
 
-// دالة مساعدة للانتظار
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// دالة إعادة المحاولة
-const retryRequest = async (fn: () => Promise<any>, retries = MAX_RETRIES): Promise<any> => {
-  try {
-    return await fn();
-  } catch (error) {
-    if (retries > 0) {
-      console.log(`محاولة إعادة الطلب. المحاولات المتبقية: ${retries}`);
-      await wait(RETRY_DELAY);
-      return retryRequest(fn, retries - 1);
-    }
-    throw error;
-  }
-};
-
-// إضافة معترض للطلبات
+// إضافة معترضات للطلبات
 api.interceptors.request.use(
   (config) => {
     console.log('إرسال طلب:', {
@@ -34,12 +18,12 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('خطأ في إعداد الطلب:', error);
+    console.error('خطأ في إرسال الطلب:', error);
     return Promise.reject(error);
   }
 );
 
-// تحسين معترض الاستجابات
+// إضافة معترضات للاستجابات
 api.interceptors.response.use(
   (response) => {
     console.log('استجابة ناجحة:', {
@@ -56,93 +40,67 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('تفاصيل الخطأ:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      data: error.response?.data
-    });
-
-    if (error.code === 'ECONNABORTED') {
-      throw new Error('انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.');
-    }
-    
-    if (error.code === 'ERR_NETWORK') {
-      throw new Error('فشل الاتصال بالخدمة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
-    }
-
-    throw new Error(error.response?.data?.error || error.message || 'حدث خطأ غير متوقع');
+    console.error('خطأ في الاستجابة:', error);
+    return Promise.reject(error);
   }
 );
 
+export async function fetchCryptoPrice(symbol: string): Promise<number> {
+  console.log(`بدء طلب سعر العملة المشفرة للرمز ${symbol}`);
+  
+  const cryptoSymbol = CRYPTO_SYMBOLS[symbol as keyof typeof CRYPTO_SYMBOLS];
+  if (!cryptoSymbol) {
+    throw new Error(`الرمز ${symbol} غير مدعوم في العملات المشفرة`);
+  }
+
+  try {
+    const response = await api.get('', {
+      params: {
+        function: 'CURRENCY_EXCHANGE_RATE',
+        from_currency: cryptoSymbol,
+        to_currency: 'USD',
+        apikey: ALPHA_VANTAGE_API_KEY
+      }
+    });
+
+    const data = response.data['Realtime Currency Exchange Rate'];
+    if (!data || !data['5. Exchange Rate']) {
+      throw new Error('بيانات غير صالحة من API');
+    }
+
+    return parseFloat(data['5. Exchange Rate']);
+  } catch (error) {
+    console.error('خطأ في جلب سعر العملة المشفرة:', error);
+    throw error;
+  }
+}
+
 export async function fetchForexPrice(symbol: string): Promise<number> {
   console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
-  
-  // للمفتاح المجاني، نقوم بإرجاع سعر افتراضي للذهب
-  if (ALPHA_VANTAGE_API_KEY === 'demo' && symbol === 'XAUUSD') {
-    console.log('استخدام سعر افتراضي للذهب مع المفتاح المجاني');
-    return 2000.00;
-  }
 
   const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
   if (!forexSymbol) {
     throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
   }
 
-  const [fromCurrency, toCurrency] = forexSymbol.split('/');
+  try {
+    const response = await api.get('', {
+      params: {
+        function: 'CURRENCY_EXCHANGE_RATE',
+        from_currency: forexSymbol.from,
+        to_currency: forexSymbol.to,
+        apikey: ALPHA_VANTAGE_API_KEY
+      }
+    });
 
-  return retryRequest(async () => {
-    const params = {
-      function: 'CURRENCY_EXCHANGE_RATE',
-      from_currency: fromCurrency,
-      to_currency: toCurrency,
-      apikey: ALPHA_VANTAGE_API_KEY
-    };
-    
-    console.log(`إرسال طلب Alpha Vantage مع المعلمات:`, params);
-    
-    const response = await api.get('', { params });
     const data = response.data['Realtime Currency Exchange Rate'];
-    
     if (!data || !data['5. Exchange Rate']) {
-      throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
+      throw new Error('بيانات غير صالحة من API');
     }
 
-    const price = parseFloat(data['5. Exchange Rate']);
-    console.log(`تم استلام السعر بنجاح للرمز ${symbol}: ${price}`);
-    return price;
-  });
-}
-
-export async function fetchCryptoPrice(symbol: string): Promise<number> {
-  console.log(`بدء طلب سعر العملة الرقمية للرمز ${symbol}`);
-  
-  const cryptoSymbol = CRYPTO_SYMBOLS[symbol as keyof typeof CRYPTO_SYMBOLS];
-  if (!cryptoSymbol) {
-    throw new Error(`الرمز ${symbol} غير مدعوم في العملات الرقمية`);
+    return parseFloat(data['5. Exchange Rate']);
+  } catch (error) {
+    console.error('خطأ في جلب سعر الفوركس:', error);
+    throw error;
   }
-
-  const [fromCurrency, toCurrency] = cryptoSymbol.split('/');
-
-  return retryRequest(async () => {
-    const params = {
-      function: 'CURRENCY_EXCHANGE_RATE',
-      from_currency: fromCurrency,
-      to_currency: toCurrency,
-      apikey: ALPHA_VANTAGE_API_KEY
-    };
-    
-    console.log(`إرسال طلب Alpha Vantage مع المعلمات:`, params);
-    
-    const response = await api.get('', { params });
-    const data = response.data['Realtime Currency Exchange Rate'];
-    
-    if (!data || !data['5. Exchange Rate']) {
-      throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
-    }
-
-    const price = parseFloat(data['5. Exchange Rate']);
-    console.log(`تم استلام السعر بنجاح للرمز ${symbol}: ${price}`);
-    return price;
-  });
 }

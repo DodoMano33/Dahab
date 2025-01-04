@@ -54,11 +54,11 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
         return;
       }
       
-      console.log("Submitting TradingView config:", { symbol, currentPrice: price });
+      console.log("تقديم تحليل TradingView:", { symbol, currentPrice: price });
       await onConfigSubmit(symbol, "1d", price);
       
     } catch (error) {
-      console.error("Error submitting analysis:", error);
+      console.error("خطأ في تقديم التحليل:", error);
       toast.error("حدث خطأ أثناء تحليل الرسم البياني");
     }
   };
