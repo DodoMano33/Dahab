@@ -2,6 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DateRangePicker } from "./history/DateRangePicker";
 import { HistoryActions } from "./history/HistoryActions";
 import { HistoryContent } from "./history/HistoryContent";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -28,6 +31,24 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
+  const handleDeleteSelected = async () => {
+    try {
+      const selectedIds = Array.from(selectedItems);
+      if (selectedIds.length === 0) {
+        toast.error("الرجاء تحديد عناصر للحذف");
+        return;
+      }
+
+      for (const id of selectedIds) {
+        await onDelete(id);
+      }
+      toast.success("تم حذف العناصر المحددة بنجاح");
+    } catch (error) {
+      console.error("خطأ في حذف العناصر:", error);
+      toast.error("حدث خطأ أثناء حذف العناصر");
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
@@ -43,17 +64,27 @@ export const SearchHistory = ({
               onDelete={onDelete}
               history={validHistory}
             />
-            <DateRangePicker
-              dateRange={dateRange}
-              isOpen={isDatePickerOpen}
-              onOpenChange={setIsDatePickerOpen}
-              onSelect={(range: any) => {
-                setDateRange(range);
-                if (range.from && range.to) {
-                  setIsDatePickerOpen(false);
-                }
-              }}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleDeleteSelected}
+                variant="destructive"
+                size="icon"
+                className="hover:bg-destructive/90"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <DateRangePicker
+                dateRange={dateRange}
+                isOpen={isDatePickerOpen}
+                onOpenChange={setIsDatePickerOpen}
+                onSelect={(range: any) => {
+                  setDateRange(range);
+                  if (range.from && range.to) {
+                    setIsDatePickerOpen(false);
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
 
