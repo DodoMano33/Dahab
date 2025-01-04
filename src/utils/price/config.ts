@@ -3,9 +3,10 @@ export const FINNHUB_API_KEY = 'ctshuopr01qh9oetd18gctshuopr01qh9oetd190';
 export const API_CONFIG = {
   baseUrl: 'https://finnhub.io/api/v1',
   headers: {
-    'X-Finnhub-Token': FINNHUB_API_KEY
+    'X-Finnhub-Token': FINNHUB_API_KEY,
+    'Accept': 'application/json'
   },
-  timeout: 10000
+  timeout: 15000 // زيادة مهلة الانتظار إلى 15 ثانية
 };
 
 export const FOREX_SYMBOLS = {

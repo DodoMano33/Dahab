@@ -7,6 +7,55 @@ const api = axios.create({
   timeout: API_CONFIG.timeout
 });
 
+// إضافة معترض للطلبات
+api.interceptors.request.use(
+  (config) => {
+    console.log(`إرسال طلب إلى: ${config.url}`, {
+      params: config.params,
+      headers: config.headers
+    });
+    return config;
+  },
+  (error) => {
+    console.error('خطأ في إعداد الطلب:', error);
+    return Promise.reject(error);
+  }
+);
+
+// إضافة معترض للاستجابات
+api.interceptors.response.use(
+  (response) => {
+    console.log(`استجابة ناجحة من: ${response.config.url}`, {
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('خطأ في الاستجابة:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
+    
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('خطأ في الاتصال بالشبكة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+    }
+    
+    if (error.response?.status === 403) {
+      throw new Error('خطأ في المصادقة. يرجى التحقق من صحة مفتاح API.');
+    }
+    
+    if (error.response?.status === 429) {
+      throw new Error('تم تجاوز حد الطلبات. يرجى المحاولة بعد قليل.');
+    }
+
+    throw error;
+  }
+);
+
 export async function fetchForexPrice(symbol: string): Promise<number> {
   console.log(`جاري جلب سعر الفوركس للرمز ${symbol}`);
   
@@ -26,8 +75,6 @@ export async function fetchForexPrice(symbol: string): Promise<number> {
       }
     });
 
-    console.log(`استجابة API للرمز ${symbol}:`, response.data);
-
     if (!response.data.c || response.data.c.length === 0) {
       throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
     }
@@ -37,15 +84,6 @@ export async function fetchForexPrice(symbol: string): Promise<number> {
     return price;
   } catch (error) {
     console.error(`خطأ في جلب سعر الفوركس للرمز ${symbol}:`, error);
-    
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 403) {
-        throw new Error(`خطأ في المصادقة للرمز ${symbol}. يرجى التحقق من صحة مفتاح API`);
-      }
-      if (error.response?.status === 429) {
-        throw new Error(`تم تجاوز حد الطلبات للرمز ${symbol}. حاول مرة أخرى لاحقاً`);
-      }
-    }
     throw error;
   }
 }
