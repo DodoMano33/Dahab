@@ -39,7 +39,7 @@ export const HistoryRow = ({
   return (
     <TableRow>
       {onDelete && (
-        <TableCell className="text-left">
+        <TableCell className="w-[60px] text-left">
           <Button
             variant="ghost"
             size="icon"
@@ -50,36 +50,36 @@ export const HistoryRow = ({
           </Button>
         </TableCell>
       )}
-      <TableCell className="text-right">
+      <TableCell className="w-[120px] text-right whitespace-normal">
         <StopLoss 
           value={analysis.stopLoss} 
           isHit={false}
         />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="w-[160px] text-right whitespace-normal">
         <TargetsList 
           targets={analysis.targets?.slice(0, 3) || []} 
           isTargetHit={false}
         />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="w-[160px] text-right whitespace-normal">
         <BestEntryPoint 
           price={analysis.bestEntryPoint?.price} 
           reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="w-[80px] text-right">
         <DirectionIndicator direction={analysis.direction} />
       </TableCell>
-      <TableCell className="text-right">{currentPrice}</TableCell>
+      <TableCell className="w-[120px] text-right">{currentPrice}</TableCell>
       <TimeframeCell timeframe={timeframe} />
       <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
-      <TableCell className="text-right font-medium">
+      <TableCell className="w-[100px] text-right font-medium">
         {symbol.toUpperCase()}
       </TableCell>
       <DateCell date={date} />
       {onSelect !== undefined && (
-        <TableCell className="text-right">
+        <TableCell className="w-[60px] text-right">
           <Checkbox checked={isSelected} onCheckedChange={onSelect} />
         </TableCell>
       )}
