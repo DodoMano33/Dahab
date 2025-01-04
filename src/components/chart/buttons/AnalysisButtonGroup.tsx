@@ -42,6 +42,7 @@ export const AnalysisButtonGroup = ({
           onClick={(e) => onSubmit(e, true)}
           className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5"
         >
+          <Activity className="w-4 h-4 ml-2" />
           Scalping
         </Button>
       </div>
