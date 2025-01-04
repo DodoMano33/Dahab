@@ -58,7 +58,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
           {/* Table Header */}
           <div className="border rounded-t-md bg-background">
             <Table>
-              <HistoryTableHeader showCheckbox={true} showDelete={true} />
+              <HistoryTableHeader showCheckbox={true} showDelete={false} />
             </Table>
           </div>
         </div>
@@ -73,7 +73,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
                   {...item}
                   isSelected={selectedItems.has(item.id)}
                   onSelect={() => handleSelect(item.id)}
-                  onDelete={() => onDelete(item.id)}
+                  onDelete={null}
                 />
               ))}
             </TableBody>
