@@ -16,7 +16,7 @@ export const TargetsList = ({ targets, isTargetHit }: TargetsListProps) => (
           key={idx}
           className={`relative ${isTargetHit && idx === 0 ? 'pb-4' : ''}`}
         >
-          الهدف {idx + 1}: {target.price}
+          الهدف {idx + 1}: {target.price.toFixed(3)}
           {isTargetHit && idx === 0 && (
             <div className="absolute bottom-0 left-0 right-0 h-2 bg-green-500 rounded-sm" />
           )}
