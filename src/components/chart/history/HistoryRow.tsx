@@ -38,39 +38,6 @@ export const HistoryRow = ({
 }: HistoryRowProps) => {
   return (
     <TableRow>
-      {onSelect !== undefined && (
-        <TableCell className="text-right">
-          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
-        </TableCell>
-      )}
-      <DateCell date={date} />
-      <TableCell className="text-right font-medium">
-        {symbol.toUpperCase()}
-      </TableCell>
-      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
-      <TimeframeCell timeframe={timeframe} />
-      <TableCell className="text-right">{currentPrice}</TableCell>
-      <TableCell className="text-right">
-        <DirectionIndicator direction={analysis.direction} />
-      </TableCell>
-      <TableCell className="text-right">
-        <BestEntryPoint 
-          price={analysis.bestEntryPoint?.price} 
-          reason={analysis.bestEntryPoint?.reason}
-        />
-      </TableCell>
-      <TableCell className="text-right">
-        <TargetsList 
-          targets={analysis.targets?.slice(0, 3) || []} 
-          isTargetHit={false}
-        />
-      </TableCell>
-      <TableCell className="text-right">
-        <StopLoss 
-          value={analysis.stopLoss} 
-          isHit={false}
-        />
-      </TableCell>
       {onDelete && (
         <TableCell className="text-left">
           <Button
@@ -81,6 +48,39 @@ export const HistoryRow = ({
           >
             <Trash2 className="h-4 w-4" />
           </Button>
+        </TableCell>
+      )}
+      <TableCell className="text-right">
+        <StopLoss 
+          value={analysis.stopLoss} 
+          isHit={false}
+        />
+      </TableCell>
+      <TableCell className="text-right">
+        <TargetsList 
+          targets={analysis.targets?.slice(0, 3) || []} 
+          isTargetHit={false}
+        />
+      </TableCell>
+      <TableCell className="text-right">
+        <BestEntryPoint 
+          price={analysis.bestEntryPoint?.price} 
+          reason={analysis.bestEntryPoint?.reason}
+        />
+      </TableCell>
+      <TableCell className="text-right">
+        <DirectionIndicator direction={analysis.direction} />
+      </TableCell>
+      <TableCell className="text-right">{currentPrice}</TableCell>
+      <TimeframeCell timeframe={timeframe} />
+      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
+      <TableCell className="text-right font-medium">
+        {symbol.toUpperCase()}
+      </TableCell>
+      <DateCell date={date} />
+      {onSelect !== undefined && (
+        <TableCell className="text-right">
+          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
         </TableCell>
       )}
     </TableRow>
