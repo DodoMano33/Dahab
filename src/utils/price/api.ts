@@ -4,7 +4,7 @@ import { API_CONFIG, FOREX_SYMBOLS, CRYPTO_SYMBOLS } from './config';
 const api = axios.create({
   baseURL: API_CONFIG.baseUrl,
   headers: API_CONFIG.headers,
-  timeout: 10000
+  timeout: API_CONFIG.timeout
 });
 
 export async function fetchForexPrice(symbol: string): Promise<number> {

@@ -4,7 +4,8 @@ export const API_CONFIG = {
   baseUrl: 'https://finnhub.io/api/v1',
   headers: {
     'X-Finnhub-Token': FINNHUB_API_KEY
-  }
+  },
+  timeout: 10000
 };
 
 export const FOREX_SYMBOLS = {
