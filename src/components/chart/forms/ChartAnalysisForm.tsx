@@ -68,6 +68,7 @@ export const ChartAnalysisForm = ({
     }
     
     console.log(`تحليل ${currentAnalysis} للرمز ${symbol} على الإطار الزمني ${timeframe}`);
+    console.log("Price Action Analysis:", isPriceAction); // Added for debugging
     
     onSubmit(
       symbol,
