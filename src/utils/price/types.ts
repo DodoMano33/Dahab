@@ -8,3 +8,11 @@ export interface CachedPrice {
   price: number;
   timestamp: number;
 }
+
+export type SymbolType = 'forex' | 'crypto';
+
+export interface PriceData {
+  price: number;
+  timestamp: number;
+  type: SymbolType;
+}

@@ -1,19 +1,28 @@
 import axios from 'axios';
-import { FINNHUB_API_KEY } from './config';
+import { API_CONFIG, FOREX_SYMBOLS, CRYPTO_SYMBOLS } from './config';
 
-const BASE_URL = 'https://finnhub.io/api/v1';
+const api = axios.create({
+  baseURL: API_CONFIG.baseUrl,
+  headers: API_CONFIG.headers,
+  timeout: 10000
+});
 
 export async function fetchForexPrice(symbol: string): Promise<number> {
   console.log(`جاري جلب سعر الفوركس للرمز ${symbol}`);
   
   try {
-    const [base, quote] = [symbol.slice(0, 3), symbol.slice(3)];
-    const response = await axios.get(`${BASE_URL}/forex/candle`, {
+    const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
+    if (!forexSymbol) {
+      throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
+    }
+
+    console.log(`استخدام رمز Finnhub: ${forexSymbol}`);
+    
+    const response = await api.get('/forex/candle', {
       params: {
-        symbol: `OANDA:${base}_${quote}`,
+        symbol: forexSymbol,
         resolution: '1',
-        count: 1,
-        token: FINNHUB_API_KEY
+        count: 1
       }
     });
 
@@ -28,9 +37,10 @@ export async function fetchForexPrice(symbol: string): Promise<number> {
     return price;
   } catch (error) {
     console.error(`خطأ في جلب سعر الفوركس للرمز ${symbol}:`, error);
+    
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 403) {
-        throw new Error(`خطأ في المصادقة للرمز ${symbol}. تأكد من صحة مفتاح API`);
+        throw new Error(`خطأ في المصادقة للرمز ${symbol}. يرجى التحقق من صحة مفتاح API`);
       }
       if (error.response?.status === 429) {
         throw new Error(`تم تجاوز حد الطلبات للرمز ${symbol}. حاول مرة أخرى لاحقاً`);
@@ -40,36 +50,30 @@ export async function fetchForexPrice(symbol: string): Promise<number> {
   }
 }
 
-export async function fetchQuotePrice(symbol: string): Promise<number> {
-  console.log(`جاري جلب سعر السهم للرمز ${symbol}`);
+export async function fetchCryptoPrice(symbol: string): Promise<number> {
+  console.log(`جاري جلب سعر العملة الرقمية للرمز ${symbol}`);
   
   try {
-    const response = await axios.get(`${BASE_URL}/quote`, {
+    const cryptoSymbol = CRYPTO_SYMBOLS[symbol as keyof typeof CRYPTO_SYMBOLS];
+    if (!cryptoSymbol) {
+      throw new Error(`الرمز ${symbol} غير مدعوم في العملات الرقمية`);
+    }
+
+    const response = await api.get('/crypto/candle', {
       params: {
-        symbol,
-        token: FINNHUB_API_KEY
+        symbol: cryptoSymbol,
+        resolution: '1',
+        count: 1
       }
     });
 
-    console.log(`استجابة API للرمز ${symbol}:`, response.data);
-
-    if (!response.data.c) {
+    if (!response.data.c || response.data.c.length === 0) {
       throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
     }
 
-    const price = response.data.c;
-    console.log(`تم استخراج السعر بنجاح: ${price}`);
-    return price;
+    return response.data.c[response.data.c.length - 1];
   } catch (error) {
-    console.error(`خطأ في جلب سعر السهم للرمز ${symbol}:`, error);
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 403) {
-        throw new Error(`خطأ في المصادقة للرمز ${symbol}. تأكد من صحة مفتاح API`);
-      }
-      if (error.response?.status === 429) {
-        throw new Error(`تم تجاوز حد الطلبات للرمز ${symbol}. حاول مرة أخرى لاحقاً`);
-      }
-    }
+    console.error(`خطأ في جلب سعر العملة الرقمية للرمز ${symbol}:`, error);
     throw error;
   }
 }

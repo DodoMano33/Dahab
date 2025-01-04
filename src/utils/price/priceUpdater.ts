@@ -1,6 +1,6 @@
 import { PriceSubscription, CachedPrice } from './types';
-import { POLLING_INTERVAL, CACHE_DURATION, SUPPORTED_SYMBOLS } from './config';
-import { fetchForexPrice, fetchQuotePrice } from './api';
+import { CACHE_DURATION, POLLING_INTERVAL, FOREX_SYMBOLS, CRYPTO_SYMBOLS } from './config';
+import { fetchForexPrice, fetchCryptoPrice } from './api';
 
 class PriceUpdater {
   private subscriptions: Map<string, PriceSubscription[]> = new Map();
@@ -8,13 +8,17 @@ class PriceUpdater {
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, CachedPrice> = new Map();
 
+  private isForexSymbol(symbol: string): boolean {
+    return symbol in FOREX_SYMBOLS;
+  }
+
+  private isCryptoSymbol(symbol: string): boolean {
+    return symbol in CRYPTO_SYMBOLS;
+  }
+
   async fetchPrice(symbol: string): Promise<number> {
     try {
       console.log(`بدء محاولة جلب السعر للرمز ${symbol}`);
-
-      if (!symbol || !SUPPORTED_SYMBOLS.includes(symbol as any)) {
-        throw new Error(`الرمز ${symbol} غير مدعوم`);
-      }
 
       // التحقق من الذاكرة المؤقتة
       const cached = this.lastPrices.get(symbol);
@@ -24,17 +28,14 @@ class PriceUpdater {
       }
 
       let price: number;
-      if (symbol === 'XAUUSD' || symbol.includes('USD')) {
+      if (this.isForexSymbol(symbol)) {
         price = await fetchForexPrice(symbol);
+      } else if (this.isCryptoSymbol(symbol)) {
+        price = await fetchCryptoPrice(symbol);
       } else {
-        price = await fetchQuotePrice(symbol);
+        throw new Error(`الرمز ${symbol} غير مدعوم`);
       }
 
-      if (!price || isNaN(price)) {
-        throw new Error(`سعر غير صالح للرمز ${symbol}`);
-      }
-
-      console.log(`تم جلب السعر بنجاح للرمز ${symbol}: ${price}`);
       this.lastPrices.set(symbol, { price, timestamp: Date.now() });
       return price;
 
@@ -63,8 +64,6 @@ class PriceUpdater {
   }
 
   unsubscribe(symbol: string, onUpdate: (price: number) => void) {
-    console.log(`إلغاء اشتراك للرمز ${symbol}`);
-    
     const subs = this.subscriptions.get(symbol);
     if (subs) {
       const index = subs.findIndex(sub => sub.onUpdate === onUpdate);
@@ -83,14 +82,11 @@ class PriceUpdater {
   }
 
   private async updatePrices() {
-    console.log('تحديث الأسعار لجميع الاشتراكات النشطة');
-    
     for (const [symbol, subs] of this.subscriptions.entries()) {
       try {
         const price = await this.fetchPrice(symbol);
         subs.forEach(sub => sub.onUpdate(price));
       } catch (error) {
-        console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
         subs.forEach(sub => sub.onError(error as Error));
       }
     }
@@ -98,7 +94,6 @@ class PriceUpdater {
 
   private startPolling() {
     if (!this.polling) {
-      console.log('بدء التحديث التلقائي للأسعار');
       this.polling = true;
       this.updatePrices();
       this.intervalId = setInterval(() => this.updatePrices(), POLLING_INTERVAL);
@@ -107,7 +102,6 @@ class PriceUpdater {
 
   private stopPolling() {
     if (this.intervalId) {
-      console.log('إيقاف التحديث التلقائي للأسعار');
       clearInterval(this.intervalId);
       this.intervalId = undefined;
     }
