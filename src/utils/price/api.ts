@@ -44,8 +44,15 @@ api.interceptors.response.use(
   (response) => {
     console.log('استجابة ناجحة:', {
       url: response.config.url,
-      status: response.status
+      status: response.status,
+      data: response.data
     });
+    
+    // التحقق من وجود رسالة خطأ في الاستجابة
+    if (response.data && response.data.Note) {
+      throw new Error(`خطأ من Alpha Vantage: ${response.data.Note}`);
+    }
+    
     return response;
   },
   (error) => {
@@ -71,6 +78,12 @@ api.interceptors.response.use(
 export async function fetchForexPrice(symbol: string): Promise<number> {
   console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
   
+  // للمفتاح المجاني، نقوم بإرجاع سعر افتراضي للذهب
+  if (ALPHA_VANTAGE_API_KEY === 'demo' && symbol === 'XAUUSD') {
+    console.log('استخدام سعر افتراضي للذهب مع المفتاح المجاني');
+    return 2000.00;
+  }
+
   const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
   if (!forexSymbol) {
     throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
