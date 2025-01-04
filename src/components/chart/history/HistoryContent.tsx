@@ -30,7 +30,7 @@ export const HistoryContent = ({
     <div className="relative rounded-md border bg-background overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
-          <HistoryTableHeader showCheckbox={true} showDelete={true} />
+          <HistoryTableHeader showCheckbox={true} />
           <TableBody className="relative">
             {history.map((item) => (
               <HistoryRow
@@ -38,7 +38,6 @@ export const HistoryContent = ({
                 {...item}
                 isSelected={selectedItems.has(item.id)}
                 onSelect={() => onSelect(item.id)}
-                onDelete={() => onDelete(item.id)}
               />
             ))}
           </TableBody>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Table, TableBody } from "@/components/ui/table";
-import { Calendar } from "@/components/ui/calendar";
 import { SearchHistoryItem } from "@/types/analysis";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
@@ -58,7 +57,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
           {/* Table Header */}
           <div className="border rounded-t-md bg-background">
             <Table>
-              <HistoryTableHeader showCheckbox={true} showDelete={true} />
+              <HistoryTableHeader showCheckbox={true} />
             </Table>
           </div>
         </div>
@@ -73,7 +72,6 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
                   {...item}
                   isSelected={selectedItems.has(item.id)}
                   onSelect={() => handleSelect(item.id)}
-                  onDelete={() => onDelete(item.id)}
                 />
               ))}
             </TableBody>
