@@ -1,4 +1,4 @@
-export const FINNHUB_API_KEY = 'ctshuopr01qh9oetd18gctshuopr01qh9oetd190';
+export const FINNHUB_API_KEY = 'ctsic21r01qh9oetedhgctsic21r01qh9oetedi0';
 
 export const API_CONFIG = {
   baseUrl: 'https://finnhub.io/api/v1',
