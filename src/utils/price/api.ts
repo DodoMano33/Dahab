@@ -7,111 +7,137 @@ const api = axios.create({
   timeout: API_CONFIG.timeout
 });
 
-// إضافة معترض للطلبات
+// إضافة معترض للطلبات مع المزيد من التفاصيل
 api.interceptors.request.use(
   (config) => {
-    console.log(`إرسال طلب إلى: ${config.url}`, {
+    const requestDetails = {
+      url: config.url,
+      method: config.method,
       params: config.params,
-      headers: config.headers
-    });
+      headers: {
+        ...config.headers,
+        'X-Finnhub-Token': '***' // إخفاء المفتاح في السجلات
+      }
+    };
+    console.log('تفاصيل الطلب:', JSON.stringify(requestDetails, null, 2));
     return config;
   },
   (error) => {
-    console.error('خطأ في إعداد الطلب:', error);
+    console.error('خطأ في إعداد الطلب:', {
+      message: error.message,
+      stack: error.stack
+    });
     return Promise.reject(error);
   }
 );
 
-// إضافة معترض للاستجابات
+// تحسين معترض الاستجابات
 api.interceptors.response.use(
   (response) => {
-    console.log(`استجابة ناجحة من: ${response.config.url}`, {
+    console.log('استجابة ناجحة:', {
+      url: response.config.url,
       status: response.status,
       data: response.data
     });
     return response;
   },
   (error) => {
-    console.error('خطأ في الاستجابة:', {
+    const errorDetails = {
       message: error.message,
       code: error.code,
       status: error.response?.status,
+      statusText: error.response?.statusText,
       data: error.response?.data,
-      url: error.config?.url
-    });
+      url: error.config?.url,
+      method: error.config?.method,
+      params: error.config?.params
+    };
     
-    if (error.code === 'ERR_NETWORK') {
-      throw new Error('خطأ في الاتصال بالشبكة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+    console.error('تفاصيل الخطأ الكاملة:', JSON.stringify(errorDetails, null, 2));
+
+    // تحسين رسائل الخطأ
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('انتهت مهلة الاتصال. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
     }
     
-    if (error.response?.status === 403) {
-      throw new Error('خطأ في المصادقة. يرجى التحقق من صحة مفتاح API.');
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('فشل الاتصال بالخدمة. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+    }
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error('خطأ في المصادقة. يرجى التحقق من صحة مفتاح API أو تجديده.');
     }
     
     if (error.response?.status === 429) {
-      throw new Error('تم تجاوز حد الطلبات. يرجى المحاولة بعد قليل.');
+      throw new Error('تم تجاوز الحد الأقصى للطلبات. يرجى الانتظار قليلاً والمحاولة مرة أخرى.');
     }
 
-    throw error;
+    throw new Error(`خطأ غير متوقع: ${error.message}`);
   }
 );
 
 export async function fetchForexPrice(symbol: string): Promise<number> {
-  console.log(`جاري جلب سعر الفوركس للرمز ${symbol}`);
-  
   try {
+    console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
+    
     const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
     if (!forexSymbol) {
       throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
     }
 
-    console.log(`استخدام رمز Finnhub: ${forexSymbol}`);
+    const params = {
+      symbol: forexSymbol,
+      resolution: '1',
+      count: 1
+    };
     
-    const response = await api.get('/forex/candle', {
-      params: {
-        symbol: forexSymbol,
-        resolution: '1',
-        count: 1
-      }
-    });
+    console.log(`إرسال طلب Finnhub مع المعلمات:`, params);
+    
+    const response = await api.get('/forex/candle', { params });
 
     if (!response.data.c || response.data.c.length === 0) {
       throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
     }
 
     const price = response.data.c[response.data.c.length - 1];
-    console.log(`تم استخراج السعر بنجاح: ${price}`);
+    console.log(`تم استلام السعر بنجاح للرمز ${symbol}: ${price}`);
     return price;
+    
   } catch (error) {
-    console.error(`خطأ في جلب سعر الفوركس للرمز ${symbol}:`, error);
+    console.error(`فشل في جلب سعر الفوركس للرمز ${symbol}:`, error);
     throw error;
   }
 }
 
 export async function fetchCryptoPrice(symbol: string): Promise<number> {
-  console.log(`جاري جلب سعر العملة الرقمية للرمز ${symbol}`);
-  
   try {
+    console.log(`بدء طلب سعر العملة الرقمية للرمز ${symbol}`);
+    
     const cryptoSymbol = CRYPTO_SYMBOLS[symbol as keyof typeof CRYPTO_SYMBOLS];
     if (!cryptoSymbol) {
       throw new Error(`الرمز ${symbol} غير مدعوم في العملات الرقمية`);
     }
 
-    const response = await api.get('/crypto/candle', {
-      params: {
-        symbol: cryptoSymbol,
-        resolution: '1',
-        count: 1
-      }
-    });
+    const params = {
+      symbol: cryptoSymbol,
+      resolution: '1',
+      count: 1
+    };
+    
+    console.log(`إرسال طلب Finnhub مع المعلمات:`, params);
+    
+    const response = await api.get('/crypto/candle', { params });
 
     if (!response.data.c || response.data.c.length === 0) {
       throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
     }
 
-    return response.data.c[response.data.c.length - 1];
+    const price = response.data.c[response.data.c.length - 1];
+    console.log(`تم استلام السعر بنجاح للرمز ${symbol}: ${price}`);
+    return price;
+    
   } catch (error) {
-    console.error(`خطأ في جلب سعر العملة الرقمية للرمز ${symbol}:`, error);
+    console.error(`فشل في جلب سعر العملة الرقمية للرمز ${symbol}:`, error);
     throw error;
   }
 }
