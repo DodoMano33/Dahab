@@ -1,4 +1,4 @@
-export const FINNHUB_API_KEY = 'cg0vhqpr01qv7qq38f3gcg0vhqpr01qv7qq38f3g';
+export const FINNHUB_API_KEY = 'ctlsb91r01qv7qq38es0ctlsb91r01qv7qq38esg';
 
 export const POLLING_INTERVAL = 5000; // 5 seconds
 export const CACHE_DURATION = 5000; // 5 seconds

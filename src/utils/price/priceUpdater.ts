@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { PriceSubscription, CachedPrice } from './types';
 import { POLLING_INTERVAL, CACHE_DURATION, SUPPORTED_SYMBOLS } from './config';
 import { fetchForexPrice, fetchQuotePrice } from './api';
