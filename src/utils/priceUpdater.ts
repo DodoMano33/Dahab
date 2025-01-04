@@ -12,7 +12,7 @@ class PriceUpdater {
   private pollingInterval: number = 5000; // 5 seconds
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, { price: number; timestamp: number }> = new Map();
-  private finnhubApiKey: string = "ctlsb91r01qv7qq38es0ctlsb91r01qv7qq38esg";
+  private finnhubApiKey: string = "ctshuopr01qh9oetd18gctshuopr01qh9oetd190";
 
   async fetchPrice(symbol: string): Promise<number> {
     try {
