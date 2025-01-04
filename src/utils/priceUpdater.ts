@@ -29,40 +29,54 @@ class PriceUpdater {
         return cached.price;
       }
 
-      // تحديد نوع الرمز وتكوين نقطة النهاية المناسبة
       let endpoint: string;
       let queryParams: any = {};
       
       if (symbol === 'XAUUSD') {
-        endpoint = `/quote`;
-        queryParams = { symbol: 'OANDA:XAU_USD' };
+        endpoint = `/forex/candle`;
+        queryParams = {
+          symbol: 'OANDA:XAU_USD',
+          resolution: 'D',
+          count: 1
+        };
       } else if (symbol.includes('USD')) {
-        endpoint = `/quote`;
+        endpoint = `/forex/candle`;
         const base = symbol.slice(0, 3);
         const quote = symbol.slice(3);
-        queryParams = { symbol: `OANDA:${base}_${quote}` };
+        queryParams = {
+          symbol: `OANDA:${base}_${quote}`,
+          resolution: 'D',
+          count: 1
+        };
       } else {
         endpoint = `/quote`;
         queryParams = { symbol };
       }
 
-      console.log(`جاري الاتصال بـ Finnhub API: ${endpoint}`, queryParams);
-
       const response = await axios.get(`https://finnhub.io/api/v1${endpoint}`, {
-        params: {
-          ...queryParams,
-          token: this.finnhubApiKey
+        params: queryParams,
+        headers: {
+          'X-Finnhub-Token': this.finnhubApiKey
         },
         timeout: 10000 // 10 seconds timeout
       });
 
-      console.log(`استجابة Finnhub API:`, response.data);
-
       let price: number;
-      if (response.data.c) {
-        price = response.data.c;
+
+      if (endpoint === '/forex/candle') {
+        // للفوركس، نستخدم آخر سعر إغلاق
+        if (response.data.c && response.data.c.length > 0) {
+          price = response.data.c[response.data.c.length - 1];
+        } else {
+          throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
+        }
       } else {
-        throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
+        // للأسهم والرموز الأخرى
+        if (response.data.c) {
+          price = response.data.c;
+        } else {
+          throw new Error(`لم يتم العثور على سعر صالح للرمز ${symbol}`);
+        }
       }
 
       if (!price || isNaN(price)) {
@@ -75,20 +89,18 @@ class PriceUpdater {
 
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNABORTED') {
           throw new Error('انتهت مهلة الاتصال. الرجاء المحاولة مرة أخرى.');
         }
         if (error.response?.status === 403) {
-          throw new Error('خطأ في المصادقة مع Finnhub API. الرجاء التحقق من مفتاح API.');
+          throw new Error('خطأ في المصادقة. الرجاء التحقق من مفتاح API.');
         }
         if (error.response?.status === 429) {
-          throw new Error('تم تجاوز حد الطلبات لـ Finnhub API. الرجاء المحاولة لاحقاً.');
+          throw new Error('تم تجاوز حد الطلبات. الرجاء المحاولة لاحقاً.');
         }
       }
-      
-      throw new Error(`فشل في جلب السعر للرمز ${symbol}. الرجاء التحقق من اتصال الإنترنت والمحاولة مرة أخرى.`);
+      throw new Error('فشل في جلب السعر. الرجاء التحقق من صحة الرمز والمحاولة مرة أخرى.');
     }
   }
 
