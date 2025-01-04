@@ -8,7 +8,7 @@ interface HistoryTableHeaderProps {
 export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }: HistoryTableHeaderProps) => (
   <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
     <TableRow>
-      {showCheckbox && <TableHead className="w-[60px] text-center p-2 font-bold">تحديد</TableHead>}
+      {showCheckbox && <TableHead className="w-[60px] text-center p-2">تحديد</TableHead>}
       <TableHead className="w-[120px] text-center p-2 font-bold">التاريخ</TableHead>
       <TableHead className="w-[100px] text-center p-2 font-bold">الرمز</TableHead>
       <TableHead className="w-[140px] text-center p-2 font-bold">نوع التحليل</TableHead>
@@ -18,7 +18,7 @@ export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }:
       <TableHead className="w-[160px] text-center p-2 font-bold">أفضل نقطة دخول</TableHead>
       <TableHead className="w-[140px] text-center p-2 font-bold">الأهداف</TableHead>
       <TableHead className="w-[120px] text-center p-2 font-bold">وقف الخسارة</TableHead>
-      {showDelete && <TableHead className="w-[60px] text-center p-2 font-bold">حذف</TableHead>}
+      {showDelete && <TableHead className="w-[60px] text-center p-2">حذف</TableHead>}
     </TableRow>
   </TableHeader>
 );
