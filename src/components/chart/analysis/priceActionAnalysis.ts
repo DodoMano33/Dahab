@@ -8,35 +8,44 @@ export const analyzePriceAction = async (
 ): Promise<AnalysisData> => {
   console.log("Starting Price Action analysis:", { currentPrice, timeframe });
 
-  // Simulate analysis based on Price Action strategy
+  // تحديد الاتجاه بناءً على نموذج السعر
   const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
   
-  // Calculate support and resistance based on Price Action principles
-  const volatilityFactor = 0.02; // 2% volatility
+  // حساب نطاق التداول المتوقع (2% من السعر الحالي)
+  const range = currentPrice * 0.02;
+  
+  // حساب مستويات الدعم والمقاومة
   const support = direction === "صاعد" 
-    ? currentPrice * (1 - volatilityFactor) 
-    : currentPrice * (1 - volatilityFactor * 1.5);
+    ? currentPrice - (range * 0.5)  // 1% تحت السعر الحالي للاتجاه الصاعد
+    : currentPrice - range;         // 2% تحت السعر الحالي للاتجاه الهابط
+    
   const resistance = direction === "صاعد"
-    ? currentPrice * (1 + volatilityFactor * 1.5)
-    : currentPrice * (1 + volatilityFactor);
+    ? currentPrice + range          // 2% فوق السعر الحالي للاتجاه الصاعد
+    : currentPrice + (range * 0.5); // 1% فوق السعر الحالي للاتجاه الهابط
 
-  // Calculate stop loss based on Price Action principles
+  // حساب وقف الخسارة
   const stopLoss = direction === "صاعد"
-    ? support * 0.995 // 0.5% below support for uptrend
-    : resistance * 1.005; // 0.5% above resistance for downtrend
+    ? support - (range * 0.25)      // 0.5% تحت مستوى الدعم
+    : resistance + (range * 0.25);  // 0.5% فوق مستوى المقاومة
 
-  // Define targets based on risk:reward ratio (1:2 and 1:3)
-  const riskAmount = Math.abs(currentPrice - stopLoss);
+  // حساب الأهداف المتوقعة
   const target1 = direction === "صاعد"
-    ? currentPrice + (riskAmount * 2)
-    : currentPrice - (riskAmount * 2);
+    ? currentPrice + (range * 1.5)  // 3% فوق السعر الحالي
+    : currentPrice - (range * 1.5); // 3% تحت السعر الحالي
+    
   const target2 = direction === "صاعد"
-    ? currentPrice + (riskAmount * 3)
-    : currentPrice - (riskAmount * 3);
+    ? currentPrice + (range * 2)    // 4% فوق السعر الحالي
+    : currentPrice - (range * 2);   // 4% تحت السعر الحالي
+    
+  const target3 = direction === "صاعد"
+    ? currentPrice + (range * 2.5)  // 5% فوق السعر الحالي
+    : currentPrice - (range * 2.5); // 5% تحت السعر الحالي
 
-  const bestEntryReason = direction === "صاعد"
-    ? "نقطة دخول محددة بناءً على اختبار مستوى الدعم السابق مع وجود نموذج انعكاس صاعد"
-    : "نقطة دخول محددة بناءً على اختبار مستوى المقاومة السابق مع وجود نموذج انعكاس هابط";
+  // تحديد أفضل نقطة دخول
+  const bestEntry = direction === "صاعد" ? support : resistance;
+  const entryReason = direction === "صاعد"
+    ? "نقطة دخول عند مستوى الدعم مع وجود نموذج انعكاس صاعد"
+    : "نقطة دخول عند مستوى المقاومة مع وجود نموذج انعكاس هابط";
 
   const analysis: AnalysisData = {
     pattern: "Price Action Analysis",
@@ -46,8 +55,8 @@ export const analyzePriceAction = async (
     resistance: Number(resistance.toFixed(2)),
     stopLoss: Number(stopLoss.toFixed(2)),
     bestEntryPoint: {
-      price: Number(currentPrice.toFixed(2)),
-      reason: bestEntryReason
+      price: Number(bestEntry.toFixed(2)),
+      reason: entryReason
     },
     targets: [
       {
@@ -57,6 +66,10 @@ export const analyzePriceAction = async (
       {
         price: Number(target2.toFixed(2)),
         expectedTime: getExpectedTime(timeframe, 2)
+      },
+      {
+        price: Number(target3.toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 3)
       }
     ],
     analysisType: "Price Action"
