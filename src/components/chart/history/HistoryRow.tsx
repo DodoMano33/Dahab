@@ -1,20 +1,34 @@
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SearchHistoryItem } from "@/types/analysis";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { Trash2 } from "lucide-react";
+import { DirectionIndicator } from "./DirectionIndicator";
+import { BestEntryPoint } from "./BestEntryPoint";
+import { TargetsList } from "./TargetsList";
+import { StopLoss } from "./StopLoss";
+import { AnalysisData } from "@/types/analysis";
+import { DateCell } from "./cells/DateCell";
+import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
+import { TimeframeCell } from "./cells/TimeframeCell";
 
-interface HistoryRowProps extends SearchHistoryItem {
-  isSelected: boolean;
-  onSelect: () => void;
-  onDelete: (() => void) | null;
+interface HistoryRowProps {
+  id: string;
+  date: Date;
+  symbol: string;
+  currentPrice: number;
+  analysis: AnalysisData;
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
+  timeframe: string;
+  isSelected?: boolean;
+  onSelect?: () => void;
+  onDelete?: () => void;
 }
 
-export const HistoryRow = ({
+export const HistoryRow = ({ 
   id,
-  date,
-  symbol,
-  currentPrice,
+  date, 
+  symbol, 
+  currentPrice, 
   analysis,
   analysisType,
   timeframe,
@@ -24,17 +38,55 @@ export const HistoryRow = ({
 }: HistoryRowProps) => {
   return (
     <TableRow>
-      <TableCell className="w-[50px]">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={onSelect}
+      {onDelete && (
+        <TableCell className="w-[60px] text-center p-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onDelete}
+            className="hover:bg-destructive hover:text-destructive-foreground"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      )}
+      <TableCell className="w-[120px] text-center p-2 whitespace-normal">
+        <StopLoss 
+          value={analysis.stopLoss} 
+          isHit={false}
         />
       </TableCell>
-      <TableCell>{format(date, 'PPpp', { locale: ar })}</TableCell>
-      <TableCell>{symbol}</TableCell>
-      <TableCell>{currentPrice}</TableCell>
-      <TableCell>{analysisType}</TableCell>
-      <TableCell>{timeframe}</TableCell>
+      <TableCell className="w-[140px] text-center p-2 whitespace-normal">
+        <div className="flex justify-center">
+          <TargetsList 
+            targets={analysis.targets?.slice(0, 3) || []} 
+            isTargetHit={false}
+          />
+        </div>
+      </TableCell>
+      <TableCell className="w-[160px] text-center p-2 whitespace-normal">
+        <div className="flex justify-center">
+          <BestEntryPoint 
+            price={analysis.bestEntryPoint?.price} 
+            reason={analysis.bestEntryPoint?.reason}
+          />
+        </div>
+      </TableCell>
+      <TableCell className="w-[80px] text-center p-2">
+        <DirectionIndicator direction={analysis.direction} />
+      </TableCell>
+      <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
+      <TimeframeCell timeframe={timeframe} />
+      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
+      <TableCell className="w-[100px] text-center p-2 font-medium">
+        {symbol.toUpperCase()}
+      </TableCell>
+      <DateCell date={date} />
+      {onSelect !== undefined && (
+        <TableCell className="w-[60px] text-center p-2">
+          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+        </TableCell>
+      )}
     </TableRow>
   );
 };
