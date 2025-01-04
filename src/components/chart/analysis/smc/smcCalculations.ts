@@ -16,16 +16,16 @@ export const calculateSMCStopLoss = (
   });
 
   const range = Math.abs(resistance - support);
-  const stopLossPercentage = 0.02; // 2% for tight stop loss in SMC
   
+  // في SMC، نضع وقف الخسارة خلف منطقة السيولة مباشرة
   if (direction === "صاعد") {
-    // For bullish trend, place stop loss below the last low
-    const stopLoss = currentPrice - (currentPrice * stopLossPercentage);
+    // للاتجاه الصاعد، نضع وقف الخسارة تحت منطقة الطلب بنسبة صغيرة
+    const stopLoss = support - (range * 0.02);
     console.log("Bullish Stop Loss:", stopLoss);
     return Number(stopLoss.toFixed(2));
   } else {
-    // For bearish trend, place stop loss above the last high
-    const stopLoss = currentPrice + (currentPrice * stopLossPercentage);
+    // للاتجاه الهابط، نضع وقف الخسارة فوق منطقة العرض بنسبة صغيرة
+    const stopLoss = resistance + (range * 0.02);
     console.log("Bearish Stop Loss:", stopLoss);
     return Number(stopLoss.toFixed(2));
   }
@@ -48,20 +48,20 @@ export const calculateSMCTargets = (
 
   const range = Math.abs(resistance - support);
   
-  // SMC target multipliers based on market structure
-  const targetMultipliers = [0.015, 0.03, 0.05]; // 1.5%, 3%, 5%
+  // نستخدم مناطق عدم التوازن والسيولة لتحديد الأهداف
+  const targetMultipliers = [0.5, 1, 1.5]; // 50%, 100%, 150% من المدى
   
   if (direction === "صاعد") {
-    // For bullish trend, calculate targets above current price
+    // للاتجاه الصاعد، نحسب الأهداف فوق السعر الحالي
     const targets = targetMultipliers.map(multiplier => 
-      Number((currentPrice + (currentPrice * multiplier)).toFixed(2))
+      Number((currentPrice + (range * multiplier)).toFixed(2))
     );
     console.log("Bullish Targets:", targets);
     return targets;
   } else {
-    // For bearish trend, calculate targets below current price
+    // للاتجاه الهابط، نحسب الأهداف تحت السعر الحالي
     const targets = targetMultipliers.map(multiplier => 
-      Number((currentPrice - (currentPrice * multiplier)).toFixed(2))
+      Number((currentPrice - (range * multiplier)).toFixed(2))
     );
     console.log("Bearish Targets:", targets);
     return targets;
@@ -84,31 +84,30 @@ export const calculateSMCEntryPoint = (
   });
 
   const range = Math.abs(resistance - support);
-  const entryOffset = 0.005; // 0.5% offset for entry
   
   if (direction === "صاعد") {
-    // For bullish trend, enter near support
-    const entryPrice = Number((support + (range * entryOffset)).toFixed(2));
+    // للاتجاه الصاعد، ندخل عند منطقة الطلب
+    const entryPrice = Number((support + (range * 0.1)).toFixed(2));
     console.log("Bullish Entry Point:", entryPrice);
     return {
       price: entryPrice,
-      reason: `نقطة دخول عند منطقة الطلب القوية (Demand Zone) مع وجود تجمع سيولة سفلي على الإطار الزمني ${timeframe}`
+      reason: `نقطة دخول محددة عند منطقة الطلب النشطة (Demand Zone) مع وجود تجمع سيولة سفلي على الإطار الزمني ${timeframe}. هذه المنطقة تمثل نقطة تجمع المؤسسات للشراء.`
     };
   } else {
-    // For bearish trend, enter near resistance
-    const entryPrice = Number((resistance - (range * entryOffset)).toFixed(2));
+    // للاتجاه الهابط، ندخل عند منطقة العرض
+    const entryPrice = Number((resistance - (range * 0.1)).toFixed(2));
     console.log("Bearish Entry Point:", entryPrice);
     return {
       price: entryPrice,
-      reason: `نقطة دخول عند منطقة العرض القوية (Supply Zone) مع وجود تجمع سيولة علوي على الإطار الزمني ${timeframe}`
+      reason: `نقطة دخول محددة عند منطقة العرض النشطة (Supply Zone) مع وجود تجمع سيولة علوي على الإطار الزمني ${timeframe}. هذه المنطقة تمثل نقطة تجمع المؤسسات للبيع.`
     };
   }
 };
 
 export const detectSMCPattern = (direction: string, timeframe: string): string => {
   if (direction === "صاعد") {
-    return `نموذج تجمع سيولة سفلي مع منطقة طلب نشطة على الإطار الزمني ${timeframe}`;
+    return `نموذج تجمع سيولة سفلي مع منطقة طلب مؤسساتية نشطة على الإطار الزمني ${timeframe}`;
   } else {
-    return `نموذج تجمع سيولة علوي مع منطقة عرض نشطة على الإطار الزمني ${timeframe}`;
+    return `نموذج تجمع سيولة علوي مع منطقة عرض مؤسساتية نشطة على الإطار الزمني ${timeframe}`;
   }
 };
