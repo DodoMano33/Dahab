@@ -57,16 +57,20 @@ export const HistoryRow = ({
         />
       </TableCell>
       <TableCell className="w-[140px] text-center p-2 whitespace-normal">
-        <TargetsList 
-          targets={analysis.targets?.slice(0, 3) || []} 
-          isTargetHit={false}
-        />
+        <div className="flex justify-center">
+          <TargetsList 
+            targets={analysis.targets?.slice(0, 3) || []} 
+            isTargetHit={false}
+          />
+        </div>
       </TableCell>
       <TableCell className="w-[160px] text-center p-2 whitespace-normal">
-        <BestEntryPoint 
-          price={analysis.bestEntryPoint?.price} 
-          reason={analysis.bestEntryPoint?.reason}
-        />
+        <div className="flex justify-center">
+          <BestEntryPoint 
+            price={analysis.bestEntryPoint?.price} 
+            reason={analysis.bestEntryPoint?.reason}
+          />
+        </div>
       </TableCell>
       <TableCell className="w-[80px] text-center p-2">
         <DirectionIndicator direction={analysis.direction} />
