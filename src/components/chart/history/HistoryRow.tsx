@@ -1,7 +1,5 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2 } from "lucide-react";
 import { DirectionIndicator } from "./DirectionIndicator";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { TargetsList } from "./TargetsList";
@@ -21,7 +19,6 @@ interface HistoryRowProps {
   timeframe: string;
   isSelected?: boolean;
   onSelect?: () => void;
-  onDelete?: () => void;
 }
 
 export const HistoryRow = ({ 
@@ -33,23 +30,10 @@ export const HistoryRow = ({
   analysisType,
   timeframe,
   isSelected,
-  onSelect,
-  onDelete
+  onSelect
 }: HistoryRowProps) => {
   return (
     <TableRow>
-      {onDelete && (
-        <TableCell className="w-[60px] text-center p-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            className="hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </TableCell>
-      )}
       <TableCell className="w-[120px] text-center p-2 whitespace-normal">
         <StopLoss 
           value={analysis.stopLoss} 

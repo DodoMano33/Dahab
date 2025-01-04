@@ -2,10 +2,9 @@ import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface HistoryTableHeaderProps {
   showCheckbox?: boolean;
-  showDelete?: boolean;
 }
 
-export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }: HistoryTableHeaderProps) => (
+export const HistoryTableHeader = ({ showCheckbox = false }: HistoryTableHeaderProps) => (
   <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
     <TableRow>
       {showCheckbox && <TableHead className="w-[60px] text-center p-2">تحديد</TableHead>}
@@ -18,7 +17,6 @@ export const HistoryTableHeader = ({ showCheckbox = false, showDelete = false }:
       <TableHead className="w-[160px] text-center p-2 font-bold">أفضل نقطة دخول</TableHead>
       <TableHead className="w-[140px] text-center p-2 font-bold">الأهداف</TableHead>
       <TableHead className="w-[120px] text-center p-2 font-bold">وقف الخسارة</TableHead>
-      {showDelete && <TableHead className="w-[60px] text-center p-2">حذف</TableHead>}
     </TableRow>
   </TableHeader>
 );
