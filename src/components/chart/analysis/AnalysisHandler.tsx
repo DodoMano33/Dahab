@@ -28,8 +28,12 @@ export const useAnalysisHandler = () => {
     isPriceAction: boolean = false
   ) => {
     try {
-      if (!symbol || !timeframe || !providedPrice) {
+      if (!symbol || !timeframe) {
         throw new Error("جميع الحقول مطلوبة");
+      }
+
+      if (!providedPrice) {
+        throw new Error("يجب إدخال السعر الحالي للتحليل");
       }
 
       setIsAnalyzing(true);
@@ -68,7 +72,7 @@ export const useAnalysisHandler = () => {
         selectedTypes
       });
 
-      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe);
+      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe, providedPrice);
       console.log("تم استلام صورة الشارت");
       setImage(chartImage);
 
