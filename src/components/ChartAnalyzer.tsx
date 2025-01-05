@@ -7,6 +7,7 @@ import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { ChartDisplay } from "./ChartDisplay";
 
 export const ChartAnalyzer = () => {
   const { user } = useAuth();
@@ -95,6 +96,21 @@ export const ChartAnalyzer = () => {
             currentAnalysis={currentAnalysis}
           />
         </div>
+        {(image || analysis || isAnalyzing) && (
+          <div>
+            <ChartDisplay
+              image={image}
+              analysis={analysis}
+              isAnalyzing={isAnalyzing}
+              onClose={() => {
+                setImage(null);
+                setAnalysis(null);
+              }}
+              symbol={currentSymbol}
+              currentAnalysis={currentAnalysis}
+            />
+          </div>
+        )}
       </div>
       <HistoryDialog
         isOpen={isHistoryOpen}
