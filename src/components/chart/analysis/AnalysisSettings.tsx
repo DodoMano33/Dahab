@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
-import { AnalysisLegend } from "./AnalysisLegend";
 import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
 import { toast } from "sonner";
 
 interface AnalysisSettingsProps {
@@ -17,7 +16,7 @@ export const AnalysisSettings = ({
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
 
-  const handleTimeframeChange = (timeframes: string[]) => {
+  const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
     onTimeframesChange(timeframes);
   };
@@ -41,16 +40,22 @@ export const AnalysisSettings = ({
     toast.success("تم تفعيل التحليلات بنجاح");
   };
 
+  const handleHistoryClick = () => {
+    console.log("فتح سجل البحث المختبر");
+    // TODO: Implement history view functionality
+    toast.info("سيتم عرض سجل البحث المختبر قريباً");
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center text-white bg-red-600 py-4">
-        تفعيل التحليلات
+        إختيار التحليلات
       </h2>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
-          onTimeframeChange={handleTimeframeChange}
+          onTimeframesChange={handleTimeframesChange}
         />
         <IntervalAnalysis
           selectedInterval={selectedInterval}
@@ -58,16 +63,23 @@ export const AnalysisSettings = ({
         />
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex flex-col gap-4 items-center">
         <Button 
           onClick={handleActivate}
-          className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 text-lg"
+          className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 text-lg w-full md:w-auto"
         >
           تفعيل
         </Button>
-      </div>
 
-      <AnalysisLegend />
+        <Button
+          onClick={handleHistoryClick}
+          variant="outline"
+          className="flex items-center gap-2 w-full md:w-auto"
+        >
+          <History className="w-5 h-5" />
+          سجل البحث الذي تم اختباره
+        </Button>
+      </div>
     </div>
   );
 };
