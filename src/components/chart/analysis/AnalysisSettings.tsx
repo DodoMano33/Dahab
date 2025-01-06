@@ -43,14 +43,13 @@ export const AnalysisSettings = ({
 
   const handleHistoryClick = () => {
     console.log("فتح سجل البحث المختبر");
-    // TODO: Implement history view functionality
     toast.info("سيتم عرض سجل البحث المختبر قريباً");
   };
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center text-white bg-red-600 py-4">
-        إختيار التحليلات
+        تفعيل التحليلات
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

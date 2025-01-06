@@ -8,11 +8,11 @@ interface TimeframeOption {
 }
 
 const timeframeOptions: TimeframeOption[] = [
-  { value: "1m", label: "دقيقة 1" },
-  { value: "5m", label: "دقائق 5" },
-  { value: "30m", label: "دقيقة 30" },
-  { value: "1h", label: "ساعة 1" },
-  { value: "4h", label: "ساعات 4" },
+  { value: "1m", label: "دقيقة" },
+  { value: "5m", label: "5 دقائق" },
+  { value: "30m", label: "30 دقيقة" },
+  { value: "1h", label: "1 ساعة" },
+  { value: "4h", label: "4 ساعات" },
   { value: "1d", label: "يومي" },
 ];
 
