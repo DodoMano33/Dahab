@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChartDisplay } from "./ChartDisplay";
+import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 
 export const ChartAnalyzer = () => {
   const { user } = useAuth();
@@ -24,6 +25,8 @@ export const ChartAnalyzer = () => {
 
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
+  const [selectedInterval, setSelectedInterval] = useState<string>("");
 
   useEffect(() => {
     if (user) {
@@ -82,10 +85,23 @@ export const ChartAnalyzer = () => {
     }
   };
 
-  console.log("ChartAnalyzer - Current Analysis:", analysis);
+  const handleTimeframesChange = (timeframes: string[]) => {
+    setSelectedTimeframes(timeframes);
+    console.log("Selected timeframes:", timeframes);
+  };
+
+  const handleIntervalChange = (interval: string) => {
+    setSelectedInterval(interval);
+    console.log("Selected interval:", interval);
+  };
 
   return (
     <div className="space-y-8">
+      <AnalysisSettings
+        onTimeframesChange={handleTimeframesChange}
+        onIntervalChange={handleIntervalChange}
+      />
+      
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
         <div>
           <AnalysisForm
@@ -111,6 +127,7 @@ export const ChartAnalyzer = () => {
           </div>
         )}
       </div>
+      
       <HistoryDialog
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
