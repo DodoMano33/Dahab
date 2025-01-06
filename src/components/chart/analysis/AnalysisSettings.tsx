@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export const AnalysisSettings = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
-          onTimeframesChange={handleTimeframesChange}
+          onTimeframeChange={handleTimeframesChange}
         />
         <IntervalAnalysis
           selectedInterval={selectedInterval}
