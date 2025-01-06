@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
+import { AnalysisTypes } from "./AnalysisTypes";
 import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ export const AnalysisSettings = ({
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
+  const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
@@ -35,7 +37,8 @@ export const AnalysisSettings = ({
     
     console.log("تم تفعيل التحليلات:", {
       timeframes: selectedTimeframes,
-      interval: selectedInterval
+      interval: selectedInterval,
+      analysisTypes: selectedAnalysisTypes
     });
     
     toast.success("تم تفعيل التحليلات بنجاح");
@@ -48,7 +51,7 @@ export const AnalysisSettings = ({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
           onTimeframeChange={handleTimeframesChange}
@@ -56,6 +59,10 @@ export const AnalysisSettings = ({
         <IntervalAnalysis
           selectedInterval={selectedInterval}
           onIntervalChange={handleIntervalChange}
+        />
+        <AnalysisTypes
+          selectedTypes={selectedAnalysisTypes}
+          onTypesChange={setSelectedAnalysisTypes}
         />
       </div>
 
