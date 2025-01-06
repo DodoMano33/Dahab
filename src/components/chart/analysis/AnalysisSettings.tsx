@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
 import { Button } from "@/components/ui/button";
-import { History } from "lucide-react";
+import { History, Play, Square } from "lucide-react";
 import { toast } from "sonner";
+import { useAnalysisHandler } from "./AnalysisHandler";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -15,9 +17,21 @@ export const AnalysisSettings = ({
   onTimeframesChange,
   onIntervalChange,
 }: AnalysisSettingsProps) => {
+  const { user } = useAuth();
+  const { handleTradingViewConfig } = useAnalysisHandler();
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisInterval, setAnalysisInterval] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (analysisInterval) {
+        clearInterval(analysisInterval);
+      }
+    };
+  }, []);
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
@@ -29,19 +43,76 @@ export const AnalysisSettings = ({
     onIntervalChange(interval);
   };
 
-  const handleActivate = () => {
-    if (selectedTimeframes.length === 0 && !selectedInterval) {
-      toast.error("الرجاء اختيار إطار زمني أو مدة للتحليل");
+  const startAnalysis = async () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لبدء التحليل التلقائي");
       return;
     }
-    
-    console.log("تم تفعيل التحليلات:", {
+
+    if (selectedTimeframes.length === 0) {
+      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
+      return;
+    }
+
+    if (!selectedInterval) {
+      toast.error("الرجاء اختيار مدة التحليل");
+      return;
+    }
+
+    if (selectedAnalysisTypes.length === 0) {
+      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      return;
+    }
+
+    setIsAnalyzing(true);
+    console.log("بدء التحليل التلقائي:", {
       timeframes: selectedTimeframes,
       interval: selectedInterval,
       analysisTypes: selectedAnalysisTypes
     });
-    
-    toast.success("تم تفعيل التحليلات بنجاح");
+
+    // تحويل المدة الزمنية إلى مللي ثانية
+    const intervalMs = getIntervalInMs(selectedInterval);
+
+    const interval = setInterval(async () => {
+      try {
+        for (const timeframe of selectedTimeframes) {
+          for (const analysisType of selectedAnalysisTypes) {
+            if (analysisType !== "normal") {
+              await handleTradingViewConfig(
+                "XAUUSD", // يمكن تغييره لاحقاً ليكون ديناميكياً
+                timeframe,
+                undefined,
+                analysisType === "scalping",
+                false,
+                analysisType === "smc",
+                analysisType === "ict",
+                analysisType === "turtle_soup",
+                analysisType === "gann",
+                analysisType === "waves",
+                analysisType === "patterns",
+                analysisType === "price_action"
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("خطأ في التحليل التلقائي:", error);
+        toast.error("حدث خطأ أثناء التحليل التلقائي");
+      }
+    }, intervalMs);
+
+    setAnalysisInterval(interval);
+    toast.success("تم بدء التحليل التلقائي");
+  };
+
+  const stopAnalysis = () => {
+    if (analysisInterval) {
+      clearInterval(analysisInterval);
+      setAnalysisInterval(null);
+    }
+    setIsAnalyzing(false);
+    toast.success("تم إيقاف التحليل التلقائي");
   };
 
   const handleHistoryClick = () => {
@@ -68,10 +139,22 @@ export const AnalysisSettings = ({
 
       <div className="flex flex-col gap-4 items-center">
         <Button 
-          onClick={handleActivate}
-          className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 text-lg w-full md:w-auto"
+          onClick={isAnalyzing ? stopAnalysis : startAnalysis}
+          className={`${
+            isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+          } text-white px-8 py-2 text-lg w-full md:w-auto flex items-center gap-2`}
         >
-          تفعيل
+          {isAnalyzing ? (
+            <>
+              <Square className="w-5 h-5" />
+              إيقاف التفعيل
+            </>
+          ) : (
+            <>
+              <Play className="w-5 h-5" />
+              تفعيل
+            </>
+          )}
         </Button>
 
         <Button
@@ -85,4 +168,23 @@ export const AnalysisSettings = ({
       </div>
     </div>
   );
+};
+
+const getIntervalInMs = (interval: string): number => {
+  switch (interval) {
+    case "1m":
+      return 60 * 1000; // دقيقة واحدة
+    case "5m":
+      return 5 * 60 * 1000; // 5 دقائق
+    case "30m":
+      return 30 * 60 * 1000; // 30 دقيقة
+    case "1h":
+      return 60 * 60 * 1000; // ساعة واحدة
+    case "4h":
+      return 4 * 60 * 60 * 1000; // 4 ساعات
+    case "1d":
+      return 24 * 60 * 60 * 1000; // يوم واحد
+    default:
+      return 5 * 60 * 1000; // 5 دقائق كقيمة افتراضية
+  }
 };
