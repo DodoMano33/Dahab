@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
-import { AnalysisDisplay } from "./chart/analysis/AnalysisDisplay";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
 import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
