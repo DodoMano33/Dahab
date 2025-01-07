@@ -6,17 +6,20 @@ import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
 import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
+  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
 }
 
 export const AnalysisSettings = ({
   onTimeframesChange,
   onIntervalChange,
   setIsHistoryOpen,
+  onAnalysisComplete,
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
@@ -60,7 +63,7 @@ export const AnalysisSettings = ({
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
           selectedAnalysisTypes={selectedAnalysisTypes}
-          onAnalysisComplete={() => setIsHistoryOpen(true)}
+          onAnalysisComplete={onAnalysisComplete}
           repetitions={repetitions ? parseInt(repetitions) : 1}
         />
         <Button

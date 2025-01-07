@@ -1,8 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { AnalysisData } from "@/types/analysis";
 
-export const mapAnalysisTypeToDbValue = (type: string): string => {
-  const mapping: { [key: string]: string } = {
+export const mapAnalysisTypeToDbValue = (type: string): AnalysisData['analysisType'] => {
+  const mapping: { [key: string]: AnalysisData['analysisType'] } = {
     'scalping': 'سكالبينج',
     'smc': 'SMC',
     'ict': 'ICT',
