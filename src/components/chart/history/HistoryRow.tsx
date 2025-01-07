@@ -76,7 +76,7 @@ export const HistoryRow = ({
           className={`h-1 w-16 mx-auto rounded-full ${
             activation_type === 'تلقائي' 
               ? 'bg-emerald-500' // لون أخضر للتفعيل التلقائي
-              : 'bg-orange-500'  // لون برتقالي للتفعيل اليدوي
+              : 'bg-emerald-500'  // تم تغيير اللون البرتقالي إلى أخضر للتفعيل اليدوي
           }`}
         />
       </TableCell>
