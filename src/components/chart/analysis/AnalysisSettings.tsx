@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import { SearchHistory } from "../SearchHistory";
 import { SymbolPriceInput } from "./SymbolPriceInput";
 import { AutoAnalysis } from "./AutoAnalysis";
+import { RepetitionInput } from "./RepetitionInput";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -23,6 +24,7 @@ export const AnalysisSettings = ({
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [repetitions, setRepetitions] = useState("");
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
@@ -76,6 +78,11 @@ export const AnalysisSettings = ({
         />
       </div>
 
+      <RepetitionInput
+        repetitions={repetitions}
+        onRepetitionsChange={setRepetitions}
+      />
+
       <div className="flex flex-col gap-4 items-center">
         <AutoAnalysis
           symbol={symbol}
@@ -84,6 +91,7 @@ export const AnalysisSettings = ({
           selectedInterval={selectedInterval}
           selectedAnalysisTypes={selectedAnalysisTypes}
           onAnalysisComplete={() => setShowHistory(true)}
+          repetitions={repetitions ? parseInt(repetitions) : 1}
         />
       </div>
 

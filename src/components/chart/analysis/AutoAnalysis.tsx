@@ -11,6 +11,7 @@ interface AutoAnalysisProps {
   selectedInterval: string;
   selectedAnalysisTypes: string[];
   onAnalysisComplete?: () => void;
+  repetitions?: number;
 }
 
 export const AutoAnalysis = ({
@@ -19,7 +20,8 @@ export const AutoAnalysis = ({
   selectedTimeframes,
   selectedInterval,
   selectedAnalysisTypes,
-  onAnalysisComplete
+  onAnalysisComplete,
+  repetitions = 1
 }: AutoAnalysisProps) => {
   const {
     isAnalyzing,
@@ -53,14 +55,21 @@ export const AutoAnalysis = ({
     console.log("بدء التحليل التلقائي:", {
       timeframes: selectedTimeframes,
       interval: selectedInterval,
-      analysisTypes: selectedAnalysisTypes
+      analysisTypes: selectedAnalysisTypes,
+      repetitions
     });
 
     const intervalMs = getIntervalInMs(selectedInterval);
     const numericPrice = Number(price);
+    let currentRepetition = 0;
 
     const runAnalysis = async () => {
       try {
+        if (currentRepetition >= repetitions) {
+          stopAnalysis();
+          return;
+        }
+
         for (const timeframe of selectedTimeframes) {
           for (const analysisType of selectedAnalysisTypes) {
             const result = await handleTradingViewConfig(
@@ -86,6 +95,7 @@ export const AutoAnalysis = ({
             }
           }
         }
+        currentRepetition++;
       } catch (error) {
         console.error("خطأ في التحليل التلقائي:", error);
         toast.error("حدث خطأ أثناء التحليل التلقائي");
