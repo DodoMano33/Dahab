@@ -1,19 +1,23 @@
 export const getTradingViewChartImage = async (
   symbol: string,
   timeframe: string,
-  providedPrice?: number
+  currentPrice: number
 ): Promise<string> => {
-  console.log("محاولة جلب صورة الشارت:", { symbol, timeframe, providedPrice });
-  
   try {
-    if (!providedPrice) {
-      throw new Error("يجب إدخال السعر الحالي للتحليل");
-    }
-
-    // إرجاع صورة الشارت الحقيقي من TradingView
-    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+    console.log("Generating TradingView chart for:", { symbol, timeframe, currentPrice });
+    
+    // For now, return a placeholder image URL since we can't actually get TradingView charts
+    // This should be replaced with actual TradingView API integration
+    return `data:image/svg+xml;base64,${btoa(`
+      <svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#f0f0f0"/>
+        <text x="50%" y="50%" font-family="Arial" font-size="20" text-anchor="middle">
+          Chart Preview for ${symbol} - ${timeframe}
+        </text>
+      </svg>
+    `)}`;
   } catch (error) {
-    console.error("خطأ في جلب صورة الشارت:", error);
-    throw error;
+    console.error("Error generating TradingView chart:", error);
+    throw new Error("فشل في إنشاء صورة الشارت");
   }
 };

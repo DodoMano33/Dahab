@@ -28,6 +28,21 @@ export const useAnalysisHandler = () => {
     isPriceAction: boolean = false
   ) => {
     try {
+      console.log("Starting analysis with parameters:", {
+        symbol,
+        timeframe,
+        providedPrice,
+        isScalping,
+        isAI,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction
+      });
+
       if (!symbol || !timeframe) {
         throw new Error("جميع الحقول مطلوبة");
       }
@@ -64,57 +79,65 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
-      console.log("بدء تحليل TradingView:", { 
+      console.log("Getting TradingView chart image for:", { 
         symbol: upperSymbol, 
         timeframe, 
         providedPrice,
-        نوع_التحليل: analysisType,
+        analysisType,
         selectedTypes
       });
 
-      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe, providedPrice);
-      console.log("تم استلام صورة الشارت");
-      setImage(chartImage);
+      try {
+        const chartImage = await getTradingViewChartImage(upperSymbol, timeframe, providedPrice);
+        console.log("Chart image received successfully");
+        setImage(chartImage);
 
-      let analysisResult;
-      if (isAI && selectedTypes.length > 0) {
-        analysisResult = await combinedAnalysis(
-          chartImage,
-          providedPrice,
-          timeframe,
-          selectedTypes
-        );
-      } else {
-        analysisResult = await executeAnalysis(
-          chartImage,
-          providedPrice,
-          timeframe,
-          {
-            isPatternAnalysis,
-            isWaves,
-            isGann,
-            isTurtleSoup,
-            isICT,
-            isSMC,
-            isScalping,
-            isPriceAction
-          }
-        );
+        let analysisResult;
+        if (isAI && selectedTypes.length > 0) {
+          console.log("Starting AI combined analysis");
+          analysisResult = await combinedAnalysis(
+            chartImage,
+            providedPrice,
+            timeframe,
+            selectedTypes
+          );
+        } else {
+          console.log("Starting regular analysis");
+          analysisResult = await executeAnalysis(
+            chartImage,
+            providedPrice,
+            timeframe,
+            {
+              isPatternAnalysis,
+              isWaves,
+              isGann,
+              isTurtleSoup,
+              isICT,
+              isSMC,
+              isScalping,
+              isPriceAction
+            }
+          );
+        }
+
+        if (!analysisResult) {
+          throw new Error("لم يتم العثور على نتائج التحليل");
+        }
+
+        console.log("Analysis completed successfully:", analysisResult);
+        setAnalysis(analysisResult);
+        setIsAnalyzing(false);
+        
+        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`);
+        return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
+        
+      } catch (chartError) {
+        console.error("Error getting chart image or performing analysis:", chartError);
+        throw new Error("فشل في الحصول على صورة الشارت أو إجراء التحليل");
       }
-
-      if (!analysisResult) {
-        throw new Error("لم يتم العثور على نتائج التحليل");
-      }
-
-      console.log("تم إكمال التحليل:", analysisResult);
-      setAnalysis(analysisResult);
-      setIsAnalyzing(false);
-      
-      toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`);
-      return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
       
     } catch (error) {
-      console.error("خطأ في تحليل TradingView:", error);
+      console.error("Error in TradingView analysis:", error);
       setIsAnalyzing(false);
       if (error instanceof Error) {
         toast.error(error.message);
