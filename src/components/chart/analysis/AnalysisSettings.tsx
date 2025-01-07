@@ -5,7 +5,8 @@ import { AnalysisTypes } from "./AnalysisTypes";
 import { SymbolPriceInput } from "./SymbolPriceInput";
 import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
-import { HistoryPanel } from "./HistoryPanel";
+import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -63,7 +64,7 @@ export const AnalysisSettings = ({
         onRepetitionsChange={setRepetitions}
       />
 
-      <div className="flex flex-col gap-4 items-center">
+      <div className="flex gap-4 items-center justify-center">
         <AutoAnalysis
           symbol={symbol}
           price={price}
@@ -73,12 +74,15 @@ export const AnalysisSettings = ({
           onAnalysisComplete={() => setShowHistory(true)}
           repetitions={repetitions ? parseInt(repetitions) : 1}
         />
+        <Button
+          onClick={() => setShowHistory(true)}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <History className="w-4 h-4" />
+          سجل البحث
+        </Button>
       </div>
-
-      <HistoryPanel
-        showHistory={showHistory}
-        onClose={() => setShowHistory(false)}
-      />
     </div>
   );
 };
