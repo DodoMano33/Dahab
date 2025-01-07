@@ -2,11 +2,9 @@ import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
-import { Button } from "@/components/ui/button";
-import { History } from "lucide-react";
-import { SearchHistory } from "../SearchHistory";
 import { SymbolPriceInput } from "./SymbolPriceInput";
 import { AutoAnalysis } from "./AutoAnalysis";
+import { SearchHistory } from "../SearchHistory";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -22,6 +20,7 @@ export const AnalysisSettings = ({
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
+  const [showHistory, setShowHistory] = useState(true);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
@@ -86,8 +85,8 @@ export const AnalysisSettings = ({
       </div>
 
       <SearchHistory
-        isOpen={true}
-        onClose={() => {}}
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
         dateRange={dateRange}
         setDateRange={setDateRange}
         isDatePickerOpen={isDatePickerOpen}
