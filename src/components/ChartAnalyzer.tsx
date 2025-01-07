@@ -29,14 +29,24 @@ export const ChartAnalyzer = () => {
   const [selectedInterval, setSelectedInterval] = useState<string>("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
+    if (!timeframes) return; // Guard against undefined
     setSelectedTimeframes(timeframes);
     console.log("Selected timeframes:", timeframes);
   };
 
   const handleIntervalChange = (interval: string) => {
+    if (!interval) return; // Guard against undefined
     setSelectedInterval(interval);
     console.log("Selected interval:", interval);
   };
+
+  // Initialize history dialog state
+  useEffect(() => {
+    if (!searchHistory) {
+      console.log("Search history is undefined, initializing empty array");
+      addToSearchHistory([]); // Initialize with empty array if undefined
+    }
+  }, [searchHistory]);
 
   return (
     <div className="space-y-8">
@@ -71,12 +81,14 @@ export const ChartAnalyzer = () => {
         )}
       </div>
       
-      <HistoryDialog
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        history={searchHistory}
-        onDelete={handleDeleteHistoryItem}
-      />
+      {searchHistory && (
+        <HistoryDialog
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          history={searchHistory}
+          onDelete={handleDeleteHistoryItem}
+        />
+      )}
     </div>
   );
 };
