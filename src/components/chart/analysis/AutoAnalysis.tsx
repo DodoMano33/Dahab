@@ -73,24 +73,31 @@ export const AutoAnalysis = ({
   const performAnalysis = async () => {
     for (const timeframe of selectedTimeframes) {
       for (const analysisType of selectedAnalysisTypes) {
-        const result = await handleTradingViewConfig(
-          timeframe,
-          analysisType === "scalping",
-          false,
-          analysisType === "smc",
-          analysisType === "ict",
-          analysisType === "turtleSoup",
-          analysisType === "gann",
-          analysisType === "waves",
-          analysisType === "patterns",
-          analysisType === "priceAction"
-        );
+        try {
+          const result = await handleTradingViewConfig(
+            "XAUUSD", // Default symbol
+            timeframe,
+            2500, // Default price
+            analysisType === "scalping",
+            false, // isAI
+            analysisType === "smc",
+            analysisType === "ict",
+            analysisType === "turtleSoup",
+            analysisType === "gann",
+            analysisType === "waves",
+            analysisType === "patterns",
+            analysisType === "priceAction"
+          );
 
-        if (result && result.analysisResult) {
-          await saveAnalysisToHistory(result, timeframe, analysisType, user.id);
-          if (onAnalysisComplete) {
-            onAnalysisComplete();
+          if (result && result.analysisResult) {
+            await saveAnalysisToHistory(result, timeframe, analysisType, user.id);
+            if (onAnalysisComplete) {
+              onAnalysisComplete();
+            }
           }
+        } catch (error) {
+          console.error(`Error analyzing ${analysisType} on ${timeframe}:`, error);
+          toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
         }
       }
     }
