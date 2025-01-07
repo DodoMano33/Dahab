@@ -52,6 +52,11 @@ export const AnalysisSettings = ({
     });
   };
 
+  const refreshHistory = () => {
+    setIsHistoryOpen(false);
+    setTimeout(() => setIsHistoryOpen(true), 100);
+  };
+
   return (
     <div className="space-y-6">
       <SymbolPriceInput
@@ -83,6 +88,7 @@ export const AnalysisSettings = ({
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
           selectedAnalysisTypes={selectedAnalysisTypes}
+          onAnalysisComplete={refreshHistory}
         />
 
         <Button
