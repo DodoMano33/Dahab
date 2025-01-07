@@ -28,6 +28,10 @@ export const saveAnalysisToHistory = async (
     const mappedAnalysisType = mapAnalysisTypeToDbValue(analysisType);
     console.log("Mapped analysis type:", mappedAnalysisType);
     
+    if (!userId) {
+      throw new Error("User ID is required to save analysis history");
+    }
+
     const { error } = await supabase
       .from('search_history')
       .insert({

@@ -90,7 +90,13 @@ export const AutoAnalysis = ({
           );
 
           if (result && result.analysisResult) {
-            await saveAnalysisToHistory(result, timeframe, analysisType, user.id);
+            await saveAnalysisToHistory(
+              result,
+              "XAUUSD", // symbol
+              timeframe,
+              analysisType,
+              user.id
+            );
             if (onAnalysisComplete) {
               onAnalysisComplete();
             }
