@@ -19,6 +19,7 @@ interface HistoryRowProps {
   timeframe: string;
   isSelected?: boolean;
   onSelect?: () => void;
+  activation_type?: 'تلقائي' | 'يدوي';
 }
 
 export const HistoryRow = ({ 
@@ -30,7 +31,8 @@ export const HistoryRow = ({
   analysisType,
   timeframe,
   isSelected,
-  onSelect
+  onSelect,
+  activation_type = 'يدوي'
 }: HistoryRowProps) => {
   return (
     <TableRow>
@@ -63,7 +65,16 @@ export const HistoryRow = ({
       <TimeframeCell timeframe={timeframe} />
       <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
       <TableCell className="w-[100px] text-center p-2 font-medium">
-        {symbol.toUpperCase()}
+        <div className="flex flex-col items-center">
+          <span>{symbol.toUpperCase()}</span>
+          <div 
+            className={`h-1 w-16 mt-1 rounded-full ${
+              activation_type === 'تلقائي' 
+                ? 'bg-[#1EAEDB]' // Bright Blue for automatic activation
+                : 'bg-[#F97316]' // Bright Orange for manual activation
+            }`}
+          />
+        </div>
       </TableCell>
       <DateCell date={date} />
       {onSelect !== undefined && (
