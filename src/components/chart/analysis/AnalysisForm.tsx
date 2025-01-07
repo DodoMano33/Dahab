@@ -11,15 +11,15 @@ import { saveAnalysis } from "./utils/saveAnalysis";
 interface AnalysisFormProps {
   onAnalysis: (item: SearchHistoryItem) => void;
   isAnalyzing: boolean;
-  onHistoryClick: () => void;
   currentAnalysis?: string;
+  onHistoryClick?: () => void;  // Made optional with ?
 }
 
 export const AnalysisForm = ({ 
   onAnalysis, 
   isAnalyzing, 
-  onHistoryClick, 
-  currentAnalysis 
+  currentAnalysis,
+  onHistoryClick 
 }: AnalysisFormProps) => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();

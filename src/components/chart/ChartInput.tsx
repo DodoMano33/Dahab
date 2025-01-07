@@ -16,7 +16,7 @@ interface ChartInputProps {
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean
   ) => void;
-  onHistoryClick: () => void;
+  onHistoryClick?: () => void;  // Made optional with ?
   isAnalyzing: boolean;
 }
 
