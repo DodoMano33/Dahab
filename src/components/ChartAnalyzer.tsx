@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
@@ -18,7 +18,7 @@ export const ChartAnalyzer = () => {
   } = useAnalysisHandler();
 
   const {
-    searchHistory,
+    searchHistory = [], // Provide default empty array
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
@@ -29,13 +29,19 @@ export const ChartAnalyzer = () => {
   const [selectedInterval, setSelectedInterval] = useState<string>("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
-    if (!timeframes) return; // Guard against undefined
+    if (!timeframes) {
+      console.log("No timeframes provided");
+      return;
+    }
     setSelectedTimeframes(timeframes);
     console.log("Selected timeframes:", timeframes);
   };
 
   const handleIntervalChange = (interval: string) => {
-    if (!interval) return; // Guard against undefined
+    if (!interval) {
+      console.log("No interval provided");
+      return;
+    }
     setSelectedInterval(interval);
     console.log("Selected interval:", interval);
   };
@@ -73,7 +79,7 @@ export const ChartAnalyzer = () => {
         )}
       </div>
       
-      {searchHistory && (
+      {isHistoryOpen && (
         <HistoryDialog
           isOpen={isHistoryOpen}
           onClose={() => setIsHistoryOpen(false)}
