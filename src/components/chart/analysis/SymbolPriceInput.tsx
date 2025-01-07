@@ -34,47 +34,24 @@ export const SymbolPriceInput = ({
   symbol,
   price
 }: SymbolPriceInputProps) => {
-  const [isManualInput, setIsManualInput] = useState(false);
-
   return (
     <div className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           رمز العملة أو الزوج
         </label>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            {isManualInput ? (
-              <Input
-                value={symbol}
-                onChange={(e) => onSymbolChange(e.target.value)}
-                placeholder="أدخل رمز العملة يدوياً"
-                className="w-full"
-                dir="ltr"
-              />
-            ) : (
-              <Select value={symbol} onValueChange={onSymbolChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="اختر رمز العملة أو الزوج" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORTED_SYMBOLS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label} ({option.value})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            <button
-              type="button"
-              onClick={() => setIsManualInput(!isManualInput)}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              {isManualInput ? "اختيار من القائمة" : "إدخال يدوي"}
-            </button>
-          </div>
-        </div>
+        <Select value={symbol} onValueChange={onSymbolChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="اختر رمز العملة أو الزوج" />
+          </SelectTrigger>
+          <SelectContent>
+            {SUPPORTED_SYMBOLS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label} ({option.value})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       
       <div>
