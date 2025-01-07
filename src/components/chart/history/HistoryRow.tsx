@@ -70,8 +70,8 @@ export const HistoryRow = ({
           <div 
             className={`h-1 w-16 mt-1 rounded-full ${
               activation_type === 'تلقائي' 
-                ? 'bg-[#1EAEDB]' // Bright Blue for automatic activation
-                : 'bg-[#F97316]' // Bright Orange for manual activation
+                ? 'bg-green-500' // Changed to green for automatic activation
+                : 'bg-[#F97316]' // Orange for manual activation
             }`}
           />
         </div>
