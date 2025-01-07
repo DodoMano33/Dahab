@@ -11,14 +11,12 @@ import { History } from "lucide-react";
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
-  onAnalysisTypesChange: (types: string[]) => void;
   setIsHistoryOpen: (open: boolean) => void;
 }
 
 export const AnalysisSettings = ({
   onTimeframesChange,
   onIntervalChange,
-  onAnalysisTypesChange,
   setIsHistoryOpen,
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
@@ -38,11 +36,6 @@ export const AnalysisSettings = ({
     onIntervalChange(interval);
   };
 
-  const handleAnalysisTypesChange = (types: string[]) => {
-    setSelectedAnalysisTypes(types);
-    onAnalysisTypesChange(types);
-  };
-
   return (
     <div className="space-y-6">
       <SymbolPriceInput
@@ -50,9 +43,6 @@ export const AnalysisSettings = ({
         price={price}
         onSymbolChange={setSymbol}
         onPriceChange={setPrice}
-        selectedTimeframes={selectedTimeframes}
-        selectedInterval={selectedInterval}
-        selectedAnalysisTypes={selectedAnalysisTypes}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -66,7 +56,7 @@ export const AnalysisSettings = ({
         />
         <AnalysisTypes
           selectedTypes={selectedAnalysisTypes}
-          onTypesChange={handleAnalysisTypesChange}
+          onTypesChange={setSelectedAnalysisTypes}
         />
       </div>
 

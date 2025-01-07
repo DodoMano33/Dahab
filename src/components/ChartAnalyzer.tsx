@@ -18,7 +18,7 @@ export const ChartAnalyzer = () => {
   } = useAnalysisHandler();
 
   const {
-    searchHistory = [],
+    searchHistory = [], // Provide default empty array
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
@@ -27,7 +27,6 @@ export const ChartAnalyzer = () => {
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
-  const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
 
   const handleTimeframesChange = (timeframes: string[]) => {
     if (!timeframes) {
@@ -47,17 +46,11 @@ export const ChartAnalyzer = () => {
     console.log("Selected interval:", interval);
   };
 
-  const handleAnalysisTypesChange = (types: string[]) => {
-    setSelectedAnalysisTypes(types);
-    console.log("Selected analysis types:", types);
-  };
-
   return (
     <div className="space-y-8">
       <AnalysisSettings
         onTimeframesChange={handleTimeframesChange}
         onIntervalChange={handleIntervalChange}
-        onAnalysisTypesChange={handleAnalysisTypesChange}
         setIsHistoryOpen={setIsHistoryOpen}
       />
       
@@ -67,9 +60,6 @@ export const ChartAnalyzer = () => {
             onAnalysis={addToSearchHistory}
             isAnalyzing={isAnalyzing}
             currentAnalysis={currentAnalysis || ""}
-            selectedTimeframes={selectedTimeframes}
-            selectedInterval={selectedInterval}
-            selectedAnalysisTypes={selectedAnalysisTypes}
           />
         </div>
         {(image || analysis || isAnalyzing) && (
