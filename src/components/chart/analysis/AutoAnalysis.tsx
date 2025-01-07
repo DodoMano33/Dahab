@@ -46,6 +46,23 @@ export const AutoAnalysis = ({
       return;
     }
 
+    // Get the current symbol and price from the form fields
+    const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
+    const priceInput = document.querySelector('input#price') as HTMLInputElement;
+
+    if (!symbolInput?.value || !priceInput?.value) {
+      toast.error("الرجاء إدخال رمز العملة والسعر قبل بدء التحليل التلقائي");
+      return;
+    }
+
+    const symbol = symbolInput.value.toUpperCase();
+    const currentPrice = Number(priceInput.value);
+
+    if (isNaN(currentPrice) || currentPrice <= 0) {
+      toast.error("الرجاء إدخال سعر صحيح");
+      return;
+    }
+
     setIsAnalyzing(true);
     const intervalMs = getIntervalInMs(selectedInterval);
     let currentRepetition = 0;
@@ -57,7 +74,7 @@ export const AutoAnalysis = ({
           return;
         }
 
-        await performAnalysis();
+        await performAnalysis(symbol, currentPrice);
         currentRepetition++;
       } catch (error) {
         console.error("خطأ في التحليل التلقائي:", error);
@@ -85,16 +102,16 @@ export const AutoAnalysis = ({
     }
   };
 
-  const performAnalysis = async () => {
+  const performAnalysis = async (symbol: string, price: number) => {
     for (const timeframe of selectedTimeframes) {
       for (const analysisType of selectedAnalysisTypes) {
         try {
           console.log(`Performing analysis for ${timeframe} - ${analysisType}`);
           
           const result = await handleTradingViewConfig(
-            "XAUUSD",
+            symbol,
             timeframe,
-            2500,
+            price,
             analysisType === "scalping",
             false,
             analysisType === "smc",
@@ -112,7 +129,7 @@ export const AutoAnalysis = ({
             const mappedAnalysisType = getAnalysisType(analysisType);
             const savedData = await saveAnalysisToHistory(
               result,
-              "XAUUSD",
+              symbol,
               timeframe,
               mappedAnalysisType,
               user.id
@@ -124,8 +141,8 @@ export const AutoAnalysis = ({
               const newHistoryEntry: SearchHistoryItem = {
                 id: savedData.id,
                 date: new Date(),
-                symbol: "XAUUSD",
-                currentPrice: 2500,
+                symbol: symbol,
+                currentPrice: price,
                 analysis: result.analysisResult,
                 analysisType: mappedAnalysisType,
                 timeframe: timeframe
