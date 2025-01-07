@@ -34,6 +34,8 @@ export const HistoryRow = ({
   onSelect,
   activation_type = 'يدوي'
 }: HistoryRowProps) => {
+  console.log("Activation type:", activation_type); // Debug log
+
   return (
     <TableRow>
       <TableCell className="w-[120px] text-center p-2 whitespace-normal">
@@ -70,8 +72,8 @@ export const HistoryRow = ({
           <div 
             className={`h-1 w-16 mt-1 rounded-full ${
               activation_type === 'تلقائي' 
-                ? 'bg-green-500' // Changed to green for automatic activation
-                : 'bg-[#F97316]' // Orange for manual activation
+                ? 'bg-emerald-500' // Using a different green class
+                : 'bg-orange-500' // Using a different orange class for better visibility
             }`}
           />
         </div>
