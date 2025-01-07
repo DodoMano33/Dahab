@@ -92,10 +92,7 @@ export const AutoAnalysis = ({
       }
     };
 
-    // Run initial analysis
     await runAnalysis();
-
-    // Set up interval for repeated analysis
     const interval = setInterval(runAnalysis, intervalMs);
     setAnalysisInterval(interval);
     toast.success("تم بدء التحليل التلقائي");

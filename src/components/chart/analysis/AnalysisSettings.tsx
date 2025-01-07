@@ -3,7 +3,7 @@ import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
 import { Button } from "@/components/ui/button";
-import { History } from "lucide-react";
+import { X } from "lucide-react";
 import { SearchHistory } from "../SearchHistory";
 import { SymbolPriceInput } from "./SymbolPriceInput";
 import { AutoAnalysis } from "./AutoAnalysis";
@@ -22,7 +22,7 @@ export const AnalysisSettings = ({
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
@@ -50,11 +50,6 @@ export const AnalysisSettings = ({
       }
       return newSet;
     });
-  };
-
-  const refreshHistory = () => {
-    setIsHistoryOpen(false);
-    setTimeout(() => setIsHistoryOpen(true), 100);
   };
 
   return (
@@ -88,31 +83,34 @@ export const AnalysisSettings = ({
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
           selectedAnalysisTypes={selectedAnalysisTypes}
-          onAnalysisComplete={refreshHistory}
+          onAnalysisComplete={() => setShowHistory(true)}
         />
-
-        <Button
-          onClick={() => setIsHistoryOpen(true)}
-          variant="outline"
-          className="flex items-center gap-2 w-full md:w-auto"
-        >
-          <History className="w-5 h-5" />
-          سجل البحث الذي تم اختباره
-        </Button>
       </div>
 
-      <SearchHistory
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-        isDatePickerOpen={isDatePickerOpen}
-        setIsDatePickerOpen={setIsDatePickerOpen}
-        selectedItems={selectedItems}
-        onDelete={() => {}}
-        validHistory={[]}
-        handleSelect={handleSelect}
-      />
+      {showHistory && (
+        <div className="relative bg-white rounded-lg shadow-lg p-6 mt-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2"
+            onClick={() => setShowHistory(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <SearchHistory
+            isOpen={true}
+            onClose={() => setShowHistory(false)}
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            isDatePickerOpen={isDatePickerOpen}
+            setIsDatePickerOpen={setIsDatePickerOpen}
+            selectedItems={selectedItems}
+            onDelete={() => {}}
+            validHistory={[]}
+            handleSelect={handleSelect}
+          />
+        </div>
+      )}
     </div>
   );
 };
