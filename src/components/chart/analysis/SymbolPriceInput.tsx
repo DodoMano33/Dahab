@@ -45,8 +45,9 @@ export const SymbolPriceInput = ({
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
-  const handleSymbolSelect = (currentValue: string) => {
-    onSymbolChange(currentValue);
+  const handleSymbolSelect = (value: string) => {
+    console.log("Symbol selected:", value);
+    onSymbolChange(value);
     setOpen(false);
     setSearchValue("");
   };
@@ -74,7 +75,7 @@ export const SymbolPriceInput = ({
           <PopoverContent className="w-full p-0" align="start">
             <Command>
               <CommandInput 
-                placeholder="ابحث عن رمز العملة..." 
+                placeholder="ابحث عن رمز العملة..."
                 value={searchValue}
                 onValueChange={setSearchValue}
               />
@@ -84,7 +85,7 @@ export const SymbolPriceInput = ({
                   <CommandItem
                     key={s.value}
                     value={s.value}
-                    onSelect={handleSymbolSelect}
+                    onSelect={() => handleSymbolSelect(s.value)}
                   >
                     <Check
                       className={cn(
