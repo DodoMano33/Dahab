@@ -100,7 +100,7 @@ export const AutoAnalysis = ({
             );
 
             if (result && result.analysisResult) {
-              await saveAnalysisToHistory(result, symbol, timeframe, analysisType);
+              await saveAnalysisToHistory(result, symbol, timeframe, analysisType, user.id);
             }
           }
         }
@@ -161,12 +161,15 @@ const saveAnalysisToHistory = async (
   result: any,
   symbol: string,
   timeframe: string,
-  analysisType: string
+  analysisType: string,
+  userId: string
 ) => {
   try {
+    console.log("Saving analysis to history with user_id:", userId);
     const { error } = await supabase
       .from('search_history')
       .insert({
+        user_id: userId,
         symbol: symbol.toUpperCase(),
         current_price: result.currentPrice,
         analysis: result.analysisResult,
@@ -174,7 +177,10 @@ const saveAnalysisToHistory = async (
         timeframe: timeframe
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error saving analysis to history:", error);
+      throw error;
+    }
   } catch (error) {
     console.error("Error saving analysis to history:", error);
     toast.error("حدث خطأ أثناء حفظ التحليل في السجل");
