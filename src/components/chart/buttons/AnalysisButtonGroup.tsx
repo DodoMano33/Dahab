@@ -79,22 +79,11 @@ export const AnalysisButtonGroup = ({
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onHistoryClick}
-          className="border-blue-600 text-blue-600 hover:bg-blue-50 text-sm py-1.5"
-        >
-          سجل البحث
-        </Button>
-
-        {currentAnalysis && (
-          <Badge variant="secondary" className="text-sm">
-            نوع التحليل: {currentAnalysis}
-          </Badge>
-        )}
-      </div>
+      {currentAnalysis && (
+        <Badge variant="secondary" className="text-sm">
+          نوع التحليل: {currentAnalysis}
+        </Badge>
+      )}
 
       <Button
         type="button"
