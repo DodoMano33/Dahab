@@ -7,6 +7,8 @@ import { History, Play, Square } from "lucide-react";
 import { toast } from "sonner";
 import { useAnalysisHandler } from "./AnalysisHandler";
 import { useAuth } from "@/contexts/AuthContext";
+import { SearchHistory } from "../SearchHistory";
+import { supabase } from "@/lib/supabase";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -24,6 +26,13 @@ export const AnalysisSettings = ({
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisInterval, setAnalysisInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     return () => {
@@ -71,7 +80,6 @@ export const AnalysisSettings = ({
       analysisTypes: selectedAnalysisTypes
     });
 
-    // تحويل المدة الزمنية إلى مللي ثانية
     const intervalMs = getIntervalInMs(selectedInterval);
 
     const interval = setInterval(async () => {
@@ -80,7 +88,7 @@ export const AnalysisSettings = ({
           for (const analysisType of selectedAnalysisTypes) {
             if (analysisType !== "normal") {
               await handleTradingViewConfig(
-                "XAUUSD", // يمكن تغييره لاحقاً ليكون ديناميكياً
+                "XAUUSD",
                 timeframe,
                 undefined,
                 analysisType === "scalping",
@@ -116,8 +124,39 @@ export const AnalysisSettings = ({
   };
 
   const handleHistoryClick = () => {
-    console.log("فتح سجل البحث المختبر");
-    toast.info("سيتم عرض سجل البحث المختبر قريباً");
+    setIsHistoryOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("تم حذف العنصر بنجاح");
+      setSelectedItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error("Error deleting history item:", error);
+      toast.error("حدث خطأ أثناء حذف العنصر");
+    }
+  };
+
+  const handleSelect = (id: string) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -166,6 +205,19 @@ export const AnalysisSettings = ({
           سجل البحث الذي تم اختباره
         </Button>
       </div>
+
+      <SearchHistory
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        isDatePickerOpen={isDatePickerOpen}
+        setIsDatePickerOpen={setIsDatePickerOpen}
+        selectedItems={selectedItems}
+        onDelete={handleDelete}
+        validHistory={[]} // This will be populated with actual test history data
+        handleSelect={handleSelect}
+      />
     </div>
   );
 };
