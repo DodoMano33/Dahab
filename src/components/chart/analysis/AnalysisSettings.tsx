@@ -3,12 +3,14 @@ import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
 import { Button } from "@/components/ui/button";
-import { History, Play, Square } from "lucide-react";
+import { History } from "lucide-react";
 import { toast } from "sonner";
 import { useAnalysisHandler } from "./AnalysisHandler";
 import { useAuth } from "@/contexts/AuthContext";
 import { SearchHistory } from "../SearchHistory";
 import { supabase } from "@/lib/supabase";
+import { AutoAnalysisButton } from "./AutoAnalysisButton";
+import { SymbolPriceInput } from "./SymbolPriceInput";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -26,6 +28,10 @@ export const AnalysisSettings = ({
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisInterval, setAnalysisInterval] = useState<NodeJS.Timeout | null>(null);
+  const [symbol, setSymbol] = useState("");
+  const [price, setPrice] = useState("");
+  
+  // History related state
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
@@ -52,24 +58,48 @@ export const AnalysisSettings = ({
     onIntervalChange(interval);
   };
 
+  const validateInputs = () => {
+    if (!symbol) {
+      toast.error("الرجاء اختيار رمز العملة");
+      return false;
+    }
+
+    if (!price) {
+      toast.error("الرجاء إدخال السعر الحالي");
+      return false;
+    }
+
+    const numericPrice = Number(price);
+    if (isNaN(numericPrice) || numericPrice <= 0) {
+      toast.error("الرجاء إدخال سعر صحيح");
+      return false;
+    }
+
+    if (selectedTimeframes.length === 0) {
+      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
+      return false;
+    }
+
+    if (!selectedInterval) {
+      toast.error("الرجاء اختيار مدة التحليل");
+      return false;
+    }
+
+    if (selectedAnalysisTypes.length === 0) {
+      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      return false;
+    }
+
+    return true;
+  };
+
   const startAnalysis = async () => {
     if (!user) {
       toast.error("يرجى تسجيل الدخول لبدء التحليل التلقائي");
       return;
     }
 
-    if (selectedTimeframes.length === 0) {
-      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
-      return;
-    }
-
-    if (!selectedInterval) {
-      toast.error("الرجاء اختيار مدة التحليل");
-      return;
-    }
-
-    if (selectedAnalysisTypes.length === 0) {
-      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+    if (!validateInputs()) {
       return;
     }
 
@@ -81,6 +111,7 @@ export const AnalysisSettings = ({
     });
 
     const intervalMs = getIntervalInMs(selectedInterval);
+    const numericPrice = Number(price);
 
     const interval = setInterval(async () => {
       try {
@@ -88,18 +119,18 @@ export const AnalysisSettings = ({
           for (const analysisType of selectedAnalysisTypes) {
             if (analysisType !== "normal") {
               await handleTradingViewConfig(
-                "XAUUSD",
+                symbol,
                 timeframe,
-                undefined,
+                numericPrice,
                 analysisType === "scalping",
                 false,
                 analysisType === "smc",
                 analysisType === "ict",
-                analysisType === "turtle_soup",
+                analysisType === "turtleSoup",
                 analysisType === "gann",
                 analysisType === "waves",
                 analysisType === "patterns",
-                analysisType === "price_action"
+                analysisType === "priceAction"
               );
             }
           }
@@ -161,6 +192,13 @@ export const AnalysisSettings = ({
 
   return (
     <div className="space-y-6">
+      <SymbolPriceInput
+        symbol={symbol}
+        price={price}
+        onSymbolChange={setSymbol}
+        onPriceChange={setPrice}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
@@ -177,27 +215,14 @@ export const AnalysisSettings = ({
       </div>
 
       <div className="flex flex-col gap-4 items-center">
-        <Button 
+        <AutoAnalysisButton
+          isAnalyzing={isAnalyzing}
           onClick={isAnalyzing ? stopAnalysis : startAnalysis}
-          className={`${
-            isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-          } text-white px-8 py-2 text-lg w-full md:w-auto flex items-center gap-2`}
-        >
-          {isAnalyzing ? (
-            <>
-              <Square className="w-5 h-5" />
-              إيقاف التفعيل
-            </>
-          ) : (
-            <>
-              <Play className="w-5 h-5" />
-              تفعيل
-            </>
-          )}
-        </Button>
+          disabled={!symbol || !price}
+        />
 
         <Button
-          onClick={handleHistoryClick}
+          onClick={() => setIsHistoryOpen(true)}
           variant="outline"
           className="flex items-center gap-2 w-full md:w-auto"
         >
@@ -215,7 +240,7 @@ export const AnalysisSettings = ({
         setIsDatePickerOpen={setIsDatePickerOpen}
         selectedItems={selectedItems}
         onDelete={handleDelete}
-        validHistory={[]} // This will be populated with actual test history data
+        validHistory={[]}
         handleSelect={handleSelect}
       />
     </div>
@@ -225,18 +250,18 @@ export const AnalysisSettings = ({
 const getIntervalInMs = (interval: string): number => {
   switch (interval) {
     case "1m":
-      return 60 * 1000; // دقيقة واحدة
+      return 60 * 1000;
     case "5m":
-      return 5 * 60 * 1000; // 5 دقائق
+      return 5 * 60 * 1000;
     case "30m":
-      return 30 * 60 * 1000; // 30 دقيقة
+      return 30 * 60 * 1000;
     case "1h":
-      return 60 * 60 * 1000; // ساعة واحدة
+      return 60 * 60 * 1000;
     case "4h":
-      return 4 * 60 * 60 * 1000; // 4 ساعات
+      return 4 * 60 * 60 * 1000;
     case "1d":
-      return 24 * 60 * 60 * 1000; // يوم واحد
+      return 24 * 60 * 60 * 1000;
     default:
-      return 5 * 60 * 1000; // 5 دقائق كقيمة افتراضية
+      return 5 * 60 * 1000;
   }
 };
