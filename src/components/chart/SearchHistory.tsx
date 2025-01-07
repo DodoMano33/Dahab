@@ -2,8 +2,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SearchHistoryHeader } from "./history/SearchHistoryHeader";
 import { SearchHistoryToolbar } from "./history/SearchHistoryToolbar";
 import { SearchHistoryMain } from "./history/SearchHistoryMain";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -34,17 +32,7 @@ export const SearchHistory = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
         <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
-          <div className="flex justify-between items-center p-4">
-            <SearchHistoryHeader />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="hover:bg-muted"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <SearchHistoryHeader />
           <SearchHistoryToolbar
             selectedItems={selectedItems}
             onDelete={onDelete}

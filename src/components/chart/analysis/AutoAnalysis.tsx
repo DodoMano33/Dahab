@@ -10,6 +10,7 @@ interface AutoAnalysisProps {
   selectedTimeframes: string[];
   selectedInterval: string;
   selectedAnalysisTypes: string[];
+  onAnalysisComplete?: () => void;
 }
 
 export const AutoAnalysis = ({
@@ -18,6 +19,7 @@ export const AutoAnalysis = ({
   selectedTimeframes,
   selectedInterval,
   selectedAnalysisTypes,
+  onAnalysisComplete
 }: AutoAnalysisProps) => {
   const {
     isAnalyzing,
@@ -78,6 +80,9 @@ export const AutoAnalysis = ({
 
             if (result && result.analysisResult) {
               await saveAnalysisToHistory(result, symbol, timeframe, analysisType, user.id);
+              if (onAnalysisComplete) {
+                onAnalysisComplete();
+              }
             }
           }
         }

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
+import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
+import { SearchHistory } from "../SearchHistory";
 import { SymbolPriceInput } from "./SymbolPriceInput";
 import { AutoAnalysis } from "./AutoAnalysis";
-import { SearchHistory } from "../SearchHistory";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -20,7 +22,7 @@ export const AnalysisSettings = ({
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
-  const [showHistory, setShowHistory] = useState(true);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
@@ -48,6 +50,11 @@ export const AnalysisSettings = ({
       }
       return newSet;
     });
+  };
+
+  const refreshHistory = () => {
+    setIsHistoryOpen(false);
+    setTimeout(() => setIsHistoryOpen(true), 100);
   };
 
   return (
@@ -81,12 +88,22 @@ export const AnalysisSettings = ({
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
           selectedAnalysisTypes={selectedAnalysisTypes}
+          onAnalysisComplete={refreshHistory}
         />
+
+        <Button
+          onClick={() => setIsHistoryOpen(true)}
+          variant="outline"
+          className="flex items-center gap-2 w-full md:w-auto"
+        >
+          <History className="w-5 h-5" />
+          سجل البحث الذي تم اختباره
+        </Button>
       </div>
 
       <SearchHistory
-        isOpen={showHistory}
-        onClose={() => setShowHistory(false)}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
         dateRange={dateRange}
         setDateRange={setDateRange}
         isDatePickerOpen={isDatePickerOpen}
