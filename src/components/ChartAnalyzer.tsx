@@ -40,14 +40,6 @@ export const ChartAnalyzer = () => {
     console.log("Selected interval:", interval);
   };
 
-  // Initialize history dialog state
-  useEffect(() => {
-    if (!searchHistory) {
-      console.log("Search history is undefined, initializing empty array");
-      addToSearchHistory([]); // Initialize with empty array if undefined
-    }
-  }, [searchHistory]);
-
   return (
     <div className="space-y-8">
       <AnalysisSettings
