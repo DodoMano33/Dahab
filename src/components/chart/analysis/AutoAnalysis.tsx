@@ -5,8 +5,6 @@ import { useAnalysisHandler } from "./AnalysisHandler";
 import { toast } from "sonner";
 
 interface AutoAnalysisProps {
-  symbol: string;
-  price: string;
   selectedTimeframes: string[];
   selectedInterval: string;
   selectedAnalysisTypes: string[];
@@ -15,8 +13,6 @@ interface AutoAnalysisProps {
 }
 
 export const AutoAnalysis = ({
-  symbol,
-  price,
   selectedTimeframes,
   selectedInterval,
   selectedAnalysisTypes,
@@ -32,8 +28,6 @@ export const AutoAnalysis = ({
     getIntervalInMs,
     user
   } = useAutoAnalysis(
-    symbol,
-    price,
     selectedTimeframes,
     selectedInterval,
     selectedAnalysisTypes
@@ -53,7 +47,6 @@ export const AutoAnalysis = ({
 
     setIsAnalyzing(true);
     const intervalMs = getIntervalInMs(selectedInterval);
-    const numericPrice = Number(price);
     let currentRepetition = 0;
 
     const runAnalysis = async () => {
@@ -63,7 +56,7 @@ export const AutoAnalysis = ({
           return;
         }
 
-        await performAnalysis(numericPrice);
+        await performAnalysis();
         currentRepetition++;
       } catch (error) {
         console.error("خطأ في التحليل التلقائي:", error);
@@ -77,13 +70,11 @@ export const AutoAnalysis = ({
     toast.success("تم بدء التحليل التلقائي");
   };
 
-  const performAnalysis = async (numericPrice: number) => {
+  const performAnalysis = async () => {
     for (const timeframe of selectedTimeframes) {
       for (const analysisType of selectedAnalysisTypes) {
         const result = await handleTradingViewConfig(
-          symbol,
           timeframe,
-          numericPrice,
           analysisType === "scalping",
           false,
           analysisType === "smc",
@@ -96,7 +87,7 @@ export const AutoAnalysis = ({
         );
 
         if (result && result.analysisResult) {
-          await saveAnalysisToHistory(result, symbol, timeframe, analysisType, user.id);
+          await saveAnalysisToHistory(result, timeframe, analysisType, user.id);
           if (onAnalysisComplete) {
             onAnalysisComplete();
           }
@@ -118,7 +109,6 @@ export const AutoAnalysis = ({
     <AutoAnalysisButton
       isAnalyzing={isAnalyzing}
       onClick={isAnalyzing ? stopAnalysis : startAnalysis}
-      disabled={!symbol || !price}
     />
   );
 };
