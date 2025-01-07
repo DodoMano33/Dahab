@@ -50,7 +50,6 @@ export const ChartAnalyzer = () => {
           <AnalysisForm
             onAnalysis={addToSearchHistory}
             isAnalyzing={isAnalyzing}
-            onHistoryClick={() => setIsHistoryOpen(true)}
             currentAnalysis={currentAnalysis}
           />
         </div>
