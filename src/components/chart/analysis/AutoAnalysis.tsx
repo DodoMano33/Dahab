@@ -157,6 +157,21 @@ const getIntervalInMs = (interval: string): number => {
   }
 };
 
+const mapAnalysisTypeToDbValue = (type: string): string => {
+  const mapping: { [key: string]: string } = {
+    'scalping': 'سكالبينج',
+    'smc': 'SMC',
+    'ict': 'ICT',
+    'turtleSoup': 'Turtle Soup',
+    'gann': 'Gann',
+    'waves': 'Waves',
+    'patterns': 'Patterns',
+    'priceAction': 'Price Action',
+    'smart': 'Smart'
+  };
+  return mapping[type] || 'عادي';
+};
+
 const saveAnalysisToHistory = async (
   result: any,
   symbol: string,
@@ -166,6 +181,9 @@ const saveAnalysisToHistory = async (
 ) => {
   try {
     console.log("Saving analysis to history with user_id:", userId);
+    const mappedAnalysisType = mapAnalysisTypeToDbValue(analysisType);
+    console.log("Mapped analysis type:", mappedAnalysisType);
+    
     const { error } = await supabase
       .from('search_history')
       .insert({
@@ -173,7 +191,7 @@ const saveAnalysisToHistory = async (
         symbol: symbol.toUpperCase(),
         current_price: result.currentPrice,
         analysis: result.analysisResult,
-        analysis_type: analysisType,
+        analysis_type: mappedAnalysisType,
         timeframe: timeframe
       });
 
@@ -184,5 +202,6 @@ const saveAnalysisToHistory = async (
   } catch (error) {
     console.error("Error saving analysis to history:", error);
     toast.error("حدث خطأ أثناء حفظ التحليل في السجل");
+    throw error;
   }
 };
