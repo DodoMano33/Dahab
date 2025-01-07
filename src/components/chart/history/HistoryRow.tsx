@@ -71,7 +71,7 @@ export const HistoryRow = ({
           <div 
             className={h-1 w-16 mb-1 rounded-full ${
               activation_type === 'تلقائي' 
-                ? 'bg-green-500' // Using emerald for automatic activation
+                ? 'bg-emerald-500' // Using emerald for automatic activation
                 : 'bg-orange-500' // Using orange for manual activation
             }}
           />
