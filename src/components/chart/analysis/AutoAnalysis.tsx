@@ -52,13 +52,6 @@ export const AutoAnalysis = ({
     }
 
     setIsAnalyzing(true);
-    console.log("بدء التحليل التلقائي:", {
-      timeframes: selectedTimeframes,
-      interval: selectedInterval,
-      analysisTypes: selectedAnalysisTypes,
-      repetitions
-    });
-
     const intervalMs = getIntervalInMs(selectedInterval);
     const numericPrice = Number(price);
     let currentRepetition = 0;
@@ -70,31 +63,7 @@ export const AutoAnalysis = ({
           return;
         }
 
-        for (const timeframe of selectedTimeframes) {
-          for (const analysisType of selectedAnalysisTypes) {
-            const result = await handleTradingViewConfig(
-              symbol,
-              timeframe,
-              numericPrice,
-              analysisType === "scalping",
-              false,
-              analysisType === "smc",
-              analysisType === "ict",
-              analysisType === "turtleSoup",
-              analysisType === "gann",
-              analysisType === "waves",
-              analysisType === "patterns",
-              analysisType === "priceAction"
-            );
-
-            if (result && result.analysisResult) {
-              await saveAnalysisToHistory(result, symbol, timeframe, analysisType, user.id);
-              if (onAnalysisComplete) {
-                onAnalysisComplete();
-              }
-            }
-          }
-        }
+        await performAnalysis(numericPrice);
         currentRepetition++;
       } catch (error) {
         console.error("خطأ في التحليل التلقائي:", error);
@@ -106,6 +75,34 @@ export const AutoAnalysis = ({
     const interval = setInterval(runAnalysis, intervalMs);
     setAnalysisInterval(interval);
     toast.success("تم بدء التحليل التلقائي");
+  };
+
+  const performAnalysis = async (numericPrice: number) => {
+    for (const timeframe of selectedTimeframes) {
+      for (const analysisType of selectedAnalysisTypes) {
+        const result = await handleTradingViewConfig(
+          symbol,
+          timeframe,
+          numericPrice,
+          analysisType === "scalping",
+          false,
+          analysisType === "smc",
+          analysisType === "ict",
+          analysisType === "turtleSoup",
+          analysisType === "gann",
+          analysisType === "waves",
+          analysisType === "patterns",
+          analysisType === "priceAction"
+        );
+
+        if (result && result.analysisResult) {
+          await saveAnalysisToHistory(result, symbol, timeframe, analysisType, user.id);
+          if (onAnalysisComplete) {
+            onAnalysisComplete();
+          }
+        }
+      }
+    }
   };
 
   const stopAnalysis = () => {
