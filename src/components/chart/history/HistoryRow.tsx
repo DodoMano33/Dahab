@@ -68,14 +68,14 @@ export const HistoryRow = ({
       <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
       <TableCell className="w-[100px] text-center p-2 font-medium">
         <div className="flex flex-col items-center">
-          <span>{symbol.toUpperCase()}</span>
           <div 
-            className={`h-1 w-16 mt-1 rounded-full ${
+            className={`h-1 w-16 mb-1 rounded-full ${
               activation_type === 'تلقائي' 
-                ? 'bg-emerald-500' // Using a different green class
-                : 'bg-orange-500' // Using a different orange class for better visibility
+                ? 'bg-emerald-500' // Using emerald for automatic activation
+                : 'bg-orange-500' // Using orange for manual activation
             }`}
           />
+          <span>{symbol.toUpperCase()}</span>
         </div>
       </TableCell>
       <DateCell date={date} />
