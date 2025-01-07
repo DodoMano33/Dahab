@@ -11,6 +11,7 @@ export const HistoryTableHeader = ({ showCheckbox = false }: HistoryTableHeaderP
       <TableHead className="w-[120px] text-center p-2 font-bold">التاريخ</TableHead>
       <TableHead className="w-[100px] text-center p-2 font-bold">الرمز</TableHead>
       <TableHead className="w-[140px] text-center p-2 font-bold">نوع التحليل</TableHead>
+      <TableHead className="w-[100px] text-center p-2 font-bold">التفعيل</TableHead>
       <TableHead className="w-[100px] text-center p-2 font-bold">الإطار الزمني</TableHead>
       <TableHead className="w-[120px] text-center p-2 font-bold">السعر عند التحليل</TableHead>
       <TableHead className="w-[80px] text-center p-2 font-bold">الاتجاه</TableHead>
