@@ -67,18 +67,18 @@ export const HistoryRow = ({
       <TimeframeCell timeframe={timeframe} />
       <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
       <TableCell className="w-[100px] text-center p-2">
+        {/* رمز العملة */}
+        <div className="font-medium mb-2">
+          <span>{symbol.toUpperCase()}</span>
+        </div>
         {/* نوع التفعيل - شريط ملون */}
         <div 
-          className={`h-1 w-16 mx-auto mb-3 rounded-full ${
+          className={`h-1 w-16 mx-auto rounded-full ${
             activation_type === 'تلقائي' 
               ? 'bg-emerald-500' // لون أخضر للتفعيل التلقائي
               : 'bg-orange-500'  // لون برتقالي للتفعيل اليدوي
           }`}
         />
-        {/* رمز العملة */}
-        <div className="font-medium">
-          <span>{symbol.toUpperCase()}</span>
-        </div>
       </TableCell>
       <DateCell date={date} />
       {onSelect !== undefined && (
