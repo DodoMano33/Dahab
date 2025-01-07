@@ -43,13 +43,11 @@ export const SymbolPriceInput = ({
   price
 }: SymbolPriceInputProps) => {
   const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
 
   const handleSymbolSelect = (value: string) => {
     console.log("Symbol selected:", value);
     onSymbolChange(value);
     setOpen(false);
-    setSearchValue("");
   };
 
   return (
@@ -72,13 +70,9 @@ export const SymbolPriceInput = ({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
+          <PopoverContent className="w-full p-0">
             <Command>
-              <CommandInput 
-                placeholder="ابحث عن رمز العملة..."
-                value={searchValue}
-                onValueChange={setSearchValue}
-              />
+              <CommandInput placeholder="ابحث عن رمز العملة..." />
               <CommandEmpty>لم يتم العثور على رمز العملة</CommandEmpty>
               <CommandGroup>
                 {SUPPORTED_SYMBOLS.map((s) => (
@@ -90,7 +84,7 @@ export const SymbolPriceInput = ({
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        s.value === symbol ? "opacity-100" : "opacity-0"
+                        symbol === s.value ? "opacity-100" : "opacity-0"
                       )}
                     />
                     {s.label}
