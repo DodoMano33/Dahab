@@ -18,7 +18,7 @@ export const ChartAnalyzer = () => {
   } = useAnalysisHandler();
 
   const {
-    searchHistory = [], // Provide default empty array
+    searchHistory = [],
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
@@ -46,12 +46,19 @@ export const ChartAnalyzer = () => {
     console.log("Selected interval:", interval);
   };
 
+  const handleAnalysisComplete = (newItem: any) => {
+    console.log("New analysis completed, adding to history:", newItem);
+    addToSearchHistory(newItem);
+    setIsHistoryOpen(true); // Open history dialog when analysis is complete
+  };
+
   return (
     <div className="space-y-8">
       <AnalysisSettings
         onTimeframesChange={handleTimeframesChange}
         onIntervalChange={handleIntervalChange}
         setIsHistoryOpen={setIsHistoryOpen}
+        onAnalysisComplete={handleAnalysisComplete}
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">

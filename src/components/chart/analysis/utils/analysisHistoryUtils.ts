@@ -32,7 +32,7 @@ export const saveAnalysisToHistory = async (
       throw new Error("User ID is required to save analysis history");
     }
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('search_history')
       .insert({
         user_id: userId,
@@ -41,15 +41,22 @@ export const saveAnalysisToHistory = async (
         analysis: result.analysisResult,
         analysis_type: mappedAnalysisType,
         timeframe: timeframe
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       console.error("Error saving analysis to history:", error);
       throw error;
     }
 
+    if (!data) {
+      throw new Error("No data returned from insert operation");
+    }
+
     console.log("Analysis saved successfully to history");
     toast.success("تم حفظ نتائج التحليل في السجل");
+    return data;
   } catch (error) {
     console.error("Error saving analysis to history:", error);
     toast.error("حدث خطأ أثناء حفظ التحليل في السجل");

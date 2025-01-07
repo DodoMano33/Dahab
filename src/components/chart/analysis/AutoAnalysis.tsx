@@ -3,12 +3,13 @@ import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { saveAnalysisToHistory } from "./utils/analysisHistoryUtils";
 import { useAnalysisHandler } from "./AnalysisHandler";
 import { toast } from "sonner";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
   selectedInterval: string;
   selectedAnalysisTypes: string[];
-  onAnalysisComplete?: () => void;
+  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions?: number;
 }
 
@@ -74,12 +75,14 @@ export const AutoAnalysis = ({
     for (const timeframe of selectedTimeframes) {
       for (const analysisType of selectedAnalysisTypes) {
         try {
+          console.log(`Performing analysis for ${timeframe} - ${analysisType}`);
+          
           const result = await handleTradingViewConfig(
-            "XAUUSD", // Default symbol
+            "XAUUSD",
             timeframe,
-            2500, // Default price
+            2500,
             analysisType === "scalping",
-            false, // isAI
+            false,
             analysisType === "smc",
             analysisType === "ict",
             analysisType === "turtleSoup",
@@ -90,15 +93,31 @@ export const AutoAnalysis = ({
           );
 
           if (result && result.analysisResult) {
-            await saveAnalysisToHistory(
+            console.log("Analysis result received:", result);
+            
+            const savedData = await saveAnalysisToHistory(
               result,
-              "XAUUSD", // symbol
+              "XAUUSD",
               timeframe,
               analysisType,
               user.id
             );
+
+            console.log("Analysis saved to history:", savedData);
+
             if (onAnalysisComplete) {
-              onAnalysisComplete();
+              const newHistoryEntry: SearchHistoryItem = {
+                id: savedData.id,
+                date: new Date(),
+                symbol: "XAUUSD",
+                currentPrice: 2500,
+                analysis: result.analysisResult,
+                analysisType: analysisType,
+                timeframe: timeframe
+              };
+              
+              console.log("Calling onAnalysisComplete with new entry:", newHistoryEntry);
+              onAnalysisComplete(newHistoryEntry);
             }
           }
         } catch (error) {
