@@ -11,18 +11,19 @@ import { History } from "lucide-react";
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
+  setIsHistoryOpen: (open: boolean) => void;
 }
 
 export const AnalysisSettings = ({
   onTimeframesChange,
   onIntervalChange,
+  setIsHistoryOpen,
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [symbol, setSymbol] = useState("");
   const [price, setPrice] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
   const [repetitions, setRepetitions] = useState("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
@@ -71,11 +72,11 @@ export const AnalysisSettings = ({
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
           selectedAnalysisTypes={selectedAnalysisTypes}
-          onAnalysisComplete={() => setShowHistory(true)}
+          onAnalysisComplete={() => setIsHistoryOpen(true)}
           repetitions={repetitions ? parseInt(repetitions) : 1}
         />
         <Button
-          onClick={() => setShowHistory(true)}
+          onClick={() => setIsHistoryOpen(true)}
           variant="outline"
           className="flex items-center gap-2"
         >

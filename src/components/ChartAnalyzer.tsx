@@ -43,6 +43,7 @@ export const ChartAnalyzer = () => {
       <AnalysisSettings
         onTimeframesChange={handleTimeframesChange}
         onIntervalChange={handleIntervalChange}
+        setIsHistoryOpen={setIsHistoryOpen}
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
@@ -50,7 +51,7 @@ export const ChartAnalyzer = () => {
           <AnalysisForm
             onAnalysis={addToSearchHistory}
             isAnalyzing={isAnalyzing}
-            currentAnalysis={currentAnalysis}
+            currentAnalysis={currentAnalysis || ""}
           />
         </div>
         {(image || analysis || isAnalyzing) && (
