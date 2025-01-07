@@ -66,19 +66,20 @@ export const HistoryRow = ({
       <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
       <TimeframeCell timeframe={timeframe} />
       <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
-      <TableCell className="w-[100px] text-center p-2">
-        {/* رمز العملة */}
-        <div className="font-medium mb-2">
+      <TableCell className="w-[100px] text-center p-2 font-medium relative">
+        {activation_type === 'يدوي' && (
+          <div className="absolute top-0 left-0 w-full h-1 bg-orange-500" />
+        )}
+        <div className="flex flex-col items-center">
+          <div 
+            className={`h-1 w-16 mb-1 rounded-full ${
+              activation_type === 'تلقائي' 
+                ? 'bg-emerald-500' // Using emerald for automatic activation
+                : 'bg-orange-500' // Using orange for manual activation
+            }`}
+          />
           <span>{symbol.toUpperCase()}</span>
         </div>
-        {/* نوع التفعيل - شريط ملون */}
-        <div 
-          className={`h-1 w-16 mx-auto rounded-full ${
-            activation_type === 'تلقائي' 
-              ? 'bg-emerald-500' // لون أخضر للتفعيل التلقائي
-              : 'bg-emerald-500'  // تم تغيير اللون البرتقالي إلى أخضر للتفعيل اليدوي
-          }`}
-        />
       </TableCell>
       <DateCell date={date} />
       {onSelect !== undefined && (
