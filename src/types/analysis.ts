@@ -1,6 +1,6 @@
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "صاعد" | "هابط" | "محايد";  // Updated to include "محايد"
   currentPrice: number;
   support: number;
   resistance: number;
@@ -30,7 +30,6 @@ export interface SearchHistoryItem {
   stopLossHit?: boolean;
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
   timeframe: string;
-  activationType?: "تلقائي" | "يدوي";
 }
 
 export interface ImageData {

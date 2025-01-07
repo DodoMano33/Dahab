@@ -46,6 +46,7 @@ export const AutoAnalysis = ({
       return;
     }
 
+    // Get the current symbol and price from the form fields
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
     const priceInput = document.querySelector('input#price') as HTMLInputElement;
 
@@ -88,18 +89,17 @@ export const AutoAnalysis = ({
   };
 
   const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
-    const mapping: { [key: string]: AnalysisData['analysisType'] } = {
-      'scalping': 'سكالبينج',
-      'smc': 'SMC',
-      'ict': 'ICT',
-      'turtleSoup': 'Turtle Soup',
-      'gann': 'Gann',
-      'waves': 'Waves',
-      'patterns': 'Patterns',
-      'priceAction': 'Price Action',
-      'smart': 'Smart'
-    };
-    return mapping[type] || 'عادي';
+    switch (type) {
+      case 'scalping': return 'سكالبينج';
+      case 'smc': return 'SMC';
+      case 'ict': return 'ICT';
+      case 'turtleSoup': return 'Turtle Soup';
+      case 'gann': return 'Gann';
+      case 'waves': return 'Waves';
+      case 'patterns': return 'Patterns';
+      case 'priceAction': return 'Price Action';
+      default: return 'عادي';
+    }
   };
 
   const performAnalysis = async (symbol: string, price: number) => {
@@ -132,8 +132,7 @@ export const AutoAnalysis = ({
               symbol,
               timeframe,
               mappedAnalysisType,
-              user.id,
-              'تلقائي' // Set activation type as automatic
+              user.id
             );
 
             console.log("Analysis saved to history:", savedData);
@@ -146,8 +145,7 @@ export const AutoAnalysis = ({
                 currentPrice: price,
                 analysis: result.analysisResult,
                 analysisType: mappedAnalysisType,
-                timeframe: timeframe,
-                activationType: 'تلقائي'
+                timeframe: timeframe
               };
               
               console.log("Calling onAnalysisComplete with new entry:", newHistoryEntry);

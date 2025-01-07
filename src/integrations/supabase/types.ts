@@ -11,7 +11,6 @@ export type Database = {
     Tables: {
       search_history: {
         Row: {
-          activation_type: string
           analysis: Json
           analysis_type: string
           created_at: string
@@ -22,7 +21,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          activation_type?: string
           analysis: Json
           analysis_type: string
           created_at?: string
@@ -33,7 +31,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          activation_type?: string
           analysis?: Json
           analysis_type?: string
           created_at?: string

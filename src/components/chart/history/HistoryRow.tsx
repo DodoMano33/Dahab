@@ -17,7 +17,6 @@ interface HistoryRowProps {
   analysis: AnalysisData;
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
   timeframe: string;
-  activationType?: "تلقائي" | "يدوي";
   isSelected?: boolean;
   onSelect?: () => void;
 }
@@ -30,37 +29,16 @@ export const HistoryRow = ({
   analysis,
   analysisType,
   timeframe,
-  activationType = "يدوي",
   isSelected,
   onSelect
 }: HistoryRowProps) => {
   return (
     <TableRow>
-      {onSelect !== undefined && (
-        <TableCell className="w-[60px] text-center p-2">
-          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
-        </TableCell>
-      )}
-      <DateCell date={date} />
-      <TableCell className="w-[100px] text-center p-2 font-medium">
-        {symbol.toUpperCase()}
-      </TableCell>
-      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
-      <TableCell className="w-[100px] text-center p-2">
-        {activationType}
-      </TableCell>
-      <TimeframeCell timeframe={timeframe} />
-      <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
-      <TableCell className="w-[80px] text-center p-2">
-        <DirectionIndicator direction={analysis.direction} />
-      </TableCell>
-      <TableCell className="w-[160px] text-center p-2 whitespace-normal">
-        <div className="flex justify-center">
-          <BestEntryPoint 
-            price={analysis.bestEntryPoint?.price} 
-            reason={analysis.bestEntryPoint?.reason}
-          />
-        </div>
+      <TableCell className="w-[120px] text-center p-2 whitespace-normal">
+        <StopLoss 
+          value={analysis.stopLoss} 
+          isHit={false}
+        />
       </TableCell>
       <TableCell className="w-[140px] text-center p-2 whitespace-normal">
         <div className="flex justify-center">
@@ -70,12 +48,29 @@ export const HistoryRow = ({
           />
         </div>
       </TableCell>
-      <TableCell className="w-[120px] text-center p-2 whitespace-normal">
-        <StopLoss 
-          value={analysis.stopLoss} 
-          isHit={false}
-        />
+      <TableCell className="w-[160px] text-center p-2 whitespace-normal">
+        <div className="flex justify-center">
+          <BestEntryPoint 
+            price={analysis.bestEntryPoint?.price} 
+            reason={analysis.bestEntryPoint?.reason}
+          />
+        </div>
       </TableCell>
+      <TableCell className="w-[80px] text-center p-2">
+        <DirectionIndicator direction={analysis.direction} />
+      </TableCell>
+      <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
+      <TimeframeCell timeframe={timeframe} />
+      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
+      <TableCell className="w-[100px] text-center p-2 font-medium">
+        {symbol.toUpperCase()}
+      </TableCell>
+      <DateCell date={date} />
+      {onSelect !== undefined && (
+        <TableCell className="w-[60px] text-center p-2">
+          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+        </TableCell>
+      )}
     </TableRow>
   );
 };

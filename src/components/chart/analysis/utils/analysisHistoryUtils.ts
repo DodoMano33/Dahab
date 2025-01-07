@@ -22,8 +22,7 @@ export const saveAnalysisToHistory = async (
   symbol: string,
   timeframe: string,
   analysisType: string,
-  userId: string,
-  activationType: 'تلقائي' | 'يدوي' = 'يدوي'
+  userId: string
 ) => {
   try {
     console.log("Saving analysis to history with user_id:", userId);
@@ -42,8 +41,7 @@ export const saveAnalysisToHistory = async (
         current_price: result.currentPrice,
         analysis: result.analysisResult,
         analysis_type: mappedAnalysisType,
-        timeframe: timeframe,
-        activation_type: activationType
+        timeframe: timeframe
       })
       .select()
       .single();
