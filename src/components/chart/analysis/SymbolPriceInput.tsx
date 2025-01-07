@@ -69,10 +69,10 @@ export const SymbolPriceInput = ({
               <CommandInput placeholder="ابحث عن رمز العملة..." />
               <CommandEmpty>لم يتم العثور على رمز العملة</CommandEmpty>
               <CommandGroup>
-                {SUPPORTED_SYMBOLS.map((symbol) => (
+                {SUPPORTED_SYMBOLS.map((s) => (
                   <CommandItem
-                    key={symbol.value}
-                    value={symbol.value}
+                    key={s.value}
+                    value={s.value}
                     onSelect={(currentValue) => {
                       onSymbolChange(currentValue);
                       setOpen(false);
@@ -81,10 +81,10 @@ export const SymbolPriceInput = ({
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        symbol.value === symbol ? "opacity-100" : "opacity-0"
+                        s.value === symbol ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {symbol.label}
+                    {s.label}
                   </CommandItem>
                 ))}
               </CommandGroup>
