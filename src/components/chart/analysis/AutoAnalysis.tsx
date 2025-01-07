@@ -3,7 +3,7 @@ import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { saveAnalysisToHistory } from "./utils/analysisHistoryUtils";
 import { useAnalysisHandler } from "./AnalysisHandler";
 import { toast } from "sonner";
-import { SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem, AnalysisData } from "@/types/analysis";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -71,6 +71,20 @@ export const AutoAnalysis = ({
     toast.success("تم بدء التحليل التلقائي");
   };
 
+  const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
+    switch (type) {
+      case 'scalping': return 'سكالبينج';
+      case 'smc': return 'SMC';
+      case 'ict': return 'ICT';
+      case 'turtleSoup': return 'Turtle Soup';
+      case 'gann': return 'Gann';
+      case 'waves': return 'Waves';
+      case 'patterns': return 'Patterns';
+      case 'priceAction': return 'Price Action';
+      default: return 'عادي';
+    }
+  };
+
   const performAnalysis = async () => {
     for (const timeframe of selectedTimeframes) {
       for (const analysisType of selectedAnalysisTypes) {
@@ -95,11 +109,12 @@ export const AutoAnalysis = ({
           if (result && result.analysisResult) {
             console.log("Analysis result received:", result);
             
+            const mappedAnalysisType = getAnalysisType(analysisType);
             const savedData = await saveAnalysisToHistory(
               result,
               "XAUUSD",
               timeframe,
-              analysisType,
+              mappedAnalysisType,
               user.id
             );
 
@@ -112,7 +127,7 @@ export const AutoAnalysis = ({
                 symbol: "XAUUSD",
                 currentPrice: 2500,
                 analysis: result.analysisResult,
-                analysisType: analysisType,
+                analysisType: mappedAnalysisType,
                 timeframe: timeframe
               };
               
