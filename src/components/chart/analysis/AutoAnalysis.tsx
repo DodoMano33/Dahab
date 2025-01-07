@@ -1,6 +1,7 @@
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { saveAnalysisToHistory } from "./utils/analysisHistoryUtils";
+import { useAnalysisHandler } from "./AnalysisHandler";
 import { toast } from "sonner";
 
 interface AutoAnalysisProps {
@@ -35,6 +36,8 @@ export const AutoAnalysis = ({
     selectedInterval,
     selectedAnalysisTypes
   );
+
+  const { handleTradingViewConfig } = useAnalysisHandler();
 
   const startAnalysis = async () => {
     if (!user) {
