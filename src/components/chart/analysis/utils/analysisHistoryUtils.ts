@@ -12,7 +12,7 @@ export const mapAnalysisTypeToDbValue = (type: string): AnalysisData['analysisTy
     'waves': 'Waves',
     'patterns': 'Patterns',
     'priceAction': 'Price Action',
-    'smart': 'Smart'
+    'smart': 'ذكي'
   };
   return mapping[type] || 'عادي';
 };

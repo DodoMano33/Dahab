@@ -71,7 +71,8 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "Smart";
+    analysis.analysisType = "ذكي";
+    analysis.activation_type = "تلقائي";
   } else {
     const strategy = selectedStrategies[0] || "Standard";
     switch (strategy) {

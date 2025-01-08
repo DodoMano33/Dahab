@@ -1,6 +1,6 @@
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد";  // Updated to include "محايد"
+  direction: "صاعد" | "هابط" | "محايد";
   currentPrice: number;
   support: number;
   resistance: number;
@@ -17,7 +17,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: string;
+  activation_type?: "تلقائي" | "يدوي";
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
 }
 
@@ -31,4 +31,10 @@ export interface SearchHistoryItem {
   stopLossHit?: boolean;
   analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
   timeframe: string;
+}
+
+export interface ImageData {
+  height: number;
+  width: number;
+  data: Uint8ClampedArray;
 }
