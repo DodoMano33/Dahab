@@ -66,9 +66,6 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
       <Button onClick={() => handleShare('facebook')} variant="outline" size="icon">
         <Facebook className="h-4 w-4" />
       </Button>
-      <Button onClick={() => handleShare('copy')} variant="outline" size="icon">
-        <Share2 className="h-4 w-4" />
-      </Button>
       {selectedItems.size > 0 && (
         <Button 
           onClick={handleDeleteSelected} 
