@@ -31,11 +31,17 @@ export const useBackTest = () => {
     try {
       console.log('بدء فحص التحليلات...');
       
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.log('لم يتم العثور على مستخدم مسجل');
+        return;
+      }
+
       const { data: activeAnalyses, error } = await supabase
         .from('search_history')
         .select('*')
-        .or('target_hit.eq.false,stop_loss_hit.eq.false')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', user.user.id)
+        .or('target_hit.is.null,target_hit.eq.false,stop_loss_hit.is.null,stop_loss_hit.eq.false');
 
       if (error) {
         console.error('خطأ في جلب التحليلات النشطة:', error);
@@ -58,14 +64,7 @@ export const useBackTest = () => {
             console.log(`السعر الحالي للرمز ${analysis.symbol}: ${currentPrice}`);
           } catch (priceError) {
             console.error(`خطأ في جلب السعر للرمز ${analysis.symbol}:`, priceError);
-            // استخدام آخر سعر معروف إذا كان متوفراً
-            if (analysis.last_checked_price) {
-              currentPrice = analysis.last_checked_price;
-              console.log(`استخدام آخر سعر معروف: ${currentPrice}`);
-            } else {
-              console.log(`تخطي التحليل لعدم توفر السعر`);
-              continue;
-            }
+            continue;
           }
           
           await updateAnalysisStatus(analysis.id, currentPrice);
