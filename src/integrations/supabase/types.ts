@@ -11,45 +11,30 @@ export type Database = {
     Tables: {
       search_history: {
         Row: {
-          activation_type: string
           analysis: Json
           analysis_type: string
           created_at: string
           current_price: number
           id: string
-          last_checked_price: number | null
-          stop_loss_hit: boolean | null
           symbol: string
-          target_hit: boolean | null
-          timeframe: string
           user_id: string
         }
         Insert: {
-          activation_type?: string
           analysis: Json
           analysis_type: string
           created_at?: string
           current_price: number
           id?: string
-          last_checked_price?: number | null
-          stop_loss_hit?: boolean | null
           symbol: string
-          target_hit?: boolean | null
-          timeframe?: string
           user_id: string
         }
         Update: {
-          activation_type?: string
           analysis?: Json
           analysis_type?: string
           created_at?: string
           current_price?: number
           id?: string
-          last_checked_price?: number | null
-          stop_loss_hit?: boolean | null
           symbol?: string
-          target_hit?: boolean | null
-          timeframe?: string
           user_id?: string
         }
         Relationships: []
