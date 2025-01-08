@@ -19,10 +19,6 @@ interface SearchHistoryProps {
 export const SearchHistory = ({
   isOpen,
   onClose,
-  dateRange,
-  setDateRange,
-  isDatePickerOpen,
-  setIsDatePickerOpen,
   selectedItems,
   onDelete,
   validHistory,
@@ -32,15 +28,15 @@ export const SearchHistory = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
         <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
-          <SearchHistoryHeader />
+          <SearchHistoryHeader 
+            selectedItems={selectedItems}
+            onDelete={onDelete}
+            validHistory={validHistory}
+          />
           <SearchHistoryToolbar
             selectedItems={selectedItems}
             onDelete={onDelete}
             validHistory={validHistory}
-            dateRange={dateRange}
-            isDatePickerOpen={isDatePickerOpen}
-            setIsDatePickerOpen={setIsDatePickerOpen}
-            setDateRange={setDateRange}
           />
         </div>
         <SearchHistoryMain

@@ -7,10 +7,6 @@ interface SearchHistoryToolbarProps {
   selectedItems: Set<string>;
   onDelete: (id: string) => void;
   validHistory: any[];
-  dateRange: { from: Date | undefined; to: Date | undefined };
-  isDatePickerOpen: boolean;
-  setIsDatePickerOpen: (open: boolean) => void;
-  setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
 }
 
 export const SearchHistoryToolbar = ({
@@ -63,15 +59,6 @@ export const SearchHistoryToolbar = ({
   return (
     <div className="space-y-4">
       <BackTestResults stats={analysisStats} />
-      <div className="px-6 py-3 flex justify-between items-center gap-2 border-t bg-muted/50">
-        <div className="flex items-center gap-2">
-          <HistoryActions
-            selectedItems={selectedItems}
-            onDelete={onDelete}
-            history={validHistory}
-          />
-        </div>
-      </div>
     </div>
   );
 };
