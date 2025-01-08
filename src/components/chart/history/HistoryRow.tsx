@@ -8,6 +8,7 @@ import { AnalysisData } from "@/types/analysis";
 import { DateCell } from "./cells/DateCell";
 import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
+import { cn } from "@/lib/utils";
 
 interface HistoryRowProps {
   id: string;
@@ -20,6 +21,8 @@ interface HistoryRowProps {
   isSelected?: boolean;
   onSelect?: () => void;
   activation_type?: 'تلقائي' | 'يدوي';
+  target_hit?: boolean;
+  stop_loss_hit?: boolean;
 }
 
 export const HistoryRow = ({ 
@@ -32,23 +35,35 @@ export const HistoryRow = ({
   timeframe,
   isSelected,
   onSelect,
-  activation_type = 'يدوي'
+  activation_type = 'يدوي',
+  target_hit = false,
+  stop_loss_hit = false
 }: HistoryRowProps) => {
-  console.log("Activation type:", activation_type); // Debug log
+  const rowBackgroundColor = cn(
+    "transition-colors duration-200",
+    target_hit && "bg-green-50 hover:bg-green-100",
+    stop_loss_hit && "bg-red-50 hover:bg-red-100"
+  );
+
+  const statusIndicator = cn(
+    "h-1 w-full mt-1 rounded-full",
+    target_hit && "bg-green-500",
+    stop_loss_hit && "bg-red-500"
+  );
 
   return (
-    <TableRow>
+    <TableRow className={rowBackgroundColor}>
       <TableCell className="w-[120px] text-center p-2 whitespace-normal">
         <StopLoss 
           value={analysis.stopLoss} 
-          isHit={false}
+          isHit={stop_loss_hit}
         />
       </TableCell>
       <TableCell className="w-[140px] text-center p-2 whitespace-normal">
         <div className="flex justify-center">
           <TargetsList 
             targets={analysis.targets?.slice(0, 3) || []} 
-            isTargetHit={false}
+            isTargetHit={target_hit}
           />
         </div>
       </TableCell>
@@ -73,11 +88,7 @@ export const HistoryRow = ({
       <TableCell className="w-[100px] text-center p-2 font-medium">
         <div className="flex flex-col items-center">
           <span>{symbol.toUpperCase()}</span>
-          <div className={`h-1 w-16 mt-1 rounded-full ${
-            activation_type === 'تلقائي' 
-              ? 'bg-sky-500' 
-              : 'bg-transparent'
-          }`} />
+          <div className={statusIndicator} />
         </div>
       </TableCell>
       <DateCell date={date} />

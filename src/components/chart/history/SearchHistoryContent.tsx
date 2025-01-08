@@ -72,6 +72,8 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
                   {...item}
                   isSelected={selectedItems.has(item.id)}
                   onSelect={() => handleSelect(item.id)}
+                  target_hit={item.targetHit}
+                  stop_loss_hit={item.stopLossHit}
                 />
               ))}
             </TableBody>

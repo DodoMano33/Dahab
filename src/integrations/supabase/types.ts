@@ -17,7 +17,10 @@ export type Database = {
           created_at: string
           current_price: number
           id: string
+          last_checked_price: number | null
+          stop_loss_hit: boolean | null
           symbol: string
+          target_hit: boolean | null
           timeframe: string
           user_id: string
         }
@@ -28,7 +31,10 @@ export type Database = {
           created_at?: string
           current_price: number
           id?: string
+          last_checked_price?: number | null
+          stop_loss_hit?: boolean | null
           symbol: string
+          target_hit?: boolean | null
           timeframe?: string
           user_id: string
         }
@@ -39,7 +45,10 @@ export type Database = {
           created_at?: string
           current_price?: number
           id?: string
+          last_checked_price?: number | null
+          stop_loss_hit?: boolean | null
           symbol?: string
+          target_hit?: boolean | null
           timeframe?: string
           user_id?: string
         }
@@ -72,6 +81,13 @@ export type Database = {
             }
             Returns: undefined
           }
+      update_analysis_status: {
+        Args: {
+          p_id: string
+          p_current_price: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

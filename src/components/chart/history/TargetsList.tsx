@@ -14,7 +14,7 @@ export const TargetsList = ({ targets, isTargetHit }: TargetsListProps) => (
       targets.map((target, idx) => (
         <div 
           key={idx}
-          className={`relative ${isTargetHit && idx === 0 ? 'pb-4' : ''}`}
+          className={`relative ${isTargetHit && idx === 0 ? 'text-green-600 font-semibold' : ''}`}
         >
           الهدف {idx + 1}: {target?.price ? target.price.toFixed(3) : 'غير محدد'}
           {isTargetHit && idx === 0 && (
