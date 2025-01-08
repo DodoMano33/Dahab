@@ -49,7 +49,6 @@ export const AnalysisTypes = ({
       <div className="space-y-4">
         <div className="text-center mb-4">
           <h3 className="text-xl font-semibold">أنواع التحليل المراد تنفيذها</h3>
-          <p className="text-sm text-red-600">* يمكن اختيار أكثر من إطار زمني</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {analysisTypes.map((type) => (
