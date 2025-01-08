@@ -8,7 +8,7 @@ export const useBackTest = () => {
 
   const updateAnalysisStatus = async (id: string, currentPrice: number) => {
     try {
-      console.log(`Updating analysis status for ID ${id} with current price: ${currentPrice}`);
+      console.log(`تحديث حالة التحليل للمعرف ${id} بالسعر الحالي: ${currentPrice}`);
       
       const { error } = await supabase.rpc('update_analysis_status', {
         p_id: id,
@@ -16,48 +16,61 @@ export const useBackTest = () => {
       });
 
       if (error) {
-        console.error('Error updating analysis status:', error);
+        console.error('خطأ في تحديث حالة التحليل:', error);
         throw error;
       }
       
-      console.log(`Successfully updated analysis status for ID ${id}`);
+      console.log(`تم تحديث حالة التحليل بنجاح للمعرف ${id}`);
     } catch (error) {
-      console.error('Error in updateAnalysisStatus:', error);
+      console.error('خطأ في updateAnalysisStatus:', error);
+      toast.error('حدث خطأ في تحديث حالة التحليل');
     }
   };
 
   const checkAnalyses = async () => {
     try {
-      console.log('Starting analysis check...');
+      console.log('بدء فحص التحليلات...');
       
-      // جلب جميع التحليلات التي لم يتم تحقيق أهدافها أو وقف خسارتها بعد
       const { data: activeAnalyses, error } = await supabase
         .from('search_history')
         .select('*')
-        .or('target_hit.eq.false,stop_loss_hit.eq.false');
+        .or('target_hit.eq.false,stop_loss_hit.eq.false')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
       if (error) {
-        console.error('Error fetching active analyses:', error);
+        console.error('خطأ في جلب التحليلات النشطة:', error);
         return;
       }
 
-      console.log(`Found ${activeAnalyses.length} active analyses to check`);
+      console.log(`تم العثور على ${activeAnalyses?.length} تحليل نشط للفحص`);
 
-      // تحديث كل تحليل نشط
-      for (const analysis of activeAnalyses) {
+      for (const analysis of (activeAnalyses || [])) {
         try {
-          console.log(`Checking analysis for ${analysis.symbol}:`, {
+          console.log(`فحص التحليل للرمز ${analysis.symbol}:`, {
             currentTargets: analysis.analysis.targets,
             stopLoss: analysis.analysis.stopLoss,
             lastCheckedPrice: analysis.last_checked_price
           });
 
-          const currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
-          console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
+          let currentPrice: number;
+          try {
+            currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
+            console.log(`السعر الحالي للرمز ${analysis.symbol}: ${currentPrice}`);
+          } catch (priceError) {
+            console.error(`خطأ في جلب السعر للرمز ${analysis.symbol}:`, priceError);
+            // استخدام آخر سعر معروف إذا كان متوفراً
+            if (analysis.last_checked_price) {
+              currentPrice = analysis.last_checked_price;
+              console.log(`استخدام آخر سعر معروف: ${currentPrice}`);
+            } else {
+              console.log(`تخطي التحليل لعدم توفر السعر`);
+              continue;
+            }
+          }
           
           await updateAnalysisStatus(analysis.id, currentPrice);
 
-          // إظهار إشعار إذا تم تحقيق هدف أو وقف خسارة
+          // إظهار إشعارات للمستخدم
           if (!analysis.target_hit && currentPrice >= analysis.analysis.targets[0].price) {
             toast.success(`تم تحقيق الهدف للرمز ${analysis.symbol}`);
           }
@@ -65,28 +78,26 @@ export const useBackTest = () => {
             toast.error(`تم تفعيل وقف الخسارة للرمز ${analysis.symbol}`);
           }
         } catch (error) {
-          console.error(`Error processing analysis ${analysis.id}:`, error);
+          console.error(`خطأ في معالجة التحليل ${analysis.id}:`, error);
         }
       }
     } catch (error) {
-      console.error('Error in checkAnalyses:', error);
+      console.error('خطأ في checkAnalyses:', error);
     }
   };
 
   useEffect(() => {
-    // بدء الفحص الدوري كل دقيقة
-    const startBackTest = () => {
-      console.log('Starting back test interval...');
-      checkAnalyses(); // تنفيذ فحص أولي
+    const startBackTest = async () => {
+      console.log('بدء فترة اختبار التحليلات...');
+      await checkAnalyses(); // تنفيذ فحص أولي
       intervalRef.current = setInterval(checkAnalyses, 60000); // فحص كل دقيقة
     };
 
     startBackTest();
 
-    // تنظيف عند إزالة المكون
     return () => {
       if (intervalRef.current) {
-        console.log('Cleaning up back test interval...');
+        console.log('تنظيف فترة اختبار التحليلات...');
         clearInterval(intervalRef.current);
       }
     };

@@ -1,29 +1,45 @@
-import { fetchCryptoPrice, fetchForexPrice } from './api';
-import { CRYPTO_SYMBOLS, FOREX_SYMBOLS } from './config';
+import { fetchForexPrice, fetchStockPrice } from './api';
 
-export class PriceUpdater {
-  async fetchPrice(symbol: string, providedPrice?: number): Promise<number> {
+class PriceUpdater {
+  private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
+  private readonly CACHE_DURATION = 60000; // مدة صلاحية الكاش (دقيقة واحدة)
+
+  async fetchPrice(symbol: string): Promise<number> {
     console.log(`بدء محاولة جلب السعر للرمز ${symbol}`);
 
+    // التحقق من وجود سعر محدث في الكاش
+    const cachedData = this.priceCache.get(symbol);
+    if (cachedData && Date.now() - cachedData.timestamp < this.CACHE_DURATION) {
+      console.log(`استخدام السعر المخزن في الكاش للرمز ${symbol}: ${cachedData.price}`);
+      return cachedData.price;
+    }
+
     try {
-      if (symbol in CRYPTO_SYMBOLS) {
-        return await fetchCryptoPrice(symbol, providedPrice);
-      } else if (symbol in FOREX_SYMBOLS || symbol === 'XAUUSD') {
-        return await fetchForexPrice(symbol, providedPrice);
+      let price: number;
+      
+      if (symbol.includes('USD') || symbol.includes('EUR') || symbol.includes('GBP')) {
+        price = await fetchForexPrice(symbol);
       } else {
-        throw new Error(`الرمز ${symbol} غير مدعوم`);
+        price = await fetchStockPrice(symbol);
       }
+
+      // تخزين السعر الجديد في الكاش
+      this.priceCache.set(symbol, {
+        price,
+        timestamp: Date.now()
+      });
+
+      console.log(`تم جلب وتخزين سعر جديد للرمز ${symbol}: ${price}`);
+      return price;
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      
-      // إذا كان هناك سعر مقدم من المستخدم، نستخدمه في حالة الخطأ
-      if (providedPrice !== undefined) {
-        console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
-        return providedPrice;
-      }
-      
       throw error;
     }
+  }
+
+  clearCache() {
+    this.priceCache.clear();
+    console.log('تم مسح الكاش');
   }
 }
 
