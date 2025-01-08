@@ -23,9 +23,7 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
         <Rnd
           size={{ width: size.width, height: size.height }}
           position={{ x: position.x, y: position.y }}
-          onDragStop={(e, d) => {
-            setPosition({ x: d.x, y: d.y });
-          }}
+          disableDragging={true}
           onResize={(e, direction, ref, delta, position) => {
             setSize({
               width: ref.offsetWidth,
@@ -37,19 +35,18 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
           minHeight={300}
           bounds="window"
           className="bg-background border rounded-lg shadow-lg"
-          dragHandleClassName="drag-handle"
         >
           <div className="p-6 h-full flex flex-col relative" dir="rtl">
             <Button
               variant="ghost"
               size="icon"
-              className="absolute left-2 top-2"
+              className="absolute right-2 top-2"
               onClick={onClose}
             >
               <X className="h-4 w-4" />
             </Button>
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold drag-handle cursor-move">سجل البحث</DialogTitle>
+              <DialogTitle className="text-xl font-bold">سجل البحث</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden mt-4">
               <SearchHistoryContent history={history} onDelete={onDelete} />
