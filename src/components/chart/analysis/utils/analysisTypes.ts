@@ -1,4 +1,4 @@
-export type AnalysisType = "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
+export type AnalysisType = "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
 
 export const getAnalysisType = (
   isPatternAnalysis: boolean,
@@ -11,14 +11,14 @@ export const getAnalysisType = (
   isScalping: boolean,
   isPriceAction: boolean
 ): AnalysisType => {
-  if (isPatternAnalysis) return "Patterns";
-  if (isWaves) return "Waves";
-  if (isGann) return "Gann";
-  if (isTurtleSoup) return "Turtle Soup";
-  if (isICT) return "ICT";
-  if (isSMC) return "SMC";
-  if (isAI) return "Smart";
+  if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
+  if (isSMC) return "SMC";
+  if (isICT) return "ICT";
+  if (isTurtleSoup) return "Turtle Soup";
+  if (isGann) return "Gann";
+  if (isWaves) return "Waves";
+  if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
   return "عادي";
 };
