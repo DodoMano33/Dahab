@@ -12,7 +12,7 @@ interface AnalysisFormProps {
   onAnalysis: (item: SearchHistoryItem) => void;
   isAnalyzing: boolean;
   currentAnalysis?: string;
-  onHistoryClick?: () => void;  // Made optional with ?
+  onHistoryClick?: () => void;
 }
 
 export const AnalysisForm = ({ 
@@ -72,7 +72,7 @@ export const AnalysisForm = ({
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        const analysisType = isAI ? "Smart" : getAnalysisType(
+        const analysisType = isAI ? "ذكي" : getAnalysisType(
           isPatternAnalysis,
           isWaves,
           isGann,
