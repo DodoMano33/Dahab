@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { DateRangePicker } from "./DateRangePicker";
 import { HistoryActions } from "./HistoryActions";
 import { BackTestResults } from "./BackTestResults";
 import { useEffect, useState } from "react";
@@ -19,10 +17,6 @@ export const SearchHistoryToolbar = ({
   selectedItems,
   onDelete,
   validHistory,
-  dateRange,
-  isDatePickerOpen,
-  setIsDatePickerOpen,
-  setDateRange,
 }: SearchHistoryToolbarProps) => {
   const [analysisStats, setAnalysisStats] = useState<any[]>([]);
 
@@ -77,12 +71,6 @@ export const SearchHistoryToolbar = ({
             history={validHistory}
           />
         </div>
-        <DateRangePicker
-          dateRange={dateRange}
-          isOpen={isDatePickerOpen}
-          onOpenChange={setIsDatePickerOpen}
-          onSelect={setDateRange}
-        />
       </div>
     </div>
   );
