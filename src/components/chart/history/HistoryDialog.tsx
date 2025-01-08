@@ -3,6 +3,8 @@ import { SearchHistoryContent } from "./SearchHistoryContent";
 import { SearchHistoryItem } from "@/types/analysis";
 import { Rnd } from "react-rnd";
 import { useState } from "react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -37,7 +39,15 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
           className="bg-background border rounded-lg shadow-lg"
           dragHandleClassName="drag-handle"
         >
-          <div className="p-6 h-full flex flex-col" dir="rtl">
+          <div className="p-6 h-full flex flex-col relative" dir="rtl">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 top-2"
+              onClick={onClose}
+            >
+              <X className="h-4 w-4" />
+            </Button>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold drag-handle cursor-move">سجل البحث</DialogTitle>
             </DialogHeader>
