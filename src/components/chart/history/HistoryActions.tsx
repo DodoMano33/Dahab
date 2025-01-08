@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Facebook, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
 import { generateShareText } from "./ShareText";
@@ -11,21 +11,21 @@ interface HistoryActionsProps {
 }
 
 export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActionsProps) => {
-  const handleShare = async (platform: 'facebook') => {
+  const handleCopy = async () => {
     try {
       const selectedHistory = history.filter(item => selectedItems.has(item.id));
 
       if (selectedHistory.length === 0) {
-        toast.error("الرجاء تحديد عناصر للمشاركة");
+        toast.error("الرجاء تحديد عناصر للنسخ");
         return;
       }
 
       const shareText = selectedHistory.map(item => generateShareText(item)).join('\n');
-
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+      await navigator.clipboard.writeText(shareText);
+      toast.success("تم نسخ المحتوى بنجاح");
     } catch (error) {
-      console.error("خطأ في المشاركة:", error);
-      toast.error("حدث خطأ أثناء المشاركة");
+      console.error("خطأ في النسخ:", error);
+      toast.error("حدث خطأ أثناء نسخ المحتوى");
     }
   };
 
@@ -49,8 +49,8 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
 
   return (
     <div className="flex gap-2">
-      <Button onClick={() => handleShare('facebook')} variant="outline" size="icon">
-        <Facebook className="h-4 w-4" />
+      <Button onClick={handleCopy} variant="outline" size="icon">
+        <Copy className="h-4 w-4" />
       </Button>
       {selectedItems.size > 0 && (
         <Button 
