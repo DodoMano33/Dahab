@@ -12,7 +12,7 @@ interface HistoryDialogProps {
 }
 
 export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDialogProps) => {
-  const [size, setSize] = useState({ width: 1200, height: "90vh" });
+  const [size, setSize] = useState({ width: 1200, height: 800 }); // تم تغيير height إلى رقم
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   return (
