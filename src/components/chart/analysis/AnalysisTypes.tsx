@@ -31,15 +31,33 @@ export const AnalysisTypes = ({
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
       // If "تحديد الكل" is clicked
-      if (selectedTypes.length === analysisTypes.length - 1) {
-        onTypesChange([]); // Deselect all if all were selected
+      if (selectedTypes.includes("normal")) {
+        // If it's currently selected, deselect all
+        onTypesChange([]);
       } else {
-        onTypesChange(analysisTypes.map(t => t.value)); // Select all
+        // If it's not selected, select all
+        onTypesChange(analysisTypes.map(t => t.value));
       }
     } else {
       const newTypes = selectedTypes.includes(type)
         ? selectedTypes.filter((t) => t !== type)
         : [...selectedTypes, type];
+
+      // If all other types are selected, also select "normal"
+      const otherTypesSelected = analysisTypes
+        .filter(t => t.value !== "normal")
+        .every(t => newTypes.includes(t.value));
+
+      if (otherTypesSelected) {
+        newTypes.push("normal");
+      } else {
+        // Remove "normal" if not all types are selected
+        const normalIndex = newTypes.indexOf("normal");
+        if (normalIndex !== -1) {
+          newTypes.splice(normalIndex, 1);
+        }
+      }
+
       onTypesChange(newTypes);
     }
   };
