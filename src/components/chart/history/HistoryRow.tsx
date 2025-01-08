@@ -65,14 +65,18 @@ export const HistoryRow = ({
       </TableCell>
       <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
       <TimeframeCell timeframe={timeframe} />
-      <AnalysisTypeCell analysisType={analysisType} pattern={analysis.pattern} />
+      <AnalysisTypeCell 
+        analysisType={analysisType} 
+        pattern={analysis.pattern}
+        activation_type={activation_type}
+      />
       <TableCell className="w-[100px] text-center p-2 font-medium">
         <div className="flex flex-col items-center">
           <span>{symbol.toUpperCase()}</span>
           <div className={`h-1 w-16 mt-1 rounded-full ${
             activation_type === 'تلقائي' 
-              ? 'bg-emerald-500' 
-              : 'bg-emerald-500'
+              ? 'bg-sky-500' 
+              : 'bg-transparent'
           }`} />
         </div>
       </TableCell>
