@@ -12,7 +12,7 @@ interface HistoryDialogProps {
 }
 
 export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDialogProps) => {
-  const [size, setSize] = useState({ width: 1200, height: 800 }); // تم تغيير height إلى رقم
+  const [size, setSize] = useState({ width: 1200, height: 800 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   return (
@@ -35,10 +35,11 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
           minHeight={300}
           bounds="window"
           className="bg-background border rounded-lg shadow-lg"
+          dragHandleClassName="drag-handle"
         >
           <div className="p-6 h-full flex flex-col" dir="rtl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold cursor-move">سجل البحث</DialogTitle>
+              <DialogTitle className="text-xl font-bold drag-handle cursor-move">سجل البحث</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden mt-4">
               <SearchHistoryContent history={history} onDelete={onDelete} />
