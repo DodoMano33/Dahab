@@ -5,6 +5,7 @@ import { HistoryDialog } from "./chart/history/HistoryDialog";
 import { ChartDisplay } from "./ChartDisplay";
 import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 import { useSearchHistory } from "./hooks/useSearchHistory";
+import { useBackTest } from "./hooks/useBackTest";
 
 export const ChartAnalyzer = () => {
   const {
@@ -24,6 +25,9 @@ export const ChartAnalyzer = () => {
     handleDeleteHistoryItem,
     addToSearchHistory
   } = useSearchHistory();
+
+  // استخدام hook الـ BackTest
+  useBackTest();
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
@@ -49,7 +53,7 @@ export const ChartAnalyzer = () => {
   const handleAnalysisComplete = (newItem: any) => {
     console.log("New analysis completed, adding to history:", newItem);
     addToSearchHistory(newItem);
-    setIsHistoryOpen(true); // Open history dialog when analysis is complete
+    setIsHistoryOpen(true);
   };
 
   return (

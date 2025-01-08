@@ -16,11 +16,10 @@ interface HistoryRowProps {
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
-  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Smart" | "Price Action";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
   timeframe: string;
   isSelected?: boolean;
   onSelect?: () => void;
-  activation_type?: 'تلقائي' | 'يدوي';
   target_hit?: boolean;
   stop_loss_hit?: boolean;
 }
@@ -35,7 +34,6 @@ export const HistoryRow = ({
   timeframe,
   isSelected,
   onSelect,
-  activation_type = 'يدوي',
   target_hit = false,
   stop_loss_hit = false
 }: HistoryRowProps) => {
@@ -83,7 +81,7 @@ export const HistoryRow = ({
       <AnalysisTypeCell 
         analysisType={analysisType} 
         pattern={analysis.pattern}
-        activation_type={activation_type}
+        activation_type={analysis.activation_type}
       />
       <TableCell className="w-[100px] text-center p-2 font-medium">
         <div className="flex flex-col items-center">
