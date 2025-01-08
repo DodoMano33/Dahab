@@ -8,6 +8,8 @@ export const useBackTest = () => {
 
   const updateAnalysisStatus = async (id: string, currentPrice: number) => {
     try {
+      console.log(`Updating analysis status for ID ${id} with current price: ${currentPrice}`);
+      
       const { error } = await supabase.rpc('update_analysis_status', {
         p_id: id,
         p_current_price: currentPrice
@@ -17,6 +19,8 @@ export const useBackTest = () => {
         console.error('Error updating analysis status:', error);
         throw error;
       }
+      
+      console.log(`Successfully updated analysis status for ID ${id}`);
     } catch (error) {
       console.error('Error in updateAnalysisStatus:', error);
     }
@@ -42,10 +46,24 @@ export const useBackTest = () => {
       // تحديث كل تحليل نشط
       for (const analysis of activeAnalyses) {
         try {
+          console.log(`Checking analysis for ${analysis.symbol}:`, {
+            currentTargets: analysis.analysis.targets,
+            stopLoss: analysis.analysis.stopLoss,
+            lastCheckedPrice: analysis.last_checked_price
+          });
+
           const currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
           console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
           
           await updateAnalysisStatus(analysis.id, currentPrice);
+
+          // إظهار إشعار إذا تم تحقيق هدف أو وقف خسارة
+          if (!analysis.target_hit && currentPrice >= analysis.analysis.targets[0].price) {
+            toast.success(`تم تحقيق الهدف للرمز ${analysis.symbol}`);
+          }
+          if (!analysis.stop_loss_hit && currentPrice <= analysis.analysis.stopLoss) {
+            toast.error(`تم تفعيل وقف الخسارة للرمز ${analysis.symbol}`);
+          }
         } catch (error) {
           console.error(`Error processing analysis ${analysis.id}:`, error);
         }
