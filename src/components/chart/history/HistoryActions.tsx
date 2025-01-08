@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Share2, Facebook, Trash2 } from "lucide-react";
+import { Facebook, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
 import { generateShareText } from "./ShareText";
@@ -11,7 +11,7 @@ interface HistoryActionsProps {
 }
 
 export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActionsProps) => {
-  const handleShare = async (platform: 'whatsapp' | 'facebook' | 'copy') => {
+  const handleShare = async (platform: 'facebook') => {
     try {
       const selectedHistory = history.filter(item => selectedItems.has(item.id));
 
@@ -22,18 +22,7 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
 
       const shareText = selectedHistory.map(item => generateShareText(item)).join('\n');
 
-      switch (platform) {
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'facebook':
-          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'copy':
-          await navigator.clipboard.writeText(shareText);
-          toast.success("تم نسخ المحتوى إلى الحافظة");
-          break;
-      }
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`, '_blank');
     } catch (error) {
       console.error("خطأ في المشاركة:", error);
       toast.error("حدث خطأ أثناء المشاركة");
@@ -60,9 +49,6 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
 
   return (
     <div className="flex gap-2">
-      <Button onClick={() => handleShare('whatsapp')} variant="outline" size="icon">
-        <Share2 className="h-4 w-4" />
-      </Button>
       <Button onClick={() => handleShare('facebook')} variant="outline" size="icon">
         <Facebook className="h-4 w-4" />
       </Button>
