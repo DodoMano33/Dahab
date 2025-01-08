@@ -69,13 +69,11 @@ export const HistoryRow = ({
       <TableCell className="w-[100px] text-center p-2 font-medium">
         <div className="flex flex-col items-center">
           <span>{symbol.toUpperCase()}</span>
-          <div 
-            className={`h-1 w-16 mt-1 rounded-full ${
-              activation_type === 'تلقائي' 
-                ? 'bg-emerald-500' 
-                : 'bg-emerald-500'
-            }`}
-          />
+          <div className={`h-1 w-16 mt-1 rounded-full ${
+            activation_type === 'تلقائي' 
+              ? 'bg-emerald-500' 
+              : 'bg-emerald-500'
+          }`} />
         </div>
       </TableCell>
       <DateCell date={date} />
