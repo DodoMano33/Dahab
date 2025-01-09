@@ -8,7 +8,23 @@ export const detectAnalysisType = (
   isAI: boolean,
   isScalping: boolean,
   isPriceAction: boolean
-): string => {
+): string | null => {
+  // التحقق من وجود نوع تحليل محدد على الأقل
+  const hasAnalysisType = 
+    isPatternAnalysis ||
+    isWaves ||
+    isGann ||
+    isTurtleSoup ||
+    isICT ||
+    isSMC ||
+    isScalping ||
+    isPriceAction ||
+    isAI;
+
+  if (!hasAnalysisType) {
+    return null;
+  }
+
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
   if (isSMC) return "SMC";
@@ -18,5 +34,6 @@ export const detectAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
-  return "عادي";
+  
+  return null;
 };
