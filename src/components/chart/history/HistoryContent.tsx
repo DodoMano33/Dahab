@@ -2,6 +2,7 @@ import { Table, TableBody } from "@/components/ui/table";
 import { SearchHistoryItem } from "@/types/analysis";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HistoryContentProps {
   history: SearchHistoryItem[];
@@ -29,6 +30,8 @@ export const HistoryContent = ({
               {...item}
               isSelected={selectedItems.has(item.id)}
               onSelect={() => onSelect(item.id)}
+              target_hit={item.targetHit}
+              stop_loss_hit={item.stopLossHit}
             />
           ))}
         </TableBody>
