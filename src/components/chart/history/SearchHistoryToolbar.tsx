@@ -1,4 +1,3 @@
-import { HistoryActions } from "./HistoryActions";
 import { BackTestResults } from "./BackTestResults";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
