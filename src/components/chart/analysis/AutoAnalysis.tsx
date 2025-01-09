@@ -1,9 +1,10 @@
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
-import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
+import { useAnalysisExecution } from "./hooks/useAnalysisExecution";
 import { saveAnalysisToHistory } from "./utils/analysisHistoryUtils";
-import { useAnalysisHandler } from "./AnalysisHandler";
+import { mapAnalysisType } from "./utils/analysisTypeMapper";
+import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
-import { SearchHistoryItem, AnalysisData } from "@/types/analysis";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -20,6 +21,8 @@ export const AutoAnalysis = ({
   onAnalysisComplete,
   repetitions = 1
 }: AutoAnalysisProps) => {
+  const { user } = useAuth();
+  
   const {
     isAnalyzing,
     setIsAnalyzing,
@@ -27,24 +30,76 @@ export const AutoAnalysis = ({
     setAnalysisInterval,
     validateInputs,
     getIntervalInMs,
-    user
-  } = useAutoAnalysis(
+    handleTradingViewConfig
+  } = useAnalysisExecution({
     selectedTimeframes,
     selectedInterval,
-    selectedAnalysisTypes
-  );
+    selectedAnalysisTypes,
+    onAnalysisComplete,
+    user
+  });
 
-  const { handleTradingViewConfig } = useAnalysisHandler();
+  const performAnalysis = async (symbol: string, price: number) => {
+    for (const timeframe of selectedTimeframes) {
+      for (const analysisType of selectedAnalysisTypes) {
+        try {
+          console.log(`بدء تحليل ${timeframe} - ${analysisType}`);
+          
+          const result = await handleTradingViewConfig(
+            symbol,
+            timeframe,
+            price,
+            analysisType === "scalping",
+            false,
+            analysisType === "smc",
+            analysisType === "ict",
+            analysisType === "turtleSoup",
+            analysisType === "gann",
+            analysisType === "waves",
+            analysisType === "patterns",
+            analysisType === "priceAction"
+          );
+
+          if (result && result.analysisResult) {
+            console.log("نتيجة التحليل:", result);
+            
+            // تحويل نوع التحليل مع التحقق من صحته
+            const mappedAnalysisType = mapAnalysisType(analysisType);
+            console.log("نوع التحليل المحول:", mappedAnalysisType);
+            
+            const savedData = await saveAnalysisToHistory(
+              result,
+              symbol,
+              timeframe,
+              mappedAnalysisType,
+              user.id
+            );
+
+            if (onAnalysisComplete) {
+              const newHistoryEntry: SearchHistoryItem = {
+                id: savedData.id,
+                date: new Date(),
+                symbol: symbol,
+                currentPrice: price,
+                analysis: result.analysisResult,
+                analysisType: mappedAnalysisType,
+                timeframe: timeframe
+              };
+              
+              console.log("إضافة عنصر جديد إلى السجل:", newHistoryEntry);
+              onAnalysisComplete(newHistoryEntry);
+            }
+          }
+        } catch (error) {
+          console.error(`خطأ في تحليل ${analysisType} على ${timeframe}:`, error);
+          toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
+        }
+      }
+    }
+  };
 
   const startAnalysis = async () => {
-    if (!user) {
-      toast.error("يرجى تسجيل الدخول لبدء التحليل التلقائي");
-      return;
-    }
-
-    if (!validateInputs()) {
-      return;
-    }
+    if (!validateInputs()) return;
 
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
     const priceInput = document.querySelector('input#price') as HTMLInputElement;
@@ -85,82 +140,6 @@ export const AutoAnalysis = ({
     const interval = setInterval(runAnalysis, intervalMs);
     setAnalysisInterval(interval);
     toast.success("تم بدء التحليل التلقائي");
-  };
-
-  const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
-    switch (type.toLowerCase()) {
-      case 'scalping': return 'سكالبينج';
-      case 'smc': return 'SMC';
-      case 'ict': return 'ICT';
-      case 'turtlesoup': return 'Turtle Soup';
-      case 'gann': return 'Gann';
-      case 'waves': return 'Waves';
-      case 'patterns': return 'Patterns';
-      case 'priceaction': return 'Price Action';
-      default: 
-        console.error(`نوع تحليل غير معروف: ${type}`);
-        return type as AnalysisData['analysisType'];
-    }
-  };
-
-  const performAnalysis = async (symbol: string, price: number) => {
-    for (const timeframe of selectedTimeframes) {
-      for (const analysisType of selectedAnalysisTypes) {
-        try {
-          console.log(`Performing analysis for ${timeframe} - ${analysisType}`);
-          
-          const result = await handleTradingViewConfig(
-            symbol,
-            timeframe,
-            price,
-            analysisType === "scalping",
-            false,
-            analysisType === "smc",
-            analysisType === "ict",
-            analysisType === "turtleSoup",
-            analysisType === "gann",
-            analysisType === "waves",
-            analysisType === "patterns",
-            analysisType === "priceAction"
-          );
-
-          if (result && result.analysisResult) {
-            console.log("Analysis result received:", result);
-            
-            const mappedAnalysisType = getAnalysisType(analysisType);
-            console.log("Mapped analysis type:", mappedAnalysisType);
-            
-            const savedData = await saveAnalysisToHistory(
-              result,
-              symbol,
-              timeframe,
-              mappedAnalysisType,
-              user.id
-            );
-
-            console.log("Analysis saved to history:", savedData);
-
-            if (onAnalysisComplete) {
-              const newHistoryEntry: SearchHistoryItem = {
-                id: savedData.id,
-                date: new Date(),
-                symbol: symbol,
-                currentPrice: price,
-                analysis: result.analysisResult,
-                analysisType: mappedAnalysisType,
-                timeframe: timeframe
-              };
-              
-              console.log("Calling onAnalysisComplete with new entry:", newHistoryEntry);
-              onAnalysisComplete(newHistoryEntry);
-            }
-          }
-        } catch (error) {
-          console.error(`Error analyzing ${analysisType} on ${timeframe}:`, error);
-          toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
-        }
-      }
-    }
   };
 
   const stopAnalysis = () => {
