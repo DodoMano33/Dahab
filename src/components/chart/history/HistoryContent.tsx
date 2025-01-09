@@ -20,7 +20,7 @@ export const HistoryContent = ({
   console.log("Selected Items in HistoryContent:", selectedItems); // Debug log
 
   return (
-    <div className="relative">
+    <ScrollArea className="h-[calc(85vh-16rem)]">
       <Table>
         <HistoryTableHeader showCheckbox={true} />
         <TableBody>
@@ -36,6 +36,6 @@ export const HistoryContent = ({
           ))}
         </TableBody>
       </Table>
-    </div>
+    </ScrollArea>
   );
 };
