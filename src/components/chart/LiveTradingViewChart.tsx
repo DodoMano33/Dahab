@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 declare global {
   interface Window {
@@ -16,6 +17,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   timeframe = "D" 
 }) => {
   const container = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!container.current) return;
@@ -27,7 +29,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       if (typeof window.TradingView !== 'undefined') {
         new window.TradingView.widget({
           "width": "100%",
-          "height": 500,
+          "height": isMobile ? 300 : 500,
           "symbol": symbol,
           "interval": timeframe,
           "timezone": "Etc/UTC",
@@ -36,7 +38,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           "locale": "ar",
           "toolbar_bg": "#f1f3f6",
           "enable_publishing": false,
-          "hide_side_toolbar": false,
+          "hide_side_toolbar": isMobile,
           "allow_symbol_change": true,
           "container_id": "tradingview_chart",
           "studies": [
@@ -57,10 +59,10 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         }
       }
     };
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, isMobile]);
 
   return (
-    <div className="w-full h-[500px] bg-white rounded-lg shadow-lg">
+    <div className="w-full h-full bg-white rounded-lg shadow-lg">
       <div id="tradingview_chart" ref={container} className="w-full h-full" />
     </div>
   );
