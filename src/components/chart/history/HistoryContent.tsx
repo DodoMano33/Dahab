@@ -1,11 +1,20 @@
 import { Table, TableBody } from "@/components/ui/table";
-import { SearchHistoryItem } from "@/types/analysis";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { AnalysisData } from "@/types/analysis";
 
 interface HistoryContentProps {
-  history: SearchHistoryItem[];
+  history: Array<{
+    id: string;
+    date: Date;
+    symbol: string;
+    currentPrice: number;
+    analysis: AnalysisData;
+    targetHit?: boolean;
+    stopLossHit?: boolean;
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+    timeframe: string;
+  }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
@@ -15,27 +24,25 @@ export const HistoryContent = ({
   history,
   selectedItems,
   onSelect,
-  onDelete,
+  onDelete
 }: HistoryContentProps) => {
-  console.log("Selected Items in HistoryContent:", selectedItems); // Debug log
-
   return (
-    <ScrollArea className="h-[calc(85vh-16rem)]">
-      <Table>
-        <HistoryTableHeader showCheckbox={true} />
-        <TableBody>
-          {history.map((item) => (
-            <HistoryRow
-              key={item.id}
-              {...item}
-              isSelected={selectedItems.has(item.id)}
-              onSelect={() => onSelect(item.id)}
-              target_hit={item.targetHit}
-              stop_loss_hit={item.stopLossHit}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </ScrollArea>
+    <div className="relative rounded-md border bg-background overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table>
+          <HistoryTableHeader showCheckbox={true} />
+          <TableBody className="relative">
+            {history.map((item) => (
+              <HistoryRow
+                key={item.id}
+                {...item}
+                isSelected={selectedItems.has(item.id)}
+                onSelect={() => onSelect(item.id)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 };

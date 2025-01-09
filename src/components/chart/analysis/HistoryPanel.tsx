@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { SearchHistory } from "../SearchHistory";
 import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 
 interface HistoryPanelProps {
   showHistory: boolean;
@@ -17,33 +15,8 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
     to: undefined
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [validHistory, setValidHistory] = useState<any[]>([]);
-
-  // جلب البيانات من Supabase
-  const fetchHistory = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('search_history')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setValidHistory(data || []);
-    } catch (error) {
-      console.error("Error fetching history:", error);
-      toast.error("حدث خطأ أثناء جلب السجل");
-    }
-  };
-
-  // تحميل البيانات عند فتح النافذة
-  useState(() => {
-    if (showHistory) {
-      fetchHistory();
-    }
-  });
 
   const handleSelect = (id: string) => {
-    console.log("Handling select for id:", id); // Debug log
     setSelectedItems(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -51,31 +24,8 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
       } else {
         newSet.add(id);
       }
-      console.log("New selected items:", newSet); // Debug log
       return newSet;
     });
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('search_history')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success("تم حذف العنصر بنجاح");
-      setSelectedItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(id);
-        return newSet;
-      });
-      fetchHistory(); // تحديث القائمة بعد الحذف
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      toast.error("حدث خطأ أثناء حذف العنصر");
-    }
   };
 
   if (!showHistory) return null;
@@ -98,8 +48,8 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
         isDatePickerOpen={isDatePickerOpen}
         setIsDatePickerOpen={setIsDatePickerOpen}
         selectedItems={selectedItems}
-        onDelete={handleDelete}
-        validHistory={validHistory}
+        onDelete={() => {}}
+        validHistory={[]}
         handleSelect={handleSelect}
       />
     </div>

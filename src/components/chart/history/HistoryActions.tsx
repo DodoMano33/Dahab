@@ -20,7 +20,7 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
         return;
       }
 
-      const shareText = selectedHistory.map(item => generateShareText(item)).join('\n\n---\n\n');
+      const shareText = selectedHistory.map(item => generateShareText(item)).join('\n');
       await navigator.clipboard.writeText(shareText);
       toast.success("تم نسخ المحتوى بنجاح");
     } catch (error) {
@@ -37,20 +37,10 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
         return;
       }
 
-      // تأكيد الحذف
-      const confirmMessage = selectedIds.length === 1 
-        ? "هل أنت متأكد من حذف العنصر المحدد؟"
-        : `هل أنت متأكد من حذف ${selectedIds.length} عناصر؟`;
-
-      if (window.confirm(confirmMessage)) {
-        for (const id of selectedIds) {
-          await onDelete(id);
-        }
-        toast.success(selectedIds.length === 1 
-          ? "تم حذف العنصر بنجاح"
-          : `تم حذف ${selectedIds.length} عناصر بنجاح`
-        );
+      for (const id of selectedIds) {
+        await onDelete(id);
       }
+      toast.success("تم حذف العناصر المحددة بنجاح");
     } catch (error) {
       console.error("خطأ في حذف العناصر:", error);
       toast.error("حدث خطأ أثناء حذف العناصر");
