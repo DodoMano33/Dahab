@@ -1,5 +1,7 @@
-export const mapAnalysisType = (type: string) => {
-  const mapping: { [key: string]: string } = {
+import { AnalysisData } from "@/types/analysis";
+
+export const mapAnalysisType = (type: string): AnalysisData['analysisType'] => {
+  const mapping: { [key: string]: AnalysisData['analysisType'] } = {
     'scalping': 'سكالبينج',
     'smc': 'SMC',
     'ict': 'ICT',
