@@ -11,10 +11,9 @@ export const mapAnalysisTypeToDbValue = (type: string): AnalysisData['analysisTy
     'gann': 'Gann',
     'waves': 'Waves',
     'patterns': 'Patterns',
-    'priceAction': 'Price Action',
-    'smart': 'ذكي'
+    'priceAction': 'Price Action'
   };
-  return mapping[type] || 'Patterns'; // نستخدم Patterns كقيمة افتراضية بدلاً من "عادي"
+  return mapping[type] || 'Patterns';
 };
 
 export const saveAnalysisToHistory = async (
