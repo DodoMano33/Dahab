@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { SearchHistory } from "../SearchHistory";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface HistoryPanelProps {
   showHistory: boolean;
@@ -17,6 +18,7 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const handleSelect = (id: string) => {
+    console.log("Handling select for id:", id); // Debug log
     setSelectedItems(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -24,8 +26,24 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
       } else {
         newSet.add(id);
       }
+      console.log("New selected items:", newSet); // Debug log
       return newSet;
     });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      // هنا يمكنك إضافة المنطق الخاص بحذف العنصر من قاعدة البيانات
+      toast.success("تم حذف العنصر بنجاح");
+      setSelectedItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("حدث خطأ أثناء حذف العنصر");
+    }
   };
 
   if (!showHistory) return null;
@@ -48,8 +66,8 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
         isDatePickerOpen={isDatePickerOpen}
         setIsDatePickerOpen={setIsDatePickerOpen}
         selectedItems={selectedItems}
-        onDelete={() => {}}
-        validHistory={[]}
+        onDelete={handleDelete}
+        validHistory={[]} // هنا يجب إضافة البيانات الفعلية
         handleSelect={handleSelect}
       />
     </div>

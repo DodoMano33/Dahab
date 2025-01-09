@@ -13,6 +13,8 @@ export const SearchHistoryMain = ({
   onSelect,
   onDelete,
 }: SearchHistoryMainProps) => {
+  console.log("Selected Items in SearchHistoryMain:", selectedItems); // Debug log
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="p-6">

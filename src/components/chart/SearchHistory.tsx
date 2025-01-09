@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SearchHistoryHeader } from "./history/SearchHistoryHeader";
 import { SearchHistoryToolbar } from "./history/SearchHistoryToolbar";
 import { SearchHistoryMain } from "./history/SearchHistoryMain";
+import { toast } from "sonner";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -24,18 +25,20 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
+  console.log("Selected Items in SearchHistory:", selectedItems); // Debug log
+
   const handleSelectAll = () => {
     const allIds = validHistory.map(item => item.id);
     if (selectedItems.size === validHistory.length) {
-      // إذا كان كل شيء محدد، قم بإلغاء تحديد الكل
       allIds.forEach(id => handleSelect(id));
+      toast.success("تم إلغاء تحديد جميع العناصر");
     } else {
-      // حدد كل العناصر التي لم يتم تحديدها بعد
       allIds.forEach(id => {
         if (!selectedItems.has(id)) {
           handleSelect(id);
         }
       });
+      toast.success("تم تحديد جميع العناصر");
     }
   };
 
