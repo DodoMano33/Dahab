@@ -46,7 +46,6 @@ export const AutoAnalysis = ({
       return;
     }
 
-    // Get the current symbol and price from the form fields
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
     const priceInput = document.querySelector('input#price') as HTMLInputElement;
 
@@ -89,16 +88,18 @@ export const AutoAnalysis = ({
   };
 
   const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'scalping': return 'سكالبينج';
       case 'smc': return 'SMC';
       case 'ict': return 'ICT';
-      case 'turtleSoup': return 'Turtle Soup';
+      case 'turtlesoup': return 'Turtle Soup';
       case 'gann': return 'Gann';
       case 'waves': return 'Waves';
       case 'patterns': return 'Patterns';
-      case 'priceAction': return 'Price Action';
-      default: return 'Patterns';
+      case 'priceaction': return 'Price Action';
+      default: 
+        console.error(`نوع تحليل غير معروف: ${type}`);
+        return type as AnalysisData['analysisType'];
     }
   };
 
@@ -127,6 +128,8 @@ export const AutoAnalysis = ({
             console.log("Analysis result received:", result);
             
             const mappedAnalysisType = getAnalysisType(analysisType);
+            console.log("Mapped analysis type:", mappedAnalysisType);
+            
             const savedData = await saveAnalysisToHistory(
               result,
               symbol,
