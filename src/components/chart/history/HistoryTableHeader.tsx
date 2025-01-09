@@ -20,6 +20,7 @@ export const HistoryTableHeader = ({
             <Checkbox 
               checked={isAllSelected} 
               onCheckedChange={onSelectAll}
+              aria-label="تحديد كل العناصر"
             />
           </TableHead>
         )}
