@@ -1,84 +1,78 @@
 import axios from 'axios';
-
-const ALPHA_VANTAGE_API_KEY = 'YOUR_API_KEY'; // يجب استبدالها بمفتاح API حقيقي
+import { ALPHA_VANTAGE_API_KEY } from './config';
 
 export const fetchForexPrice = async (symbol: string): Promise<number> => {
-  console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
-
   try {
-    // تحليل الرمز للحصول على العملات
-    const fromCurrency = symbol.slice(0, 3);
-    const toCurrency = symbol.slice(3, 6);
+    console.log("بدء طلب سعر الفوركس للرمز", symbol);
 
-    const params = {
-      function: 'CURRENCY_EXCHANGE_RATE',
-      from_currency: fromCurrency,
-      to_currency: toCurrency,
-      apikey: ALPHA_VANTAGE_API_KEY
-    };
+    // تحليل رمز العملة إلى عملتين
+    let fromCurrency, toCurrency;
+    if (symbol === 'XAUUSD') {
+      fromCurrency = 'XAU';
+      toCurrency = 'USD';
+    } else {
+      fromCurrency = symbol.slice(0, 3);
+      toCurrency = symbol.slice(3, 6);
+    }
 
-    console.log('إرسال طلب:', {
+    const requestConfig = {
       url: 'https://www.alphavantage.co/query',
       method: 'get',
-      params
-    });
+      params: {
+        function: 'CURRENCY_EXCHANGE_RATE',
+        from_currency: fromCurrency,
+        to_currency: toCurrency,
+        apikey: ALPHA_VANTAGE_API_KEY
+      }
+    };
 
-    const response = await axios.get('https://www.alphavantage.co/query', { params });
+    console.log("إرسال طلب:", requestConfig);
 
-    console.log('استجابة ناجحة:', {
-      url: 'https://www.alphavantage.co/query',
+    const response = await axios(requestConfig);
+    console.log("استجابة ناجحة:", {
+      url: requestConfig.url,
       status: response.status,
       data: response.data
     });
 
-    if (response.data['Realtime Currency Exchange Rate']) {
-      const price = parseFloat(response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
-      if (!isNaN(price)) {
-        return price;
-      }
+    const data = response.data;
+    if (!data || !data['Realtime Currency Exchange Rate'] || !data['Realtime Currency Exchange Rate']['5. Exchange Rate']) {
+      console.error("بيانات السعر غير صالحة:", data);
+      throw new Error("بيانات السعر غير صالحة في الاستجابة");
     }
 
-    throw new Error('بيانات السعر غير صالحة في الاستجابة');
+    const price = parseFloat(data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
+    return price;
   } catch (error) {
-    console.error('خطأ في جلب سعر الفوركس:', error);
-    throw new Error('حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً');
+    console.error("خطأ في جلب سعر الفوركس:", error);
+    throw new Error("حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً");
   }
 };
 
-export const fetchStockPrice = async (symbol: string): Promise<number> => {
-  console.log(`بدء طلب سعر السهم للرمز ${symbol}`);
-
+export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
   try {
-    const params = {
-      function: 'GLOBAL_QUOTE',
-      symbol: symbol,
-      apikey: ALPHA_VANTAGE_API_KEY
-    };
-
-    console.log('إرسال طلب:', {
+    const crypto = symbol.slice(0, -3);
+    const requestConfig = {
       url: 'https://www.alphavantage.co/query',
       method: 'get',
-      params
-    });
-
-    const response = await axios.get('https://www.alphavantage.co/query', { params });
-
-    console.log('استجابة ناجحة:', {
-      url: 'https://www.alphavantage.co/query',
-      status: response.status,
-      data: response.data
-    });
-
-    if (response.data['Global Quote']) {
-      const price = parseFloat(response.data['Global Quote']['05. price']);
-      if (!isNaN(price)) {
-        return price;
+      params: {
+        function: 'CURRENCY_EXCHANGE_RATE',
+        from_currency: crypto,
+        to_currency: 'USD',
+        apikey: ALPHA_VANTAGE_API_KEY
       }
+    };
+
+    const response = await axios(requestConfig);
+    const data = response.data;
+
+    if (!data || !data['Realtime Currency Exchange Rate'] || !data['Realtime Currency Exchange Rate']['5. Exchange Rate']) {
+      throw new Error("بيانات السعر غير صالحة في الاستجابة");
     }
 
-    throw new Error('بيانات السعر غير صالحة في الاستجابة');
+    return parseFloat(data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
   } catch (error) {
-    console.error('خطأ في جلب سعر السهم:', error);
-    throw new Error('حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً');
+    console.error("خطأ في جلب سعر العملة المشفرة:", error);
+    throw new Error("حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً");
   }
 };
