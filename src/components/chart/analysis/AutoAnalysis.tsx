@@ -98,7 +98,7 @@ export const AutoAnalysis = ({
       case 'waves': return 'Waves';
       case 'patterns': return 'Patterns';
       case 'priceAction': return 'Price Action';
-      default: return 'عادي';
+      default: return 'Patterns';
     }
   };
 
