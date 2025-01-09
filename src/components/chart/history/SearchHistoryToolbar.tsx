@@ -1,6 +1,9 @@
 import { BackTestResults } from "./BackTestResults";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface SearchHistoryToolbarProps {
   selectedItems: Set<string>;
@@ -14,6 +17,18 @@ export const SearchHistoryToolbar = ({
   validHistory,
 }: SearchHistoryToolbarProps) => {
   const [analysisStats, setAnalysisStats] = useState<any[]>([]);
+
+  const handleDeleteSelected = async () => {
+    try {
+      for (const id of selectedItems) {
+        await onDelete(id);
+      }
+      toast.success("تم حذف العناصر المحددة بنجاح");
+    } catch (error) {
+      console.error("Error deleting selected items:", error);
+      toast.error("حدث خطأ أثناء حذف العناصر المحددة");
+    }
+  };
 
   useEffect(() => {
     const fetchAnalysisStats = async () => {
@@ -65,7 +80,23 @@ export const SearchHistoryToolbar = ({
   }, [validHistory]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
+      {selectedItems.size > 0 && (
+        <div className="flex items-center justify-between bg-muted/50 p-2 rounded-lg">
+          <span className="text-sm text-muted-foreground">
+            تم تحديد {selectedItems.size} عنصر
+          </span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDeleteSelected}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            حذف المحدد
+          </Button>
+        </div>
+      )}
       <BackTestResults stats={analysisStats} />
     </div>
   );
