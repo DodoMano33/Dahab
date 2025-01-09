@@ -8,7 +8,7 @@ import { analyzeWavesChart } from "@/components/chart/analysis/wavesAnalysis";
 import { analyzePattern } from "@/utils/patternAnalysis";
 import { analyzePriceAction } from "@/components/chart/analysis/priceActionAnalysis";
 
-const getStrategyName = (type: string): string => {
+const getStrategyName = (type: string): AnalysisData['analysisType'] => {
   switch (type) {
     case "scalping": return "سكالبينج";
     case "smc": return "SMC";
@@ -18,11 +18,9 @@ const getStrategyName = (type: string): string => {
     case "waves": return "Waves";
     case "patterns": return "Patterns";
     case "priceAction": return "Price Action";
-    default: return type;
+    default: return "Patterns";
   }
 };
-
-// ... keep existing code (functions and imports)
 
 export const combinedAnalysis = async (
   chartImage: string,
@@ -42,28 +40,39 @@ export const combinedAnalysis = async (
       switch (type) {
         case "scalping":
           result = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
+          result.analysisType = "سكالبينج";
           break;
         case "smc":
           result = await analyzeSMCChart(chartImage, currentPrice, timeframe);
+          result.analysisType = "SMC";
           break;
         case "ict":
           result = await analyzeICTChart(chartImage, currentPrice, timeframe);
+          result.analysisType = "ICT";
           break;
         case "turtleSoup":
           result = await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+          result.analysisType = "Turtle Soup";
           break;
         case "gann":
           result = await analyzeGannChart(chartImage, currentPrice, timeframe);
+          result.analysisType = "Gann";
           break;
         case "waves":
           result = await analyzeWavesChart(chartImage, currentPrice, timeframe);
+          result.analysisType = "Waves";
           break;
         case "patterns":
           result = await analyzePattern(chartImage, currentPrice, timeframe);
+          result.analysisType = "Patterns";
           break;
         case "priceAction":
           result = await analyzePriceAction(chartImage, currentPrice, timeframe);
+          result.analysisType = "Price Action";
           break;
+        default:
+          result = await analyzePattern(chartImage, currentPrice, timeframe);
+          result.analysisType = "Patterns";
       }
       if (result) analysisResults.push(result);
     } catch (error) {
@@ -89,8 +98,8 @@ export const combinedAnalysis = async (
   // Combine and sort targets
   const combinedTargets = combineAndSortTargets(analysisResults);
 
-  // حدد نوع التحليل بناءً على النوع الأول المحدد
-  const primaryAnalysisType = getStrategyName(selectedTypes[0]) as AnalysisData['analysisType'];
+  // Use the first selected type as the primary analysis type
+  const primaryAnalysisType = getStrategyName(selectedTypes[0]);
 
   const combinedResult: AnalysisData = {
     pattern: `Combined Analysis (${strategyNames.join(', ')})`,

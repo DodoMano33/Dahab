@@ -4,7 +4,7 @@ import { analyzeICTChart } from "../ictAnalysis";
 import { analyzeTurtleSoupChart } from "../turtleSoupAnalysis";
 import { analyzeGannChart } from "../gannAnalysis";
 import { analyzeWavesChart } from "../wavesAnalysis";
-import { analyzePattern } from "../patternAnalysis";
+import { analyzePattern } from "@/utils/patternAnalysis";
 import { analyzeDailyChart } from "../dailyAnalysis";
 import { analyzeScalpingChart } from "../scalpingAnalysis";
 import { analyzePriceAction } from "../priceActionAnalysis";
@@ -49,62 +49,31 @@ export const executeAnalysis = async (
 
   let analysis: AnalysisData;
 
-  if (selectedStrategies.length > 1) {
-    const promises = selectedStrategies.map(strategy => {
-      switch (strategy) {
-        case "Patterns": return analyzePattern(chartImage, currentPrice, timeframe);
-        case "Waves": return analyzeWavesChart(chartImage, currentPrice, timeframe);
-        case "Gann": return analyzeGannChart(chartImage, currentPrice, timeframe);
-        case "Turtle Soup": return analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
-        case "ICT": return analyzeICTChart(chartImage, currentPrice, timeframe);
-        case "SMC": return analyzeSMCChart(chartImage, currentPrice, timeframe);
-        case "سكالبينج": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
-        case "Price Action": return analyzePriceAction(chartImage, currentPrice, timeframe);
-        default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
-      }
-    });
-
-    const results = await Promise.all(promises);
-    
-    analysis = results[0];
-    if (analysis.bestEntryPoint) {
-      analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
-    }
-    analysis.pattern = `Combined Analysis (${selectedStrategies.join(', ')})`;
-    
-    // حدد نوع التحليل بناءً على الاستراتيجية الأولى
-    analysis.analysisType = selectedStrategies[0] as AnalysisData['analysisType'];
-    analysis.activation_type = "تلقائي";
+  // Handle each analysis type separately
+  if (isPatternAnalysis) {
+    analysis = await analyzePattern(chartImage, currentPrice, timeframe);
+  } else if (isWaves) {
+    analysis = await analyzeWavesChart(chartImage, currentPrice, timeframe);
+  } else if (isGann) {
+    analysis = await analyzeGannChart(chartImage, currentPrice, timeframe);
+  } else if (isTurtleSoup) {
+    analysis = await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+  } else if (isICT) {
+    analysis = await analyzeICTChart(chartImage, currentPrice, timeframe);
+  } else if (isSMC) {
+    analysis = await analyzeSMCChart(chartImage, currentPrice, timeframe);
+  } else if (isScalping) {
+    analysis = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
+  } else if (isPriceAction) {
+    analysis = await analyzePriceAction(chartImage, currentPrice, timeframe);
   } else {
-    const strategy = selectedStrategies[0] || "Patterns";
-    switch (strategy) {
-      case "Patterns":
-        analysis = await analyzePattern(chartImage, currentPrice, timeframe);
-        break;
-      case "Waves":
-        analysis = await analyzeWavesChart(chartImage, currentPrice, timeframe);
-        break;
-      case "Gann":
-        analysis = await analyzeGannChart(chartImage, currentPrice, timeframe);
-        break;
-      case "Turtle Soup":
-        analysis = await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
-        break;
-      case "ICT":
-        analysis = await analyzeICTChart(chartImage, currentPrice, timeframe);
-        break;
-      case "SMC":
-        analysis = await analyzeSMCChart(chartImage, currentPrice, timeframe);
-        break;
-      case "سكالبينج":
-        analysis = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
-        break;
-      case "Price Action":
-        analysis = await analyzePriceAction(chartImage, currentPrice, timeframe);
-        break;
-      default:
-        analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
-    }
+    analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
+  }
+
+  // Set the analysis type based on the selected strategy
+  if (selectedStrategies.length === 1) {
+    analysis.analysisType = selectedStrategies[0] as AnalysisData['analysisType'];
+    analysis.activation_type = "يدوي";
   }
 
   return analysis;
