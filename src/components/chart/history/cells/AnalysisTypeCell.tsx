@@ -7,27 +7,32 @@ interface AnalysisTypeCellProps {
   activation_type?: 'تلقائي' | 'يدوي';
 }
 
+const VALID_ANALYSIS_TYPES = [
+  'ICT',
+  'Patterns',
+  'Turtle Soup',
+  'Price Action',
+  'Scalping',
+  'Gann',
+  'SMC',
+  'Waves'
+];
+
 export const AnalysisTypeCell = ({ analysisType, pattern, activation_type = 'يدوي' }: AnalysisTypeCellProps) => {
-  // تحويل نوع التحليل إلى النص العربي المناسب
+  // تحويل نوع التحليل إلى النص المناسب من القائمة المسموح بها
   const getDisplayText = () => {
-    switch (analysisType) {
-      case 'SMC':
-        return 'نموذج تجمع سيولة';
-      case 'ICT':
-        return 'ICT';
-      case 'Turtle Soup':
-        return 'Turtle Soup';
-      case 'Gann':
-        return 'Gann';
-      case 'Waves':
-        return 'نموذج موجي';
-      case 'Patterns':
-        return pattern || 'نموذج صعودي مستمر';
-      case 'Price Action':
-        return 'Price Action';
-      default:
-        return analysisType;
+    // التحقق مما إذا كان نوع التحليل موجود في القائمة المسموح بها
+    const validType = VALID_ANALYSIS_TYPES.find(
+      type => type.toLowerCase() === analysisType.toLowerCase()
+    );
+    
+    // إذا كان النوع صالحًا، نعرضه كما هو
+    if (validType) {
+      return validType;
     }
+    
+    // إذا لم يكن النوع في القائمة، نعرض 'Patterns' كقيمة افتراضية
+    return 'Patterns';
   };
 
   return (
