@@ -22,6 +22,8 @@ const getStrategyName = (type: string): string => {
   }
 };
 
+// ... keep existing code (functions and imports)
+
 export const combinedAnalysis = async (
   chartImage: string,
   currentPrice: number,
@@ -87,6 +89,9 @@ export const combinedAnalysis = async (
   // Combine and sort targets
   const combinedTargets = combineAndSortTargets(analysisResults);
 
+  // حدد نوع التحليل بناءً على النوع الأول المحدد
+  const primaryAnalysisType = getStrategyName(selectedTypes[0]) as AnalysisData['analysisType'];
+
   const combinedResult: AnalysisData = {
     pattern: `Combined Analysis (${strategyNames.join(', ')})`,
     direction,
@@ -99,7 +104,7 @@ export const combinedAnalysis = async (
       price: Number((weightedValues.entryPrice / weightedValues.totalWeight).toFixed(2)),
       reason: `Based on combining ${selectedTypes.length} strategies (${strategyNames.join(', ')})`
     },
-    analysisType: "Patterns", // Changed from "ذكي" to "Patterns" for combined analysis
+    analysisType: primaryAnalysisType,
     activation_type: "تلقائي"
   };
 

@@ -71,7 +71,9 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Combined Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "Patterns"; // Changed from "ذكي" to "Patterns" for combined analysis
+    
+    // حدد نوع التحليل بناءً على الاستراتيجية الأولى
+    analysis.analysisType = selectedStrategies[0] as AnalysisData['analysisType'];
     analysis.activation_type = "تلقائي";
   } else {
     const strategy = selectedStrategies[0] || "Patterns";
