@@ -45,19 +45,32 @@ export const AutoAnalysis = ({
         try {
           console.log(`بدء تحليل ${timeframe} - ${analysisType}`);
           
+          // تعيين المتغيرات بناءً على نوع التحليل
+          const analysisConfig = {
+            isScalping: analysisType === "scalping",
+            isAI: false,
+            isSMC: analysisType === "smc",
+            isICT: analysisType === "ict",
+            isTurtleSoup: analysisType === "turtleSoup",
+            isGann: analysisType === "gann",
+            isWaves: analysisType === "waves",
+            isPatternAnalysis: analysisType === "patterns",
+            isPriceAction: analysisType === "priceAction"
+          };
+
           const result = await handleTradingViewConfig(
             symbol,
             timeframe,
             price,
-            analysisType === "scalping",
-            false,
-            analysisType === "smc",
-            analysisType === "ict",
-            analysisType === "turtleSoup",
-            analysisType === "gann",
-            analysisType === "waves",
-            analysisType === "patterns",
-            analysisType === "priceAction"
+            analysisConfig.isScalping,
+            analysisConfig.isAI,
+            analysisConfig.isSMC,
+            analysisConfig.isICT,
+            analysisConfig.isTurtleSoup,
+            analysisConfig.isGann,
+            analysisConfig.isWaves,
+            analysisConfig.isPatternAnalysis,
+            analysisConfig.isPriceAction
           );
 
           if (result && result.analysisResult) {
@@ -66,6 +79,9 @@ export const AutoAnalysis = ({
             // تحويل نوع التحليل مع التحقق من صحته
             const mappedAnalysisType = mapAnalysisType(analysisType);
             console.log("نوع التحليل المحول:", mappedAnalysisType);
+
+            // تعيين نوع التحليل في نتيجة التحليل
+            result.analysisResult.analysisType = mappedAnalysisType;
             
             const savedData = await saveAnalysisToHistory(
               result,
@@ -81,7 +97,10 @@ export const AutoAnalysis = ({
                 date: new Date(),
                 symbol: symbol,
                 currentPrice: price,
-                analysis: result.analysisResult,
+                analysis: {
+                  ...result.analysisResult,
+                  analysisType: mappedAnalysisType
+                },
                 analysisType: mappedAnalysisType,
                 timeframe: timeframe
               };
