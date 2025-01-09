@@ -1,3 +1,5 @@
+import { AnalysisData } from "@/types/analysis";
+
 export const detectAnalysisType = (
   isPatternAnalysis: boolean,
   isWaves: boolean,
