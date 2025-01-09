@@ -24,6 +24,21 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
+  const handleSelectAll = () => {
+    const allIds = validHistory.map(item => item.id);
+    if (selectedItems.size === validHistory.length) {
+      // إذا كان كل شيء محدد، قم بإلغاء تحديد الكل
+      allIds.forEach(id => handleSelect(id));
+    } else {
+      // حدد كل العناصر التي لم يتم تحديدها بعد
+      allIds.forEach(id => {
+        if (!selectedItems.has(id)) {
+          handleSelect(id);
+        }
+      });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
@@ -32,6 +47,7 @@ export const SearchHistory = ({
             selectedItems={selectedItems}
             onDelete={onDelete}
             validHistory={validHistory}
+            onSelectAll={handleSelectAll}
           />
           <SearchHistoryToolbar
             selectedItems={selectedItems}
