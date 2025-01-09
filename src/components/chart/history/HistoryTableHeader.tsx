@@ -1,22 +1,38 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface HistoryTableHeaderProps {
   showCheckbox?: boolean;
+  onSelectAll?: () => void;
+  isAllSelected?: boolean;
 }
 
-export const HistoryTableHeader = ({ showCheckbox = false }: HistoryTableHeaderProps) => (
-  <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
-    <TableRow>
-      {showCheckbox && <TableHead className="w-[60px] text-center p-2">تحديد</TableHead>}
-      <TableHead className="w-[120px] text-center p-2 font-bold">التاريخ</TableHead>
-      <TableHead className="w-[100px] text-center p-2 font-bold">الرمز</TableHead>
-      <TableHead className="w-[140px] text-center p-2 font-bold">نوع التحليل</TableHead>
-      <TableHead className="w-[100px] text-center p-2 font-bold">الإطار الزمني</TableHead>
-      <TableHead className="w-[120px] text-center p-2 font-bold">السعر عند التحليل</TableHead>
-      <TableHead className="w-[80px] text-center p-2 font-bold">الاتجاه</TableHead>
-      <TableHead className="w-[160px] text-center p-2 font-bold">أفضل نقطة دخول</TableHead>
-      <TableHead className="w-[140px] text-center p-2 font-bold">الأهداف</TableHead>
-      <TableHead className="w-[120px] text-center p-2 font-bold">وقف الخسارة</TableHead>
-    </TableRow>
-  </TableHeader>
-);
+export const HistoryTableHeader = ({
+  showCheckbox = false,
+  onSelectAll,
+  isAllSelected
+}: HistoryTableHeaderProps) => {
+  return (
+    <TableHeader>
+      <TableRow>
+        {showCheckbox && (
+          <TableHead className="w-[60px] text-center">
+            <Checkbox 
+              checked={isAllSelected} 
+              onCheckedChange={onSelectAll}
+            />
+          </TableHead>
+        )}
+        <TableHead className="w-[120px] text-center">التاريخ</TableHead>
+        <TableHead className="w-[100px] text-center">الرمز</TableHead>
+        <TableHead className="w-[120px] text-center">نوع التحليل</TableHead>
+        <TableHead className="w-[100px] text-center">الإطار الزمني</TableHead>
+        <TableHead className="w-[120px] text-center">السعر الحالي</TableHead>
+        <TableHead className="w-[80px] text-center">الاتجاه</TableHead>
+        <TableHead className="w-[160px] text-center">نقطة الدخول</TableHead>
+        <TableHead className="w-[140px] text-center">الأهداف</TableHead>
+        <TableHead className="w-[120px] text-center">وقف الخسارة</TableHead>
+      </TableRow>
+    </TableHeader>
+  );
+};

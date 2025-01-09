@@ -1,48 +1,42 @@
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { AnalysisData } from "@/types/analysis";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface HistoryContentProps {
-  history: Array<{
-    id: string;
-    date: Date;
-    symbol: string;
-    currentPrice: number;
-    analysis: AnalysisData;
-    targetHit?: boolean;
-    stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
-    timeframe: string;
-  }>;
+  history: SearchHistoryItem[];
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  isAllSelected: boolean;
+  onSelectAll: () => void;
 }
 
 export const HistoryContent = ({
   history,
   selectedItems,
   onSelect,
-  onDelete
+  onDelete,
+  isAllSelected,
+  onSelectAll,
 }: HistoryContentProps) => {
   return (
-    <div className="relative rounded-md border bg-background overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table>
-          <HistoryTableHeader showCheckbox={true} />
-          <TableBody className="relative">
-            {history.map((item) => (
-              <HistoryRow
-                key={item.id}
-                {...item}
-                isSelected={selectedItems.has(item.id)}
-                onSelect={() => onSelect(item.id)}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    <Table>
+      <HistoryTableHeader 
+        showCheckbox={true}
+        onSelectAll={onSelectAll}
+        isAllSelected={isAllSelected}
+      />
+      <TableBody>
+        {history.map((item) => (
+          <HistoryRow
+            key={item.id}
+            {...item}
+            isSelected={selectedItems.has(item.id)}
+            onSelect={() => onSelect(item.id)}
+          />
+        ))}
+      </TableBody>
+    </Table>
   );
 };

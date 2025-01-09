@@ -2,6 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SearchHistoryHeader } from "./history/SearchHistoryHeader";
 import { SearchHistoryToolbar } from "./history/SearchHistoryToolbar";
 import { SearchHistoryMain } from "./history/SearchHistoryMain";
+import { useState } from "react";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -24,6 +25,23 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
+  const [isAllSelected, setIsAllSelected] = useState(false);
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      // Deselect all
+      validHistory.forEach(item => handleSelect(item.id));
+    } else {
+      // Select all
+      validHistory.forEach(item => {
+        if (!selectedItems.has(item.id)) {
+          handleSelect(item.id);
+        }
+      });
+    }
+    setIsAllSelected(!isAllSelected);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
@@ -44,6 +62,8 @@ export const SearchHistory = ({
           selectedItems={selectedItems}
           onSelect={handleSelect}
           onDelete={onDelete}
+          isAllSelected={isAllSelected}
+          onSelectAll={handleSelectAll}
         />
       </DialogContent>
     </Dialog>
