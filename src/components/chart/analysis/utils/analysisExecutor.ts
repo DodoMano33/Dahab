@@ -44,7 +44,7 @@ export const executeAnalysis = async (
   if (isTurtleSoup) selectedStrategies.push("Turtle Soup");
   if (isICT) selectedStrategies.push("ICT");
   if (isSMC) selectedStrategies.push("SMC");
-  if (isScalping) selectedStrategies.push("Scalping");
+  if (isScalping) selectedStrategies.push("سكالبينج");
   if (isPriceAction) selectedStrategies.push("Price Action");
 
   let analysis: AnalysisData;
@@ -58,7 +58,7 @@ export const executeAnalysis = async (
         case "Turtle Soup": return analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
         case "ICT": return analyzeICTChart(chartImage, currentPrice, timeframe);
         case "SMC": return analyzeSMCChart(chartImage, currentPrice, timeframe);
-        case "Scalping": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
+        case "سكالبينج": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
         case "Price Action": return analyzePriceAction(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
@@ -70,11 +70,11 @@ export const executeAnalysis = async (
     if (analysis.bestEntryPoint) {
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
-    analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "ذكي";
+    analysis.pattern = `Combined Analysis (${selectedStrategies.join(', ')})`;
+    analysis.analysisType = "Patterns"; // Changed from "ذكي" to "Patterns" for combined analysis
     analysis.activation_type = "تلقائي";
   } else {
-    const strategy = selectedStrategies[0] || "Standard";
+    const strategy = selectedStrategies[0] || "Patterns";
     switch (strategy) {
       case "Patterns":
         analysis = await analyzePattern(chartImage, currentPrice, timeframe);
@@ -94,7 +94,7 @@ export const executeAnalysis = async (
       case "SMC":
         analysis = await analyzeSMCChart(chartImage, currentPrice, timeframe);
         break;
-      case "Scalping":
+      case "سكالبينج":
         analysis = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
         break;
       case "Price Action":

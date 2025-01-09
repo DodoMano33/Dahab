@@ -10,7 +10,7 @@ import { analyzePriceAction } from "@/components/chart/analysis/priceActionAnaly
 
 const getStrategyName = (type: string): string => {
   switch (type) {
-    case "scalping": return "Scalping";
+    case "scalping": return "سكالبينج";
     case "smc": return "SMC";
     case "ict": return "ICT";
     case "turtleSoup": return "Turtle Soup";
@@ -88,7 +88,7 @@ export const combinedAnalysis = async (
   const combinedTargets = combineAndSortTargets(analysisResults);
 
   const combinedResult: AnalysisData = {
-    pattern: `Smart Analysis (${strategyNames.join(', ')})`,
+    pattern: `Combined Analysis (${strategyNames.join(', ')})`,
     direction,
     currentPrice,
     support: Number((weightedValues.support / weightedValues.totalWeight).toFixed(2)),
@@ -99,7 +99,7 @@ export const combinedAnalysis = async (
       price: Number((weightedValues.entryPrice / weightedValues.totalWeight).toFixed(2)),
       reason: `Based on combining ${selectedTypes.length} strategies (${strategyNames.join(', ')})`
     },
-    analysisType: "ذكي",
+    analysisType: "Patterns", // Changed from "ذكي" to "Patterns" for combined analysis
     activation_type: "تلقائي"
   };
 
