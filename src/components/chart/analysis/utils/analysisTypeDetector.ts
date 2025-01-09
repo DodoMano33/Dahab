@@ -11,7 +11,7 @@ export const detectAnalysisType = (
   isScalping: boolean,
   isPriceAction: boolean
 ): AnalysisData['analysisType'] => {
-  if (isScalping) return "Scalping";
+  if (isScalping) return "سكالبينج";
   if (isSMC) return "SMC";
   if (isICT) return "ICT";
   if (isTurtleSoup) return "Turtle Soup";
