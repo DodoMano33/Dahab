@@ -16,23 +16,24 @@ const VALID_ANALYSIS_TYPES = [
   'Gann',
   'SMC',
   'Waves'
-];
+] as const;
 
 export const AnalysisTypeCell = ({ analysisType, pattern, activation_type = 'يدوي' }: AnalysisTypeCellProps) => {
-  // تحويل نوع التحليل إلى النص المناسب من القائمة المسموح بها
+  // التحقق من نوع التحليل وعرضه كما هو إذا كان صحيحاً
   const getDisplayText = () => {
-    // التحقق مما إذا كان نوع التحليل موجود في القائمة المسموح بها
-    const validType = VALID_ANALYSIS_TYPES.find(
+    // تحويل نوع التحليل إلى الحالة الصحيحة للمقارنة
+    const normalizedType = VALID_ANALYSIS_TYPES.find(
       type => type.toLowerCase() === analysisType.toLowerCase()
     );
     
-    // إذا كان النوع صالحًا، نعرضه كما هو
-    if (validType) {
-      return validType;
+    // إذا كان النوع صالحاً، نعرضه كما هو بالضبط
+    if (normalizedType) {
+      return normalizedType;
     }
     
-    // إذا لم يكن النوع في القائمة، نعرض 'Patterns' كقيمة افتراضية
-    return 'Patterns';
+    // إذا كان النوع غير صالح، نعرض تحذيراً في وحدة التحكم
+    console.warn(`نوع تحليل غير صالح: ${analysisType}. يجب أن يكون أحد الأنواع التالية:`, VALID_ANALYSIS_TYPES);
+    return analysisType;
   };
 
   return (
