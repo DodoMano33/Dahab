@@ -8,11 +8,33 @@ interface AnalysisTypeCellProps {
 }
 
 export const AnalysisTypeCell = ({ analysisType, pattern, activation_type = 'يدوي' }: AnalysisTypeCellProps) => {
+  // تحويل نوع التحليل إلى النص العربي المناسب
+  const getDisplayText = () => {
+    switch (analysisType) {
+      case 'SMC':
+        return 'نموذج تجمع سيولة';
+      case 'ICT':
+        return 'ICT';
+      case 'Turtle Soup':
+        return 'Turtle Soup';
+      case 'Gann':
+        return 'Gann';
+      case 'Waves':
+        return 'نموذج موجي';
+      case 'Patterns':
+        return pattern || 'نموذج صعودي مستمر';
+      case 'Price Action':
+        return 'Price Action';
+      default:
+        return analysisType;
+    }
+  };
+
   return (
     <TableCell className="w-[140px] text-center p-2">
       <div className="flex flex-col items-center">
         <div className="flex items-center gap-2">
-          <span>{analysisType}</span>
+          <span>{getDisplayText()}</span>
           {pattern && <Badge variant="outline">{pattern}</Badge>}
         </div>
         <div className={`h-1 w-16 mt-1 rounded-full ${

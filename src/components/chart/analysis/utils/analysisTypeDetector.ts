@@ -11,21 +11,6 @@ export const detectAnalysisType = (
   isScalping: boolean,
   isPriceAction: boolean
 ): AnalysisData['analysisType'] => {
-  const hasAnalysisType = 
-    isPatternAnalysis ||
-    isWaves ||
-    isGann ||
-    isTurtleSoup ||
-    isICT ||
-    isSMC ||
-    isScalping ||
-    isPriceAction ||
-    isAI;
-
-  if (!hasAnalysisType) {
-    return "Patterns";
-  }
-
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
   if (isSMC) return "SMC";
@@ -36,5 +21,5 @@ export const detectAnalysisType = (
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
   
-  return "Patterns";
+  return "Patterns"; // القيمة الافتراضية
 };
