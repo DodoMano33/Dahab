@@ -5,34 +5,37 @@ import { mapAnalysisTypeToConfig } from "./analysisTypeMapping";
 import { toast } from "sonner";
 
 interface ExecuteAnalysisParams {
-  symbol: string;
+  chartImage: string;
+  providedPrice: number;
   timeframe: string;
-  currentPrice: number;
-  analysisType: string;
-  handleTradingViewConfig: Function;
-  userId: string;
-  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
+  analysisConfig: {
+    isPatternAnalysis: boolean;
+    isWaves: boolean;
+    isGann: boolean;
+    isTurtleSoup: boolean;
+    isICT: boolean;
+    isSMC: boolean;
+    isScalping: boolean;
+    isPriceAction: boolean;
+  };
 }
 
 export const executeAnalysis = async ({
-  symbol,
+  chartImage,
+  providedPrice,
   timeframe,
-  currentPrice,
-  analysisType,
-  handleTradingViewConfig,
-  userId,
-  onAnalysisComplete
-}: ExecuteAnalysisParams) => {
+  analysisConfig
+}: ExecuteAnalysisParams): Promise<AnalysisData | null> => {
   try {
-    console.log(`Starting analysis for ${timeframe} - ${analysisType}`);
+    console.log("Executing analysis with config:", analysisConfig);
     
-    const config = mapAnalysisTypeToConfig(analysisType);
-    console.log("Analysis configuration:", config);
+    const config = mapAnalysisTypeToConfig(analysisConfig);
+    console.log("Mapped analysis configuration:", config);
     
     const result = await handleTradingViewConfig(
       symbol,
       timeframe,
-      currentPrice,
+      providedPrice,
       config.isScalping,
       false, // isAI
       config.isSMC,
