@@ -19,7 +19,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  console.log("Selected Items:", selectedItems);
+  console.log("Selected Items:", selectedItems); // Debug log
 
   const validHistory = history.filter(item => 
     item && 
@@ -36,7 +36,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
     } else {
       newSelected.add(id);
     }
-    console.log("Updating selected items:", newSelected);
+    console.log("Updating selected items:", newSelected); // Debug log
     setSelectedItems(newSelected);
   };
 
@@ -53,33 +53,31 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             setIsDatePickerOpen={setIsDatePickerOpen}
             setDateRange={setDateRange}
           />
+
+          {/* Table Header */}
+          <div className="border rounded-t-md bg-background">
+            <Table>
+              <HistoryTableHeader showCheckbox={true} />
+            </Table>
+          </div>
         </div>
 
-        <ScrollArea className="h-[calc(85vh-16rem)]">
-          <div className="min-w-[1000px]">
-            <div className="border rounded-t-md bg-background">
-              <Table>
-                <HistoryTableHeader showCheckbox={true} />
-              </Table>
-            </div>
-
-            <div className="border-x border-b rounded-b-md">
-              <Table>
-                <TableBody>
-                  {validHistory.map((item) => (
-                    <HistoryRow
-                      key={item.id}
-                      {...item}
-                      isSelected={selectedItems.has(item.id)}
-                      onSelect={() => handleSelect(item.id)}
-                      target_hit={item.targetHit}
-                      stop_loss_hit={item.stopLossHit}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+        {/* Table Body */}
+        <ScrollArea className="h-[calc(85vh-16rem)] border-x border-b rounded-b-md">
+          <Table>
+            <TableBody>
+              {validHistory.map((item) => (
+                <HistoryRow
+                  key={item.id}
+                  {...item}
+                  isSelected={selectedItems.has(item.id)}
+                  onSelect={() => handleSelect(item.id)}
+                  target_hit={item.targetHit}
+                  stop_loss_hit={item.stopLossHit}
+                />
+              ))}
+            </TableBody>
+          </Table>
         </ScrollArea>
       </div>
     </div>

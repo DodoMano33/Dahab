@@ -11,7 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AnalysisStats {
   type: string;
@@ -98,7 +97,7 @@ export const BackTestResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-4">
+      <DialogContent className="max-w-6xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold text-indigo-700">
@@ -114,79 +113,73 @@ export const BackTestResultsDialog = ({
           </div>
         </DialogHeader>
 
-        <div className="mt-6 h-full flex flex-col space-y-6 overflow-hidden">
-          <ScrollArea className="w-full">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 pb-4">
-              {analysisStats.map((stat) => (
+        <div className="mt-6">
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+            {analysisStats.map((stat) => (
+              <div
+                key={stat.type}
+                className="flex flex-col items-center text-center"
+              >
+                <div className="text-sm font-medium mb-2">{stat.type}</div>
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="bg-green-500 text-white p-1 text-xs rounded">
+                    <div>ناجح</div>
+                    <div>{stat.success}</div>
+                  </div>
+                  <div className="bg-red-500 text-white p-1 text-xs rounded">
+                    <div>فاشل</div>
+                    <div>{stat.fail}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 border rounded-lg">
+            <div className="grid grid-cols-10 gap-4 p-4 bg-gray-50 text-right text-sm font-medium">
+              <div className="text-center">تحديد</div>
+              <div>وقف الخسارة</div>
+              <div>الهدف الأول</div>
+              <div>السعر عند التحليل</div>
+              <div>أفضل نقطة دخول</div>
+              <div>الربح/الخسارة</div>
+              <div>الاطار الزمني</div>
+              <div>نوع التحليل</div>
+              <div>الرمز</div>
+              <div>تاريخ النتيجة</div>
+            </div>
+            <div className="divide-y">
+              {completedAnalyses.map((analysis) => (
                 <div
-                  key={stat.type}
-                  className="flex flex-col items-center text-center"
+                  key={analysis.id}
+                  className={`grid grid-cols-10 gap-4 p-4 items-center text-right ${
+                    analysis.is_success ? 'bg-green-50' : 'bg-red-50'
+                  }`}
                 >
-                  <div className="text-sm font-medium mb-2">{stat.type}</div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <div className="bg-green-500 text-white p-1 text-xs rounded">
-                      <div>ناجح</div>
-                      <div>{stat.success}</div>
-                    </div>
-                    <div className="bg-red-500 text-white p-1 text-xs rounded">
-                      <div>فاشل</div>
-                      <div>{stat.fail}</div>
-                    </div>
+                  <div className="flex justify-center">
+                    <Checkbox />
+                  </div>
+                  <div>
+                    {!analysis.is_success && analysis.analysis.stopLoss}
+                  </div>
+                  <div>
+                    {analysis.is_success && analysis.analysis.targets?.[0]?.price}
+                  </div>
+                  <div>{analysis.current_price}</div>
+                  <div>{analysis.analysis.bestEntryPoint?.price}</div>
+                  <div className={`${calculateProfitLoss(analysis) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {calculateProfitLoss(analysis)}
+                  </div>
+                  <div>{analysis.timeframe}</div>
+                  <div>{analysis.analysis_type}</div>
+                  <div>{analysis.symbol}</div>
+                  <div>
+                    {analysis.result_timestamp && 
+                      format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
                   </div>
                 </div>
               ))}
             </div>
-          </ScrollArea>
-
-          <div className="flex-1 overflow-hidden border rounded-lg">
-            <ScrollArea className="h-full">
-              <div className="min-w-[1000px]">
-                <div className="grid grid-cols-10 gap-4 p-4 bg-gray-50 text-right text-sm font-medium sticky top-0 z-10">
-                  <div className="text-center">تحديد</div>
-                  <div>وقف الخسارة</div>
-                  <div>الهدف الأول</div>
-                  <div>السعر عند التحليل</div>
-                  <div>أفضل نقطة دخول</div>
-                  <div>الربح/الخسارة</div>
-                  <div>الاطار الزمني</div>
-                  <div>نوع التحليل</div>
-                  <div>الرمز</div>
-                  <div>تاريخ النتيجة</div>
-                </div>
-                <div className="divide-y">
-                  {completedAnalyses.map((analysis) => (
-                    <div
-                      key={analysis.id}
-                      className={`grid grid-cols-10 gap-4 p-4 items-center text-right ${
-                        analysis.is_success ? 'bg-green-50' : 'bg-red-50'
-                      }`}
-                    >
-                      <div className="flex justify-center">
-                        <Checkbox />
-                      </div>
-                      <div>
-                        {!analysis.is_success && analysis.analysis.stopLoss}
-                      </div>
-                      <div>
-                        {analysis.is_success && analysis.analysis.targets?.[0]?.price}
-                      </div>
-                      <div>{analysis.current_price}</div>
-                      <div>{analysis.analysis.bestEntryPoint?.price}</div>
-                      <div className={`${calculateProfitLoss(analysis) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {calculateProfitLoss(analysis)}
-                      </div>
-                      <div>{analysis.timeframe}</div>
-                      <div>{analysis.analysis_type}</div>
-                      <div>{analysis.symbol}</div>
-                      <div>
-                        {analysis.result_timestamp && 
-                          format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </ScrollArea>
           </div>
         </div>
       </DialogContent>
