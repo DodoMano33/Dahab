@@ -88,15 +88,18 @@ export const AutoAnalysis = ({
   };
 
   const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
-    switch (type.toLowerCase()) {
+    // تنظيف النص وإزالة المسافات الزائدة
+    const cleanType = type.trim().toLowerCase().replace(/\s+/g, ' ');
+    
+    switch (cleanType) {
       case 'scalping': return 'سكالبينج';
       case 'smc': return 'SMC';
       case 'ict': return 'ICT';
-      case 'turtlesoup': return 'Turtle Soup';
+      case 'turtle soup': return 'Turtle Soup';
       case 'gann': return 'Gann';
       case 'waves': return 'Waves';
       case 'patterns': return 'Patterns';
-      case 'priceaction': return 'Price Action';
+      case 'price action': return 'Price Action';
       default: throw new Error(`نوع تحليل غير صالح: ${type}`);
     }
   };
@@ -107,19 +110,22 @@ export const AutoAnalysis = ({
         try {
           console.log(`بدء التحليل للإطار الزمني ${timeframe} - نوع التحليل ${analysisType}`);
           
+          // تحويل نوع التحليل إلى الصيغة المناسبة
+          const cleanAnalysisType = analysisType.toLowerCase().replace(/\s+/g, ' ');
+          
           const result = await handleTradingViewConfig(
             symbol,
             timeframe,
             price,
-            analysisType.toLowerCase() === "scalping",
+            cleanAnalysisType === "scalping",
             false,
-            analysisType.toLowerCase() === "smc",
-            analysisType.toLowerCase() === "ict",
-            analysisType.toLowerCase() === "turtlesoup",
-            analysisType.toLowerCase() === "gann",
-            analysisType.toLowerCase() === "waves",
-            analysisType.toLowerCase() === "patterns",
-            analysisType.toLowerCase() === "priceaction"
+            cleanAnalysisType === "smc",
+            cleanAnalysisType === "ict",
+            cleanAnalysisType === "turtle soup",
+            cleanAnalysisType === "gann",
+            cleanAnalysisType === "waves",
+            cleanAnalysisType === "patterns",
+            cleanAnalysisType === "price action"
           );
 
           if (result && result.analysisResult) {
