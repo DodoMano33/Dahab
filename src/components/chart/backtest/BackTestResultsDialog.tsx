@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AnalysisStats {
   type: string;
@@ -76,15 +77,29 @@ export const BackTestResultsDialog = ({
           </div>
 
           <div className="mt-8 border rounded-lg">
-            <div className="grid grid-cols-6 gap-4 p-4 bg-gray-50 text-right text-sm font-medium">
-              <div>تاريخ النتيجة</div>
-              <div>الرمز</div>
-              <div>نوع التحليل</div>
-              <div>الاطار الزمني</div>
-              <div>الهدف الأول</div>
+            <div className="grid grid-cols-7 gap-4 p-4 bg-gray-50 text-right text-sm font-medium">
+              <div className="text-center">تحديد</div>
               <div>وقف الخسارة</div>
+              <div>الهدف الأول</div>
+              <div>الاطار الزمني</div>
+              <div>نوع التحليل</div>
+              <div>الرمز</div>
+              <div>تاريخ النتيجة</div>
             </div>
-            {/* Table content will be added here */}
+            <div className="divide-y">
+              {/* Sample row - will be replaced with actual data */}
+              <div className="grid grid-cols-7 gap-4 p-4 items-center text-right">
+                <div className="flex justify-center">
+                  <Checkbox />
+                </div>
+                <div>1.2345</div>
+                <div>1.2400</div>
+                <div>H4</div>
+                <div>سكالبينج</div>
+                <div>EURUSD</div>
+                <div>2024/03/31</div>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>
