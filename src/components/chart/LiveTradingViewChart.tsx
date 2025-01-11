@@ -1,69 +1,62 @@
-import React, { useEffect, useRef } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-declare global {
-  interface Window {
-    TradingView: any;
-  }
-}
+import { useEffect, useRef } from 'react';
 
 interface LiveTradingViewChartProps {
-  symbol: string;
+  symbol?: string;
   timeframe?: string;
 }
 
-export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
+export const LiveTradingViewChart = ({ 
   symbol = "XAUUSD",
-  timeframe = "D" 
-}) => {
+  timeframe = "D"
+}: LiveTradingViewChartProps) => {
   const container = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!container.current) return;
 
     const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.type = 'text/javascript';
     script.async = true;
-    script.onload = () => {
-      if (typeof window.TradingView !== 'undefined') {
-        new window.TradingView.widget({
-          "width": "100%",
-          "height": isMobile ? 300 : 500,
-          "symbol": symbol,
-          "interval": timeframe,
-          "timezone": "Etc/UTC",
-          "theme": "light",
-          "style": "1",
-          "locale": "ar",
-          "toolbar_bg": "#f1f3f6",
-          "enable_publishing": false,
-          "hide_side_toolbar": isMobile,
-          "allow_symbol_change": true,
-          "container_id": "tradingview_chart",
-          "studies": [
-            { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
-          ],
-          "autosize": true,
-        });
-      }
+
+    const config = {
+      "autosize": true,
+      "symbol": symbol,
+      "interval": timeframe,
+      "timezone": "exchange",
+      "theme": "light",
+      "style": "1",
+      "locale": "ar",
+      "enable_publishing": false,
+      "hide_top_toolbar": true,
+      "allow_symbol_change": true,
+      "save_image": false,
+      "calendar": false,
+      "hide_volume": true,
+      "support_host": "https://www.tradingview.com"
     };
+
+    script.innerHTML = JSON.stringify(config);
     
-    container.current.appendChild(script);
+    // Clean up previous content
+    if (container.current.hasChildNodes()) {
+      container.current.innerHTML = '';
+    }
+
+    // Create new widget container
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container';
+    container.current.appendChild(widgetContainer);
+    widgetContainer.appendChild(script);
 
     return () => {
       if (container.current) {
-        const scriptElement = container.current.querySelector('script');
-        if (scriptElement) {
-          container.current.removeChild(scriptElement);
-        }
+        container.current.innerHTML = '';
       }
     };
-  }, [symbol, timeframe, isMobile]);
+  }, [symbol, timeframe]);
 
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow-lg">
-      <div id="tradingview_chart" ref={container} className="w-full h-full" />
-    </div>
+    <div ref={container} className="w-full h-full" />
   );
 };
