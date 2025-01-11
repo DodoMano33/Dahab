@@ -58,7 +58,7 @@ export const analyzeDailyChart = async (
       // Create targets with proper dates
       const targets = targetPrices.map((price, index) => ({
         price,
-        expectedTime: addDays(new Date(), (index + 1) * 2) // Each target is expected 2 days after the previous
+        expectedTime: addDays(new Date(), (index + 1) * 2)
       }));
 
       const analysisResult: AnalysisData = {
@@ -71,7 +71,7 @@ export const analyzeDailyChart = async (
         targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
-        analysisType: "عادي"
+        analysisType: "Patterns"
       };
 
       console.log("نتائج التحليل اليومي:", analysisResult);

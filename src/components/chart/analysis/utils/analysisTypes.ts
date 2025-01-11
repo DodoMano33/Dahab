@@ -20,5 +20,5 @@ export const getAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
-  return "Patterns"; // Default to Patterns instead of "عادي"
+  throw new Error("يجب تحديد نوع التحليل");
 };

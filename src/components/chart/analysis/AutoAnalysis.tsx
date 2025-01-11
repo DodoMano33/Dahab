@@ -46,7 +46,6 @@ export const AutoAnalysis = ({
       return;
     }
 
-    // Get the current symbol and price from the form fields
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
     const priceInput = document.querySelector('input#price') as HTMLInputElement;
 
@@ -98,7 +97,7 @@ export const AutoAnalysis = ({
       case 'waves': return 'Waves';
       case 'patterns': return 'Patterns';
       case 'priceAction': return 'Price Action';
-      default: return 'عادي';
+      default: throw new Error(`نوع تحليل غير صالح: ${type}`);
     }
   };
 
