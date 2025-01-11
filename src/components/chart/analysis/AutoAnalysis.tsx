@@ -3,7 +3,7 @@ import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { saveAnalysisToHistory } from "./utils/analysisHistoryUtils";
 import { useAnalysisHandler } from "./AnalysisHandler";
 import { toast } from "sonner";
-import { SearchHistoryItem, AnalysisData } from "@/types/analysis";
+import { SearchHistoryItem, AnalysisData, AnalysisType } from "@/types/analysis";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -111,6 +111,21 @@ export const AutoAnalysis = ({
     return typeMapping[analysisType] || typeMapping['patterns'];
   };
 
+  const mapToAnalysisType = (analysisType: string): AnalysisType => {
+    const mapping: Record<string, AnalysisType> = {
+      'scalping': 'سكالبينج',
+      'price_action': 'Price Action',
+      'turtle_soup': 'Turtle Soup',
+      'smc': 'SMC',
+      'ict': 'ICT',
+      'gann': 'Gann',
+      'waves': 'Waves',
+      'patterns': 'Patterns'
+    };
+    
+    return mapping[analysisType] || 'Patterns';
+  };
+
   const performAnalysis = async (symbol: string, price: number) => {
     console.log("Starting analysis for timeframes:", selectedTimeframes);
     console.log("Selected analysis types:", selectedAnalysisTypes);
@@ -141,10 +156,7 @@ export const AutoAnalysis = ({
           if (result && result.analysisResult) {
             console.log("Analysis completed successfully:", result);
             
-            const mappedAnalysisType = analysisType === 'scalping' ? 'سكالبينج' :
-                                     analysisType === 'price_action' ? 'Price Action' :
-                                     analysisType === 'turtle_soup' ? 'Turtle Soup' :
-                                     analysisType.toUpperCase();
+            const mappedAnalysisType = mapToAnalysisType(analysisType);
 
             const savedData = await saveAnalysisToHistory(
               result,

@@ -1,3 +1,5 @@
+export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
+
 export interface AnalysisData {
   pattern: string;
   direction: "صاعد" | "هابط" | "محايد";
@@ -18,7 +20,7 @@ export interface AnalysisData {
     price: number;
   }[];
   activation_type?: "تلقائي" | "يدوي";
-  analysisType: "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
+  analysisType: AnalysisType;
 }
 
 export interface SearchHistoryItem {
@@ -29,7 +31,7 @@ export interface SearchHistoryItem {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
+  analysisType: AnalysisType;
   timeframe: string;
 }
 
