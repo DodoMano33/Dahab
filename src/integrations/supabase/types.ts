@@ -20,6 +20,7 @@ export type Database = {
           stop_loss_hit: boolean
           symbol: string
           target_hit: boolean
+          timeframe: string
           user_id: string
         }
         Insert: {
@@ -32,6 +33,7 @@ export type Database = {
           stop_loss_hit?: boolean
           symbol: string
           target_hit?: boolean
+          timeframe?: string
           user_id: string
         }
         Update: {
@@ -44,6 +46,7 @@ export type Database = {
           stop_loss_hit?: boolean
           symbol?: string
           target_hit?: boolean
+          timeframe?: string
           user_id?: string
         }
         Relationships: []

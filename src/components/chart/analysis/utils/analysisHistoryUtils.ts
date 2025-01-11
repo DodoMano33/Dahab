@@ -1,37 +1,21 @@
 import { supabase } from "@/lib/supabase";
-import { toast } from "sonner";
 import { AnalysisData } from "@/types/analysis";
-
-export const mapAnalysisTypeToDbValue = (type: string): AnalysisData['analysisType'] => {
-  const mapping: { [key: string]: AnalysisData['analysisType'] } = {
-    'scalping': 'سكالبينج',
-    'smc': 'SMC',
-    'ict': 'ICT',
-    'turtleSoup': 'Turtle Soup',
-    'gann': 'Gann',
-    'waves': 'Waves',
-    'patterns': 'Patterns',
-    'priceAction': 'Price Action',
-    'smart': 'ذكي'
-  };
-  return mapping[type] || 'عادي';
-};
+import { toast } from "sonner";
 
 export const saveAnalysisToHistory = async (
-  result: any,
+  result: { 
+    analysisResult: AnalysisData; 
+    currentPrice: number; 
+    symbol: string; 
+  },
   symbol: string,
   timeframe: string,
-  analysisType: string,
+  analysisType: AnalysisData['analysisType'],
   userId: string
 ) => {
   try {
     console.log("Saving analysis to history with user_id:", userId);
-    const mappedAnalysisType = mapAnalysisTypeToDbValue(analysisType);
-    console.log("Mapped analysis type:", mappedAnalysisType);
-    
-    if (!userId) {
-      throw new Error("User ID is required to save analysis history");
-    }
+    console.log("Mapped analysis type:", analysisType);
 
     const { data, error } = await supabase
       .from('search_history')
@@ -40,14 +24,15 @@ export const saveAnalysisToHistory = async (
         symbol: symbol.toUpperCase(),
         current_price: result.currentPrice,
         analysis: result.analysisResult,
-        analysis_type: mappedAnalysisType,
+        analysis_type: analysisType,
         timeframe: timeframe
       })
-      .select()
-      .single();
+      .select('*')
+      .maybeSingle();
 
     if (error) {
       console.error("Error saving analysis to history:", error);
+      toast.error("حدث خطأ أثناء حفظ التحليل في السجل");
       throw error;
     }
 
