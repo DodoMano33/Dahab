@@ -65,7 +65,9 @@ export const mapToAnalysisType = (type: string): AnalysisType => {
       return "Patterns";
     case 'price_action':
       return "Price Action";
+    case 'normal':
+      return "عادي" as AnalysisType; // Type assertion to include "عادي"
     default:
-      return "عادي";
+      return "عادي" as AnalysisType; // Type assertion for the default case
   }
 };
