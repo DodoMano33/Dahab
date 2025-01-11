@@ -108,7 +108,17 @@ export const AutoAnalysis = ({
       'price_action': { isScalping: false, isSMC: false, isICT: false, isTurtleSoup: false, isGann: false, isWaves: false, isPatternAnalysis: false, isPriceAction: true }
     };
 
-    return typeMapping[analysisType] || typeMapping['patterns'];
+    // إذا لم يكن نوع التحليل موجوداً في التعيين، نرجع كائناً جديداً بدلاً من استخدام patterns كقيمة افتراضية
+    return typeMapping[analysisType] || {
+      isScalping: false,
+      isSMC: false,
+      isICT: false,
+      isTurtleSoup: false,
+      isGann: false,
+      isWaves: false,
+      isPatternAnalysis: false,
+      isPriceAction: false
+    };
   };
 
   const mapToAnalysisType = (analysisType: string): AnalysisType => {
