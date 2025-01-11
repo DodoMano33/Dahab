@@ -1,5 +1,3 @@
-import { AnalysisType } from "@/types/analysis";
-
 export const detectAnalysisType = (
   isPatternAnalysis: boolean,
   isWaves: boolean,
@@ -10,7 +8,7 @@ export const detectAnalysisType = (
   isAI: boolean,
   isScalping: boolean,
   isPriceAction: boolean
-): AnalysisType => {
+): string => {
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
   if (isSMC) return "SMC";
@@ -20,5 +18,5 @@ export const detectAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
-  return "Patterns";
+  return "عادي";
 };

@@ -1,108 +1,109 @@
-import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
-import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
-import { mapToAnalysisType } from "./analysisTypeMapping";
-import { toast } from "sonner";
+import { AnalysisData } from "@/types/analysis";
+import { analyzeSMCChart } from "../smcAnalysis";
+import { analyzeICTChart } from "../ictAnalysis";
+import { analyzeTurtleSoupChart } from "../turtleSoupAnalysis";
+import { analyzeGannChart } from "../gannAnalysis";
+import { analyzeWavesChart } from "../wavesAnalysis";
+import { analyzePattern } from "../patternAnalysis";
+import { analyzeDailyChart } from "../dailyAnalysis";
+import { analyzeScalpingChart } from "../scalpingAnalysis";
+import { analyzePriceAction } from "../priceActionAnalysis";
 
-interface ExecuteAnalysisParams {
-  chartImage: string;
-  providedPrice: number;
-  timeframe: string;
-  analysisConfig: {
-    isPatternAnalysis: boolean;
-    isWaves: boolean;
-    isGann: boolean;
-    isTurtleSoup: boolean;
-    isICT: boolean;
-    isSMC: boolean;
-    isScalping: boolean;
-    isPriceAction: boolean;
-  };
-  symbol: string;
-  userId: string;
-  handleTradingViewConfig: Function;
-  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
+interface AnalysisOptions {
+  isPatternAnalysis: boolean;
+  isWaves: boolean;
+  isGann: boolean;
+  isTurtleSoup: boolean;
+  isICT: boolean;
+  isSMC: boolean;
+  isScalping: boolean;
+  isPriceAction: boolean;
 }
 
-export const executeAnalysis = async ({
-  chartImage,
-  providedPrice,
-  timeframe,
-  analysisConfig,
-  symbol,
-  userId,
-  handleTradingViewConfig,
-  onAnalysisComplete
-}: ExecuteAnalysisParams): Promise<AnalysisData | null> => {
-  try {
-    console.log("Executing analysis with config:", analysisConfig);
-    
-    const currentAnalysisType = determineAnalysisType(analysisConfig);
-    console.log("Determined analysis type:", currentAnalysisType);
-    
-    const result = await handleTradingViewConfig(
-      symbol,
-      timeframe,
-      providedPrice,
-      analysisConfig.isScalping,
-      false, // isAI
-      analysisConfig.isSMC,
-      analysisConfig.isICT,
-      analysisConfig.isTurtleSoup,
-      analysisConfig.isGann,
-      analysisConfig.isWaves,
-      analysisConfig.isPatternAnalysis,
-      analysisConfig.isPriceAction
-    );
+export const executeAnalysis = async (
+  chartImage: string,
+  currentPrice: number,
+  timeframe: string,
+  options: AnalysisOptions
+): Promise<AnalysisData> => {
+  const {
+    isPatternAnalysis,
+    isWaves,
+    isGann,
+    isTurtleSoup,
+    isICT,
+    isSMC,
+    isScalping,
+    isPriceAction
+  } = options;
 
-    if (result && result.analysisResult) {
-      console.log("Analysis completed successfully:", result);
-      
-      const mappedAnalysisType = mapToAnalysisType(currentAnalysisType);
+  let selectedStrategies = [];
+  if (isPatternAnalysis) selectedStrategies.push("Patterns");
+  if (isWaves) selectedStrategies.push("Waves");
+  if (isGann) selectedStrategies.push("Gann");
+  if (isTurtleSoup) selectedStrategies.push("Turtle Soup");
+  if (isICT) selectedStrategies.push("ICT");
+  if (isSMC) selectedStrategies.push("SMC");
+  if (isScalping) selectedStrategies.push("Scalping");
+  if (isPriceAction) selectedStrategies.push("Price Action");
 
-      const savedData = await saveAnalysisToHistory(
-        result,
-        symbol,
-        timeframe,
-        mappedAnalysisType,
-        userId
-      );
+  let analysis: AnalysisData;
 
-      console.log("Analysis saved to history:", savedData);
-
-      if (onAnalysisComplete) {
-        const newHistoryEntry: SearchHistoryItem = {
-          id: savedData.id,
-          date: new Date(),
-          symbol: symbol,
-          currentPrice: providedPrice,
-          analysis: result.analysisResult,
-          analysisType: mappedAnalysisType,
-          timeframe: timeframe
-        };
-        
-        console.log("Adding new analysis to history:", newHistoryEntry);
-        onAnalysisComplete(newHistoryEntry);
+  if (selectedStrategies.length > 1) {
+    const promises = selectedStrategies.map(strategy => {
+      switch (strategy) {
+        case "Patterns": return analyzePattern(chartImage, currentPrice, timeframe);
+        case "Waves": return analyzeWavesChart(chartImage, currentPrice, timeframe);
+        case "Gann": return analyzeGannChart(chartImage, currentPrice, timeframe);
+        case "Turtle Soup": return analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+        case "ICT": return analyzeICTChart(chartImage, currentPrice, timeframe);
+        case "SMC": return analyzeSMCChart(chartImage, currentPrice, timeframe);
+        case "Scalping": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
+        case "Price Action": return analyzePriceAction(chartImage, currentPrice, timeframe);
+        default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
+    });
 
-      toast.success(`تم إكمال تحليل ${currentAnalysisType} على الإطار الزمني ${timeframe}`);
-      return result.analysisResult;
+    const results = await Promise.all(promises);
+    
+    analysis = results[0];
+    if (analysis.bestEntryPoint) {
+      analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
-    return null;
-  } catch (error) {
-    console.error(`Error in analysis:`, error);
-    toast.error(`فشل في التحليل`);
-    return null;
+    analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
+    analysis.analysisType = "ذكي";
+    analysis.activation_type = "تلقائي";
+  } else {
+    const strategy = selectedStrategies[0] || "Standard";
+    switch (strategy) {
+      case "Patterns":
+        analysis = await analyzePattern(chartImage, currentPrice, timeframe);
+        break;
+      case "Waves":
+        analysis = await analyzeWavesChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Gann":
+        analysis = await analyzeGannChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Turtle Soup":
+        analysis = await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+        break;
+      case "ICT":
+        analysis = await analyzeICTChart(chartImage, currentPrice, timeframe);
+        break;
+      case "SMC":
+        analysis = await analyzeSMCChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Scalping":
+        analysis = await analyzeScalpingChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Price Action":
+        analysis = await analyzePriceAction(chartImage, currentPrice, timeframe);
+        break;
+      default:
+        analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
+    }
   }
-};
 
-const determineAnalysisType = (config: ExecuteAnalysisParams['analysisConfig']): string => {
-  if (config.isScalping) return 'scalping';
-  if (config.isSMC) return 'smc';
-  if (config.isICT) return 'ict';
-  if (config.isTurtleSoup) return 'turtle_soup';
-  if (config.isGann) return 'gann';
-  if (config.isWaves) return 'waves';
-  if (config.isPatternAnalysis) return 'patterns';
-  if (config.isPriceAction) return 'price_action';
-  return 'patterns'; // default
+  return analysis;
 };

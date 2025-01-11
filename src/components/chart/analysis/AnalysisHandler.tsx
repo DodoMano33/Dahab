@@ -5,7 +5,6 @@ import { detectAnalysisType } from "./utils/analysisTypeDetector";
 import { executeAnalysis } from "./utils/analysisExecutor";
 import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";
 import { toast } from "sonner";
-import { useUser } from "@supabase/auth-helpers-react";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -104,11 +103,11 @@ export const useAnalysisHandler = () => {
           );
         } else {
           console.log("Starting regular analysis");
-          analysisResult = await executeAnalysis({
+          analysisResult = await executeAnalysis(
             chartImage,
             providedPrice,
             timeframe,
-            analysisConfig: {
+            {
               isPatternAnalysis,
               isWaves,
               isGann,
@@ -117,12 +116,8 @@ export const useAnalysisHandler = () => {
               isSMC,
               isScalping,
               isPriceAction
-            },
-            symbol: upperSymbol,
-            userId: '', // Placeholder for user ID
-            handleTradingViewConfig,
-            onAnalysisComplete: () => {} // Placeholder for analysis complete callback
-          });
+            }
+          );
         }
 
         if (!analysisResult) {
