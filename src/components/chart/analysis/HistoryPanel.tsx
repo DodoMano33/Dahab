@@ -9,11 +9,24 @@ interface HistoryPanelProps {
 }
 
 export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+  const handleSelect = (id: string) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   if (!showHistory) return null;
 
@@ -34,7 +47,10 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
         setDateRange={setDateRange}
         isDatePickerOpen={isDatePickerOpen}
         setIsDatePickerOpen={setIsDatePickerOpen}
+        selectedItems={selectedItems}
+        onDelete={() => {}}
         validHistory={[]}
+        handleSelect={handleSelect}
       />
     </div>
   );

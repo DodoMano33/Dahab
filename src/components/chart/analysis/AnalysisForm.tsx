@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useAnalysisHandler } from "./AnalysisHandler";
 import { showAnalysisMessage } from "./utils/analysisMessages";
-import { detectAnalysisType } from "./utils/analysisTypeDetector";
+import { getAnalysisType } from "./utils/analysisTypes";
 import { saveAnalysis } from "./utils/saveAnalysis";
 
 interface AnalysisFormProps {
@@ -44,24 +44,6 @@ export const AnalysisForm = ({
         return;
       }
 
-      // التحقق من اختيار نوع تحليل
-      const analysisType = detectAnalysisType(
-        isPatternAnalysis,
-        isWaves,
-        isGann,
-        isTurtleSoup,
-        isICT,
-        isSMC,
-        isAI,
-        isScalping,
-        isPriceAction
-      );
-
-      if (!analysisType) {
-        toast.error("يرجى اختيار نوع تحليل واحد على الأقل");
-        return;
-      }
-
       showAnalysisMessage(
         isPatternAnalysis,
         isWaves,
@@ -89,6 +71,18 @@ export const AnalysisForm = ({
       
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
+        
+        const analysisType = isAI ? "ذكي" : getAnalysisType(
+          isPatternAnalysis,
+          isWaves,
+          isGann,
+          isTurtleSoup,
+          isICT,
+          isSMC,
+          isAI,
+          isScalping,
+          isPriceAction
+        );
 
         const savedData = await saveAnalysis({
           userId: user.id,

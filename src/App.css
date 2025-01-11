@@ -1,5 +1,7 @@
 #root {
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 2rem;
   text-align: center;
 }
 
@@ -9,11 +11,9 @@
   will-change: filter;
   transition: filter 300ms;
 }
-
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -35,53 +35,8 @@
 
 .card {
   padding: 2em;
-  border-radius: 1rem;
-  background: white;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 .read-the-docs {
   color: #888;
-}
-
-/* تأثيرات إضافية */
-.gradient-text {
-  background: linear-gradient(90deg, #3b82f6, #6366f1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hover-scale {
-  transition: transform 0.2s ease;
-}
-
-.hover-scale:hover {
-  transform: scale(1.02);
-}
-
-/* تحسينات للنموذج */
-input, select, textarea {
-  transition: all 0.2s ease;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.5);
-}
-
-/* تحسينات للأزرار */
-button {
-  transition: all 0.2s ease;
-}
-
-button:active {
-  transform: scale(0.98);
 }

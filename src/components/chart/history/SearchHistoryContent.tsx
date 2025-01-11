@@ -13,6 +13,11 @@ interface SearchHistoryContentProps {
 
 export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContentProps) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   console.log("Selected Items:", selectedItems); // Debug log
 
@@ -43,6 +48,10 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             selectedItems={selectedItems}
             onDelete={onDelete}
             validHistory={validHistory}
+            dateRange={dateRange}
+            isDatePickerOpen={isDatePickerOpen}
+            setIsDatePickerOpen={setIsDatePickerOpen}
+            setDateRange={setDateRange}
           />
 
           {/* Table Header */}

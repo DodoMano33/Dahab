@@ -1,8 +1,4 @@
-interface ImageData {
-  height: number;
-  width: number;
-  data: Uint8ClampedArray;
-}
+import { ImageData } from "@/types/analysis";
 
 export const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
   const prices: number[] = [];

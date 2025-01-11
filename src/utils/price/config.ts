@@ -1,6 +1,20 @@
 export const ALPHA_VANTAGE_API_KEY = 'demo';
 
-export const SUPPORTED_TIMEFRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'] as const;
-export type TimeFrame = typeof SUPPORTED_TIMEFRAMES[number];
+export const FOREX_SYMBOLS = {
+  'EURUSD': { from: 'EUR', to: 'USD' },
+  'GBPUSD': { from: 'GBP', to: 'USD' },
+  'USDJPY': { from: 'USD', to: 'JPY' },
+  'USDCHF': { from: 'USD', to: 'CHF' },
+  'AUDUSD': { from: 'AUD', to: 'USD' },
+  'NZDUSD': { from: 'NZD', to: 'USD' },
+  'USDCAD': { from: 'USD', to: 'CAD' },
+  'XAUUSD': { from: 'XAU', to: 'USD' }
+} as const;
 
-export const PRICE_UPDATE_INTERVAL = 60000; // تحديث كل دقيقة
+export const CRYPTO_SYMBOLS = {
+  'BTCUSD': 'BTC',
+  'ETHUSD': 'ETH'
+} as const;
+
+export const CACHE_DURATION = 5000; // 5 seconds
+export const POLLING_INTERVAL = 5000; // 5 seconds

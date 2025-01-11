@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisType } from "./analysisTypes";
 import { toast } from "sonner";
 
 interface SaveAnalysisParams {
@@ -7,7 +7,7 @@ interface SaveAnalysisParams {
   symbol: string;
   currentPrice: number;
   analysisResult: any;
-  analysisType: AnalysisData['analysisType'];
+  analysisType: AnalysisType;
   timeframe: string;
 }
 

@@ -18,7 +18,7 @@ export interface AnalysisData {
     price: number;
   }[];
   activation_type?: "تلقائي" | "يدوي";
-  analysisType: "سكالبينج" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
 }
 
 export interface SearchHistoryItem {
@@ -29,6 +29,12 @@ export interface SearchHistoryItem {
   analysis: AnalysisData;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: "سكالبينج" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
+  analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
   timeframe: string;
+}
+
+export interface ImageData {
+  height: number;
+  width: number;
+  data: Uint8ClampedArray;
 }
