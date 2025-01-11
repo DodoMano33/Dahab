@@ -1,7 +1,6 @@
 import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
 import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
 import { mapToAnalysisType } from "./analysisTypeMapping";
-import { mapAnalysisTypeToConfig } from "./analysisTypeMapping";
 import { toast } from "sonner";
 
 interface ExecuteAnalysisParams {
@@ -18,33 +17,41 @@ interface ExecuteAnalysisParams {
     isScalping: boolean;
     isPriceAction: boolean;
   };
+  symbol: string;
+  userId: string;
+  handleTradingViewConfig: Function;
+  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
 }
 
 export const executeAnalysis = async ({
   chartImage,
   providedPrice,
   timeframe,
-  analysisConfig
+  analysisConfig,
+  symbol,
+  userId,
+  handleTradingViewConfig,
+  onAnalysisComplete
 }: ExecuteAnalysisParams): Promise<AnalysisData | null> => {
   try {
     console.log("Executing analysis with config:", analysisConfig);
     
-    const config = mapAnalysisTypeToConfig(analysisConfig);
-    console.log("Mapped analysis configuration:", config);
+    const analysisType = determineAnalysisType(analysisConfig);
+    console.log("Determined analysis type:", analysisType);
     
     const result = await handleTradingViewConfig(
       symbol,
       timeframe,
       providedPrice,
-      config.isScalping,
+      analysisConfig.isScalping,
       false, // isAI
-      config.isSMC,
-      config.isICT,
-      config.isTurtleSoup,
-      config.isGann,
-      config.isWaves,
-      config.isPatternAnalysis,
-      config.isPriceAction
+      analysisConfig.isSMC,
+      analysisConfig.isICT,
+      analysisConfig.isTurtleSoup,
+      analysisConfig.isGann,
+      analysisConfig.isWaves,
+      analysisConfig.isPatternAnalysis,
+      analysisConfig.isPriceAction
     );
 
     if (result && result.analysisResult) {
@@ -67,7 +74,7 @@ export const executeAnalysis = async ({
           id: savedData.id,
           date: new Date(),
           symbol: symbol,
-          currentPrice: currentPrice,
+          currentPrice: providedPrice,
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
           timeframe: timeframe
@@ -77,13 +84,25 @@ export const executeAnalysis = async ({
         onAnalysisComplete(newHistoryEntry);
       }
 
-      toast.success(`تم إكمال تحليل ${mappedAnalysisType} على الإطار الزمني ${timeframe}`);
-      return true;
+      toast.success(`تم إكمال تحليل ${analysisType} على الإطار الزمني ${timeframe}`);
+      return result.analysisResult;
     }
-    return false;
+    return null;
   } catch (error) {
     console.error(`Error in ${analysisType} analysis on ${timeframe}:`, error);
     toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
-    return false;
+    return null;
   }
+};
+
+const determineAnalysisType = (config: ExecuteAnalysisParams['analysisConfig']): string => {
+  if (config.isScalping) return 'scalping';
+  if (config.isSMC) return 'smc';
+  if (config.isICT) return 'ict';
+  if (config.isTurtleSoup) return 'turtle_soup';
+  if (config.isGann) return 'gann';
+  if (config.isWaves) return 'waves';
+  if (config.isPatternAnalysis) return 'patterns';
+  if (config.isPriceAction) return 'price_action';
+  return 'patterns'; // default
 };
