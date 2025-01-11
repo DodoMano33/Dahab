@@ -87,6 +87,30 @@ export const AutoAnalysis = ({
     toast.success("تم بدء التحليل التلقائي");
   };
 
+  const mapAnalysisTypeToConfig = (analysisType: string) => {
+    const typeMapping: Record<string, {
+      isScalping: boolean;
+      isSMC: boolean;
+      isICT: boolean;
+      isTurtleSoup: boolean;
+      isGann: boolean;
+      isWaves: boolean;
+      isPatternAnalysis: boolean;
+      isPriceAction: boolean;
+    }> = {
+      'scalping': { isScalping: true, isSMC: false, isICT: false, isTurtleSoup: false, isGann: false, isWaves: false, isPatternAnalysis: false, isPriceAction: false },
+      'smc': { isScalping: false, isSMC: true, isICT: false, isTurtleSoup: false, isGann: false, isWaves: false, isPatternAnalysis: false, isPriceAction: false },
+      'ict': { isScalping: false, isSMC: false, isICT: true, isTurtleSoup: false, isGann: false, isWaves: false, isPatternAnalysis: false, isPriceAction: false },
+      'turtle_soup': { isScalping: false, isSMC: false, isICT: false, isTurtleSoup: true, isGann: false, isWaves: false, isPatternAnalysis: false, isPriceAction: false },
+      'gann': { isScalping: false, isSMC: false, isICT: false, isTurtleSoup: false, isGann: true, isWaves: false, isPatternAnalysis: false, isPriceAction: false },
+      'waves': { isScalping: false, isSMC: false, isICT: false, isTurtleSoup: false, isGann: false, isWaves: true, isPatternAnalysis: false, isPriceAction: false },
+      'patterns': { isScalping: false, isSMC: false, isICT: false, isTurtleSoup: false, isGann: false, isWaves: false, isPatternAnalysis: true, isPriceAction: false },
+      'price_action': { isScalping: false, isSMC: false, isICT: false, isTurtleSoup: false, isGann: false, isWaves: false, isPatternAnalysis: false, isPriceAction: true }
+    };
+
+    return typeMapping[analysisType] || typeMapping['patterns'];
+  };
+
   const performAnalysis = async (symbol: string, price: number) => {
     console.log("Starting analysis for timeframes:", selectedTimeframes);
     console.log("Selected analysis types:", selectedAnalysisTypes);
@@ -96,18 +120,7 @@ export const AutoAnalysis = ({
         try {
           console.log(`Starting analysis for ${timeframe} - ${analysisType}`);
           
-          // Map analysis type to correct configuration
-          const config = {
-            isScalping: analysisType === 'Scalping',
-            isSMC: analysisType === 'SMC',
-            isICT: analysisType === 'ICT',
-            isTurtleSoup: analysisType === 'Turtle Soup',
-            isGann: analysisType === 'Gann',
-            isWaves: analysisType === 'Waves',
-            isPatternAnalysis: analysisType === 'Patterns',
-            isPriceAction: analysisType === 'Price Action'
-          };
-
+          const config = mapAnalysisTypeToConfig(analysisType);
           console.log("Analysis configuration:", config);
           
           const result = await handleTradingViewConfig(
@@ -128,11 +141,16 @@ export const AutoAnalysis = ({
           if (result && result.analysisResult) {
             console.log("Analysis completed successfully:", result);
             
+            const mappedAnalysisType = analysisType === 'scalping' ? 'سكالبينج' :
+                                     analysisType === 'price_action' ? 'Price Action' :
+                                     analysisType === 'turtle_soup' ? 'Turtle Soup' :
+                                     analysisType.toUpperCase();
+
             const savedData = await saveAnalysisToHistory(
               result,
               symbol,
               timeframe,
-              analysisType,
+              mappedAnalysisType,
               user.id
             );
 
@@ -145,7 +163,7 @@ export const AutoAnalysis = ({
                 symbol: symbol,
                 currentPrice: price,
                 analysis: result.analysisResult,
-                analysisType: analysisType,
+                analysisType: mappedAnalysisType,
                 timeframe: timeframe
               };
               
@@ -153,7 +171,7 @@ export const AutoAnalysis = ({
               onAnalysisComplete(newHistoryEntry);
             }
 
-            toast.success(`تم إكمال تحليل ${analysisType} على الإطار الزمني ${timeframe}`);
+            toast.success(`تم إكمال تحليل ${mappedAnalysisType} على الإطار الزمني ${timeframe}`);
           }
         } catch (error) {
           console.error(`Error in ${analysisType} analysis on ${timeframe}:`, error);

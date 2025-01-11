@@ -2,8 +2,10 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
+export type AnalysisTypeValue = "normal" | "scalping" | "ict" | "smc" | "turtle_soup" | "gann" | "waves" | "patterns" | "price_action";
+
 interface AnalysisType {
-  value: string;
+  value: AnalysisTypeValue;
   label: string;
 }
 
