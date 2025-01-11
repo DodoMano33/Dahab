@@ -89,7 +89,7 @@ export const AutoAnalysis = ({
 
   const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
     // تنظيف النص وإزالة المسافات الزائدة
-    const cleanType = type.trim().toLowerCase().replace(/\s+/g, ' ');
+    const cleanType = type.trim().toLowerCase();
     
     switch (cleanType) {
       case 'scalping': return 'سكالبينج';
@@ -110,22 +110,40 @@ export const AutoAnalysis = ({
         try {
           console.log(`بدء التحليل للإطار الزمني ${timeframe} - نوع التحليل ${analysisType}`);
           
-          // تحويل نوع التحليل إلى الصيغة المناسبة
-          const cleanAnalysisType = analysisType.toLowerCase().replace(/\s+/g, ' ');
+          // تحديد نوع التحليل بناءً على الاختيار
+          const isScalping = analysisType === 'Scalping';
+          const isSMC = analysisType === 'SMC';
+          const isICT = analysisType === 'ICT';
+          const isTurtleSoup = analysisType === 'Turtle Soup';
+          const isGann = analysisType === 'Gann';
+          const isWaves = analysisType === 'Waves';
+          const isPatternAnalysis = analysisType === 'Patterns';
+          const isPriceAction = analysisType === 'Price Action';
+
+          console.log("تكوين التحليل:", {
+            isScalping,
+            isSMC,
+            isICT,
+            isTurtleSoup,
+            isGann,
+            isWaves,
+            isPatternAnalysis,
+            isPriceAction
+          });
           
           const result = await handleTradingViewConfig(
             symbol,
             timeframe,
             price,
-            cleanAnalysisType === "scalping",
-            false,
-            cleanAnalysisType === "smc",
-            cleanAnalysisType === "ict",
-            cleanAnalysisType === "turtle soup",
-            cleanAnalysisType === "gann",
-            cleanAnalysisType === "waves",
-            cleanAnalysisType === "patterns",
-            cleanAnalysisType === "price action"
+            isScalping,
+            false, // isAI is always false for individual analysis
+            isSMC,
+            isICT,
+            isTurtleSoup,
+            isGann,
+            isWaves,
+            isPatternAnalysis,
+            isPriceAction
           );
 
           if (result && result.analysisResult) {
