@@ -202,10 +202,20 @@ export const AutoAnalysis = ({
     toast.success("تم إيقاف التحليل التلقائي");
   };
 
+  const handleBackTestClick = () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لعرض نتائج الاختبار");
+      return;
+    }
+    // يمكنك إضافة المزيد من المنطق هنا للتعامل مع نتائج الاختبار
+    toast.info("جاري تحميل نتائج الاختبار...");
+  };
+
   return (
     <AutoAnalysisButton
       isAnalyzing={isAnalyzing}
       onClick={isAnalyzing ? stopAnalysis : startAnalysis}
+      onBackTestClick={handleBackTestClick}
     />
   );
 };
