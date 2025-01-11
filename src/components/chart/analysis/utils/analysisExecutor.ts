@@ -1,6 +1,7 @@
 import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
 import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
 import { mapToAnalysisType } from "./analysisTypeMapping";
+import { mapAnalysisTypeToConfig } from "./analysisTypeMapping";
 import { toast } from "sonner";
 
 interface ExecuteAnalysisParams {
@@ -63,7 +64,7 @@ export const executeAnalysis = async ({
           id: savedData.id,
           date: new Date(),
           symbol: symbol,
-          currentPrice: price,
+          currentPrice: currentPrice,
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
           timeframe: timeframe
