@@ -10,14 +10,64 @@ export const useBackTest = () => {
     try {
       console.log(`Updating analysis status for ID ${id} with current price: ${currentPrice}`);
       
-      const { error } = await supabase.rpc('update_analysis_status', {
+      const { data: analysis, error: fetchError } = await supabase
+        .from('search_history')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching analysis:', fetchError);
+        return;
+      }
+
+      // إذا كان التحليل قد وصل بالفعل إلى الهدف أو وقف الخسارة، نتخطاه
+      if (analysis.target_hit || analysis.stop_loss_hit) {
+        console.log(`Analysis ${id} already completed, skipping update`);
+        return;
+      }
+
+      const { error: updateError } = await supabase.rpc('update_analysis_status', {
         p_id: id,
         p_current_price: currentPrice
       });
 
-      if (error) {
-        console.error('Error updating analysis status:', error);
-        throw error;
+      if (updateError) {
+        console.error('Error updating analysis status:', updateError);
+        throw updateError;
+      }
+
+      // نتحقق من حالة التحليل بعد التحديث
+      const { data: updatedAnalysis, error: checkError } = await supabase
+        .from('search_history')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (checkError) {
+        console.error('Error checking updated analysis:', checkError);
+        return;
+      }
+
+      // إذا تم الوصول إلى الهدف أو وقف الخسارة، نعرض إشعار ونحذف التحليل
+      if (updatedAnalysis.target_hit || updatedAnalysis.stop_loss_hit) {
+        if (updatedAnalysis.target_hit) {
+          toast.success(`تم تحقيق الهدف للرمز ${updatedAnalysis.symbol}`);
+        } else {
+          toast.error(`تم تفعيل وقف الخسارة للرمز ${updatedAnalysis.symbol}`);
+        }
+
+        // حذف التحليل من سجل البحث
+        const { error: deleteError } = await supabase
+          .from('search_history')
+          .delete()
+          .eq('id', id);
+
+        if (deleteError) {
+          console.error('Error deleting completed analysis:', deleteError);
+        } else {
+          console.log(`Successfully deleted completed analysis ${id}`);
+        }
       }
       
       console.log(`Successfully updated analysis status for ID ${id}`);
@@ -30,11 +80,12 @@ export const useBackTest = () => {
     try {
       console.log('Starting analysis check...');
       
-      // جلب جميع التحليلات التي لم يتم تحقيق أهدافها أو وقف خسارتها بعد
+      // جلب فقط التحليلات التي لم تصل بعد إلى الهدف أو وقف الخسارة
       const { data: activeAnalyses, error } = await supabase
         .from('search_history')
         .select('*')
-        .or('target_hit.eq.false,stop_loss_hit.eq.false');
+        .is('target_hit', false)
+        .is('stop_loss_hit', false);
 
       if (error) {
         console.error('Error fetching active analyses:', error);
@@ -43,7 +94,6 @@ export const useBackTest = () => {
 
       console.log(`Found ${activeAnalyses.length} active analyses to check`);
 
-      // تحديث كل تحليل نشط
       for (const analysis of activeAnalyses) {
         try {
           console.log(`Checking analysis for ${analysis.symbol}:`, {
@@ -56,14 +106,6 @@ export const useBackTest = () => {
           console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
           
           await updateAnalysisStatus(analysis.id, currentPrice);
-
-          // إظهار إشعار إذا تم تحقيق هدف أو وقف خسارة
-          if (!analysis.target_hit && currentPrice >= analysis.analysis.targets[0].price) {
-            toast.success(`تم تحقيق الهدف للرمز ${analysis.symbol}`);
-          }
-          if (!analysis.stop_loss_hit && currentPrice <= analysis.analysis.stopLoss) {
-            toast.error(`تم تفعيل وقف الخسارة للرمز ${analysis.symbol}`);
-          }
         } catch (error) {
           console.error(`Error processing analysis ${analysis.id}:`, error);
         }
@@ -74,7 +116,6 @@ export const useBackTest = () => {
   };
 
   useEffect(() => {
-    // بدء الفحص الدوري كل دقيقة
     const startBackTest = () => {
       console.log('Starting back test interval...');
       checkAnalyses(); // تنفيذ فحص أولي
@@ -83,7 +124,6 @@ export const useBackTest = () => {
 
     startBackTest();
 
-    // تنظيف عند إزالة المكون
     return () => {
       if (intervalRef.current) {
         console.log('Cleaning up back test interval...');
