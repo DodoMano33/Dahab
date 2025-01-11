@@ -103,11 +103,11 @@ export const useAnalysisHandler = () => {
           );
         } else {
           console.log("Starting regular analysis");
-          analysisResult = await executeAnalysis(
+          analysisResult = await executeAnalysis({
             chartImage,
             providedPrice,
             timeframe,
-            {
+            analysisConfig: {
               isPatternAnalysis,
               isWaves,
               isGann,
@@ -117,7 +117,7 @@ export const useAnalysisHandler = () => {
               isScalping,
               isPriceAction
             }
-          );
+          });
         }
 
         if (!analysisResult) {
