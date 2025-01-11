@@ -16,7 +16,9 @@ export type Database = {
           created_at: string
           current_price: number
           id: string
+          is_success: boolean | null
           last_checked_price: number | null
+          result_timestamp: string | null
           stop_loss_hit: boolean
           symbol: string
           target_hit: boolean
@@ -29,7 +31,9 @@ export type Database = {
           created_at?: string
           current_price: number
           id?: string
+          is_success?: boolean | null
           last_checked_price?: number | null
+          result_timestamp?: string | null
           stop_loss_hit?: boolean
           symbol: string
           target_hit?: boolean
@@ -42,7 +46,9 @@ export type Database = {
           created_at?: string
           current_price?: number
           id?: string
+          is_success?: boolean | null
           last_checked_price?: number | null
+          result_timestamp?: string | null
           stop_loss_hit?: boolean
           symbol?: string
           target_hit?: boolean

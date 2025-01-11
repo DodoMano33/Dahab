@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,9 @@ import {
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface AnalysisStats {
   type: string;
@@ -24,17 +27,57 @@ export const BackTestResultsDialog = ({
   isOpen,
   onClose,
 }: BackTestResultsDialogProps) => {
-  // Sample data - this should be replaced with actual data from your backend
-  const analysisStats: AnalysisStats[] = [
-    { type: "Scalping", success: 4, fail: 4 },
-    { type: "ICT", success: 4, fail: 3 },
-    { type: "Gann", success: 9, fail: 3 },
-    { type: "Patterns", success: 5, fail: 2 },
-    { type: "SMC", success: 8, fail: 9 },
-    { type: "Turtle Soup", success: 6, fail: 5 },
-    { type: "Waves", success: 10, fail: 2 },
-    { type: "Price Action", success: 20, fail: 5 },
-  ];
+  const [analysisStats, setAnalysisStats] = useState<AnalysisStats[]>([]);
+  const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
+
+  const fetchResults = async () => {
+    try {
+      console.log("Fetching completed analyses...");
+      const { data: results, error } = await supabase
+        .from('search_history')
+        .select('*')
+        .or('target_hit.eq.true,stop_loss_hit.eq.true')
+        .order('result_timestamp', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching results:", error);
+        return;
+      }
+
+      console.log("Fetched results:", results);
+      setCompletedAnalyses(results || []);
+
+      // Calculate statistics
+      const stats: { [key: string]: { success: number; fail: number } } = {};
+      results?.forEach(result => {
+        if (!stats[result.analysis_type]) {
+          stats[result.analysis_type] = { success: 0, fail: 0 };
+        }
+        if (result.is_success) {
+          stats[result.analysis_type].success++;
+        } else {
+          stats[result.analysis_type].fail++;
+        }
+      });
+
+      const formattedStats = Object.entries(stats).map(([type, counts]) => ({
+        type,
+        success: counts.success,
+        fail: counts.fail,
+      }));
+
+      console.log("Calculated stats:", formattedStats);
+      setAnalysisStats(formattedStats);
+    } catch (error) {
+      console.error("Error in fetchResults:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchResults();
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -87,18 +130,31 @@ export const BackTestResultsDialog = ({
               <div>تاريخ النتيجة</div>
             </div>
             <div className="divide-y">
-              {/* Sample row - will be replaced with actual data */}
-              <div className="grid grid-cols-7 gap-4 p-4 items-center text-right">
-                <div className="flex justify-center">
-                  <Checkbox />
+              {completedAnalyses.map((analysis) => (
+                <div
+                  key={analysis.id}
+                  className={`grid grid-cols-7 gap-4 p-4 items-center text-right ${
+                    analysis.is_success ? 'bg-green-50' : 'bg-red-50'
+                  }`}
+                >
+                  <div className="flex justify-center">
+                    <Checkbox />
+                  </div>
+                  <div>
+                    {!analysis.is_success && analysis.analysis.stopLoss}
+                  </div>
+                  <div>
+                    {analysis.is_success && analysis.analysis.targets?.[0]?.price}
+                  </div>
+                  <div>{analysis.timeframe}</div>
+                  <div>{analysis.analysis_type}</div>
+                  <div>{analysis.symbol}</div>
+                  <div>
+                    {analysis.result_timestamp && 
+                      format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
+                  </div>
                 </div>
-                <div>1.2345</div>
-                <div>1.2400</div>
-                <div>H4</div>
-                <div>سكالبينج</div>
-                <div>EURUSD</div>
-                <div>2024/03/31</div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
