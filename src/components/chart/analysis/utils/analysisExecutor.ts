@@ -36,8 +36,8 @@ export const executeAnalysis = async ({
   try {
     console.log("Executing analysis with config:", analysisConfig);
     
-    const analysisType = determineAnalysisType(analysisConfig);
-    console.log("Determined analysis type:", analysisType);
+    const currentAnalysisType = determineAnalysisType(analysisConfig);
+    console.log("Determined analysis type:", currentAnalysisType);
     
     const result = await handleTradingViewConfig(
       symbol,
@@ -57,7 +57,7 @@ export const executeAnalysis = async ({
     if (result && result.analysisResult) {
       console.log("Analysis completed successfully:", result);
       
-      const mappedAnalysisType = mapToAnalysisType(analysisType);
+      const mappedAnalysisType = mapToAnalysisType(currentAnalysisType);
 
       const savedData = await saveAnalysisToHistory(
         result,
@@ -84,13 +84,13 @@ export const executeAnalysis = async ({
         onAnalysisComplete(newHistoryEntry);
       }
 
-      toast.success(`تم إكمال تحليل ${analysisType} على الإطار الزمني ${timeframe}`);
+      toast.success(`تم إكمال تحليل ${currentAnalysisType} على الإطار الزمني ${timeframe}`);
       return result.analysisResult;
     }
     return null;
   } catch (error) {
-    console.error(`Error in ${analysisType} analysis on ${timeframe}:`, error);
-    toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
+    console.error(`Error in analysis:`, error);
+    toast.error(`فشل في التحليل`);
     return null;
   }
 };

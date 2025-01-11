@@ -55,9 +55,9 @@ export const AutoAnalysis = ({
     }
 
     const symbol = symbolInput.value.toUpperCase();
-    const currentPrice = Number(priceInput.value);
+    const providedPrice = Number(priceInput.value);
 
-    if (isNaN(currentPrice) || currentPrice <= 0) {
+    if (isNaN(providedPrice) || providedPrice <= 0) {
       toast.error("الرجاء إدخال سعر صحيح");
       return;
     }
@@ -79,12 +79,22 @@ export const AutoAnalysis = ({
         for (const timeframe of selectedTimeframes) {
           for (const analysisType of selectedAnalysisTypes) {
             await executeAnalysis({
-              symbol,
+              chartImage: "", // This will be provided by handleTradingViewConfig
+              providedPrice,
               timeframe,
-              currentPrice,
-              analysisType,
-              handleTradingViewConfig,
+              analysisConfig: {
+                isPatternAnalysis: analysisType === "patterns",
+                isWaves: analysisType === "waves",
+                isGann: analysisType === "gann",
+                isTurtleSoup: analysisType === "turtle_soup",
+                isICT: analysisType === "ict",
+                isSMC: analysisType === "smc",
+                isScalping: analysisType === "scalping",
+                isPriceAction: analysisType === "price_action"
+              },
+              symbol,
               userId: user.id,
+              handleTradingViewConfig,
               onAnalysisComplete
             });
           }
