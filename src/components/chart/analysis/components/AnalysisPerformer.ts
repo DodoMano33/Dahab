@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
 import { mapAnalysisTypeToConfig, mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { SearchHistoryItem } from "@/types/analysis";
+import { AnalysisType } from "@/types/analysis";
 
 interface AnalysisPerformerProps {
   symbol: string;
@@ -46,7 +47,8 @@ export const performAnalysis = async ({
     if (result && result.analysisResult && user) {
       console.log("Analysis completed successfully:", result);
       
-      const mappedAnalysisType = mapToAnalysisType(analysisType);
+      // Convert string to AnalysisType
+      const mappedAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
 
       const savedData = await saveAnalysisToHistory(
         result,

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useAnalysisHandler } from "../AnalysisHandler";
 
 export const useAutoAnalysis = (
   selectedTimeframes: string[],
@@ -10,6 +11,7 @@ export const useAutoAnalysis = (
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisInterval, setAnalysisInterval] = useState<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
+  const { handleTradingViewConfig } = useAnalysisHandler();
 
   const validateInputs = () => {
     if (selectedTimeframes.length === 0) {
@@ -49,6 +51,7 @@ export const useAutoAnalysis = (
     setAnalysisInterval,
     validateInputs,
     getIntervalInMs,
-    user
+    user,
+    handleTradingViewConfig
   };
 };
