@@ -88,15 +88,15 @@ export const AutoAnalysis = ({
   };
 
   const getAnalysisType = (type: string): AnalysisData['analysisType'] => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'scalping': return 'سكالبينج';
       case 'smc': return 'SMC';
       case 'ict': return 'ICT';
-      case 'turtleSoup': return 'Turtle Soup';
+      case 'turtlesoup': return 'Turtle Soup';
       case 'gann': return 'Gann';
       case 'waves': return 'Waves';
       case 'patterns': return 'Patterns';
-      case 'priceAction': return 'Price Action';
+      case 'priceaction': return 'Price Action';
       default: throw new Error(`نوع تحليل غير صالح: ${type}`);
     }
   };
@@ -105,25 +105,25 @@ export const AutoAnalysis = ({
     for (const timeframe of selectedTimeframes) {
       for (const analysisType of selectedAnalysisTypes) {
         try {
-          console.log(`Performing analysis for ${timeframe} - ${analysisType}`);
+          console.log(`بدء التحليل للإطار الزمني ${timeframe} - نوع التحليل ${analysisType}`);
           
           const result = await handleTradingViewConfig(
             symbol,
             timeframe,
             price,
-            analysisType === "scalping",
+            analysisType.toLowerCase() === "scalping",
             false,
-            analysisType === "smc",
-            analysisType === "ict",
-            analysisType === "turtleSoup",
-            analysisType === "gann",
-            analysisType === "waves",
-            analysisType === "patterns",
-            analysisType === "priceAction"
+            analysisType.toLowerCase() === "smc",
+            analysisType.toLowerCase() === "ict",
+            analysisType.toLowerCase() === "turtlesoup",
+            analysisType.toLowerCase() === "gann",
+            analysisType.toLowerCase() === "waves",
+            analysisType.toLowerCase() === "patterns",
+            analysisType.toLowerCase() === "priceaction"
           );
 
           if (result && result.analysisResult) {
-            console.log("Analysis result received:", result);
+            console.log("تم استلام نتائج التحليل:", result);
             
             const mappedAnalysisType = getAnalysisType(analysisType);
             const savedData = await saveAnalysisToHistory(
@@ -134,7 +134,7 @@ export const AutoAnalysis = ({
               user.id
             );
 
-            console.log("Analysis saved to history:", savedData);
+            console.log("تم حفظ التحليل في السجل:", savedData);
 
             if (onAnalysisComplete) {
               const newHistoryEntry: SearchHistoryItem = {
@@ -147,12 +147,12 @@ export const AutoAnalysis = ({
                 timeframe: timeframe
               };
               
-              console.log("Calling onAnalysisComplete with new entry:", newHistoryEntry);
+              console.log("إضافة تحليل جديد إلى السجل:", newHistoryEntry);
               onAnalysisComplete(newHistoryEntry);
             }
           }
         } catch (error) {
-          console.error(`Error analyzing ${analysisType} on ${timeframe}:`, error);
+          console.error(`خطأ في تحليل ${analysisType} على ${timeframe}:`, error);
           toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
         }
       }
