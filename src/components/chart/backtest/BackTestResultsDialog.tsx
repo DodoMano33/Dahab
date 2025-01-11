@@ -30,6 +30,22 @@ export const BackTestResultsDialog = ({
   const [analysisStats, setAnalysisStats] = useState<AnalysisStats[]>([]);
   const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
 
+  const calculateProfitLoss = (analysis: any) => {
+    if (!analysis.analysis.bestEntryPoint?.price || !analysis.last_checked_price) {
+      return 0;
+    }
+
+    const entryPrice = analysis.analysis.bestEntryPoint.price;
+    const closePrice = analysis.last_checked_price;
+    const direction = analysis.analysis.direction;
+
+    if (direction === "صاعد") {
+      return +(closePrice - entryPrice).toFixed(2);
+    } else {
+      return +(entryPrice - closePrice).toFixed(2);
+    }
+  };
+
   const fetchResults = async () => {
     try {
       console.log("Fetching completed analyses...");
@@ -81,7 +97,7 @@ export const BackTestResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-6xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold text-indigo-700">
@@ -120,10 +136,13 @@ export const BackTestResultsDialog = ({
           </div>
 
           <div className="mt-8 border rounded-lg">
-            <div className="grid grid-cols-7 gap-4 p-4 bg-gray-50 text-right text-sm font-medium">
+            <div className="grid grid-cols-10 gap-4 p-4 bg-gray-50 text-right text-sm font-medium">
               <div className="text-center">تحديد</div>
               <div>وقف الخسارة</div>
               <div>الهدف الأول</div>
+              <div>السعر عند التحليل</div>
+              <div>أفضل نقطة دخول</div>
+              <div>الربح/الخسارة</div>
               <div>الاطار الزمني</div>
               <div>نوع التحليل</div>
               <div>الرمز</div>
@@ -133,7 +152,7 @@ export const BackTestResultsDialog = ({
               {completedAnalyses.map((analysis) => (
                 <div
                   key={analysis.id}
-                  className={`grid grid-cols-7 gap-4 p-4 items-center text-right ${
+                  className={`grid grid-cols-10 gap-4 p-4 items-center text-right ${
                     analysis.is_success ? 'bg-green-50' : 'bg-red-50'
                   }`}
                 >
@@ -145,6 +164,11 @@ export const BackTestResultsDialog = ({
                   </div>
                   <div>
                     {analysis.is_success && analysis.analysis.targets?.[0]?.price}
+                  </div>
+                  <div>{analysis.current_price}</div>
+                  <div>{analysis.analysis.bestEntryPoint?.price}</div>
+                  <div className={`${calculateProfitLoss(analysis) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {calculateProfitLoss(analysis)}
                   </div>
                   <div>{analysis.timeframe}</div>
                   <div>{analysis.analysis_type}</div>
