@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Play, Square, History, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
-import { Separator } from "@/components/ui/separator";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
