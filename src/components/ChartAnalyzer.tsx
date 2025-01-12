@@ -6,8 +6,6 @@ import { ChartDisplay } from "./ChartDisplay";
 import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 import { useSearchHistory } from "./hooks/useSearchHistory";
 import { useBackTest } from "./hooks/useBackTest";
-import { Button } from "./ui/button";
-import { History as HistoryIcon } from "lucide-react";
 
 export const ChartAnalyzer = () => {
   const {
@@ -32,7 +30,6 @@ export const ChartAnalyzer = () => {
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
-  const [isBackTestOpen, setIsBackTestOpen] = useState(false);
 
   const handleTimeframesChange = (timeframes: string[]) => {
     if (!timeframes) {
@@ -66,25 +63,6 @@ export const ChartAnalyzer = () => {
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}
       />
-      
-      {/* History and Back Test Buttons */}
-      <div className="flex justify-center gap-4">
-        <Button
-          onClick={() => setIsHistoryOpen(true)}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <HistoryIcon className="w-4 h-4" />
-          سجل البحث
-        </Button>
-        <Button
-          onClick={() => setIsBackTestOpen(true)}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          Back Test Results
-        </Button>
-      </div>
 
       {/* Auto Analysis Settings */}
       <AnalysisSettings
