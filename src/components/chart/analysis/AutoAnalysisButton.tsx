@@ -41,26 +41,22 @@ export const AutoAnalysisButton = ({
         )}
       </Button>
 
-      <div className="relative">
-        <Separator className="my-4" />
-        
-        <div className="flex justify-between items-center gap-4">
-          <Button
-            onClick={onHistoryClick}
-            className="bg-[#D3E4FD] hover:bg-[#B3D4FD] text-gray-700 flex-1 h-10 flex items-center gap-2"
-          >
-            <ClipboardList className="w-5 h-5" />
-            سجل البحث
-          </Button>
+      <div className="flex justify-between items-center gap-4">
+        <Button
+          onClick={() => setIsBackTestOpen(true)}
+          className="bg-[#F1F0FB] hover:bg-[#E1E0EB] text-gray-700 flex-1 h-10 flex items-center gap-2"
+        >
+          <History className="w-5 h-5" />
+          Back Test Results
+        </Button>
 
-          <Button
-            onClick={() => setIsBackTestOpen(true)}
-            className="bg-[#F1F0FB] hover:bg-[#E1E0EB] text-gray-700 flex-1 h-10 flex items-center gap-2"
-          >
-            <History className="w-5 h-5" />
-            Back Test Results
-          </Button>
-        </div>
+        <Button
+          onClick={onHistoryClick}
+          className="bg-[#D3E4FD] hover:bg-[#B3D4FD] text-gray-700 flex-1 h-10 flex items-center gap-2"
+        >
+          <ClipboardList className="w-5 h-5" />
+          سجل البحث
+        </Button>
       </div>
 
       <BackTestResultsDialog 
