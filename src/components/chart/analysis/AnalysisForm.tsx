@@ -13,13 +13,17 @@ interface AnalysisFormProps {
   isAnalyzing: boolean;
   currentAnalysis?: string;
   onHistoryClick?: () => void;
+  onPriceChange?: (price: string) => void;
+  currentPrice?: string;
 }
 
 export const AnalysisForm = ({ 
   onAnalysis, 
   isAnalyzing, 
   currentAnalysis,
-  onHistoryClick 
+  onHistoryClick,
+  onPriceChange,
+  currentPrice 
 }: AnalysisFormProps) => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();
@@ -120,6 +124,8 @@ export const AnalysisForm = ({
       onTradingViewConfig={handleAnalysis}
       onHistoryClick={onHistoryClick}
       isAnalyzing={isAnalyzing}
+      onPriceChange={onPriceChange}
+      currentPrice={currentPrice}
     />
   );
 };
