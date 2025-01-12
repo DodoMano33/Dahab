@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
@@ -24,18 +24,28 @@ interface ChartAnalysisFormProps {
   isAnalyzing: boolean;
   onHistoryClick: () => void;
   currentAnalysis?: string;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 export const ChartAnalysisForm = ({
   onSubmit,
   isAnalyzing,
   onHistoryClick,
-  currentAnalysis
+  currentAnalysis,
+  defaultSymbol,
+  defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState("");
-  const [price, setPrice] = useState("");
+  const [symbol, setSymbol] = useState(defaultSymbol || "");
+  const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+
+  // تحديث القيم عندما تتغير القيم الافتراضية
+  useEffect(() => {
+    if (defaultSymbol) setSymbol(defaultSymbol);
+    if (defaultPrice) setPrice(defaultPrice.toString());
+  }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = (
     e: React.MouseEvent,
@@ -51,13 +61,18 @@ export const ChartAnalysisForm = ({
   ) => {
     e.preventDefault();
     
-    if (!symbol) {
-      toast.error("الرجاء إدخال رمز العملة");
+    if (!symbol && !defaultSymbol) {
+      toast.error("الرجاء إدخال رمز العملة أو انتظار تحميل الشارت");
       return;
     }
 
-    const providedPrice = price ? Number(price) : undefined;
-    if (price && isNaN(providedPrice!)) {
+    const providedPrice = price ? Number(price) : defaultPrice;
+    if (!providedPrice) {
+      toast.error("الرجاء إدخال السعر أو انتظار تحميل الشارت");
+      return;
+    }
+
+    if (isNaN(providedPrice)) {
       toast.error("الرجاء إدخال سعر صحيح");
       return;
     }
@@ -67,11 +82,11 @@ export const ChartAnalysisForm = ({
       return;
     }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${symbol} على الإطار الزمني ${timeframe}`);
-    console.log("Price Action Analysis:", isPriceAction); // Added for debugging
+    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe}`);
+    console.log("Price Action Analysis:", isPriceAction);
     
     onSubmit(
-      symbol,
+      symbol || defaultSymbol || "",
       timeframe,
       providedPrice,
       isScalping,
@@ -87,9 +102,9 @@ export const ChartAnalysisForm = ({
   };
 
   const handleCombinedAnalysis = (selectedTypes: string[]) => {
-    const providedPrice = price ? Number(price) : undefined;
+    const providedPrice = price ? Number(price) : defaultPrice;
     if (!providedPrice) {
-      toast.error("الرجاء إدخال السعر الحالي للتحليل المدمج");
+      toast.error("الرجاء إدخال السعر الحالي للتحليل المدمج أو انتظار تحميل الشارت");
       return;
     }
 
@@ -108,7 +123,7 @@ export const ChartAnalysisForm = ({
     };
 
     onSubmit(
-      symbol,
+      symbol || defaultSymbol || "",
       timeframe,
       providedPrice,
       analysisFlags.isScalping,
@@ -125,8 +140,16 @@ export const ChartAnalysisForm = ({
 
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
-      <SymbolInput value={symbol} onChange={setSymbol} />
-      <PriceInput value={price} onChange={setPrice} />
+      <SymbolInput 
+        value={symbol} 
+        onChange={setSymbol} 
+        defaultValue={defaultSymbol}
+      />
+      <PriceInput 
+        value={price} 
+        onChange={setPrice}
+        defaultValue={defaultPrice?.toString()}
+      />
       <TimeframeInput value={timeframe} onChange={setTimeframe} />
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
