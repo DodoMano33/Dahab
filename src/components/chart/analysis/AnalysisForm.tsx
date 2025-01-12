@@ -13,13 +13,17 @@ interface AnalysisFormProps {
   isAnalyzing: boolean;
   currentAnalysis?: string;
   onHistoryClick?: () => void;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 export const AnalysisForm = ({ 
   onAnalysis, 
   isAnalyzing, 
   currentAnalysis,
-  onHistoryClick 
+  onHistoryClick,
+  defaultSymbol,
+  defaultPrice
 }: AnalysisFormProps) => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();

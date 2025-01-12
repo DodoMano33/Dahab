@@ -53,30 +53,37 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           }
         });
 
-        window.tvWidget.onChartReady(() => {
-          console.log("TradingView chart is ready");
+        // Correct way to bind to chart ready event
+        window.tvWidget.iframe.addEventListener('load', () => {
+          console.log("TradingView chart iframe loaded");
+          const widget = window.tvWidget;
           
-          // Listen for symbol changes
-          window.tvWidget.chart().onSymbolChanged().subscribe(null, (symbolInfo: any) => {
-            console.log("Symbol changed to:", symbolInfo.name);
-            onSymbolChange?.(symbolInfo.name);
-          });
+          // Wait for chart to be ready
+          if (widget.chart) {
+            const chart = widget.chart();
+            
+            // Listen for symbol changes
+            chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
+              console.log("Symbol changed to:", symbolInfo.name);
+              onSymbolChange?.(symbolInfo.name);
+            });
 
-          // Set up price update interval
-          const updatePrice = () => {
-            const chart = window.tvWidget.chart();
-            const lastPrice = chart.getLastBar()?.close;
-            if (lastPrice) {
-              console.log("Current price:", lastPrice);
-              onPriceUpdate?.(lastPrice);
-            }
-          };
+            // Set up price update interval
+            const updatePrice = () => {
+              const lastBar = chart.getLastBar();
+              if (lastBar) {
+                const lastPrice = lastBar.close;
+                console.log("Current price:", lastPrice);
+                onPriceUpdate?.(lastPrice);
+              }
+            };
 
-          // Update price every 5 seconds
-          const priceInterval = setInterval(updatePrice, 5000);
-          updatePrice(); // Initial price update
+            // Update price every 5 seconds
+            const priceInterval = setInterval(updatePrice, 5000);
+            updatePrice(); // Initial price update
 
-          return () => clearInterval(priceInterval);
+            return () => clearInterval(priceInterval);
+          }
         });
       }
     };
