@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -21,6 +22,7 @@ export const AutoAnalysis = ({
   setIsHistoryOpen
 }: AutoAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState("");
   const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
 
   const handleAnalysisClick = async () => {
@@ -45,6 +47,11 @@ export const AutoAnalysis = ({
       return;
     }
 
+    if (!currentPrice || isNaN(Number(currentPrice)) || Number(currentPrice) <= 0) {
+      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
       await startAutoAnalysis({
@@ -52,6 +59,7 @@ export const AutoAnalysis = ({
         interval: selectedInterval,
         analysisTypes: selectedAnalysisTypes,
         repetitions,
+        currentPrice: Number(currentPrice),
         onAnalysisComplete
       });
     } catch (error) {
@@ -62,11 +70,28 @@ export const AutoAnalysis = ({
   };
 
   return (
-    <AutoAnalysisButton
-      isAnalyzing={isAnalyzing}
-      onClick={handleAnalysisClick}
-      onBackTestClick={() => {}}
-      setIsHistoryOpen={setIsHistoryOpen}
-    />
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          السعر الحالي (إجباري)
+        </label>
+        <Input
+          type="number"
+          step="any"
+          placeholder="أدخل السعر الحالي"
+          value={currentPrice}
+          onChange={(e) => setCurrentPrice(e.target.value)}
+          className="w-full"
+          dir="ltr"
+        />
+      </div>
+      
+      <AutoAnalysisButton
+        isAnalyzing={isAnalyzing}
+        onClick={handleAnalysisClick}
+        onBackTestClick={() => {}}
+        setIsHistoryOpen={setIsHistoryOpen}
+      />
+    </div>
   );
 };
