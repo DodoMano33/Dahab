@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Play, Square, History, ClipboardList } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
   onClick: () => void;
   onHistoryClick?: () => void;
-  className?: string;
   disabled?: boolean;
 }
 
@@ -14,20 +14,18 @@ export const AutoAnalysisButton = ({
   isAnalyzing, 
   onClick,
   onHistoryClick,
-  className,
   disabled 
 }: AutoAnalysisButtonProps) => {
+  const [isBackTestOpen, setIsBackTestOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       <Button 
         onClick={onClick}
         disabled={disabled}
-        className={cn(
-          `${
-            isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-          } text-white px-8 py-2 text-lg flex items-center gap-2`,
-          className
-        )}
+        className={`${
+          isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+        } text-white px-8 py-2 text-lg w-full md:w-auto flex items-center gap-2`}
       >
         {isAnalyzing ? (
           <>
@@ -41,6 +39,29 @@ export const AutoAnalysisButton = ({
           </>
         )}
       </Button>
+
+      <div className="flex justify-between items-center gap-4">
+        <Button
+          onClick={() => setIsBackTestOpen(true)}
+          className="bg-[#F1F0FB] hover:bg-[#E1E0EB] text-gray-700 flex-1 h-10 flex items-center gap-2"
+        >
+          <History className="w-5 h-5" />
+          Back Test Results
+        </Button>
+
+        <Button
+          onClick={onHistoryClick}
+          className="bg-[#D3E4FD] hover:bg-[#B3D4FD] text-gray-700 flex-1 h-10 flex items-center gap-2"
+        >
+          <ClipboardList className="w-5 h-5" />
+          سجل البحث
+        </Button>
+      </div>
+
+      <BackTestResultsDialog 
+        isOpen={isBackTestOpen}
+        onClose={() => setIsBackTestOpen(false)}
+      />
     </div>
   );
 };
