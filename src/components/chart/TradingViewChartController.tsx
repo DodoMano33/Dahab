@@ -63,7 +63,7 @@ export const TradingViewChartController = ({
         console.log("TradingView chart is ready");
         onReady();
 
-        const chart = widget.chart();
+       const chart = new TradingViewChart();  // استدعاء بدون معاملات
         
         const updatePrice = () => {
           try {
