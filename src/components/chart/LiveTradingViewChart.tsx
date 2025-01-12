@@ -65,35 +65,39 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 
         const chart = widget.chart();
         
-        // Handle symbol changes
-        chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
-          console.log("Symbol changed to:", symbolInfo.name);
-          onSymbolChange?.(symbolInfo.name);
-          
-          // Get initial price after symbol change
-          const price = chart.crossHairPrice();
-          if (price) {
-            console.log("Initial price after symbol change:", price);
-            onPriceUpdate?.(price);
+        // تحديث السعر الأولي
+        const updatePrice = () => {
+          try {
+            const symbolInfo = chart.symbolExt();
+            const lastPrice = symbolInfo?.last;
+            if (lastPrice && !isNaN(lastPrice)) {
+              console.log("Current price from chart:", lastPrice);
+              onPriceUpdate?.(lastPrice);
+            } else {
+              const crosshairPrice = chart.crossHairPrice();
+              if (crosshairPrice && !isNaN(crosshairPrice)) {
+                console.log("Current price from crosshair:", crosshairPrice);
+                onPriceUpdate?.(crosshairPrice);
+              }
+            }
+          } catch (error) {
+            console.error("Error getting price from chart:", error);
           }
-        });
+        };
 
-        // Setup price updates
+        // تحديث السعر كل ثانية
         if (priceUpdateInterval.current) {
           clearInterval(priceUpdateInterval.current);
         }
-
-        priceUpdateInterval.current = setInterval(() => {
-          try {
-            const price = chart.crossHairPrice();
-            if (price) {
-              console.log("Current price update:", price);
-              onPriceUpdate?.(price);
-            }
-          } catch (error) {
-            console.error("Error updating price:", error);
-          }
-        }, 1000); // Update every second
+        updatePrice(); // تحديث فوري
+        priceUpdateInterval.current = setInterval(updatePrice, 1000);
+        
+        // متابعة تغيير الرمز
+        chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
+          console.log("Symbol changed to:", symbolInfo.name);
+          onSymbolChange?.(symbolInfo.name);
+          updatePrice(); // تحديث السعر عند تغيير الرمز
+        });
       });
 
     } catch (error) {
