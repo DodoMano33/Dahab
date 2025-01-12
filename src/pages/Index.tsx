@@ -4,7 +4,7 @@ import { LiveTradingViewChart } from "@/components/chart/LiveTradingViewChart";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, LogOut, Moon, Sun } from "lucide-react";
+import { LogIn, LogOut, Moon, Sun, Contrast } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -23,6 +23,17 @@ const Index = () => {
     }
   };
 
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'dark':
+        return <Sun className="h-5 w-5" />;
+      case 'bw':
+        return <Moon className="h-5 w-5" />;
+      default:
+        return <Contrast className="h-5 w-5" />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto">
@@ -36,11 +47,7 @@ const Index = () => {
               onClick={toggleTheme}
               className="rounded-full"
             >
-              {theme === 'dark' ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
+              {getThemeIcon()}
             </Button>
             {user ? (
               <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
