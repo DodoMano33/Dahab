@@ -40,13 +40,11 @@ export const TradingViewSelector = ({
   defaultPrice
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
-  const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
-  const [isChartReady, setIsChartReady] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState<string>(defaultPrice?.toString() || "");
 
   useEffect(() => {
     if (defaultSymbol) {
       setSymbol(defaultSymbol);
-      setIsChartReady(true);
     }
   }, [defaultSymbol]);
 
@@ -103,7 +101,7 @@ export const TradingViewSelector = ({
           defaultValue={defaultSymbol}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={isChartReady ? "اختر رمز العملة أو الزوج" : "انتظار تحميل الشارت..."} />
+            <SelectValue placeholder="اختر رمز العملة أو الزوج" />
           </SelectTrigger>
           <SelectContent>
             {SUPPORTED_SYMBOLS.map((option) => (
@@ -136,7 +134,11 @@ export const TradingViewSelector = ({
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" className="flex-1" disabled={isLoading || !isChartReady}>
+        <Button 
+          type="submit" 
+          className="flex-1" 
+          disabled={isLoading || (!symbol && !defaultSymbol) || (!currentPrice && !defaultPrice)}
+        >
           {isLoading ? "جاري التحليل..." : "تحليل الرسم البياني"}
         </Button>
         <Button 
