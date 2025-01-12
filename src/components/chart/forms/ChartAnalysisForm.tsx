@@ -125,14 +125,18 @@ export const ChartAnalysisForm = ({
 
   return (
     <div className="space-y-8">
-      <form className="space-y-8 bg-white p-6 rounded-lg shadow-md">
-        <div className="space-y-4">
-          <SymbolInput value={symbol} onChange={setSymbol} />
-          <PriceInput value={price} onChange={setPrice} />
-          <TimeframeInput value={timeframe} onChange={setTimeframe} />
-        </div>
+      <form className="space-y-8">
+        {/* Input Fields Section */}
+        <Card className="p-6">
+          <div className="space-y-4">
+            <SymbolInput value={symbol} onChange={setSymbol} />
+            <PriceInput value={price} onChange={setPrice} />
+            <TimeframeInput value={timeframe} onChange={setTimeframe} />
+          </div>
+        </Card>
 
-        <Card className="p-4">
+        {/* Manual Analysis Section */}
+        <Card className="p-6">
           <h2 className="text-xl font-bold text-center mb-4 text-red-500">التحليل اليدوي</h2>
           <AnalysisButtonGroup
             isAnalyzing={isAnalyzing}
@@ -142,22 +146,24 @@ export const ChartAnalysisForm = ({
           />
         </Card>
 
-        <Card className="p-4">
-          <h2 className="text-xl font-bold text-center mb-4 text-green-500">التحليل التلقائي</h2>
-          <div className="grid grid-cols-3 gap-4">
-            {/* Auto Analysis content will go here */}
-          </div>
-        </Card>
-
-        <Card className="p-4">
+        {/* Results Section */}
+        <Card className="p-6">
           <h2 className="text-xl font-bold text-center mb-4 text-gray-700">النتائج</h2>
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center">
             <button
               onClick={onHistoryClick}
-              className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-200 transition-colors"
+              className="bg-purple-100 text-purple-700 px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-200 transition-colors"
             >
               سجل البحث
             </button>
+          </div>
+        </Card>
+
+        {/* Auto Analysis Section */}
+        <Card className="p-6">
+          <h2 className="text-xl font-bold text-center mb-4 text-green-500">التحليل التلقائي</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {/* Auto Analysis content will go here */}
           </div>
         </Card>
       </form>
