@@ -41,10 +41,16 @@ export const TradingViewSelector = ({
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
+  const [isChartReady, setIsChartReady] = useState(false);
 
   useEffect(() => {
-    if (defaultSymbol) setSymbol(defaultSymbol);
-    if (defaultPrice) setCurrentPrice(defaultPrice.toString());
+    if (defaultSymbol) {
+      setSymbol(defaultSymbol);
+      setIsChartReady(true);
+    }
+    if (defaultPrice) {
+      setCurrentPrice(defaultPrice.toString());
+    }
   }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,23 +58,23 @@ export const TradingViewSelector = ({
     
     try {
       if (!symbol && !defaultSymbol) {
-        toast.error("الرجاء اختيار رمز العملة أو الزوج");
+        toast.error("الرجاء انتظار تحميل الشارت أو اختيار رمز العملة");
         return;
       }
       
       const priceToUse = currentPrice || defaultPrice?.toString();
       if (!priceToUse) {
-        toast.error("الرجاء إدخال السعر الحالي");
+        toast.error("الرجاء انتظار تحميل السعر من الشارت");
         return;
       }
       
       const price = Number(priceToUse);
       if (isNaN(price) || price <= 0) {
-        toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+        toast.error("الرجاء التأكد من صحة السعر");
         return;
       }
       
-      console.log("تقديم تحليل TradingView:", { 
+      console.log("تقديم تحليل:", { 
         symbol: symbol || defaultSymbol, 
         currentPrice: price 
       });
@@ -93,7 +99,7 @@ export const TradingViewSelector = ({
           defaultValue={defaultSymbol}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="اختر رمز العملة أو الزوج" />
+            <SelectValue placeholder={isChartReady ? "اختر رمز العملة أو الزوج" : "انتظار تحميل الشارت..."} />
           </SelectTrigger>
           <SelectContent>
             {SUPPORTED_SYMBOLS.map((option) => (
@@ -107,12 +113,12 @@ export const TradingViewSelector = ({
       
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          السعر (إجباري)
+          السعر الحالي
         </label>
         <Input
           type="number"
           step="any"
-          placeholder={defaultPrice ? `السعر الحالي: ${defaultPrice}` : "أدخل السعر (إجباري)"}
+          placeholder={defaultPrice ? `السعر الحالي: ${defaultPrice}` : "انتظار تحميل السعر من الشارت..."}
           value={currentPrice}
           onChange={(e) => setCurrentPrice(e.target.value)}
           className="w-full"
@@ -126,7 +132,7 @@ export const TradingViewSelector = ({
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit" className="flex-1" disabled={isLoading}>
+        <Button type="submit" className="flex-1" disabled={isLoading || !isChartReady}>
           {isLoading ? "جاري التحليل..." : "تحليل الرسم البياني"}
         </Button>
         <Button 
