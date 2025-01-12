@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
 
 interface AnalysisStats {
   type: string;
@@ -31,28 +32,27 @@ export const BackTestResultsDialog = ({
   const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
 
   const calculateProfitLoss = (analysis: any) => {
-    if (!analysis.analysis.bestEntryPoint?.price || !analysis.last_checked_price) {
+    if (!analysis.entry_price || !analysis.exit_price) {
       return 0;
     }
 
-    const entryPrice = analysis.analysis.bestEntryPoint.price;
-    const closePrice = analysis.last_checked_price;
-    const direction = analysis.analysis.direction;
+    const entryPrice = analysis.entry_price;
+    const exitPrice = analysis.exit_price;
+    const direction = analysis.direction;
 
     if (direction === "صاعد") {
-      return +(closePrice - entryPrice).toFixed(2);
+      return +(exitPrice - entryPrice).toFixed(2);
     } else {
-      return +(entryPrice - closePrice).toFixed(2);
+      return +(entryPrice - exitPrice).toFixed(2);
     }
   };
 
   const fetchResults = async () => {
     try {
-      console.log("Fetching completed analyses...");
+      console.log("Fetching backtest results...");
       const { data: results, error } = await supabase
-        .from('search_history')
+        .from('backtest_results')
         .select('*')
-        .or('target_hit.eq.true,stop_loss_hit.eq.true')
         .order('result_timestamp', { ascending: false });
 
       if (error) {
@@ -60,7 +60,7 @@ export const BackTestResultsDialog = ({
         return;
       }
 
-      console.log("Fetched results:", results);
+      console.log("Fetched backtest results:", results);
       setCompletedAnalyses(results || []);
 
       // Calculate statistics
@@ -100,8 +100,8 @@ export const BackTestResultsDialog = ({
       <DialogContent className="max-w-6xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-indigo-700">
-              Back Test Results
+            <DialogTitle className="text-xl font-bold text-primary">
+              نتائج الباك تست
             </DialogTitle>
             <Button
               variant="ghost"
@@ -114,29 +114,29 @@ export const BackTestResultsDialog = ({
         </DialogHeader>
 
         <div className="mt-6">
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-4 mb-8">
             {analysisStats.map((stat) => (
               <div
                 key={stat.type}
-                className="flex flex-col items-center text-center"
+                className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
               >
-                <div className="text-sm font-medium mb-2">{stat.type}</div>
-                <div className="grid grid-cols-2 gap-1">
-                  <div className="bg-green-500 text-white p-1 text-xs rounded">
-                    <div>ناجح</div>
-                    <div>{stat.success}</div>
-                  </div>
-                  <div className="bg-red-500 text-white p-1 text-xs rounded">
-                    <div>فاشل</div>
-                    <div>{stat.fail}</div>
-                  </div>
+                <div className="text-sm font-medium mb-3">{stat.type}</div>
+                <div className="flex gap-2">
+                  <Badge variant="success" className="flex flex-col items-center p-2">
+                    <span>ناجح</span>
+                    <span className="text-lg font-bold">{stat.success}</span>
+                  </Badge>
+                  <Badge variant="destructive" className="flex flex-col items-center p-2">
+                    <span>فاشل</span>
+                    <span className="text-lg font-bold">{stat.fail}</span>
+                  </Badge>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 border rounded-lg">
-            <div className="grid grid-cols-10 gap-4 p-4 bg-gray-50 text-right text-sm font-medium">
+          <div className="border rounded-lg bg-white shadow-sm">
+            <div className="grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b">
               <div className="text-center">تحديد</div>
               <div>وقف الخسارة</div>
               <div>الهدف الأول</div>
@@ -152,23 +152,19 @@ export const BackTestResultsDialog = ({
               {completedAnalyses.map((analysis) => (
                 <div
                   key={analysis.id}
-                  className={`grid grid-cols-10 gap-4 p-4 items-center text-right ${
-                    analysis.is_success ? 'bg-green-50' : 'bg-red-50'
+                  className={`grid grid-cols-10 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
+                    analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
                   }`}
                 >
                   <div className="flex justify-center">
                     <Checkbox />
                   </div>
-                  <div>
-                    {!analysis.is_success && analysis.analysis.stopLoss}
-                  </div>
-                  <div>
-                    {analysis.is_success && analysis.analysis.targets?.[0]?.price}
-                  </div>
-                  <div>{analysis.current_price}</div>
-                  <div>{analysis.analysis.bestEntryPoint?.price}</div>
-                  <div className={`${calculateProfitLoss(analysis) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {calculateProfitLoss(analysis)}
+                  <div>{analysis.stop_loss}</div>
+                  <div>{analysis.target_price}</div>
+                  <div>{analysis.entry_price}</div>
+                  <div>{analysis.entry_price}</div>
+                  <div className={`font-medium ${analysis.profit_loss >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {analysis.profit_loss}
                   </div>
                   <div>{analysis.timeframe}</div>
                   <div>{analysis.analysis_type}</div>
