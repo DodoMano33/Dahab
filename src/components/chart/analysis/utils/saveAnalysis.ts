@@ -39,7 +39,7 @@ export const saveAnalysis = async ({
       timeframe
     })
     .select()
-    .maybeSingle();
+    .single();
 
   if (error) {
     console.error("Error saving to Supabase:", error);

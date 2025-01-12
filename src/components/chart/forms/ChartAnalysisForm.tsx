@@ -24,19 +24,16 @@ interface ChartAnalysisFormProps {
   isAnalyzing: boolean;
   onHistoryClick: () => void;
   currentAnalysis?: string;
-  onPriceChange?: (price: string) => void;
-  currentPrice?: string;
 }
 
 export const ChartAnalysisForm = ({
   onSubmit,
   isAnalyzing,
   onHistoryClick,
-  currentAnalysis,
-  onPriceChange,
-  currentPrice = ""
+  currentAnalysis
 }: ChartAnalysisFormProps) => {
   const [symbol, setSymbol] = useState("");
+  const [price, setPrice] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
 
@@ -59,8 +56,8 @@ export const ChartAnalysisForm = ({
       return;
     }
 
-    const providedPrice = currentPrice ? Number(currentPrice) : undefined;
-    if (currentPrice && isNaN(providedPrice!)) {
+    const providedPrice = price ? Number(price) : undefined;
+    if (price && isNaN(providedPrice!)) {
       toast.error("الرجاء إدخال سعر صحيح");
       return;
     }
@@ -90,7 +87,7 @@ export const ChartAnalysisForm = ({
   };
 
   const handleCombinedAnalysis = (selectedTypes: string[]) => {
-    const providedPrice = currentPrice ? Number(currentPrice) : undefined;
+    const providedPrice = price ? Number(price) : undefined;
     if (!providedPrice) {
       toast.error("الرجاء إدخال السعر الحالي للتحليل المدمج");
       return;
@@ -129,10 +126,7 @@ export const ChartAnalysisForm = ({
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
       <SymbolInput value={symbol} onChange={setSymbol} />
-      <PriceInput 
-        value={currentPrice} 
-        onChange={(value) => onPriceChange?.(value)} 
-      />
+      <PriceInput value={price} onChange={setPrice} />
       <TimeframeInput value={timeframe} onChange={setTimeframe} />
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}

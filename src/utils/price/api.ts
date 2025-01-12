@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { PriceResponse } from './types';
-import { ALPHA_VANTAGE_API_KEY } from './config';
+
+const ALPHA_VANTAGE_API_KEY = 'demo'; // Using demo key for now
 
 export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
   try {

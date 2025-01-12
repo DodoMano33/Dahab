@@ -10,7 +10,6 @@ interface AutoAnalysisProps {
   onAnalysisComplete?: (newItem: any) => void;
   repetitions: number;
   setIsHistoryOpen: (open: boolean) => void;
-  currentPrice: string;
 }
 
 export const AutoAnalysis = ({
@@ -19,8 +18,7 @@ export const AutoAnalysis = ({
   selectedAnalysisTypes,
   onAnalysisComplete,
   repetitions,
-  setIsHistoryOpen,
-  currentPrice
+  setIsHistoryOpen
 }: AutoAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
@@ -47,11 +45,6 @@ export const AutoAnalysis = ({
       return;
     }
 
-    if (!currentPrice || isNaN(Number(currentPrice)) || Number(currentPrice) <= 0) {
-      toast.error("الرجاء إدخال السعر الحالي في الخانة العلوية");
-      return;
-    }
-
     setIsAnalyzing(true);
     try {
       await startAutoAnalysis({
@@ -59,7 +52,6 @@ export const AutoAnalysis = ({
         interval: selectedInterval,
         analysisTypes: selectedAnalysisTypes,
         repetitions,
-        currentPrice: Number(currentPrice),
         onAnalysisComplete
       });
     } catch (error) {
@@ -70,13 +62,11 @@ export const AutoAnalysis = ({
   };
 
   return (
-    <div className="space-y-4">
-      <AutoAnalysisButton
-        isAnalyzing={isAnalyzing}
-        onClick={handleAnalysisClick}
-        onBackTestClick={() => {}}
-        setIsHistoryOpen={setIsHistoryOpen}
-      />
-    </div>
+    <AutoAnalysisButton
+      isAnalyzing={isAnalyzing}
+      onClick={handleAnalysisClick}
+      onBackTestClick={() => {}}
+      setIsHistoryOpen={setIsHistoryOpen}
+    />
   );
 };

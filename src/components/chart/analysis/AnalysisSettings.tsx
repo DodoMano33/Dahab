@@ -11,7 +11,6 @@ interface AnalysisSettingsProps {
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
-  currentPrice: string;
 }
 
 export const AnalysisSettings = ({
@@ -19,7 +18,6 @@ export const AnalysisSettings = ({
   onIntervalChange,
   setIsHistoryOpen,
   onAnalysisComplete,
-  currentPrice,
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
@@ -66,7 +64,6 @@ export const AnalysisSettings = ({
             onAnalysisComplete={onAnalysisComplete}
             repetitions={repetitions ? parseInt(repetitions) : 1}
             setIsHistoryOpen={setIsHistoryOpen}
-            currentPrice={currentPrice}
           />
         </div>
       </div>
