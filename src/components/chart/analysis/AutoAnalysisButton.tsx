@@ -19,6 +19,13 @@ export const AutoAnalysisButton = ({
 }: AutoAnalysisButtonProps) => {
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
 
+  const handleHistoryClick = () => {
+    if (onHistoryClick) {
+      console.log("Opening search history");
+      onHistoryClick();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Button 
@@ -53,7 +60,7 @@ export const AutoAnalysisButton = ({
           </Button>
 
           <Button
-            onClick={onHistoryClick}
+            onClick={handleHistoryClick}
             className="bg-[#D3E4FD] hover:bg-[#B3D4FD] text-gray-700 flex-1 h-10 flex items-center gap-2"
           >
             <ClipboardList className="w-5 h-5" />

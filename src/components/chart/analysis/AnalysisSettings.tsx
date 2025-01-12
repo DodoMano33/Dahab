@@ -1,18 +1,14 @@
 import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
-import { AnalysisTypes } from "./AnalysisTypes";
 import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
-import { Button } from "@/components/ui/button";
-import { History } from "lucide-react";
-import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
-  setIsHistoryOpen: (open: boolean) => void;
-  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
+  setIsHistoryOpen: (isOpen: boolean) => void;
+  onAnalysisComplete: (newItem: any) => void;
 }
 
 export const AnalysisSettings = ({
@@ -22,8 +18,7 @@ export const AnalysisSettings = ({
   onAnalysisComplete,
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
-  const [selectedInterval, setSelectedInterval] = useState<string>("");
-  const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
+  const [selectedInterval, setSelectedInterval] = useState("");
   const [repetitions, setRepetitions] = useState("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
@@ -38,18 +33,14 @@ export const AnalysisSettings = ({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 gap-4">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
-          onTimeframeChange={handleTimeframesChange}
+          onTimeframesChange={handleTimeframesChange}
         />
         <IntervalAnalysis
           selectedInterval={selectedInterval}
           onIntervalChange={handleIntervalChange}
-        />
-        <AnalysisTypes
-          selectedTypes={selectedAnalysisTypes}
-          onTypesChange={setSelectedAnalysisTypes}
         />
       </div>
 
@@ -61,7 +52,7 @@ export const AnalysisSettings = ({
         <AutoAnalysis
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
-          selectedAnalysisTypes={selectedAnalysisTypes}
+          setIsHistoryOpen={setIsHistoryOpen}
           onAnalysisComplete={onAnalysisComplete}
           repetitions={repetitions ? parseInt(repetitions) : 1}
         />
