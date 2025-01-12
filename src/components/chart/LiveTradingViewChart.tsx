@@ -23,9 +23,9 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const widgetRef = useRef<any>(null);
 
   useEffect(() => {
-    let widget: any = null;
     let priceInterval: NodeJS.Timeout;
 
     const initWidget = () => {
@@ -36,7 +36,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       script.async = true;
       script.onload = () => {
         if (typeof window.TradingView !== 'undefined') {
-          widget = new window.TradingView.widget({
+          widgetRef.current = new window.TradingView.widget({
             width: "100%",
             height: 500,
             symbol: symbol,
@@ -59,47 +59,53 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
             }
           });
 
-          window.tvWidget = widget;
+          window.tvWidget = widgetRef.current;
 
           // Listen for iframe load event
-          widget.iframe.addEventListener('load', () => {
-            console.log("TradingView chart iframe loaded");
-            setIsLoading(false);
+          if (widgetRef.current.iframe) {
+            widgetRef.current.iframe.addEventListener('load', () => {
+              console.log("TradingView chart iframe loaded");
+              setIsLoading(false);
 
-            // Wait for chart to be ready
-            const initChartData = () => {
-              if (widget.chart && typeof widget.chart === 'function') {
-                const chart = widget.chart();
-                
-                // Listen for symbol changes
-                chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
-                  console.log("Symbol changed to:", symbolInfo.name);
-                  onSymbolChange?.(symbolInfo.name);
-                });
+              // Wait for chart to be ready
+              const initChartData = () => {
+                try {
+                  if (widgetRef.current && widgetRef.current.chart && typeof widgetRef.current.chart === 'function') {
+                    const chart = widgetRef.current.chart();
+                    
+                    // Listen for symbol changes
+                    chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
+                      console.log("Symbol changed to:", symbolInfo.name);
+                      onSymbolChange?.(symbolInfo.name);
+                    });
 
-                // Set up price update interval
-                const updatePrice = () => {
-                  if (chart.getLastBar) {
-                    const lastBar = chart.getLastBar();
-                    if (lastBar) {
-                      const lastPrice = lastBar.close;
-                      console.log("Current price:", lastPrice);
-                      onPriceUpdate?.(lastPrice);
-                    }
+                    // Set up price update interval
+                    const updatePrice = () => {
+                      if (chart.getLastBar) {
+                        const lastBar = chart.getLastBar();
+                        if (lastBar) {
+                          const lastPrice = lastBar.close;
+                          console.log("Current price:", lastPrice);
+                          onPriceUpdate?.(lastPrice);
+                        }
+                      }
+                    };
+
+                    // Update price every 5 seconds
+                    priceInterval = setInterval(updatePrice, 5000);
+                    updatePrice(); // Initial price update
+                  } else {
+                    // If chart is not ready yet, try again in 100ms
+                    setTimeout(initChartData, 100);
                   }
-                };
+                } catch (error) {
+                  console.error("Error initializing chart data:", error);
+                }
+              };
 
-                // Update price every 5 seconds
-                priceInterval = setInterval(updatePrice, 5000);
-                updatePrice(); // Initial price update
-              } else {
-                // If chart is not ready yet, try again in 100ms
-                setTimeout(initChartData, 100);
-              }
-            };
-
-            initChartData();
-          });
+              initChartData();
+            });
+          }
         }
       };
       
@@ -112,9 +118,31 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       if (priceInterval) {
         clearInterval(priceInterval);
       }
-      if (window.tvWidget) {
-        window.tvWidget.remove();
-        delete window.tvWidget;
+      
+      // Safely cleanup widget
+      if (widgetRef.current) {
+        try {
+          // Remove from window object first
+          if (window.tvWidget === widgetRef.current) {
+            delete window.tvWidget;
+          }
+          
+          // Only call remove if the widget exists and has a remove method
+          if (widgetRef.current && typeof widgetRef.current.remove === 'function') {
+            widgetRef.current.remove();
+          }
+          
+          widgetRef.current = null;
+        } catch (error) {
+          console.error("Error cleaning up TradingView widget:", error);
+        }
+      }
+      
+      // Clean up container
+      if (container.current) {
+        while (container.current.firstChild) {
+          container.current.removeChild(container.current.firstChild);
+        }
       }
     };
   }, [symbol, timeframe, onSymbolChange, onPriceUpdate]);
