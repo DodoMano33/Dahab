@@ -26,123 +26,123 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   const widgetRef = useRef<any>(null);
 
   useEffect(() => {
-    let priceInterval: NodeJS.Timeout;
-
-    const initWidget = () => {
-      if (!container.current) return;
-
-      const script = document.createElement('script');
-      script.src = 'https://s3.tradingview.com/tv.js';
-      script.async = true;
-      script.onload = () => {
+    const loadTradingViewScript = () => {
+      return new Promise((resolve) => {
         if (typeof window.TradingView !== 'undefined') {
-          widgetRef.current = new window.TradingView.widget({
-            width: "100%",
-            height: 500,
-            symbol: symbol,
-            interval: timeframe,
-            timezone: "Etc/UTC",
-            theme: "light",
-            style: "1",
-            locale: "ar",
-            toolbar_bg: "#f1f3f6",
-            enable_publishing: false,
-            hide_side_toolbar: false,
-            allow_symbol_change: true,
-            container_id: "tradingview_chart",
-            studies: [
-              { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
-            ],
-            autosize: true,
-            overrides: {
-              "mainSeriesProperties.showPriceLine": true
-            }
+          resolve(window.TradingView);
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.id = 'tradingview-widget-script';
+        script.src = 'https://s3.tradingview.com/tv.js';
+        script.async = true;
+        script.onload = () => resolve(window.TradingView);
+        document.head.appendChild(script);
+      });
+    };
+
+    const initWidget = async () => {
+      try {
+        if (!container.current) return;
+        
+        await loadTradingViewScript();
+        
+        if (widgetRef.current) {
+          widgetRef.current.remove();
+          widgetRef.current = null;
+        }
+
+        widgetRef.current = new window.TradingView.widget({
+          width: "100%",
+          height: 500,
+          symbol: symbol,
+          interval: timeframe,
+          timezone: "Etc/UTC",
+          theme: "light",
+          style: "1",
+          locale: "ar",
+          toolbar_bg: "#f1f3f6",
+          enable_publishing: false,
+          hide_side_toolbar: false,
+          allow_symbol_change: true,
+          container_id: "tradingview_chart",
+          studies: [
+            { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
+          ],
+          autosize: true,
+          overrides: {
+            "mainSeriesProperties.showPriceLine": true
+          }
+        });
+
+        window.tvWidget = widgetRef.current;
+
+        widgetRef.current.onChartReady(() => {
+          console.log("Chart is ready");
+          setIsLoading(false);
+
+          const chart = widgetRef.current.chart();
+          
+          // Listen for symbol changes
+          chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
+            console.log("Symbol changed to:", symbolInfo.name);
+            onSymbolChange?.(symbolInfo.name);
           });
 
-          window.tvWidget = widgetRef.current;
+          // Set up price update interval
+          const updatePrice = () => {
+            try {
+              const lastBar = chart.getLastBar();
+              if (lastBar) {
+                const lastPrice = lastBar.close;
+                console.log("Current price:", lastPrice);
+                onPriceUpdate?.(lastPrice);
+              }
+            } catch (error) {
+              console.error("Error updating price:", error);
+            }
+          };
 
-          // Listen for iframe load event
-          if (widgetRef.current.iframe) {
-            widgetRef.current.iframe.addEventListener('load', () => {
-              console.log("TradingView chart iframe loaded");
-              setIsLoading(false);
+          // Update price every 5 seconds
+          const priceInterval = setInterval(updatePrice, 5000);
+          updatePrice(); // Initial price update
 
-              // Wait for chart to be ready
-              const initChartData = () => {
-                try {
-                  if (widgetRef.current && widgetRef.current.chart && typeof widgetRef.current.chart === 'function') {
-                    const chart = widgetRef.current.chart();
-                    
-                    // Listen for symbol changes
-                    chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
-                      console.log("Symbol changed to:", symbolInfo.name);
-                      onSymbolChange?.(symbolInfo.name);
-                    });
+          // Cleanup interval on chart ready
+          return () => clearInterval(priceInterval);
+        });
 
-                    // Set up price update interval
-                    const updatePrice = () => {
-                      if (chart.getLastBar) {
-                        const lastBar = chart.getLastBar();
-                        if (lastBar) {
-                          const lastPrice = lastBar.close;
-                          console.log("Current price:", lastPrice);
-                          onPriceUpdate?.(lastPrice);
-                        }
-                      }
-                    };
-
-                    // Update price every 5 seconds
-                    priceInterval = setInterval(updatePrice, 5000);
-                    updatePrice(); // Initial price update
-                  } else {
-                    // If chart is not ready yet, try again in 100ms
-                    setTimeout(initChartData, 100);
-                  }
-                } catch (error) {
-                  console.error("Error initializing chart data:", error);
-                }
-              };
-
-              initChartData();
-            });
-          }
-        }
-      };
-      
-      container.current.appendChild(script);
+      } catch (error) {
+        console.error("Error initializing TradingView widget:", error);
+        setIsLoading(false);
+      }
     };
 
     initWidget();
 
+    // Cleanup function
     return () => {
-      if (priceInterval) {
-        clearInterval(priceInterval);
-      }
-      
-      // Safely cleanup widget
-      if (widgetRef.current) {
-        try {
+      try {
+        if (widgetRef.current) {
           // Remove from window object first
           if (window.tvWidget === widgetRef.current) {
             delete window.tvWidget;
           }
           
-          // Only call remove if the widget exists and has a remove method
-          if (widgetRef.current && typeof widgetRef.current.remove === 'function') {
+          if (typeof widgetRef.current.remove === 'function') {
             widgetRef.current.remove();
           }
-          
           widgetRef.current = null;
-        } catch (error) {
-          console.error("Error cleaning up TradingView widget:", error);
         }
-      }
-      
-      // Clean up container
-      if (container.current) {
-        while (container.current.firstChild) {
-          container.current.removeChild(container.current.firstChild);
+
+        // Clean up TradingView script if it exists
+        const script = document.getElementById('tradingview-widget-script');
+        if (script && script.parentNode) {
+          script.parentNode.removeChild(script);
         }
+
+      } catch (error) {
+        console.error("Error cleaning up TradingView widget:", error);
       }
     };
   }, [symbol, timeframe, onSymbolChange, onPriceUpdate]);
