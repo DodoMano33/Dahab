@@ -103,4 +103,20 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Black and white specific overrides */
+  .bw button {
+    @apply bg-black text-white hover:bg-black/90 border-black;
+  }
+  
+  .bw input,
+  .bw select,
+  .bw textarea {
+    @apply bg-white text-black border-black;
+  }
+  
+  .bw .bg-card,
+  .bw .bg-background {
+    @apply bg-white;
+  }
 }
