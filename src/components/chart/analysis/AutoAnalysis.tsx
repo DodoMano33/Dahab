@@ -41,13 +41,15 @@ export const AutoAnalysis = ({
     }
 
     // Get the symbol from the symbol select field
-    const symbolSelect = document.querySelector('select[id="symbol"]') as HTMLSelectElement;
-    const symbol = symbolSelect ? symbolSelect.value : "BTCUSDT";
+    const symbolSelect = document.querySelector('select[name="symbol"]') as HTMLSelectElement;
+    const symbol = symbolSelect ? symbolSelect.value : "";
 
     if (!symbol) {
       toast.error("الرجاء اختيار رمز العملة أو الزوج");
       return;
     }
+
+    console.log("Starting auto analysis with symbol:", symbol);
 
     setIsAnalyzing(true);
     try {

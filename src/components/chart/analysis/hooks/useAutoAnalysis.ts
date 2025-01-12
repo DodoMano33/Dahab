@@ -71,13 +71,13 @@ export const useAutoAnalysis = () => {
     }
 
     setIsAnalyzing(true);
-    console.log("Starting auto analysis with config:", config);
+    console.log("Starting auto analysis with config:", { ...config, symbol });
 
     const runAnalysis = async () => {
       try {
         for (const timeframe of timeframes) {
           for (const analysisType of analysisTypes) {
-            console.log(`Running analysis for ${timeframe} with price ${currentPrice}`);
+            console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType}`);
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
@@ -97,7 +97,6 @@ export const useAutoAnalysis = () => {
               console.log("Analysis completed successfully:", result);
               
               try {
-                // Map the analysis type string to AnalysisType enum
                 const mappedAnalysisType = mapToAnalysisType(analysisType);
                 
                 const savedData = await saveAnalysis({
@@ -158,13 +157,6 @@ export const useAutoAnalysis = () => {
 
   return {
     isAnalyzing,
-    setIsAnalyzing,
-    analysisInterval,
-    setAnalysisInterval,
-    validateInputs,
-    getIntervalInMs,
-    user,
-    handleTradingViewConfig,
     startAutoAnalysis,
     stopAutoAnalysis
   };
