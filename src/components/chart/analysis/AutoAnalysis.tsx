@@ -2,7 +2,6 @@ import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -11,6 +10,7 @@ interface AutoAnalysisProps {
   onAnalysisComplete?: (newItem: any) => void;
   repetitions: number;
   setIsHistoryOpen: (open: boolean) => void;
+  currentPrice: string;
 }
 
 export const AutoAnalysis = ({
@@ -19,10 +19,10 @@ export const AutoAnalysis = ({
   selectedAnalysisTypes,
   onAnalysisComplete,
   repetitions,
-  setIsHistoryOpen
+  setIsHistoryOpen,
+  currentPrice
 }: AutoAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [currentPrice, setCurrentPrice] = useState("");
   const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
 
   const handleAnalysisClick = async () => {
@@ -48,7 +48,7 @@ export const AutoAnalysis = ({
     }
 
     if (!currentPrice || isNaN(Number(currentPrice)) || Number(currentPrice) <= 0) {
-      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      toast.error("الرجاء إدخال السعر الحالي في الخانة العلوية");
       return;
     }
 
@@ -71,21 +71,6 @@ export const AutoAnalysis = ({
 
   return (
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          السعر الحالي (إجباري)
-        </label>
-        <Input
-          type="number"
-          step="any"
-          placeholder="أدخل السعر الحالي"
-          value={currentPrice}
-          onChange={(e) => setCurrentPrice(e.target.value)}
-          className="w-full"
-          dir="ltr"
-        />
-      </div>
-      
       <AutoAnalysisButton
         isAnalyzing={isAnalyzing}
         onClick={handleAnalysisClick}

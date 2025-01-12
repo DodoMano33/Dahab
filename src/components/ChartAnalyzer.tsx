@@ -30,6 +30,7 @@ export const ChartAnalyzer = () => {
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
+  const [currentPrice, setCurrentPrice] = useState<string>("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     if (!timeframes) {
@@ -49,6 +50,11 @@ export const ChartAnalyzer = () => {
     console.log("Selected interval:", interval);
   };
 
+  const handlePriceChange = (price: string) => {
+    setCurrentPrice(price);
+    console.log("Current price updated:", price);
+  };
+
   const handleAnalysisComplete = (newItem: any) => {
     console.log("New analysis completed, adding to history:", newItem);
     addToSearchHistory(newItem);
@@ -62,6 +68,8 @@ export const ChartAnalyzer = () => {
         onAnalysis={addToSearchHistory}
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}
+        onPriceChange={handlePriceChange}
+        currentPrice={currentPrice}
       />
 
       {/* Auto Analysis Settings */}
@@ -70,6 +78,7 @@ export const ChartAnalyzer = () => {
         onIntervalChange={handleIntervalChange}
         setIsHistoryOpen={setIsHistoryOpen}
         onAnalysisComplete={handleAnalysisComplete}
+        currentPrice={currentPrice}
       />
       
       {/* Manual Analysis Display */}
