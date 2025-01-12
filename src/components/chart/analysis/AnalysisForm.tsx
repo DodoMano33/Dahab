@@ -44,6 +44,11 @@ export const AnalysisForm = ({
         return;
       }
 
+      if (!symbol || !timeframe || !providedPrice) {
+        toast.error("جميع الحقول مطلوبة");
+        return;
+      }
+
       showAnalysisMessage(
         isPatternAnalysis,
         isWaves,
@@ -72,6 +77,13 @@ export const AnalysisForm = ({
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
+        // Validate analysis result before saving
+        if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
+          console.error("Invalid analysis result:", analysisResult);
+          toast.error("نتائج التحليل غير صالحة");
+          return;
+        }
+
         const analysisType = isAI ? "ذكي" : getAnalysisType(
           isPatternAnalysis,
           isWaves,
@@ -84,29 +96,36 @@ export const AnalysisForm = ({
           isPriceAction
         );
 
-        const savedData = await saveAnalysis({
-          userId: user.id,
-          symbol: upperSymbol,
-          currentPrice,
-          analysisResult,
-          analysisType,
-          timeframe
-        });
+        try {
+          const savedData = await saveAnalysis({
+            userId: user.id,
+            symbol: upperSymbol,
+            currentPrice,
+            analysisResult,
+            analysisType,
+            timeframe
+          });
 
-        const newHistoryEntry: SearchHistoryItem = {
-          id: savedData.id,
-          date: new Date(),
-          symbol: upperSymbol,
-          currentPrice,
-          analysis: analysisResult,
-          targetHit: false,
-          stopLossHit: false,
-          analysisType,
-          timeframe
-        };
+          if (savedData) {
+            const newHistoryEntry: SearchHistoryItem = {
+              id: savedData.id,
+              date: new Date(),
+              symbol: upperSymbol,
+              currentPrice,
+              analysis: analysisResult,
+              targetHit: false,
+              stopLossHit: false,
+              analysisType,
+              timeframe
+            };
 
-        onAnalysis(newHistoryEntry);
-        console.log("تم تحديث سجل البحث:", newHistoryEntry);
+            onAnalysis(newHistoryEntry);
+            console.log("تم تحديث سجل البحث:", newHistoryEntry);
+          }
+        } catch (saveError) {
+          console.error("Error saving analysis:", saveError);
+          toast.error("حدث خطأ أثناء حفظ التحليل");
+        }
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
