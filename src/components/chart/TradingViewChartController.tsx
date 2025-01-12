@@ -7,6 +7,14 @@ interface TradingViewChartControllerProps {
   onSymbolChange: (symbol: string) => void;
 }
 
+declare global {
+  interface Window {
+    TradingView: {
+      widget: new (config: any) => any;
+    };
+  }
+}
+
 export const TradingViewChartController = ({
   symbol,
   onReady,
@@ -62,41 +70,35 @@ export const TradingViewChartController = ({
         console.log("TradingView chart is ready");
         onReady();
         
-        // الحصول على الـ chart API من الـ widget
-        const chart = widget.chart();
-        
         const updatePrice = () => {
           try {
-            // محاولة الحصول على السعر من معلومات الرمز
-            const symbolInfo = widget.symbolInterval();
-            if (symbolInfo?.last && !isNaN(symbolInfo.last)) {
-              console.log("Price from symbolInfo:", symbolInfo.last);
-              onPriceUpdate(symbolInfo.last);
-              return;
-            }
-
-            // محاولة الحصول على السعر من موضع المؤشر
-            const price = chart.price();
-            if (price && !isNaN(price)) {
-              console.log("Price from chart:", price);
-              onPriceUpdate(price);
+            if (!widgetRef.current) return;
+            
+            // Try to get price from chart object
+            const chart = widgetRef.current.chart();
+            const symbolInfo = chart.symbol();
+            const currentPrice = chart.crosshairPrice();
+            
+            if (currentPrice && !isNaN(currentPrice)) {
+              console.log("Price from chart:", currentPrice);
+              onPriceUpdate(currentPrice);
             }
           } catch (error) {
             console.error("Error getting price:", error);
           }
         };
 
-        // تحديث السعر مباشرة
+        // Update price immediately
         updatePrice();
 
-        // إعداد التحديث الدوري للسعر
+        // Set up periodic price updates
         if (priceUpdateInterval.current) {
           clearInterval(priceUpdateInterval.current);
         }
         priceUpdateInterval.current = setInterval(updatePrice, 1000);
 
-        // الاستماع لتغييرات الرمز
-        widget.onSymbolChange().subscribe(null, (symbolInfo: { name: string }) => {
+        // Listen for symbol changes
+        widget.chart().onSymbolChanged().subscribe(null, (symbolInfo: { name: string }) => {
           const newSymbol = symbolInfo.name;
           console.log("Symbol changed to:", newSymbol);
           onSymbolChange(newSymbol);
@@ -116,13 +118,20 @@ export const TradingViewChartController = ({
 
     initialize();
 
-    // التنظيف عند إزالة المكون
+    // Cleanup
     return () => {
       if (priceUpdateInterval.current) {
         clearInterval(priceUpdateInterval.current);
       }
       if (widgetRef.current) {
-        widgetRef.current.remove();
+        try {
+          const element = document.getElementById('tradingview_chart');
+          if (element) {
+            element.innerHTML = '';
+          }
+        } catch (error) {
+          console.error("Error cleaning up TradingView widget:", error);
+        }
       }
     };
   }, [symbol, onReady, onPriceUpdate, onSymbolChange]);
