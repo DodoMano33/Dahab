@@ -1,135 +1,94 @@
 import axios from 'axios';
-import { ALPHA_VANTAGE_API_KEY } from './config';
-import { FOREX_SYMBOLS, CRYPTO_SYMBOLS } from './config';
+import { PriceResponse } from './types';
 
-const api = axios.create({
-  baseURL: 'https://www.alphavantage.co/query',
-});
+const ALPHA_VANTAGE_API_KEY = 'demo'; // Using demo key for now
 
-api.interceptors.request.use(
-  (config) => {
-    console.log('إرسال طلب:', {
-      url: config.url,
-      method: config.method,
-      params: config.params
-    });
-    return config;
-  },
-  (error) => {
-    console.error('خطأ في إرسال الطلب:', error);
-    return Promise.reject(error);
-  }
-);
-
-api.interceptors.response.use(
-  (response) => {
-    console.log('استجابة ناجحة:', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data
-    });
-    
-    if (response.data && response.data.Note) {
-      console.log('تم تجاوز حد API:', response.data.Note);
-      throw new Error('API rate limit exceeded');
-    }
-    
-    return response;
-  },
-  (error) => {
-    console.error('خطأ في الاستجابة:', error);
-    return Promise.reject(error);
-  }
-);
-
-export async function fetchCryptoPrice(symbol: string, providedPrice?: number): Promise<number> {
-  console.log(`بدء طلب سعر العملة المشفرة للرمز ${symbol}`);
-  
-  if (providedPrice !== undefined) {
-    console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
-    return providedPrice;
-  }
-
+export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
   try {
-    // Remove 'USDT' from the symbol if it exists
-    const baseSymbol = symbol.replace('USDT', '');
-    const cryptoSymbol = CRYPTO_SYMBOLS[baseSymbol as keyof typeof CRYPTO_SYMBOLS] || baseSymbol;
-
-    console.log(`جلب سعر العملة المشفرة: ${cryptoSymbol}/USD`);
-
-    const response = await api.get('', {
+    console.log("جلب سعر العملة المشفرة:", symbol);
+    
+    const response = await axios.get('https://www.alphavantage.co/query', {
       params: {
         function: 'CURRENCY_EXCHANGE_RATE',
-        from_currency: cryptoSymbol,
+        from_currency: symbol.replace('USDT', ''),
         to_currency: 'USD',
         apikey: ALPHA_VANTAGE_API_KEY
       }
     });
 
-    const data = response.data['Realtime Currency Exchange Rate'];
-    if (!data || !data['5. Exchange Rate']) {
-      console.log('لم يتم العثور على سعر صالح، استخدام السعر المقدم');
-      if (providedPrice !== undefined) {
-        return providedPrice;
+    console.log("استجابة ناجحة:", {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
+
+    if (response.data['Realtime Currency Exchange Rate']) {
+      const price = parseFloat(response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
+      if (!isNaN(price)) {
+        return price;
       }
-      throw new Error('لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً');
     }
 
-    const price = parseFloat(data['5. Exchange Rate']);
-    console.log(`تم جلب السعر بنجاح: ${price}`);
-    return price;
+    console.log("لم يتم العثور على سعر صالح، استخدام السعر المقدم");
+    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
   } catch (error) {
-    console.error('خطأ في جلب سعر العملة المشفرة:', error);
-    if (providedPrice !== undefined) {
-      return providedPrice;
-    }
-    throw error;
+    console.error("خطأ في جلب سعر العملة المشفرة:", error);
+    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
   }
-}
+};
 
-export async function fetchForexPrice(symbol: string, providedPrice?: number): Promise<number> {
-  console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
-
-  if (providedPrice !== undefined) {
-    console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
-    return providedPrice;
-  }
-
+export const fetchForexPrice = async (symbol: string): Promise<number> => {
   try {
-    const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
-    if (!forexSymbol) {
-      if (symbol === 'XAUUSD' && providedPrice !== undefined) {
-        return providedPrice;
-      }
-      throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
-    }
+    console.log("بدء طلب سعر الفوركس للرمز", symbol);
+    
+    const baseCurrency = symbol.slice(0, 3);
+    const quoteCurrency = symbol.slice(3, 6);
 
-    const response = await api.get('', {
+    const response = await axios.get('https://www.alphavantage.co/query', {
       params: {
         function: 'CURRENCY_EXCHANGE_RATE',
-        from_currency: forexSymbol.from,
-        to_currency: forexSymbol.to,
+        from_currency: baseCurrency,
+        to_currency: quoteCurrency,
         apikey: ALPHA_VANTAGE_API_KEY
       }
     });
 
-    const data = response.data['Realtime Currency Exchange Rate'];
-    if (!data || !data['5. Exchange Rate']) {
-      console.log('لم يتم العثور على سعر صالح، استخدام السعر المقدم');
-      if (providedPrice !== undefined) {
-        return providedPrice;
+    console.log("استجابة ناجحة:", {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
+
+    if (response.data['Realtime Currency Exchange Rate']) {
+      const price = parseFloat(response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
+      if (!isNaN(price)) {
+        return price;
       }
-      throw new Error('لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً');
     }
 
-    const price = parseFloat(data['5. Exchange Rate']);
-    console.log(`تم جلب السعر بنجاح: ${price}`);
-    return price;
+    console.log("لم يتم العثور على سعر صالح، استخدام السعر المقدم");
+    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
   } catch (error) {
-    console.error('خطأ في جلب سعر الفوركس:', error);
-    if (providedPrice !== undefined) {
-      return providedPrice;
-    }
-    throw error;
+    console.error("خطأ في جلب سعر الفوركس:", error);
+    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
   }
-}
+};
+
+export const fetchPrice = async (symbol: string): Promise<PriceResponse> => {
+  try {
+    if (symbol.endsWith('USDT')) {
+      const price = await fetchCryptoPrice(symbol);
+      return { price, success: true };
+    } else {
+      const price = await fetchForexPrice(symbol);
+      return { price, success: true };
+    }
+  } catch (error) {
+    console.error("خطأ في جلب السعر:", error);
+    return { 
+      price: null, 
+      success: false, 
+      error: error instanceof Error ? error.message : "خطأ غير معروف في جلب السعر"
+    };
+  }
+};
