@@ -5,6 +5,7 @@ import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
 
 interface ChartAnalysisFormProps {
   onSubmit: (
@@ -68,7 +69,6 @@ export const ChartAnalysisForm = ({
     }
     
     console.log(`تحليل ${currentAnalysis} للرمز ${symbol} على الإطار الزمني ${timeframe}`);
-    console.log("Price Action Analysis:", isPriceAction); // Added for debugging
     
     onSubmit(
       symbol,
@@ -124,21 +124,49 @@ export const ChartAnalysisForm = ({
   };
 
   return (
-    <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
-      <SymbolInput value={symbol} onChange={setSymbol} />
-      <PriceInput value={price} onChange={setPrice} />
-      <TimeframeInput value={timeframe} onChange={setTimeframe} />
-      <AnalysisButtonGroup
-        isAnalyzing={isAnalyzing}
-        onSubmit={handleSubmit}
-        onHistoryClick={onHistoryClick}
-        currentAnalysis={currentAnalysis}
-      />
+    <div className="space-y-8">
+      <form className="space-y-8 bg-white p-6 rounded-lg shadow-md">
+        <div className="space-y-4">
+          <SymbolInput value={symbol} onChange={setSymbol} />
+          <PriceInput value={price} onChange={setPrice} />
+          <TimeframeInput value={timeframe} onChange={setTimeframe} />
+        </div>
+
+        <Card className="p-4">
+          <h2 className="text-xl font-bold text-center mb-4 text-red-500">التحليل اليدوي</h2>
+          <AnalysisButtonGroup
+            isAnalyzing={isAnalyzing}
+            onSubmit={handleSubmit}
+            onHistoryClick={onHistoryClick}
+            currentAnalysis={currentAnalysis}
+          />
+        </Card>
+
+        <Card className="p-4">
+          <h2 className="text-xl font-bold text-center mb-4 text-green-500">التحليل التلقائي</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {/* Auto Analysis content will go here */}
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <h2 className="text-xl font-bold text-center mb-4 text-gray-700">النتائج</h2>
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={onHistoryClick}
+              className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-200 transition-colors"
+            >
+              سجل البحث
+            </button>
+          </div>
+        </Card>
+      </form>
+
       <CombinedAnalysisDialog
         isOpen={isAIDialogOpen}
         onClose={() => setIsAIDialogOpen(false)}
         onAnalyze={handleCombinedAnalysis}
       />
-    </form>
+    </div>
   );
 };
