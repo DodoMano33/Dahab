@@ -76,13 +76,13 @@ export const fetchForexPrice = async (symbol: string): Promise<number> => {
 
 export const fetchPrice = async (symbol: string): Promise<PriceResponse> => {
   try {
+    let price: number;
     if (symbol.endsWith('USDT')) {
-      const price = await fetchCryptoPrice(symbol);
-      return { price, success: true };
+      price = await fetchCryptoPrice(symbol);
     } else {
-      const price = await fetchForexPrice(symbol);
-      return { price, success: true };
+      price = await fetchForexPrice(symbol);
     }
+    return { price, success: true };
   } catch (error) {
     console.error("خطأ في جلب السعر:", error);
     return { 

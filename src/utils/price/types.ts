@@ -16,3 +16,9 @@ export interface PriceData {
   timestamp: number;
   type: SymbolType;
 }
+
+export interface PriceResponse {
+  price: number | null;
+  success: boolean;
+  error?: string;
+}
