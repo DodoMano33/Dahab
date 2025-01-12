@@ -22,9 +22,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4">
           <h1 className="text-3xl font-bold text-gray-800">محلل الشارت الذكي</h1>
           {user ? (
             <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
@@ -39,9 +40,15 @@ const Index = () => {
           )}
         </div>
 
+        {/* Main Content */}
         <div className="space-y-4">
-          <LiveTradingViewChart symbol="XAUUSD" timeframe="D" />
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          {/* TradingView Chart */}
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            <LiveTradingViewChart symbol="XAUUSD" timeframe="D" />
+          </div>
+
+          {/* Analysis Form */}
+          <div className="bg-white rounded-lg shadow-sm">
             <ChartAnalyzer />
           </div>
         </div>

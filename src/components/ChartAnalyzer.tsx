@@ -26,7 +26,6 @@ export const ChartAnalyzer = () => {
     addToSearchHistory
   } = useSearchHistory();
 
-  // استخدام hook الـ BackTest
   useBackTest();
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
@@ -57,24 +56,23 @@ export const ChartAnalyzer = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <AnalysisSettings
-        onTimeframesChange={handleTimeframesChange}
-        onIntervalChange={handleIntervalChange}
-        setIsHistoryOpen={setIsHistoryOpen}
-        onAnalysisComplete={handleAnalysisComplete}
-      />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
-        <div>
+    <div className="p-6">
+      <div className="space-y-6">
+        <AnalysisSettings
+          onTimeframesChange={handleTimeframesChange}
+          onIntervalChange={handleIntervalChange}
+          setIsHistoryOpen={setIsHistoryOpen}
+          onAnalysisComplete={handleAnalysisComplete}
+        />
+        
+        <div className="grid grid-cols-1 gap-6">
           <AnalysisForm
             onAnalysis={addToSearchHistory}
             isAnalyzing={isAnalyzing}
             currentAnalysis={currentAnalysis || ""}
           />
-        </div>
-        {(image || analysis || isAnalyzing) && (
-          <div>
+          
+          {(image || analysis || isAnalyzing) && (
             <ChartDisplay
               image={image}
               analysis={analysis}
@@ -86,8 +84,8 @@ export const ChartAnalyzer = () => {
               symbol={currentSymbol}
               currentAnalysis={currentAnalysis}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       {isHistoryOpen && (
