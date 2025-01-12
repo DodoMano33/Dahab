@@ -24,7 +24,7 @@ export const AutoAnalysisButton = ({
         disabled={disabled}
         className={`${
           isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-        } text-white px-8 py-2 text-lg flex items-center gap-2 h-10 max-w-[600px] w-full`}
+        } text-white px-8 py-2 text-lg flex items-center gap-2 h-20 max-w-[600px] w-full`}
       >
         {isAnalyzing ? (
           <>
