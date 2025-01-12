@@ -56,37 +56,55 @@ export const ChartAnalyzer = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="space-y-6">
-        <AnalysisSettings
-          onTimeframesChange={handleTimeframesChange}
-          onIntervalChange={handleIntervalChange}
-          setIsHistoryOpen={setIsHistoryOpen}
-          onAnalysisComplete={handleAnalysisComplete}
-        />
-        
-        <div className="grid grid-cols-1 gap-6">
-          <AnalysisForm
-            onAnalysis={addToSearchHistory}
-            isAnalyzing={isAnalyzing}
-            currentAnalysis={currentAnalysis || ""}
-          />
-          
-          {(image || analysis || isAnalyzing) && (
-            <ChartDisplay
-              image={image}
-              analysis={analysis}
-              isAnalyzing={isAnalyzing}
-              onClose={() => {
-                setImage(null);
-                setAnalysis(null);
-              }}
-              symbol={currentSymbol}
-              currentAnalysis={currentAnalysis}
-            />
-          )}
-        </div>
+    <div className="flex flex-col space-y-6 p-6">
+      {/* Symbol, Price, and Timeframe Form */}
+      <AnalysisForm
+        onAnalysis={addToSearchHistory}
+        isAnalyzing={isAnalyzing}
+        currentAnalysis={currentAnalysis || ""}
+      />
+      
+      {/* History and Back Test Buttons */}
+      <div className="flex justify-center gap-4">
+        <Button
+          onClick={() => setIsHistoryOpen(true)}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <History className="w-4 h-4" />
+          سجل البحث
+        </Button>
+        <Button
+          onClick={() => setIsBackTestOpen(true)}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          Back Test Results
+        </Button>
       </div>
+
+      {/* Auto Analysis Settings */}
+      <AnalysisSettings
+        onTimeframesChange={handleTimeframesChange}
+        onIntervalChange={handleIntervalChange}
+        setIsHistoryOpen={setIsHistoryOpen}
+        onAnalysisComplete={handleAnalysisComplete}
+      />
+      
+      {/* Manual Analysis Display */}
+      {(image || analysis || isAnalyzing) && (
+        <ChartDisplay
+          image={image}
+          analysis={analysis}
+          isAnalyzing={isAnalyzing}
+          onClose={() => {
+            setImage(null);
+            setAnalysis(null);
+          }}
+          symbol={currentSymbol}
+          currentAnalysis={currentAnalysis}
+        />
+      )}
       
       {isHistoryOpen && (
         <HistoryDialog

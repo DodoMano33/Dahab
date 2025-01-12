@@ -41,9 +41,9 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           {/* TradingView Chart */}
-          <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <LiveTradingViewChart symbol="XAUUSD" timeframe="D" />
           </div>
 
