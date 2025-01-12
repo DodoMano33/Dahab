@@ -48,6 +48,11 @@ export const AnalysisForm = ({
         return;
       }
 
+      if (!symbol || !timeframe || !providedPrice) {
+        toast.error("جميع الحقول مطلوبة");
+        return;
+      }
+
       showAnalysisMessage(
         isPatternAnalysis,
         isWaves,
@@ -88,6 +93,11 @@ export const AnalysisForm = ({
           isPriceAction
         );
 
+        // Ensure we have a valid analysis object before saving
+        if (!analysisResult || typeof analysisResult !== 'object') {
+          throw new Error("تحليل غير صالح");
+        }
+
         const savedData = await saveAnalysis({
           userId: user.id,
           symbol: upperSymbol,
@@ -96,6 +106,10 @@ export const AnalysisForm = ({
           analysisType,
           timeframe
         });
+
+        if (!savedData) {
+          throw new Error("فشل في حفظ التحليل");
+        }
 
         const newHistoryEntry: SearchHistoryItem = {
           id: savedData.id,
@@ -111,6 +125,8 @@ export const AnalysisForm = ({
 
         onAnalysis(newHistoryEntry);
         console.log("تم تحديث سجل البحث:", newHistoryEntry);
+      } else {
+        throw new Error("لم يتم العثور على نتائج التحليل");
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
