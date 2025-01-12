@@ -1,15 +1,15 @@
+import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
-import { SearchHistoryItem } from "@/types/analysis";
-import { performAnalysis } from "./components/AnalysisPerformer";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
   selectedInterval: string;
   selectedAnalysisTypes: string[];
-  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
-  repetitions?: number;
+  onAnalysisComplete?: (newItem: any) => void;
+  repetitions: number;
+  setIsHistoryOpen: (open: boolean) => void;
 }
 
 export const AutoAnalysis = ({
@@ -17,108 +17,56 @@ export const AutoAnalysis = ({
   selectedInterval,
   selectedAnalysisTypes,
   onAnalysisComplete,
-  repetitions = 1
+  repetitions,
+  setIsHistoryOpen
 }: AutoAnalysisProps) => {
-  const {
-    isAnalyzing,
-    setIsAnalyzing,
-    analysisInterval,
-    setAnalysisInterval,
-    validateInputs,
-    getIntervalInMs,
-    user,
-    handleTradingViewConfig
-  } = useAutoAnalysis(
-    selectedTimeframes,
-    selectedInterval,
-    selectedAnalysisTypes
-  );
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
 
-  const startAnalysis = async () => {
-    if (!user) {
-      toast.error("يرجى تسجيل الدخول لبدء التحليل التلقائي");
+  const handleAnalysisClick = async () => {
+    if (isAnalyzing) {
+      stopAutoAnalysis();
+      setIsAnalyzing(false);
       return;
     }
 
-    if (!validateInputs()) {
+    if (!selectedTimeframes.length) {
+      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
       return;
     }
 
-    const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
-    const priceInput = document.querySelector('input#price') as HTMLInputElement;
-
-    if (!symbolInput?.value || !priceInput?.value) {
-      toast.error("الرجاء إدخال رمز العملة والسعر قبل بدء التحليل التلقائي");
+    if (!selectedInterval) {
+      toast.error("الرجاء اختيار الفاصل الزمني");
       return;
     }
 
-    const symbol = symbolInput.value.toUpperCase();
-    const currentPrice = Number(priceInput.value);
-
-    if (isNaN(currentPrice) || currentPrice <= 0) {
-      toast.error("الرجاء إدخال سعر صحيح");
+    if (!selectedAnalysisTypes.length) {
+      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
       return;
     }
 
     setIsAnalyzing(true);
-    const intervalMs = getIntervalInMs(selectedInterval);
-    let currentRepetition = 0;
-
-    const runAnalysis = async () => {
-      try {
-        if (currentRepetition >= repetitions) {
-          stopAnalysis();
-          return;
-        }
-
-        for (const timeframe of selectedTimeframes) {
-          for (const analysisType of selectedAnalysisTypes) {
-            await performAnalysis({
-              symbol,
-              price: currentPrice,
-              timeframe,
-              analysisType,
-              user,
-              handleTradingViewConfig,
-              onAnalysisComplete
-            });
-          }
-        }
-        currentRepetition++;
-      } catch (error) {
-        console.error("خطأ في التحليل التلقائي:", error);
-        toast.error("حدث خطأ أثناء التحليل التلقائي");
-      }
-    };
-
-    await runAnalysis();
-    const interval = setInterval(runAnalysis, intervalMs);
-    setAnalysisInterval(interval);
-    toast.success("تم بدء التحليل التلقائي");
-  };
-
-  const stopAnalysis = () => {
-    if (analysisInterval) {
-      clearInterval(analysisInterval);
-      setAnalysisInterval(null);
+    try {
+      await startAutoAnalysis({
+        timeframes: selectedTimeframes,
+        interval: selectedInterval,
+        analysisTypes: selectedAnalysisTypes,
+        repetitions,
+        onAnalysisComplete
+      });
+    } catch (error) {
+      console.error("Error in auto analysis:", error);
+      toast.error("حدث خطأ أثناء التحليل التلقائي");
+      setIsAnalyzing(false);
     }
-    setIsAnalyzing(false);
-    toast.success("تم إيقاف التحليل التلقائي");
-  };
-
-  const handleBackTestClick = () => {
-    if (!user) {
-      toast.error("يرجى تسجيل الدخول لعرض نتائج الاختبار");
-      return;
-    }
-    toast.info("جاري تحميل نتائج الاختبار...");
   };
 
   return (
     <AutoAnalysisButton
       isAnalyzing={isAnalyzing}
-      onClick={isAnalyzing ? stopAnalysis : startAnalysis}
-      onBackTestClick={handleBackTestClick}
+      onClick={handleAnalysisClick}
+      onBackTestClick={() => {}}
+      setIsHistoryOpen={setIsHistoryOpen}
     />
   );
 };

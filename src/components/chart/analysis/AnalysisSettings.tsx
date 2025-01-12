@@ -22,7 +22,7 @@ export const AnalysisSettings = ({
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
-  const [repetitions, setRepetitions] = useState("");
+  const [repetitions, setRepetitions] = useState<string>("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
@@ -63,6 +63,7 @@ export const AnalysisSettings = ({
             selectedAnalysisTypes={selectedAnalysisTypes}
             onAnalysisComplete={onAnalysisComplete}
             repetitions={repetitions ? parseInt(repetitions) : 1}
+            setIsHistoryOpen={setIsHistoryOpen}
           />
         </div>
       </div>
