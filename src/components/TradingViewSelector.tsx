@@ -48,10 +48,14 @@ export const TradingViewSelector = ({
       setSymbol(defaultSymbol);
       setIsChartReady(true);
     }
-    if (defaultPrice) {
+  }, [defaultSymbol]);
+
+  useEffect(() => {
+    if (defaultPrice !== undefined && defaultPrice !== null) {
       setCurrentPrice(defaultPrice.toString());
+      console.log("Price updated from chart:", defaultPrice);
     }
-  }, [defaultSymbol, defaultPrice]);
+  }, [defaultPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
