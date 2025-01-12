@@ -2,12 +2,13 @@ import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
   selectedInterval: string;
   selectedAnalysisTypes: string[];
-  onAnalysisComplete?: (newItem: any) => void;
+  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions: number;
   setIsHistoryOpen: (open: boolean) => void;
 }
@@ -57,7 +58,12 @@ export const AutoAnalysis = ({
         repetitions,
         currentPrice,
         symbol,
-        onAnalysisComplete
+        onAnalysisComplete: (result) => {
+          console.log("Auto analysis result:", result);
+          if (result && onAnalysisComplete) {
+            onAnalysisComplete(result);
+          }
+        }
       });
     } catch (error) {
       console.error("Error in auto analysis:", error);

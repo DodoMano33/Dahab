@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useAnalysisHandler } from "../AnalysisHandler";
+import { SearchHistoryItem } from "@/types/analysis";
+import { saveAnalysis } from "../utils/saveAnalysis";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -10,7 +12,7 @@ interface AutoAnalysisConfig {
   repetitions: number;
   currentPrice: number;
   symbol: string;
-  onAnalysisComplete?: (newItem: any) => void;
+  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
 }
 
 export const useAutoAnalysis = () => {
@@ -26,7 +28,7 @@ export const useAutoAnalysis = () => {
     }
 
     if (!interval) {
-      toast.error("الرجاء اختيار فترة التحليل");
+      toast.error("الرجاء اختيار الفاصل الزمني");
       return false;
     }
 
@@ -62,6 +64,11 @@ export const useAutoAnalysis = () => {
       return;
     }
 
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
+      return;
+    }
+
     setIsAnalyzing(true);
     console.log("Starting auto analysis with config:", config);
 
@@ -85,8 +92,39 @@ export const useAutoAnalysis = () => {
               analysisType === "priceAction"
             );
 
-            if (result && onAnalysisComplete) {
-              onAnalysisComplete(result);
+            if (result && result.analysisResult) {
+              console.log("Analysis completed successfully:", result);
+              
+              try {
+                const savedData = await saveAnalysis({
+                  userId: user.id,
+                  symbol: symbol,
+                  currentPrice: currentPrice,
+                  analysisResult: result.analysisResult,
+                  analysisType: analysisType,
+                  timeframe: timeframe
+                });
+
+                if (savedData && onAnalysisComplete) {
+                  const newHistoryEntry: SearchHistoryItem = {
+                    id: savedData.id,
+                    date: new Date(),
+                    symbol: symbol,
+                    currentPrice: currentPrice,
+                    analysis: result.analysisResult,
+                    targetHit: false,
+                    stopLossHit: false,
+                    analysisType: analysisType,
+                    timeframe: timeframe
+                  };
+                  
+                  console.log("Adding new analysis to history:", newHistoryEntry);
+                  onAnalysisComplete(newHistoryEntry);
+                }
+              } catch (saveError) {
+                console.error("Error saving analysis:", saveError);
+                toast.error("حدث خطأ أثناء حفظ التحليل");
+              }
             }
           }
         }
