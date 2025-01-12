@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -15,6 +15,8 @@ interface TradingViewSelectorProps {
   onConfigSubmit: (symbol: string, timeframe: string, currentPrice?: number) => void;
   isLoading: boolean;
   onHistoryClick: () => void;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 const SUPPORTED_SYMBOLS = [
@@ -30,32 +32,48 @@ const SUPPORTED_SYMBOLS = [
   { value: "ETHUSD", label: "إيثريوم/دولار" }
 ];
 
-export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick }: TradingViewSelectorProps) => {
-  const [symbol, setSymbol] = useState("");
-  const [currentPrice, setCurrentPrice] = useState("");
+export const TradingViewSelector = ({ 
+  onConfigSubmit, 
+  isLoading, 
+  onHistoryClick,
+  defaultSymbol,
+  defaultPrice
+}: TradingViewSelectorProps) => {
+  const [symbol, setSymbol] = useState(defaultSymbol || "");
+  const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
+
+  useEffect(() => {
+    if (defaultSymbol) setSymbol(defaultSymbol);
+    if (defaultPrice) setCurrentPrice(defaultPrice.toString());
+  }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      if (!symbol) {
+      if (!symbol && !defaultSymbol) {
         toast.error("الرجاء اختيار رمز العملة أو الزوج");
         return;
       }
       
-      if (!currentPrice) {
+      const priceToUse = currentPrice || defaultPrice?.toString();
+      if (!priceToUse) {
         toast.error("الرجاء إدخال السعر الحالي");
         return;
       }
       
-      const price = Number(currentPrice);
+      const price = Number(priceToUse);
       if (isNaN(price) || price <= 0) {
         toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
         return;
       }
       
-      console.log("تقديم تحليل TradingView:", { symbol, currentPrice: price });
-      await onConfigSubmit(symbol, "1d", price);
+      console.log("تقديم تحليل TradingView:", { 
+        symbol: symbol || defaultSymbol, 
+        currentPrice: price 
+      });
+      
+      await onConfigSubmit(symbol || defaultSymbol || "", "1d", price);
       
     } catch (error) {
       console.error("خطأ في تقديم التحليل:", error);
@@ -69,7 +87,11 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
         <label className="block text-sm font-medium text-gray-700 mb-1">
           رمز العملة أو الزوج
         </label>
-        <Select value={symbol} onValueChange={setSymbol}>
+        <Select 
+          value={symbol} 
+          onValueChange={setSymbol}
+          defaultValue={defaultSymbol}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="اختر رمز العملة أو الزوج" />
           </SelectTrigger>
@@ -90,12 +112,17 @@ export const TradingViewSelector = ({ onConfigSubmit, isLoading, onHistoryClick 
         <Input
           type="number"
           step="any"
-          placeholder="أدخل السعر (إجباري)"
+          placeholder={defaultPrice ? `السعر الحالي: ${defaultPrice}` : "أدخل السعر (إجباري)"}
           value={currentPrice}
           onChange={(e) => setCurrentPrice(e.target.value)}
           className="w-full"
           dir="ltr"
         />
+        {defaultPrice && !currentPrice && (
+          <p className="text-sm text-gray-500 mt-1">
+            سيتم استخدام السعر {defaultPrice} من الشارت
+          </p>
+        )}
       </div>
 
       <div className="flex gap-2">
