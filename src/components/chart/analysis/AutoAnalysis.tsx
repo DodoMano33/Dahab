@@ -3,6 +3,7 @@ import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
+import { TradingViewSelector } from "@/components/TradingViewSelector";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -40,9 +41,9 @@ export const AutoAnalysis = ({
       return;
     }
 
-    // Get the symbol from the symbol select field
-    const symbolSelect = document.querySelector('select[name="symbol"]') as HTMLSelectElement;
-    const symbol = symbolSelect ? symbolSelect.value : "";
+    // Get the symbol from the TradingViewSelector component
+    const symbolSelect = document.querySelector('select[value]') as HTMLSelectElement;
+    const symbol = symbolSelect?.value;
 
     if (!symbol) {
       toast.error("الرجاء اختيار رمز العملة أو الزوج");

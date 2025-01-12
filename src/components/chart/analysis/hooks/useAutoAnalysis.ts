@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useAnalysisHandler } from "../AnalysisHandler";
-import { SearchHistoryItem } from "@/types/analysis";
 import { saveAnalysis } from "../utils/saveAnalysis";
+import { SearchHistoryItem } from "@/types/analysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
+import { useAnalysisHandler } from "../AnalysisHandler";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -61,12 +61,12 @@ export const useAutoAnalysis = () => {
   const startAutoAnalysis = async (config: AutoAnalysisConfig) => {
     const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, onAnalysisComplete } = config;
 
-    if (!validateInputs(timeframes, interval, analysisTypes, currentPrice)) {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
       return;
     }
 
-    if (!user) {
-      toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
+    if (!validateInputs(timeframes, interval, analysisTypes, currentPrice)) {
       return;
     }
 
