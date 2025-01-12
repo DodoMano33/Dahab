@@ -44,7 +44,7 @@ export const AutoAnalysisButton = ({
           onClick={() => setIsBackTestOpen(true)}
           className="bg-[#800000] hover:bg-[#600000] text-white h-10 flex items-center gap-2"
         >
-          <History className="w-5 h-5" />
+          <History className="w-5 h-10" />
           Back Test Results
         </Button>
 
@@ -53,7 +53,7 @@ export const AutoAnalysisButton = ({
           className="h-10 flex items-center gap-2"
           onClick={() => {}}
         >
-          <History className="w-4 h-4" />
+          <History className="w-5 h-10" />
           سجل البحث
         </Button>
       </div>
