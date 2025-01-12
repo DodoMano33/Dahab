@@ -53,12 +53,11 @@ export const AnalysisSettings = ({
         />
       </div>
 
-      <RepetitionInput
-        repetitions={repetitions}
-        onRepetitionsChange={setRepetitions}
-      />
-
-      <div className="flex gap-4 items-center justify-center">
+      <div className="flex items-start gap-4">
+        <RepetitionInput
+          repetitions={repetitions}
+          onRepetitionsChange={setRepetitions}
+        />
         <AutoAnalysis
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
@@ -66,14 +65,6 @@ export const AnalysisSettings = ({
           onAnalysisComplete={onAnalysisComplete}
           repetitions={repetitions ? parseInt(repetitions) : 1}
         />
-        <Button
-          onClick={() => setIsHistoryOpen(true)}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <History className="w-4 h-4" />
-          سجل البحث
-        </Button>
       </div>
     </div>
   );

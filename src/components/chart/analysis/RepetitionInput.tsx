@@ -10,7 +10,7 @@ export const RepetitionInput = ({
   onRepetitionsChange,
 }: RepetitionInputProps) => {
   return (
-    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+    <div className="w-1/3">
       <label htmlFor="repetitions" className="block text-sm font-medium text-gray-700 mb-2">
         عدد مرات تكرار التحليل
       </label>
@@ -21,7 +21,7 @@ export const RepetitionInput = ({
         value={repetitions}
         onChange={(e) => onRepetitionsChange(e.target.value)}
         placeholder="1"
-        className="w-full"
+        className="w-full h-10"
       />
     </div>
   );
