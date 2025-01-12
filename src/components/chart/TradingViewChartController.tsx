@@ -74,9 +74,7 @@ export const TradingViewChartController = ({
           try {
             if (!widgetRef.current) return;
             
-            // Try to get price from chart object
             const chart = widgetRef.current.chart();
-            const symbolInfo = chart.symbol();
             const currentPrice = chart.crosshairPrice();
             
             if (currentPrice && !isNaN(currentPrice)) {
