@@ -3,6 +3,7 @@ import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
 import { performAnalysis } from "./components/AnalysisPerformer";
+import { RepetitionInput } from "./RepetitionInput";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -10,6 +11,7 @@ interface AutoAnalysisProps {
   selectedAnalysisTypes: string[];
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions?: number;
+  onHistoryClick?: () => void;
 }
 
 export const AutoAnalysis = ({
@@ -17,7 +19,8 @@ export const AutoAnalysis = ({
   selectedInterval,
   selectedAnalysisTypes,
   onAnalysisComplete,
-  repetitions = 1
+  repetitions = 1,
+  onHistoryClick
 }: AutoAnalysisProps) => {
   const {
     isAnalyzing,
@@ -107,9 +110,23 @@ export const AutoAnalysis = ({
   };
 
   return (
-    <AutoAnalysisButton
-      isAnalyzing={isAnalyzing}
-      onClick={isAnalyzing ? stopAnalysis : startAnalysis}
-    />
+    <div className="space-y-6">
+      <div className="flex items-start gap-4">
+        <div className="w-1/3">
+          <RepetitionInput
+            repetitions={String(repetitions)}
+            onRepetitionsChange={(value) => console.log("Repetitions changed:", value)}
+          />
+        </div>
+        <div className="flex-1">
+          <AutoAnalysisButton
+            isAnalyzing={isAnalyzing}
+            onClick={isAnalyzing ? stopAnalysis : startAnalysis}
+            onHistoryClick={onHistoryClick}
+            className="w-full h-[88px] text-xl"
+          />
+        </div>
+      </div>
+    </div>
   );
 };
