@@ -105,18 +105,33 @@
   }
   
   /* Black and white specific overrides */
+  .bw {
+    @apply bg-white text-black;
+  }
+  
   .bw button {
-    @apply bg-black text-white hover:bg-black/90 border-black;
+    @apply bg-black text-white hover:bg-black/90 border-black !important;
   }
   
   .bw input,
   .bw select,
   .bw textarea {
-    @apply bg-white text-black border-black;
+    @apply bg-white text-black border-black !important;
   }
   
   .bw .bg-card,
-  .bw .bg-background {
-    @apply bg-white;
+  .bw .bg-background,
+  .bw [class*="bg-"] {
+    @apply bg-white text-black !important;
+  }
+  
+  .bw .border,
+  .bw [class*="border"] {
+    @apply border-black !important;
+  }
+  
+  .bw div[class*="bg-"],
+  .bw section[class*="bg-"] {
+    @apply bg-white text-black !important;
   }
 }
