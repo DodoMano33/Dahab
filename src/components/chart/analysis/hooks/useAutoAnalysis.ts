@@ -8,6 +8,8 @@ interface AutoAnalysisConfig {
   interval: string;
   analysisTypes: string[];
   repetitions: number;
+  currentPrice: number;
+  symbol: string;
   onAnalysisComplete?: (newItem: any) => void;
 }
 
@@ -17,7 +19,7 @@ export const useAutoAnalysis = () => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();
 
-  const validateInputs = (timeframes: string[], interval: string, analysisTypes: string[]) => {
+  const validateInputs = (timeframes: string[], interval: string, analysisTypes: string[], currentPrice?: number) => {
     if (timeframes.length === 0) {
       toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
       return false;
@@ -30,6 +32,11 @@ export const useAutoAnalysis = () => {
 
     if (analysisTypes.length === 0) {
       toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      return false;
+    }
+
+    if (!currentPrice) {
+      toast.error("الرجاء إدخال السعر الحالي للتحليل");
       return false;
     }
 
@@ -49,9 +56,9 @@ export const useAutoAnalysis = () => {
   };
 
   const startAutoAnalysis = async (config: AutoAnalysisConfig) => {
-    const { timeframes, interval, analysisTypes, repetitions, onAnalysisComplete } = config;
+    const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, onAnalysisComplete } = config;
 
-    if (!validateInputs(timeframes, interval, analysisTypes)) {
+    if (!validateInputs(timeframes, interval, analysisTypes, currentPrice)) {
       return;
     }
 
@@ -62,10 +69,11 @@ export const useAutoAnalysis = () => {
       try {
         for (const timeframe of timeframes) {
           for (const analysisType of analysisTypes) {
+            console.log(`Running analysis for ${timeframe} with price ${currentPrice}`);
             const result = await handleTradingViewConfig(
-              "BTCUSDT", // Default symbol for testing
+              symbol,
               timeframe,
-              undefined, // Price will be fetched automatically
+              currentPrice,
               analysisType === "scalping",
               analysisType === "smart",
               analysisType === "smc",

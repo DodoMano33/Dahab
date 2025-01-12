@@ -30,18 +30,21 @@ export const AutoAnalysis = ({
       return;
     }
 
-    if (!selectedTimeframes.length) {
-      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
+    // Get the current price from the price input field
+    const priceInput = document.querySelector('input[type="number"]') as HTMLInputElement;
+    const currentPrice = priceInput ? Number(priceInput.value) : undefined;
+
+    if (!currentPrice) {
+      toast.error("الرجاء إدخال السعر الحالي للتحليل");
       return;
     }
 
-    if (!selectedInterval) {
-      toast.error("الرجاء اختيار الفاصل الزمني");
-      return;
-    }
+    // Get the symbol from the symbol select field
+    const symbolSelect = document.querySelector('select[id="symbol"]') as HTMLSelectElement;
+    const symbol = symbolSelect ? symbolSelect.value : "BTCUSDT";
 
-    if (!selectedAnalysisTypes.length) {
-      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+    if (!symbol) {
+      toast.error("الرجاء اختيار رمز العملة أو الزوج");
       return;
     }
 
@@ -52,6 +55,8 @@ export const AutoAnalysis = ({
         interval: selectedInterval,
         analysisTypes: selectedAnalysisTypes,
         repetitions,
+        currentPrice,
+        symbol,
         onAnalysisComplete
       });
     } catch (error) {
