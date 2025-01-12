@@ -18,13 +18,13 @@ export const AutoAnalysisButton = ({
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <Button 
         onClick={onClick}
         disabled={disabled}
         className={`${
           isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-        } text-white px-8 py-2 text-lg flex items-center gap-2 h-10`}
+        } text-white px-8 py-2 text-lg flex items-center gap-2 h-17 max-w-[600px] w-full`}
       >
         {isAnalyzing ? (
           <>
@@ -39,21 +39,21 @@ export const AutoAnalysisButton = ({
         )}
       </Button>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 mt-4">
         <Button
           onClick={() => setIsBackTestOpen(true)}
-          className="bg-[#800000] hover:bg-[#600000] text-white h-10 flex items-center gap-2"
+          className="bg-[#800000] hover:bg-[#600000] text-white h-20 flex items-center gap-2 max-w-[600px] w-full"
         >
-          <History className="w-5 h-5" />
+          <History className="w-5 h-20" />
           Back Test Results
         </Button>
 
         <Button
           variant="outline"
-          className="h-10 flex items-center gap-2"
+          className="h-20 flex items-center gap-2 max-w-[600px] w-full"
           onClick={() => {}}
         >
-          <History className="w-4 h-4" />
+          <History className="w-5 h-20" />
           سجل البحث
         </Button>
       </div>
