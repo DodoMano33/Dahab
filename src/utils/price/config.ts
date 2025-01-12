@@ -12,8 +12,9 @@ export const FOREX_SYMBOLS = {
 } as const;
 
 export const CRYPTO_SYMBOLS = {
-  'BTCUSD': 'BTC',
-  'ETHUSD': 'ETH'
+  'BTC': 'BTC',
+  'ETH': 'ETH',
+  'BTCUSDT': 'BTC'
 } as const;
 
 export const CACHE_DURATION = 5000; // 5 seconds

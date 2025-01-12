@@ -30,8 +30,8 @@ api.interceptors.response.use(
     });
     
     if (response.data && response.data.Note) {
-      // استخدام السعر المقدم من المستخدم في حالة وجود خطأ من API
-      return response;
+      console.log('تم تجاوز حد API:', response.data.Note);
+      throw new Error('API rate limit exceeded');
     }
     
     return response;
@@ -45,18 +45,18 @@ api.interceptors.response.use(
 export async function fetchCryptoPrice(symbol: string, providedPrice?: number): Promise<number> {
   console.log(`بدء طلب سعر العملة المشفرة للرمز ${symbol}`);
   
-  // إذا تم توفير سعر من المستخدم، نستخدمه مباشرة
   if (providedPrice !== undefined) {
     console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
     return providedPrice;
   }
 
-  const cryptoSymbol = CRYPTO_SYMBOLS[symbol as keyof typeof CRYPTO_SYMBOLS];
-  if (!cryptoSymbol) {
-    throw new Error(`الرمز ${symbol} غير مدعوم في العملات المشفرة`);
-  }
-
   try {
+    // Remove 'USDT' from the symbol if it exists
+    const baseSymbol = symbol.replace('USDT', '');
+    const cryptoSymbol = CRYPTO_SYMBOLS[baseSymbol as keyof typeof CRYPTO_SYMBOLS] || baseSymbol;
+
+    console.log(`جلب سعر العملة المشفرة: ${cryptoSymbol}/USD`);
+
     const response = await api.get('', {
       params: {
         function: 'CURRENCY_EXCHANGE_RATE',
@@ -68,39 +68,42 @@ export async function fetchCryptoPrice(symbol: string, providedPrice?: number): 
 
     const data = response.data['Realtime Currency Exchange Rate'];
     if (!data || !data['5. Exchange Rate']) {
+      console.log('لم يتم العثور على سعر صالح، استخدام السعر المقدم');
       if (providedPrice !== undefined) {
         return providedPrice;
       }
       throw new Error('لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً');
     }
 
-    return parseFloat(data['5. Exchange Rate']);
+    const price = parseFloat(data['5. Exchange Rate']);
+    console.log(`تم جلب السعر بنجاح: ${price}`);
+    return price;
   } catch (error) {
+    console.error('خطأ في جلب سعر العملة المشفرة:', error);
     if (providedPrice !== undefined) {
       return providedPrice;
     }
-    throw new Error('حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً');
+    throw error;
   }
 }
 
 export async function fetchForexPrice(symbol: string, providedPrice?: number): Promise<number> {
   console.log(`بدء طلب سعر الفوركس للرمز ${symbol}`);
 
-  // إذا تم توفير سعر من المستخدم، نستخدمه مباشرة
   if (providedPrice !== undefined) {
     console.log(`استخدام السعر المقدم من المستخدم: ${providedPrice}`);
     return providedPrice;
   }
 
-  const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
-  if (!forexSymbol) {
-    if (symbol === 'XAUUSD' && providedPrice !== undefined) {
-      return providedPrice;
-    }
-    throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
-  }
-
   try {
+    const forexSymbol = FOREX_SYMBOLS[symbol as keyof typeof FOREX_SYMBOLS];
+    if (!forexSymbol) {
+      if (symbol === 'XAUUSD' && providedPrice !== undefined) {
+        return providedPrice;
+      }
+      throw new Error(`الرمز ${symbol} غير مدعوم في الفوركس`);
+    }
+
     const response = await api.get('', {
       params: {
         function: 'CURRENCY_EXCHANGE_RATE',
@@ -112,17 +115,21 @@ export async function fetchForexPrice(symbol: string, providedPrice?: number): P
 
     const data = response.data['Realtime Currency Exchange Rate'];
     if (!data || !data['5. Exchange Rate']) {
+      console.log('لم يتم العثور على سعر صالح، استخدام السعر المقدم');
       if (providedPrice !== undefined) {
         return providedPrice;
       }
       throw new Error('لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً');
     }
 
-    return parseFloat(data['5. Exchange Rate']);
+    const price = parseFloat(data['5. Exchange Rate']);
+    console.log(`تم جلب السعر بنجاح: ${price}`);
+    return price;
   } catch (error) {
+    console.error('خطأ في جلب سعر الفوركس:', error);
     if (providedPrice !== undefined) {
       return providedPrice;
     }
-    throw new Error('حدث خطأ في جلب السعر. الرجاء إدخال السعر يدوياً');
+    throw error;
   }
 }
