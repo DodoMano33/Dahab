@@ -4,8 +4,6 @@ import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
 import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
-import { Button } from "@/components/ui/button";
-import { History } from "lucide-react";
 import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
@@ -53,27 +51,20 @@ export const AnalysisSettings = ({
         />
       </div>
 
-      <RepetitionInput
-        repetitions={repetitions}
-        onRepetitionsChange={setRepetitions}
-      />
-
-      <div className="flex gap-4 items-center justify-center">
-        <AutoAnalysis
-          selectedTimeframes={selectedTimeframes}
-          selectedInterval={selectedInterval}
-          selectedAnalysisTypes={selectedAnalysisTypes}
-          onAnalysisComplete={onAnalysisComplete}
-          repetitions={repetitions ? parseInt(repetitions) : 1}
+      <div className="flex flex-col md:flex-row items-start gap-4">
+        <RepetitionInput
+          repetitions={repetitions}
+          onRepetitionsChange={setRepetitions}
         />
-        <Button
-          onClick={() => setIsHistoryOpen(true)}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <History className="w-4 h-4" />
-          سجل البحث
-        </Button>
+        <div className="flex-1">
+          <AutoAnalysis
+            selectedTimeframes={selectedTimeframes}
+            selectedInterval={selectedInterval}
+            selectedAnalysisTypes={selectedAnalysisTypes}
+            onAnalysisComplete={onAnalysisComplete}
+            repetitions={repetitions ? parseInt(repetitions) : 1}
+          />
+        </div>
       </div>
     </div>
   );
