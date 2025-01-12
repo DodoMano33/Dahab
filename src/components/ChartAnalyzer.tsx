@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
@@ -6,6 +6,7 @@ import { ChartDisplay } from "./ChartDisplay";
 import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 import { useSearchHistory } from "./hooks/useSearchHistory";
 import { useBackTest } from "./hooks/useBackTest";
+import { LiveTradingViewChart } from "./chart/LiveTradingViewChart";
 
 export const ChartAnalyzer = () => {
   const {
@@ -30,6 +31,8 @@ export const ChartAnalyzer = () => {
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
+  const [autoSymbol, setAutoSymbol] = useState<string>("XAUUSD");
+  const [autoPrice, setAutoPrice] = useState<number | null>(null);
 
   const handleTimeframesChange = (timeframes: string[]) => {
     if (!timeframes) {
@@ -49,6 +52,16 @@ export const ChartAnalyzer = () => {
     console.log("Selected interval:", interval);
   };
 
+  const handleSymbolChange = useCallback((symbol: string) => {
+    console.log("Chart symbol changed to:", symbol);
+    setAutoSymbol(symbol);
+  }, []);
+
+  const handlePriceUpdate = useCallback((price: number) => {
+    console.log("Chart price updated to:", price);
+    setAutoPrice(price);
+  }, []);
+
   const handleAnalysisComplete = (newItem: any) => {
     console.log("New analysis completed, adding to history:", newItem);
     addToSearchHistory(newItem);
@@ -57,11 +70,20 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="flex flex-col space-y-6 p-6">
+      {/* TradingView Chart */}
+      <LiveTradingViewChart
+        symbol={autoSymbol}
+        onSymbolChange={handleSymbolChange}
+        onPriceUpdate={handlePriceUpdate}
+      />
+
       {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm
         onAnalysis={addToSearchHistory}
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}
+        defaultSymbol={autoSymbol}
+        defaultPrice={autoPrice}
       />
 
       {/* Auto Analysis Settings */}
@@ -70,6 +92,8 @@ export const ChartAnalyzer = () => {
         onIntervalChange={handleIntervalChange}
         setIsHistoryOpen={setIsHistoryOpen}
         onAnalysisComplete={handleAnalysisComplete}
+        defaultSymbol={autoSymbol}
+        defaultPrice={autoPrice}
       />
       
       {/* Manual Analysis Display */}

@@ -3,17 +3,22 @@ import React, { useEffect, useRef } from 'react';
 declare global {
   interface Window {
     TradingView: any;
+    tvWidget: any;
   }
 }
 
 interface LiveTradingViewChartProps {
   symbol: string;
   timeframe?: string;
+  onSymbolChange?: (symbol: string) => void;
+  onPriceUpdate?: (price: number) => void;
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
   symbol = "XAUUSD",
-  timeframe = "D" 
+  timeframe = "D",
+  onSymbolChange,
+  onPriceUpdate
 }) => {
   const container = useRef<HTMLDivElement>(null);
 
@@ -25,7 +30,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     script.async = true;
     script.onload = () => {
       if (typeof window.TradingView !== 'undefined') {
-        new window.TradingView.widget({
+        window.tvWidget = new window.TradingView.widget({
           "width": "100%",
           "height": 500,
           "symbol": symbol,
@@ -43,6 +48,35 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
             { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
           ],
           "autosize": true,
+          "overrides": {
+            "mainSeriesProperties.showPriceLine": true
+          }
+        });
+
+        window.tvWidget.onChartReady(() => {
+          console.log("TradingView chart is ready");
+          
+          // Listen for symbol changes
+          window.tvWidget.chart().onSymbolChanged().subscribe(null, (symbolInfo: any) => {
+            console.log("Symbol changed to:", symbolInfo.name);
+            onSymbolChange?.(symbolInfo.name);
+          });
+
+          // Set up price update interval
+          const updatePrice = () => {
+            const chart = window.tvWidget.chart();
+            const lastPrice = chart.getLastBar()?.close;
+            if (lastPrice) {
+              console.log("Current price:", lastPrice);
+              onPriceUpdate?.(lastPrice);
+            }
+          };
+
+          // Update price every 5 seconds
+          const priceInterval = setInterval(updatePrice, 5000);
+          updatePrice(); // Initial price update
+
+          return () => clearInterval(priceInterval);
         });
       }
     };
@@ -56,8 +90,12 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           container.current.removeChild(scriptElement);
         }
       }
+      if (window.tvWidget) {
+        window.tvWidget.remove();
+        delete window.tvWidget;
+      }
     };
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, onSymbolChange, onPriceUpdate]);
 
   return (
     <div className="w-full h-[500px] bg-white rounded-lg shadow-lg">
