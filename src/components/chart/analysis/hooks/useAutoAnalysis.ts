@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useAnalysisHandler } from "../AnalysisHandler";
-import { SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
 import { saveAnalysis } from "../utils/saveAnalysis";
+import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -82,26 +83,29 @@ export const useAutoAnalysis = () => {
               timeframe,
               currentPrice,
               analysisType === "scalping",
-              analysisType === "smart",
+              false,
               analysisType === "smc",
               analysisType === "ict",
-              analysisType === "turtleSoup",
+              analysisType === "turtle_soup",
               analysisType === "gann",
               analysisType === "waves",
               analysisType === "patterns",
-              analysisType === "priceAction"
+              analysisType === "price_action"
             );
 
             if (result && result.analysisResult) {
               console.log("Analysis completed successfully:", result);
               
               try {
+                // Map the analysis type string to AnalysisType enum
+                const mappedAnalysisType = mapToAnalysisType(analysisType);
+                
                 const savedData = await saveAnalysis({
                   userId: user.id,
                   symbol: symbol,
                   currentPrice: currentPrice,
                   analysisResult: result.analysisResult,
-                  analysisType: analysisType,
+                  analysisType: mappedAnalysisType,
                   timeframe: timeframe
                 });
 
@@ -114,7 +118,7 @@ export const useAutoAnalysis = () => {
                     analysis: result.analysisResult,
                     targetHit: false,
                     stopLossHit: false,
-                    analysisType: analysisType,
+                    analysisType: mappedAnalysisType,
                     timeframe: timeframe
                   };
                   
