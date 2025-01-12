@@ -3,16 +3,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { PriceResponse } from './types';
 
 const getAlphaVantageKey = async () => {
-  const { data: { secret }, error } = await supabase.functions.invoke('get-secret', {
-    body: { name: 'ALPHA_VANTAGE_API_KEY' }
-  });
-  
-  if (error || !secret) {
-    console.error("Error fetching Alpha Vantage API key:", error);
-    throw new Error("لم نتمكن من الوصول إلى مفتاح API");
+  try {
+    const { data, error } = await supabase.functions.invoke('get-secret', {
+      body: { name: 'ALPHA_VANTAGE_API_KEY' }
+    });
+    
+    if (error || !data?.secret) {
+      console.error("Error fetching Alpha Vantage API key:", error);
+      throw new Error("لم نتمكن من الوصول إلى مفتاح API");
+    }
+    
+    return data.secret;
+  } catch (error) {
+    console.error("Error in getAlphaVantageKey:", error);
+    throw new Error("فشل في الوصول إلى مفتاح API");
   }
-  
-  return secret;
 };
 
 export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
@@ -31,8 +36,7 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
 
     console.log("استجابة ناجحة:", {
       url: response.config.url,
-      status: response.status,
-      data: response.data
+      status: response.status
     });
 
     if (response.data['Realtime Currency Exchange Rate']) {
@@ -68,8 +72,7 @@ export const fetchForexPrice = async (symbol: string): Promise<number> => {
 
     console.log("استجابة ناجحة:", {
       url: response.config.url,
-      status: response.status,
-      data: response.data
+      status: response.status
     });
 
     if (response.data['Realtime Currency Exchange Rate']) {
