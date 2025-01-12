@@ -16,7 +16,7 @@ export const TradingViewChartController = ({
 }: TradingViewChartControllerProps) => {
   const container = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
-  const priceUpdateInterval = useRef<any>(null);
+  const priceUpdateInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const loadTradingViewScript = () => {
@@ -37,7 +37,7 @@ export const TradingViewChartController = ({
     };
 
     const initWidget = () => {
-      if (!container.current) return;
+      if (!container.current || !window.TradingView) return;
 
       const widget = new window.TradingView.widget({
         container_id: "tradingview_chart",
@@ -87,10 +87,13 @@ export const TradingViewChartController = ({
 
         // تحديث السعر كل ثانية
         updatePrice();
+        if (priceUpdateInterval.current) {
+          clearInterval(priceUpdateInterval.current);
+        }
         priceUpdateInterval.current = setInterval(updatePrice, 1000);
 
         // متابعة تغيير الرمز
-        chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
+        chart.onSymbolChanged().subscribe(null, (symbolInfo: { name: string }) => {
           const newSymbol = symbolInfo.name;
           console.log("Symbol changed to:", newSymbol);
           onSymbolChange(newSymbol);
