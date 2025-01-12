@@ -7,7 +7,7 @@ import { performAnalysis } from "./components/AnalysisPerformer";
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
   selectedInterval: string;
-  selectedAnalysisTypes?: string[];
+  selectedAnalysisTypes: string[];
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions?: number;
 }
@@ -15,7 +15,7 @@ interface AutoAnalysisProps {
 export const AutoAnalysis = ({
   selectedTimeframes,
   selectedInterval,
-  selectedAnalysisTypes = [],
+  selectedAnalysisTypes,
   onAnalysisComplete,
   repetitions = 1
 }: AutoAnalysisProps) => {
@@ -106,10 +106,19 @@ export const AutoAnalysis = ({
     toast.success("تم إيقاف التحليل التلقائي");
   };
 
+  const handleBackTestClick = () => {
+    if (!user) {
+      toast.error("يرجى تسجيل الدخول لعرض نتائج الاختبار");
+      return;
+    }
+    toast.info("جاري تحميل نتائج الاختبار...");
+  };
+
   return (
     <AutoAnalysisButton
       isAnalyzing={isAnalyzing}
       onClick={isAnalyzing ? stopAnalysis : startAnalysis}
+      onBackTestClick={handleBackTestClick}
     />
   );
 };
