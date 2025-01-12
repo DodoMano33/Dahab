@@ -23,8 +23,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-800">محلل الشارت الذكي</h1>
           {user ? (
             <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
@@ -38,10 +38,14 @@ const Index = () => {
             </Button>
           )}
         </div>
-        <div className="mb-8">
+
+        <div className="space-y-4">
           <LiveTradingViewChart symbol="XAUUSD" timeframe="D" />
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <ChartAnalyzer />
+          </div>
         </div>
-        <ChartAnalyzer />
+
         <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       </div>
     </div>
