@@ -85,14 +85,12 @@ export const TradingViewChartController = ({
           }
         };
 
-        // تحديث السعر كل ثانية
         updatePrice();
         if (priceUpdateInterval.current) {
           clearInterval(priceUpdateInterval.current);
         }
         priceUpdateInterval.current = setInterval(updatePrice, 1000);
 
-        // متابعة تغيير الرمز
         chart.onSymbolChanged().subscribe(null, (symbolInfo: { name: string }) => {
           const newSymbol = symbolInfo.name;
           console.log("Symbol changed to:", newSymbol);
