@@ -39,10 +39,10 @@ export const AutoAnalysisButton = ({
         )}
       </Button>
 
-      <div className="grid grid-cols-1 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-4 mt-4">
         <Button
           onClick={() => setIsBackTestOpen(true)}
-          className="bg-[#800000] hover:bg-[#600000] text-white h-20 flex items-center gap-2 max-w-[600px] w-full"
+          className="bg-[#800000] hover:bg-[#600000] text-white h-20 flex items-center gap-2"
         >
           <History className="w-5 h-20" />
           Back Test Results
@@ -50,7 +50,7 @@ export const AutoAnalysisButton = ({
 
         <Button
           variant="outline"
-          className="h-20 flex items-center gap-2 max-w-[600px] w-full"
+          className="h-20 flex items-center gap-2"
           onClick={() => {}}
         >
           <History className="w-5 h-20" />
