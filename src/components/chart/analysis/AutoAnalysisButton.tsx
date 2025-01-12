@@ -8,14 +8,12 @@ interface AutoAnalysisButtonProps {
   onClick: () => void;
   onBackTestClick?: () => void;
   disabled?: boolean;
-  setIsHistoryOpen: (open: boolean) => void;
 }
 
 export const AutoAnalysisButton = ({ 
   isAnalyzing, 
   onClick, 
-  disabled,
-  setIsHistoryOpen
+  disabled 
 }: AutoAnalysisButtonProps) => {
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
 
@@ -53,7 +51,7 @@ export const AutoAnalysisButton = ({
         <Button
           variant="outline"
           className="h-20 flex items-center gap-2 max-w-[600px] w-full"
-          onClick={() => setIsHistoryOpen(true)}
+          onClick={() => {}}
         >
           <History className="w-5 h-20" />
           سجل البحث

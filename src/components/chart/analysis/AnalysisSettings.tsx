@@ -1,28 +1,28 @@
-import { AutoAnalysisButton } from "./AutoAnalysisButton";
-import { RepetitionInput } from "./RepetitionInput";
+import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
-import { useState } from "react";
+import { AutoAnalysis } from "./AutoAnalysis";
+import { RepetitionInput } from "./RepetitionInput";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
-  onAnalysisComplete: (newItem: any) => void;
+  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
 }
 
 export const AnalysisSettings = ({
   onTimeframesChange,
   onIntervalChange,
   setIsHistoryOpen,
-  onAnalysisComplete
+  onAnalysisComplete,
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
-  const [repetitions, setRepetitions] = useState<number>(1);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [repetitions, setRepetitions] = useState("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
@@ -34,46 +34,38 @@ export const AnalysisSettings = ({
     onIntervalChange(interval);
   };
 
-  const handleAnalysisTypesChange = (types: string[]) => {
-    setSelectedAnalysisTypes(types);
-  };
-
-  const handleRepetitionsChange = (value: number) => {
-    setRepetitions(value);
-  };
-
-  const handleAnalysisClick = () => {
-    setIsAnalyzing(!isAnalyzing);
-  };
-
   return (
-    <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
-      <TimeframeAnalysis
-        selectedTimeframes={selectedTimeframes}
-        onTimeframesChange={handleTimeframesChange}
-      />
-      
-      <IntervalAnalysis
-        selectedInterval={selectedInterval}
-        onIntervalChange={handleIntervalChange}
-      />
-      
-      <AnalysisTypes
-        selectedTypes={selectedAnalysisTypes}
-        onTypesChange={handleAnalysisTypesChange}
-      />
-      
-      <RepetitionInput
-        value={repetitions}
-        onChange={handleRepetitionsChange}
-      />
-      
-      <AutoAnalysisButton
-        isAnalyzing={isAnalyzing}
-        onClick={handleAnalysisClick}
-        disabled={selectedTimeframes.length === 0 || !selectedInterval || selectedAnalysisTypes.length === 0}
-        setIsHistoryOpen={setIsHistoryOpen}
-      />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <TimeframeAnalysis
+          selectedTimeframes={selectedTimeframes}
+          onTimeframeChange={handleTimeframesChange}
+        />
+        <IntervalAnalysis
+          selectedInterval={selectedInterval}
+          onIntervalChange={handleIntervalChange}
+        />
+        <AnalysisTypes
+          selectedTypes={selectedAnalysisTypes}
+          onTypesChange={setSelectedAnalysisTypes}
+        />
+      </div>
+
+      <div className="flex flex-col md:flex-row items-start gap-4">
+        <RepetitionInput
+          repetitions={repetitions}
+          onRepetitionsChange={setRepetitions}
+        />
+        <div className="flex-1">
+          <AutoAnalysis
+            selectedTimeframes={selectedTimeframes}
+            selectedInterval={selectedInterval}
+            selectedAnalysisTypes={selectedAnalysisTypes}
+            onAnalysisComplete={onAnalysisComplete}
+            repetitions={repetitions ? parseInt(repetitions) : 1}
+          />
+        </div>
+      </div>
     </div>
   );
 };
