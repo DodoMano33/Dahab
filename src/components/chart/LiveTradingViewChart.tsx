@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Loader2 } from "lucide-react";
-import { TradingViewChartController } from './TradingViewChartController';
+import TradingViewWidget from './TradingViewWidget';
 import { useChartState } from './hooks/useChartState';
 
 interface LiveTradingViewChartProps {
@@ -37,16 +37,15 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           </div>
         </div>
       )}
-      <TradingViewChartController
+      <TradingViewWidget
         symbol={symbol}
-        onReady={handleReady}
-        onPriceUpdate={(price) => {
-          handlePriceUpdate(price);
-          onPriceUpdate?.(price);
-        }}
         onSymbolChange={(newSymbol) => {
           handleSymbolChange(newSymbol);
           onSymbolChange?.(newSymbol);
+        }}
+        onPriceUpdate={(price) => {
+          handlePriceUpdate(price);
+          onPriceUpdate?.(price);
         }}
       />
     </div>
