@@ -1,24 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { Play, Square, History } from "lucide-react";
+import { Play, Square, History, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
+import { Separator } from "@/components/ui/separator";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
   onClick: () => void;
-  onBackTestClick?: () => void;
+  onHistoryClick?: () => void;
   disabled?: boolean;
 }
 
 export const AutoAnalysisButton = ({ 
   isAnalyzing, 
-  onClick, 
+  onClick,
+  onHistoryClick,
   disabled 
 }: AutoAnalysisButtonProps) => {
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <Button 
         onClick={onClick}
         disabled={disabled}
@@ -39,13 +41,27 @@ export const AutoAnalysisButton = ({
         )}
       </Button>
 
-      <Button
-        onClick={() => setIsBackTestOpen(true)}
-        className="bg-[#800000] hover:bg-[#600000] text-white px-8 py-2 text-lg w-full md:w-auto flex items-center gap-2"
-      >
-        <History className="w-5 h-5" />
-        Back Test Results
-      </Button>
+      <div className="relative">
+        <Separator className="my-4" />
+        
+        <div className="flex justify-between items-center gap-4">
+          <Button
+            onClick={onHistoryClick}
+            className="bg-[#D3E4FD] hover:bg-[#B3D4FD] text-gray-700 flex-1 h-10 flex items-center gap-2"
+          >
+            <ClipboardList className="w-5 h-5" />
+            سجل البحث
+          </Button>
+
+          <Button
+            onClick={() => setIsBackTestOpen(true)}
+            className="bg-[#F1F0FB] hover:bg-[#E1E0EB] text-gray-700 flex-1 h-10 flex items-center gap-2"
+          >
+            <History className="w-5 h-5" />
+            Back Test Results
+          </Button>
+        </div>
+      </div>
 
       <BackTestResultsDialog 
         isOpen={isBackTestOpen}
