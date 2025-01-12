@@ -36,7 +36,7 @@ export const AnalysisSettings = ({
       <div className="grid grid-cols-2 gap-4">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
-          onTimeframesChange={handleTimeframesChange}
+          onTimeframeChange={handleTimeframesChange}
         />
         <IntervalAnalysis
           selectedInterval={selectedInterval}
@@ -52,7 +52,6 @@ export const AnalysisSettings = ({
         <AutoAnalysis
           selectedTimeframes={selectedTimeframes}
           selectedInterval={selectedInterval}
-          setIsHistoryOpen={setIsHistoryOpen}
           onAnalysisComplete={onAnalysisComplete}
           repetitions={repetitions ? parseInt(repetitions) : 1}
         />

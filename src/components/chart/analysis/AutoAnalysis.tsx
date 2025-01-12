@@ -7,7 +7,7 @@ import { performAnalysis } from "./components/AnalysisPerformer";
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
   selectedInterval: string;
-  selectedAnalysisTypes: string[];
+  selectedAnalysisTypes?: string[];
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions?: number;
 }
@@ -15,7 +15,7 @@ interface AutoAnalysisProps {
 export const AutoAnalysis = ({
   selectedTimeframes,
   selectedInterval,
-  selectedAnalysisTypes,
+  selectedAnalysisTypes = [],
   onAnalysisComplete,
   repetitions = 1
 }: AutoAnalysisProps) => {
