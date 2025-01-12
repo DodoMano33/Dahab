@@ -23,37 +23,17 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const widgetRef = useRef<any>(null);
 
   useEffect(() => {
-    const loadTradingViewScript = () => {
-      return new Promise((resolve) => {
-        if (typeof window.TradingView !== 'undefined') {
-          resolve(window.TradingView);
-          return;
-        }
+    let widget: any = null;
+    let scriptElement: HTMLScriptElement | null = null;
 
-        const script = document.createElement('script');
-        script.id = 'tradingview-widget-script';
-        script.src = 'https://s3.tradingview.com/tv.js';
-        script.async = true;
-        script.onload = () => resolve(window.TradingView);
-        document.head.appendChild(script);
-      });
-    };
+    const initWidget = () => {
+      if (!container.current) return;
 
-    const initWidget = async () => {
       try {
-        if (!container.current) return;
-        
-        await loadTradingViewScript();
-        
-        if (widgetRef.current) {
-          widgetRef.current.remove();
-          widgetRef.current = null;
-        }
-
-        widgetRef.current = new window.TradingView.widget({
+        widget = new window.TradingView.widget({
+          container_id: "tradingview_chart",
           width: "100%",
           height: 500,
           symbol: symbol,
@@ -66,7 +46,6 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           enable_publishing: false,
           hide_side_toolbar: false,
           allow_symbol_change: true,
-          container_id: "tradingview_chart",
           studies: [
             { id: "MAExp@tv-basicstudies", inputs: { length: 200 } }
           ],
@@ -76,13 +55,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           }
         });
 
-        window.tvWidget = widgetRef.current;
+        window.tvWidget = widget;
 
-        widgetRef.current.onChartReady(() => {
+        widget.onChartReady(() => {
           console.log("Chart is ready");
           setIsLoading(false);
 
-          const chart = widgetRef.current.chart();
+          const chart = widget.chart();
           
           // Listen for symbol changes
           chart.onSymbolChanged().subscribe(null, (symbolInfo: any) => {
@@ -92,19 +71,14 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 
           // Set up price update interval
           const updatePrice = () => {
-            try {
-              const lastBar = chart.getLastBar();
-              if (lastBar) {
-                const lastPrice = lastBar.close;
-                console.log("Current price:", lastPrice);
-                onPriceUpdate?.(lastPrice);
-              }
-            } catch (error) {
-              console.error("Error updating price:", error);
+            const lastBar = chart.getLastBar();
+            if (lastBar) {
+              const lastPrice = lastBar.close;
+              console.log("Current price:", lastPrice);
+              onPriceUpdate?.(lastPrice);
             }
           };
 
-          // Update price every 5 seconds
           const priceInterval = setInterval(updatePrice, 5000);
           updatePrice(); // Initial price update
 
@@ -118,31 +92,44 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       }
     };
 
-    initWidget();
+    const loadTradingViewScript = () => {
+      if (window.TradingView) {
+        initWidget();
+        return;
+      }
+
+      scriptElement = document.createElement('script');
+      scriptElement.type = 'text/javascript';
+      scriptElement.src = 'https://s3.tradingview.com/tv.js';
+      scriptElement.async = true;
+      scriptElement.onload = () => {
+        console.log("TradingView script loaded");
+        initWidget();
+      };
+      scriptElement.onerror = (error) => {
+        console.error("Error loading TradingView script:", error);
+        setIsLoading(false);
+      };
+      document.head.appendChild(scriptElement);
+    };
+
+    loadTradingViewScript();
 
     // Cleanup function
     return () => {
-      try {
-        if (widgetRef.current) {
-          // Remove from window object first
-          if (window.tvWidget === widgetRef.current) {
+      if (widget) {
+        try {
+          if (window.tvWidget === widget) {
             delete window.tvWidget;
           }
-          
-          if (typeof widgetRef.current.remove === 'function') {
-            widgetRef.current.remove();
-          }
-          widgetRef.current = null;
+          widget.remove();
+        } catch (error) {
+          console.error("Error cleaning up widget:", error);
         }
+      }
 
-        // Clean up TradingView script if it exists
-        const script = document.getElementById('tradingview-widget-script');
-        if (script && script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-
-      } catch (error) {
-        console.error("Error cleaning up TradingView widget:", error);
+      if (scriptElement && scriptElement.parentNode) {
+        scriptElement.parentNode.removeChild(scriptElement);
       }
     };
   }, [symbol, timeframe, onSymbolChange, onPriceUpdate]);

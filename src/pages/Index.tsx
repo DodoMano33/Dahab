@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ChartAnalyzer } from "@/components/ChartAnalyzer";
-import { LiveTradingViewChart } from "@/components/chart/LiveTradingViewChart";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,11 +41,6 @@ const Index = () => {
 
         {/* Main Content */}
         <div className="space-y-4 p-4">
-          {/* TradingView Chart */}
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <LiveTradingViewChart symbol="XAUUSD" timeframe="D" />
-          </div>
-
           {/* Analysis Form */}
           <div className="bg-white rounded-lg shadow-sm">
             <ChartAnalyzer />
