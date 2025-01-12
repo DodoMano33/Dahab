@@ -59,9 +59,5 @@ export const saveAnalysis = async ({
     throw error;
   }
 
-  if (!data) {
-    throw new Error("No data returned from insert operation");
-  }
-
   return data;
 };
