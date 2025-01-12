@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useAnalysisHandler } from "../AnalysisHandler";
-import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
+import { SearchHistoryItem } from "@/types/analysis";
 import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 

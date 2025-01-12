@@ -1,4 +1,4 @@
-export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
+export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action" | "عادي";
 
 export const getAnalysisType = (
   isPatternAnalysis: boolean,
@@ -20,5 +20,5 @@ export const getAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
-  throw new Error("يجب تحديد نوع التحليل");
+  return "عادي";
 };
