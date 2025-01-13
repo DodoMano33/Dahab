@@ -83,27 +83,10 @@ export const BackTestResultsDialog = ({
         analysis => !selectedItems.has(analysis.id)
       );
       setCompletedAnalyses(updatedAnalyses);
+      console.log("Updated analyses after deletion:", updatedAnalyses);
 
       // Recalculate statistics after deletion
-      const stats: { [key: string]: { success: number; fail: number } } = {};
-      updatedAnalyses.forEach(result => {
-        if (!stats[result.analysis_type]) {
-          stats[result.analysis_type] = { success: 0, fail: 0 };
-        }
-        if (result.is_success) {
-          stats[result.analysis_type].success++;
-        } else {
-          stats[result.analysis_type].fail++;
-        }
-      });
-
-      const formattedStats = Object.entries(stats).map(([type, counts]) => ({
-        type,
-        success: counts.success,
-        fail: counts.fail,
-      }));
-
-      setAnalysisStats(formattedStats);
+      calculateStats(updatedAnalyses);
       setSelectedItems(new Set());
       toast.success("تم حذف النتائج المحددة بنجاح");
     } catch (error) {
@@ -112,20 +95,27 @@ export const BackTestResultsDialog = ({
     }
   };
 
-  const calculateProfitLoss = (analysis: any) => {
-    if (!analysis.entry_price || !analysis.exit_price) {
-      return 0;
-    }
+  const calculateStats = (analyses: any[]) => {
+    const stats: { [key: string]: { success: number; fail: number } } = {};
+    analyses.forEach(result => {
+      if (!stats[result.analysis_type]) {
+        stats[result.analysis_type] = { success: 0, fail: 0 };
+      }
+      if (result.is_success) {
+        stats[result.analysis_type].success++;
+      } else {
+        stats[result.analysis_type].fail++;
+      }
+    });
 
-    const entryPrice = analysis.entry_price;
-    const exitPrice = analysis.exit_price;
-    const direction = analysis.direction;
+    const formattedStats = Object.entries(stats).map(([type, counts]) => ({
+      type,
+      success: counts.success,
+      fail: counts.fail,
+    }));
 
-    if (direction === "صاعد") {
-      return +(exitPrice - entryPrice).toFixed(2);
-    } else {
-      return +(entryPrice - exitPrice).toFixed(2);
-    }
+    console.log("Calculated new stats:", formattedStats);
+    setAnalysisStats(formattedStats);
   };
 
   const fetchResults = async () => {
@@ -143,28 +133,7 @@ export const BackTestResultsDialog = ({
 
       console.log("Fetched backtest results:", results);
       setCompletedAnalyses(results || []);
-
-      // Calculate statistics
-      const stats: { [key: string]: { success: number; fail: number } } = {};
-      results?.forEach(result => {
-        if (!stats[result.analysis_type]) {
-          stats[result.analysis_type] = { success: 0, fail: 0 };
-        }
-        if (result.is_success) {
-          stats[result.analysis_type].success++;
-        } else {
-          stats[result.analysis_type].fail++;
-        }
-      });
-
-      const formattedStats = Object.entries(stats).map(([type, counts]) => ({
-        type,
-        success: counts.success,
-        fail: counts.fail,
-      }));
-
-      console.log("Calculated stats:", formattedStats);
-      setAnalysisStats(formattedStats);
+      calculateStats(results || []);
     } catch (error) {
       console.error("Error in fetchResults:", error);
     }
