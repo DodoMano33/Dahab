@@ -27,7 +27,7 @@ export const useBackTest = () => {
         return;
       }
 
-      // إذا كان التحليل قد وصل بالفعل إلى الهدف أو وقف الخسارة، نتخطاه
+      // If analysis has already hit target or stop loss, skip processing
       if (analysis.target_hit || analysis.stop_loss_hit) {
         console.log(`Analysis ${id} already completed, skipping update`);
         return;
@@ -64,26 +64,39 @@ export const useBackTest = () => {
         return;
       }
 
+      if (!activeAnalyses || activeAnalyses.length === 0) {
+        console.log('No active analyses to check');
+        return;
+      }
+
       console.log(`Found ${activeAnalyses.length} active analyses to check`);
 
       for (const analysis of activeAnalyses) {
         try {
+          if (!analysis.symbol) {
+            console.error(`Invalid analysis data - missing symbol:`, analysis);
+            continue;
+          }
+
           console.log(`Checking analysis for ${analysis.symbol}:`, {
-            currentTargets: analysis.analysis.targets,
-            stopLoss: analysis.analysis.stopLoss,
+            currentTargets: analysis.analysis?.targets,
+            stopLoss: analysis.analysis?.stopLoss,
             lastCheckedPrice: analysis.last_checked_price
           });
 
           const currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
-          console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
           
-          if (currentPrice !== null && currentPrice !== undefined) {
-            await updateAnalysisStatus(analysis.id, currentPrice);
-          } else {
-            console.log(`No valid price found for symbol ${analysis.symbol}`);
+          if (currentPrice === null || currentPrice === undefined || isNaN(currentPrice)) {
+            console.log(`Invalid price received for symbol ${analysis.symbol}`);
+            continue;
           }
+
+          console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
+          await updateAnalysisStatus(analysis.id, currentPrice);
+          
         } catch (error) {
           console.error(`Error processing analysis ${analysis.id}:`, error);
+          continue;
         }
       }
     } catch (error) {
@@ -92,15 +105,23 @@ export const useBackTest = () => {
   };
 
   useEffect(() => {
-    const startBackTest = () => {
+    let isMounted = true;
+
+    const startBackTest = async () => {
+      if (!isMounted) return;
+      
       console.log('Starting back test interval...');
-      checkAnalyses(); // Initial check
-      intervalRef.current = setInterval(checkAnalyses, 60000); // Check every minute
+      await checkAnalyses(); // Initial check
+      
+      if (isMounted) {
+        intervalRef.current = setInterval(checkAnalyses, 60000); // Check every minute
+      }
     };
 
     startBackTest();
 
     return () => {
+      isMounted = false;
       if (intervalRef.current) {
         console.log('Cleaning up back test interval...');
         clearInterval(intervalRef.current);
