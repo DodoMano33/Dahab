@@ -7,7 +7,7 @@ interface TradingViewWidgetProps {
 }
 
 function TradingViewWidget({ 
-  symbol = "XAUUSD",
+  symbol = "CAPITALCOM:GOLD",
   onSymbolChange,
   onPriceUpdate 
 }: TradingViewWidgetProps) {
@@ -24,30 +24,51 @@ function TradingViewWidget({
       {
         "autosize": true,
         "symbol": "${symbol}",
-        "interval": "D",
-        "timezone": "Etc/UTC",
-        "theme": "light",
+        "interval": "1",
+        "timezone": "Asia/Jerusalem",
+        "theme": "dark",
         "style": "1",
         "locale": "ar",
+        "hide_legend": true,
         "allow_symbol_change": true,
+        "save_image": false,
         "calendar": false,
+        "hide_volume": true,
         "support_host": "https://www.tradingview.com",
-        "hide_side_toolbar": false,
-        "enable_publishing": false,
-        "save_image": true,
         "container_id": "tradingview_chart"
       }`;
 
     // تنظيف المكون قبل إضافة السكريبت الجديد
     container.current.innerHTML = '';
-    container.current.appendChild(script);
+
+    // إنشاء حاوية العنصر
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container';
+    widgetContainer.style.height = '100%';
+    widgetContainer.style.width = '100%';
+
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget';
+    widgetDiv.style.height = 'calc(100% - 32px)';
+    widgetDiv.style.width = '100%';
+
+    const copyright = document.createElement('div');
+    copyright.className = 'tradingview-widget-copyright';
+    copyright.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
+
+    widgetContainer.appendChild(widgetDiv);
+    widgetContainer.appendChild(copyright);
+    widgetContainer.appendChild(script);
+    container.current.appendChild(widgetContainer);
 
     // إضافة مستمع للتغييرات في الرمز والسعر
     const handleMessage = (event: MessageEvent) => {
       if (event.data.name === 'symbol-change') {
+        console.log('Symbol changed to:', event.data.symbol);
         onSymbolChange?.(event.data.symbol);
       }
       if (event.data.name === 'price-update') {
+        console.log('Price updated to:', event.data.price);
         onPriceUpdate?.(event.data.price);
       }
     };
@@ -62,15 +83,9 @@ function TradingViewWidget({
   return (
     <div className="relative w-full h-[600px] bg-white rounded-lg shadow-lg">
       <div 
-        className="tradingview-widget-container" 
         ref={container}
         style={{ height: "100%", width: "100%" }}
-      >
-        <div 
-          className="tradingview-widget-container__widget" 
-          style={{ height: "calc(100% - 32px)", width: "100%" }}
-        />
-      </div>
+      />
     </div>
   );
 }

@@ -10,7 +10,7 @@ interface LiveTradingViewChartProps {
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
-  symbol = "XAUUSD",
+  symbol = "CAPITALCOM:GOLD",
   onSymbolChange,
   onPriceUpdate
 }) => {
