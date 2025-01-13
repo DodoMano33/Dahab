@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { supabase } from '@/lib/supabase';
 import { PriceResponse } from './types';
+import { toast } from 'sonner';
 
 const getAlphaVantageKey = async () => {
   try {
@@ -23,40 +24,42 @@ const getAlphaVantageKey = async () => {
     return data.secret;
   } catch (error) {
     console.error("Error in getAlphaVantageKey:", error);
-    throw new Error("فشل في الوصول إلى مفتاح API");
+    throw error;
   }
 };
 
 export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
   try {
-    console.log("جلب سعر العملة المشفرة:", symbol);
+    console.log("محاولة جلب سعر العملة المشفرة:", symbol);
     
     const apiKey = await getAlphaVantageKey();
-    const response = await axios.get('https://www.alphavantage.co/query', {
-      params: {
-        function: 'CURRENCY_EXCHANGE_RATE',
-        from_currency: symbol.replace('USDT', ''),
-        to_currency: 'USD',
-        apikey: apiKey
-      }
-    });
+    const cleanSymbol = symbol.replace('USDT', '').replace('USD', '');
+    
+    const response = await axios.get<PriceResponse>(
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${cleanSymbol}&to_currency=USD&apikey=${apiKey}`
+    );
 
     console.log("استجابة ناجحة:", {
       url: response.config.url,
       status: response.status
     });
 
-    if (response.data['Realtime Currency Exchange Rate']) {
-      const price = parseFloat(response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
-      if (!isNaN(price)) {
-        return price;
-      }
+    const exchangeRate = response.data["Realtime Currency Exchange Rate"];
+    if (!exchangeRate || !exchangeRate["5. Exchange Rate"]) {
+      console.error("No exchange rate found in response:", response.data);
+      return 0;
     }
 
-    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
+    const price = parseFloat(exchangeRate["5. Exchange Rate"]);
+    if (isNaN(price) || price <= 0) {
+      console.error("Invalid price value:", price);
+      return 0;
+    }
+
+    return price;
   } catch (error) {
     console.error("خطأ في جلب سعر العملة المشفرة:", error);
-    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
+    return 0;
   }
 };
 
@@ -67,50 +70,36 @@ export const fetchForexPrice = async (symbol: string): Promise<number> => {
     const apiKey = await getAlphaVantageKey();
     const baseCurrency = symbol.slice(0, 3);
     const quoteCurrency = symbol.slice(3, 6);
+    
+    if (!baseCurrency || !quoteCurrency) {
+      console.error("Invalid forex symbol format:", symbol);
+      return 0;
+    }
 
-    const response = await axios.get('https://www.alphavantage.co/query', {
-      params: {
-        function: 'CURRENCY_EXCHANGE_RATE',
-        from_currency: baseCurrency,
-        to_currency: quoteCurrency,
-        apikey: apiKey
-      }
-    });
+    const response = await axios.get<PriceResponse>(
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${baseCurrency}&to_currency=${quoteCurrency}&apikey=${apiKey}`
+    );
 
     console.log("استجابة ناجحة:", {
       url: response.config.url,
       status: response.status
     });
 
-    if (response.data['Realtime Currency Exchange Rate']) {
-      const price = parseFloat(response.data['Realtime Currency Exchange Rate']['5. Exchange Rate']);
-      if (!isNaN(price)) {
-        return price;
-      }
+    const exchangeRate = response.data["Realtime Currency Exchange Rate"];
+    if (!exchangeRate || !exchangeRate["5. Exchange Rate"]) {
+      console.error("No exchange rate found in response:", response.data);
+      return 0;
     }
 
-    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
+    const price = parseFloat(exchangeRate["5. Exchange Rate"]);
+    if (isNaN(price) || price <= 0) {
+      console.error("Invalid price value:", price);
+      return 0;
+    }
+
+    return price;
   } catch (error) {
     console.error("خطأ في جلب سعر الفوركس:", error);
-    throw new Error("لم يتم العثور على سعر صالح. الرجاء إدخال السعر يدوياً");
-  }
-};
-
-export const fetchPrice = async (symbol: string): Promise<PriceResponse> => {
-  try {
-    let price: number;
-    if (symbol.endsWith('USDT')) {
-      price = await fetchCryptoPrice(symbol);
-    } else {
-      price = await fetchForexPrice(symbol);
-    }
-    return { price, success: true };
-  } catch (error) {
-    console.error("خطأ في جلب السعر:", error);
-    return { 
-      price: null, 
-      success: false, 
-      error: error instanceof Error ? error.message : "خطأ غير معروف في جلب السعر"
-    };
+    return 0;
   }
 };
