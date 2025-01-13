@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy, X, Scroll, RotateCcw, CheckSquare } from "lucide-react";
+import { Copy, X, Scroll, RotateCcw, CheckSquare, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/lib/supabase";
@@ -56,6 +56,60 @@ export const BackTestResultsDialog = ({
       newSelected.add(id);
     }
     setSelectedItems(newSelected);
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      const selectedArray = Array.from(selectedItems);
+      if (selectedArray.length === 0) {
+        toast.error("الرجاء تحديد عناصر للحذف");
+        return;
+      }
+
+      // Delete selected items from the database
+      const { error } = await supabase
+        .from('backtest_results')
+        .delete()
+        .in('id', selectedArray);
+
+      if (error) {
+        console.error("Error deleting results:", error);
+        toast.error("حدث خطأ أثناء حذف النتائج");
+        return;
+      }
+
+      // Update the local state by removing deleted items
+      const updatedAnalyses = completedAnalyses.filter(
+        analysis => !selectedItems.has(analysis.id)
+      );
+      setCompletedAnalyses(updatedAnalyses);
+
+      // Recalculate statistics after deletion
+      const stats: { [key: string]: { success: number; fail: number } } = {};
+      updatedAnalyses.forEach(result => {
+        if (!stats[result.analysis_type]) {
+          stats[result.analysis_type] = { success: 0, fail: 0 };
+        }
+        if (result.is_success) {
+          stats[result.analysis_type].success++;
+        } else {
+          stats[result.analysis_type].fail++;
+        }
+      });
+
+      const formattedStats = Object.entries(stats).map(([type, counts]) => ({
+        type,
+        success: counts.success,
+        fail: counts.fail,
+      }));
+
+      setAnalysisStats(formattedStats);
+      setSelectedItems(new Set());
+      toast.success("تم حذف النتائج المحددة بنجاح");
+    } catch (error) {
+      console.error("Error in handleDeleteSelected:", error);
+      toast.error("حدث خطأ أثناء حذف النتائج");
+    }
   };
 
   const calculateProfitLoss = (analysis: any) => {
@@ -132,6 +186,15 @@ export const BackTestResultsDialog = ({
               نتائج الباك تست
             </DialogTitle>
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDeleteSelected}
+                className="text-destructive hover:text-destructive/90"
+                disabled={selectedItems.size === 0}
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
