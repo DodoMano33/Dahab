@@ -1,108 +1,119 @@
-import axios from 'axios';
-import { supabase } from '@/lib/supabase';
-import { PriceResponse } from './types';
-import { toast } from 'sonner';
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
-const getAlphaVantageKey = async () => {
+export const getAlphaVantageKey = async (): Promise<string> => {
+  console.log("Fetching Alpha Vantage API key from Supabase...");
+  
   try {
-    console.log('Fetching Alpha Vantage API key from Supabase...');
-    
-    const { data, error } = await supabase.functions.invoke('get-secret', {
-      body: { name: 'ALPHA_VANTAGE_API_KEY' }
-    });
-    
+    const { data, error } = await supabase
+      .functions.invoke('get-secret', {
+        body: { secretName: 'ALPHA_VANTAGE_API_KEY' }
+      });
+
     if (error) {
       console.error("Error fetching Alpha Vantage API key:", error);
       toast.error("حدث خطأ أثناء جلب مفتاح API");
-      throw error;
+      return ''; // Return empty string instead of throwing
     }
     
     if (!data?.secret) {
       console.error("No API key found in response:", data);
       toast.error("لم نتمكن من الوصول إلى مفتاح API");
-      throw new Error("API key not found");
+      return ''; // Return empty string instead of throwing
     }
     
     return data.secret;
   } catch (error) {
     console.error("Error in getAlphaVantageKey:", error);
     toast.error("حدث خطأ في الوصول إلى مفتاح API");
-    throw error;
+    return ''; // Return empty string instead of throwing
   }
 };
 
-export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
+export const fetchCryptoPrice = async (symbol: string): Promise<number | null> => {
   try {
-    console.log("محاولة جلب سعر العملة المشفرة:", symbol);
-    
     const apiKey = await getAlphaVantageKey();
-    const cleanSymbol = symbol.replace('USDT', '').replace('USD', '');
-    
-    const response = await axios.get<PriceResponse>(
-      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${cleanSymbol}&to_currency=USD&apikey=${apiKey}`
+    if (!apiKey) {
+      console.error("No API key available");
+      return null;
+    }
+
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${symbol}&to_currency=USD&apikey=${apiKey}`
     );
 
     console.log("استجابة ناجحة:", {
-      url: response.config.url,
+      url: response.url,
       status: response.status
     });
 
-    const exchangeRate = response.data["Realtime Currency Exchange Rate"];
-    if (!exchangeRate || !exchangeRate["5. Exchange Rate"]) {
-      console.error("No exchange rate found in response:", response.data);
-      return 0;
+    if (!response.ok) {
+      console.error("Error fetching crypto price:", response.statusText);
+      return null;
     }
 
-    const price = parseFloat(exchangeRate["5. Exchange Rate"]);
-    if (isNaN(price) || price <= 0) {
-      console.error("Invalid price value:", price);
-      return 0;
+    const data = await response.json();
+    
+    if (data.Note) {
+      console.error("API rate limit reached:", data.Note);
+      return null;
     }
 
-    return price;
+    const rate = data["Realtime Currency Exchange Rate"]?.["5. Exchange Rate"];
+    if (!rate) {
+      console.error("No exchange rate found in response:", data);
+      return null;
+    }
+
+    return parseFloat(rate);
   } catch (error) {
-    console.error("خطأ في جلب سعر العملة المشفرة:", error);
-    return 0;
+    console.error("Error in fetchCryptoPrice:", error);
+    return null;
   }
 };
 
-export const fetchForexPrice = async (symbol: string): Promise<number> => {
+export const fetchForexPrice = async (symbol: string): Promise<number | null> => {
   try {
-    console.log("محاولة جلب سعر الفوركس:", symbol);
-    
     const apiKey = await getAlphaVantageKey();
-    const baseCurrency = symbol.slice(0, 3);
-    const quoteCurrency = symbol.slice(3, 6);
-    
-    if (!baseCurrency || !quoteCurrency) {
-      console.error("Invalid forex symbol format:", symbol);
-      return 0;
+    if (!apiKey) {
+      console.error("No API key available");
+      return null;
     }
 
-    const response = await axios.get<PriceResponse>(
-      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${baseCurrency}&to_currency=${quoteCurrency}&apikey=${apiKey}`
+    // Split the forex pair into base and quote currencies
+    const from = symbol.substring(0, 3);
+    const to = symbol.substring(3, 6);
+
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${from}&to_currency=${to}&apikey=${apiKey}`
     );
 
     console.log("استجابة ناجحة:", {
-      url: response.config.url,
+      url: response.url,
       status: response.status
     });
 
-    const exchangeRate = response.data["Realtime Currency Exchange Rate"];
-    if (!exchangeRate || !exchangeRate["5. Exchange Rate"]) {
-      console.error("No exchange rate found in response:", response.data);
-      return 0;
+    if (!response.ok) {
+      console.error("Error fetching forex price:", response.statusText);
+      return null;
     }
 
-    const price = parseFloat(exchangeRate["5. Exchange Rate"]);
-    if (isNaN(price) || price <= 0) {
-      console.error("Invalid price value:", price);
-      return 0;
+    const data = await response.json();
+    
+    if (data.Note) {
+      console.error("API rate limit reached:", data.Note);
+      return null;
     }
 
-    return price;
+    const rate = data["Realtime Currency Exchange Rate"]?.["5. Exchange Rate"];
+    if (!rate) {
+      console.error("No exchange rate found in response:", data);
+      return null;
+    }
+
+    return parseFloat(rate);
   } catch (error) {
-    console.error("خطأ في جلب سعر الفوركس:", error);
-    return 0;
+    console.error("Error in fetchForexPrice:", error);
+    return null;
   }
 };

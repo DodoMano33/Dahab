@@ -1,22 +1,19 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+console.log('Hello from get-secret function!')
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Get the request body
-    const { name } = await req.json()
+    // Get secret name from request
+    const { secretName } = await req.json()
     
-    if (!name) {
-      console.error('Secret name is required')
+    if (!secretName) {
       return new Response(
         JSON.stringify({ error: 'Secret name is required' }),
         { 
@@ -26,15 +23,12 @@ serve(async (req) => {
       )
     }
 
-    console.log(`Attempting to fetch secret: ${name}`)
-
-    // Get the secret directly from Deno.env
-    const secret = Deno.env.get(name)
-
+    // Get secret value from Deno environment
+    const secret = Deno.env.get(secretName)
+    
     if (!secret) {
-      console.error(`Secret ${name} not found`)
       return new Response(
-        JSON.stringify({ error: 'Secret not found' }),
+        JSON.stringify({ error: `Secret ${secretName} not found` }),
         { 
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -42,8 +36,7 @@ serve(async (req) => {
       )
     }
 
-    console.log(`Successfully retrieved secret for: ${name}`)
-
+    // Return the secret
     return new Response(
       JSON.stringify({ secret }),
       { 
@@ -53,7 +46,8 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in get-secret function:', error)
+    
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { 
