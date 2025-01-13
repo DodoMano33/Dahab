@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy, X, Scroll } from "lucide-react";
+import { Copy, X, Scroll, RotateCcw, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/lib/supabase";
@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 interface AnalysisStats {
   type: string;
@@ -31,6 +32,31 @@ export const BackTestResultsDialog = ({
 }: BackTestResultsDialogProps) => {
   const [analysisStats, setAnalysisStats] = useState<AnalysisStats[]>([]);
   const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = completedAnalyses.map(analysis => analysis.id);
+      setSelectedItems(new Set(allIds));
+    } else {
+      setSelectedItems(new Set());
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchResults();
+    toast.success("تم تحديث النتائج بنجاح");
+  };
+
+  const handleSelect = (id: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
+  };
 
   const calculateProfitLoss = (analysis: any) => {
     if (!analysis.entry_price || !analysis.exit_price) {
@@ -109,6 +135,14 @@ export const BackTestResultsDialog = ({
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={handleRefresh}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 className="text-gray-500 hover:text-gray-700"
               >
                 <Copy className="h-5 w-5" />
@@ -150,7 +184,12 @@ export const BackTestResultsDialog = ({
 
             <div className="border rounded-lg bg-white shadow-sm">
               <div className="sticky top-0 z-40 grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b">
-                <div className="text-center">تحديد</div>
+                <div className="text-center flex items-center justify-center">
+                  <Checkbox 
+                    checked={selectedItems.size === completedAnalyses.length && completedAnalyses.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </div>
                 <div>وقف الخسارة</div>
                 <div>الهدف الأول</div>
                 <div>السعر عند التحليل</div>
@@ -170,7 +209,10 @@ export const BackTestResultsDialog = ({
                     }`}
                   >
                     <div className="flex justify-center">
-                      <Checkbox />
+                      <Checkbox 
+                        checked={selectedItems.has(analysis.id)}
+                        onCheckedChange={() => handleSelect(analysis.id)}
+                      />
                     </div>
                     <div>{analysis.stop_loss}</div>
                     <div>{analysis.target_price}</div>
