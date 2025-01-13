@@ -1,0 +1,4 @@
+project_id = "nhvkviofvefwbvditgxo"
+
+[get-secret]
+verify_jwt = false

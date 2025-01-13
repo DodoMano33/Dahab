@@ -16,6 +16,7 @@ serve(async (req) => {
     const { name } = await req.json()
     
     if (!name) {
+      console.error('Secret name is required')
       return new Response(
         JSON.stringify({ error: 'Secret name is required' }),
         { 
@@ -24,6 +25,8 @@ serve(async (req) => {
         }
       )
     }
+
+    console.log(`Attempting to fetch secret: ${name}`)
 
     // Get the secret directly from Deno.env
     const secret = Deno.env.get(name)
@@ -38,6 +41,8 @@ serve(async (req) => {
         }
       )
     }
+
+    console.log(`Successfully retrieved secret for: ${name}`)
 
     return new Response(
       JSON.stringify({ secret }),

@@ -1,15 +1,22 @@
 import axios from 'axios';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { PriceResponse } from './types';
 
 const getAlphaVantageKey = async () => {
   try {
+    console.log('Fetching Alpha Vantage API key from Supabase...');
+    
     const { data, error } = await supabase.functions.invoke('get-secret', {
       body: { name: 'ALPHA_VANTAGE_API_KEY' }
     });
     
-    if (error || !data?.secret) {
+    if (error) {
       console.error("Error fetching Alpha Vantage API key:", error);
+      throw new Error("لم نتمكن من الوصول إلى مفتاح API");
+    }
+    
+    if (!data?.secret) {
+      console.error("No API key found in response:", data);
       throw new Error("لم نتمكن من الوصول إلى مفتاح API");
     }
     
@@ -55,7 +62,7 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number> => {
 
 export const fetchForexPrice = async (symbol: string): Promise<number> => {
   try {
-    console.log("بدء طلب سعر الفوركس للرمز", symbol);
+    console.log("محاولة جلب سعر الفوركس:", symbol);
     
     const apiKey = await getAlphaVantageKey();
     const baseCurrency = symbol.slice(0, 3);
