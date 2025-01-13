@@ -66,6 +66,8 @@ export const BackTestResultsDialog = ({
         return;
       }
 
+      console.log("Deleting selected backtest results:", selectedArray);
+
       // Delete selected items from the database
       const { error } = await supabase
         .from('backtest_results')
