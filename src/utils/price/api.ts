@@ -13,17 +13,20 @@ const getAlphaVantageKey = async () => {
     
     if (error) {
       console.error("Error fetching Alpha Vantage API key:", error);
-      throw new Error("لم نتمكن من الوصول إلى مفتاح API");
+      toast.error("حدث خطأ أثناء جلب مفتاح API");
+      throw error;
     }
     
     if (!data?.secret) {
       console.error("No API key found in response:", data);
-      throw new Error("لم نتمكن من الوصول إلى مفتاح API");
+      toast.error("لم نتمكن من الوصول إلى مفتاح API");
+      throw new Error("API key not found");
     }
     
     return data.secret;
   } catch (error) {
     console.error("Error in getAlphaVantageKey:", error);
+    toast.error("حدث خطأ في الوصول إلى مفتاح API");
     throw error;
   }
 };
