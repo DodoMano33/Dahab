@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
+import { AnalysisTypes } from "./AnalysisTypes";
+import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
-import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { SearchHistoryItem } from "@/types/analysis";
-import { toast } from "sonner";
 
 interface AnalysisSettingsProps {
   onTimeframesChange: (timeframes: string[]) => void;
@@ -25,9 +24,9 @@ export const AnalysisSettings = ({
   defaultPrice
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
-  const [selectedInterval, setSelectedInterval] = useState<string>("1h");
-  const [repetitions, setRepetitions] = useState<number>(1);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedInterval, setSelectedInterval] = useState<string>("");
+  const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
+  const [repetitions, setRepetitions] = useState<string>("");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
@@ -39,70 +38,39 @@ export const AnalysisSettings = ({
     onIntervalChange(interval);
   };
 
-  const handleAutoAnalysis = () => {
-    if (isAnalyzing) {
-      setIsAnalyzing(false);
-      return;
-    }
-
-    // Get the current values from the input fields
-    const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
-    const priceInput = document.querySelector('input#price') as HTMLInputElement;
-
-    const symbol = symbolInput?.value || defaultSymbol;
-    const price = priceInput?.value ? Number(priceInput.value) : defaultPrice;
-
-    if (!symbol) {
-      toast.error("الرجاء إدخال رمز العملة أو انتظار تحميل الشارت");
-      return;
-    }
-
-    if (!price) {
-      toast.error("الرجاء إدخال السعر أو انتظار تحميل السعر من الشارت");
-      return;
-    }
-
-    if (selectedTimeframes.length === 0) {
-      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
-      return;
-    }
-
-    console.log("Starting auto analysis with:", {
-      symbol,
-      price,
-      timeframes: selectedTimeframes,
-      interval: selectedInterval,
-      repetitions
-    });
-
-    setIsAnalyzing(true);
-  };
-
   return (
-    <div className="space-y-6 bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">إعدادات التحليل التلقائي</h2>
-      
-      <TimeframeAnalysis
-        selectedTimeframes={selectedTimeframes}
-        onTimeframesChange={handleTimeframesChange}
-      />
-      
-      <IntervalAnalysis
-        selectedInterval={selectedInterval}
-        onIntervalChange={handleIntervalChange}
-      />
-      
-      <RepetitionInput
-        repetitions={repetitions}
-        onRepetitionsChange={setRepetitions}
-      />
-      
-      <AutoAnalysisButton
-        isAnalyzing={isAnalyzing}
-        onClick={handleAutoAnalysis}
-        disabled={selectedTimeframes.length === 0}
-        setIsHistoryOpen={setIsHistoryOpen}
-      />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <TimeframeAnalysis
+          selectedTimeframes={selectedTimeframes}
+          onTimeframeChange={handleTimeframesChange}
+        />
+        <IntervalAnalysis
+          selectedInterval={selectedInterval}
+          onIntervalChange={handleIntervalChange}
+        />
+        <AnalysisTypes
+          selectedTypes={selectedAnalysisTypes}
+          onTypesChange={setSelectedAnalysisTypes}
+        />
+      </div>
+
+      <div className="flex flex-col md:flex-row items-start gap-4">
+        <RepetitionInput
+          repetitions={repetitions}
+          onRepetitionsChange={setRepetitions}
+        />
+        <div className="flex-1">
+          <AutoAnalysis
+            selectedTimeframes={selectedTimeframes}
+            selectedInterval={selectedInterval}
+            selectedAnalysisTypes={selectedAnalysisTypes}
+            onAnalysisComplete={onAnalysisComplete}
+            repetitions={repetitions ? parseInt(repetitions) : 1}
+            setIsHistoryOpen={setIsHistoryOpen}
+          />
+        </div>
+      </div>
     </div>
   );
 };
