@@ -39,7 +39,9 @@ export const useSearchHistory = () => {
         currentPrice: item.current_price,
         analysis: item.analysis,
         analysisType: item.analysis_type,
-        timeframe: item.timeframe || '1d'
+        timeframe: item.timeframe || '1d',
+        targetHit: item.target_hit || false,
+        stopLossHit: item.stop_loss_hit || false
       }));
 
       setSearchHistory(formattedHistory);
@@ -51,22 +53,32 @@ export const useSearchHistory = () => {
 
   const handleDeleteHistoryItem = async (id: string) => {
     try {
-      const { error } = await supabase
+      console.log("Attempting to delete history item:", id);
+      
+      const { data, error } = await supabase
         .from('search_history')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting history item:", error);
+        toast.error("حدث خطأ أثناء حذف العنصر");
+        return;
+      }
 
       setSearchHistory(prev => prev.filter(item => item.id !== id));
       toast.success("تم حذف العنصر بنجاح");
+      
+      console.log("Successfully deleted history item:", id);
     } catch (error) {
-      console.error("Error deleting history item:", error);
+      console.error("Error in handleDeleteHistoryItem:", error);
       toast.error("حدث خطأ أثناء حذف العنصر");
     }
   };
 
   const addToSearchHistory = (item: SearchHistoryItem) => {
+    console.log("Adding new item to search history:", item);
     setSearchHistory(prev => [item, ...prev]);
   };
 

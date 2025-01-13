@@ -14,10 +14,16 @@ export const useBackTest = () => {
         .from('search_history')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         console.error('Error fetching analysis:', fetchError);
+        return;
+      }
+
+      // If analysis doesn't exist anymore, skip processing
+      if (!analysis) {
+        console.log(`Analysis ${id} not found, skipping update`);
         return;
       }
 
@@ -34,42 +40,9 @@ export const useBackTest = () => {
 
       if (updateError) {
         console.error('Error updating analysis status:', updateError);
-        throw updateError;
-      }
-
-      // نتحقق من حالة التحليل بعد التحديث
-      const { data: updatedAnalysis, error: checkError } = await supabase
-        .from('search_history')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (checkError) {
-        console.error('Error checking updated analysis:', checkError);
         return;
       }
 
-      // إذا تم الوصول إلى الهدف أو وقف الخسارة، نعرض إشعار ونحذف التحليل
-      if (updatedAnalysis.target_hit || updatedAnalysis.stop_loss_hit) {
-        if (updatedAnalysis.target_hit) {
-          toast.success(`تم تحقيق الهدف للرمز ${updatedAnalysis.symbol}`);
-        } else {
-          toast.error(`تم تفعيل وقف الخسارة للرمز ${updatedAnalysis.symbol}`);
-        }
-
-        // حذف التحليل من سجل البحث
-        const { error: deleteError } = await supabase
-          .from('search_history')
-          .delete()
-          .eq('id', id);
-
-        if (deleteError) {
-          console.error('Error deleting completed analysis:', deleteError);
-        } else {
-          console.log(`Successfully deleted completed analysis ${id}`);
-        }
-      }
-      
       console.log(`Successfully updated analysis status for ID ${id}`);
     } catch (error) {
       console.error('Error in updateAnalysisStatus:', error);
@@ -80,7 +53,6 @@ export const useBackTest = () => {
     try {
       console.log('Starting analysis check...');
       
-      // جلب فقط التحليلات التي لم تصل بعد إلى الهدف أو وقف الخسارة
       const { data: activeAnalyses, error } = await supabase
         .from('search_history')
         .select('*')
@@ -105,7 +77,11 @@ export const useBackTest = () => {
           const currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
           console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
           
-          await updateAnalysisStatus(analysis.id, currentPrice);
+          if (currentPrice !== null && currentPrice !== undefined) {
+            await updateAnalysisStatus(analysis.id, currentPrice);
+          } else {
+            console.log(`No valid price found for symbol ${analysis.symbol}`);
+          }
         } catch (error) {
           console.error(`Error processing analysis ${analysis.id}:`, error);
         }
@@ -118,8 +94,8 @@ export const useBackTest = () => {
   useEffect(() => {
     const startBackTest = () => {
       console.log('Starting back test interval...');
-      checkAnalyses(); // تنفيذ فحص أولي
-      intervalRef.current = setInterval(checkAnalyses, 60000); // فحص كل دقيقة
+      checkAnalyses(); // Initial check
+      intervalRef.current = setInterval(checkAnalyses, 60000); // Check every minute
     };
 
     startBackTest();
