@@ -224,11 +224,11 @@ export const BackTestResultsDialog = ({
 
         <ScrollArea className="flex-1 p-6">
           <div className="space-y-6">
-            <div className="flex justify-between items-center gap-4 overflow-x-auto">
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
               {analysisStats.map((stat) => (
                 <div
                   key={stat.type}
-                  className="flex-shrink-0 bg-white p-4 rounded-lg shadow-sm min-w-[150px]"
+                  className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
                 >
                   <div className="text-sm font-medium mb-3">{stat.type}</div>
                   <div className="flex gap-2">
