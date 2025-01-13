@@ -14,33 +14,30 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!container.current) return;
-
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
     script.async = true;
-    script.innerHTML = `
-      {
-        "autosize": true,
-        "symbol": "${symbol}",
-        "interval": "1",
-        "timezone": "Asia/Jerusalem",
-        "theme": "dark",
-        "style": "1",
-        "locale": "en",
-        "hide_legend": true,
-        "allow_symbol_change": true,
-        "save_image": false,
-        "calendar": false,
-        "hide_volume": true,
-        "support_host": "https://www.tradingview.com"
-      }`;
 
-    // Clean up existing content
-    if (container.current) {
-      container.current.innerHTML = '';
-    }
+    // Create the configuration object
+    const config = {
+      autosize: true,
+      symbol: symbol,
+      interval: "1",
+      timezone: "Asia/Jerusalem",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      hide_legend: true,
+      allow_symbol_change: true,
+      save_image: false,
+      calendar: false,
+      hide_volume: true,
+      support_host: "https://www.tradingview.com"
+    };
+
+    // Set the script content
+    script.innerHTML = JSON.stringify(config);
 
     // Create widget container structure
     const widgetContainer = document.createElement('div');
@@ -57,11 +54,14 @@ function TradingViewWidget({
     copyright.className = 'tradingview-widget-copyright';
     copyright.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
 
+    // Append elements in the correct order
     widgetContainer.appendChild(widgetDiv);
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
 
+    // Clear existing content and append new widget
     if (container.current) {
+      container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
     }
 
@@ -85,6 +85,9 @@ function TradingViewWidget({
 
     return () => {
       window.removeEventListener('message', handleMessage);
+      if (container.current) {
+        container.current.innerHTML = '';
+      }
     };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
