@@ -19,8 +19,6 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  console.log("Selected Items:", selectedItems); // Debug log
-
   const validHistory = history.filter(item => 
     item && 
     item.symbol && 
@@ -36,9 +34,22 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
     } else {
       newSelected.add(id);
     }
-    console.log("Updating selected items:", newSelected); // Debug log
     setSelectedItems(newSelected);
   };
+
+  const handleSelectAll = () => {
+    if (selectedItems.size === validHistory.length) {
+      // If all items are selected, clear selection
+      setSelectedItems(new Set());
+    } else {
+      // Otherwise, select all items
+      const allIds = validHistory.map(item => item.id);
+      setSelectedItems(new Set(allIds));
+    }
+  };
+
+  const allSelected = validHistory.length > 0 && selectedItems.size === validHistory.length;
+  const someSelected = selectedItems.size > 0 && selectedItems.size < validHistory.length;
 
   return (
     <div className="space-y-4">
@@ -57,7 +68,12 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
           {/* Table Header */}
           <div className="border rounded-t-md bg-background">
             <Table>
-              <HistoryTableHeader showCheckbox={true} />
+              <HistoryTableHeader 
+                showCheckbox={true}
+                onSelectAll={handleSelectAll}
+                allSelected={allSelected}
+                someSelected={someSelected}
+              />
             </Table>
           </div>
         </div>

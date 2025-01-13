@@ -1,13 +1,38 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckSquare, Square } from "lucide-react";
 
 interface HistoryTableHeaderProps {
   showCheckbox?: boolean;
+  onSelectAll?: () => void;
+  allSelected?: boolean;
+  someSelected?: boolean;
 }
 
-export const HistoryTableHeader = ({ showCheckbox = false }: HistoryTableHeaderProps) => (
+export const HistoryTableHeader = ({ 
+  showCheckbox = false, 
+  onSelectAll,
+  allSelected,
+  someSelected
+}: HistoryTableHeaderProps) => (
   <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-20">
     <TableRow>
-      {showCheckbox && <TableHead className="w-[60px] text-center p-2">تحديد</TableHead>}
+      {showCheckbox && (
+        <TableHead className="w-[60px] text-center p-2">
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={allSelected}
+              className="data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
+              onCheckedChange={onSelectAll}
+              ref={(ref) => {
+                if (ref) {
+                  ref.indeterminate = someSelected && !allSelected;
+                }
+              }}
+            />
+          </div>
+        </TableHead>
+      )}
       <TableHead className="w-[120px] text-center p-2 font-bold">التاريخ</TableHead>
       <TableHead className="w-[100px] text-center p-2 font-bold">الرمز</TableHead>
       <TableHead className="w-[140px] text-center p-2 font-bold">نوع التحليل</TableHead>
