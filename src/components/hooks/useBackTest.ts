@@ -40,12 +40,14 @@ export const useBackTest = () => {
 
       if (updateError) {
         console.error('Error updating analysis status:', updateError);
+        toast.error('حدث خطأ أثناء تحديث حالة التحليل');
         return;
       }
 
       console.log(`Successfully updated analysis status for ID ${id}`);
     } catch (error) {
       console.error('Error in updateAnalysisStatus:', error);
+      toast.error('حدث خطأ أثناء تحديث حالة التحليل');
     }
   };
 
@@ -84,7 +86,13 @@ export const useBackTest = () => {
             lastCheckedPrice: analysis.last_checked_price
           });
 
-          const currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
+          let currentPrice;
+          try {
+            currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
+          } catch (priceError) {
+            console.error(`Error fetching price for ${analysis.symbol}:`, priceError);
+            continue;
+          }
           
           if (currentPrice === null || currentPrice === undefined || isNaN(currentPrice)) {
             console.log(`Invalid price received for symbol ${analysis.symbol}`);
@@ -114,6 +122,9 @@ export const useBackTest = () => {
       await checkAnalyses(); // Initial check
       
       if (isMounted) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
         intervalRef.current = setInterval(checkAnalyses, 60000); // Check every minute
       }
     };

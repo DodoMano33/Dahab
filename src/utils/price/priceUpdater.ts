@@ -1,11 +1,24 @@
-import { fetchCryptoPrice, fetchForexPrice } from './api';
-
 class PriceUpdater {
   private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
   private CACHE_DURATION = 5000; // 5 seconds
+  private MAX_RETRIES = 3;
+  private RETRY_DELAY = 1000; // 1 second
 
   private isCacheValid(timestamp: number): boolean {
     return Date.now() - timestamp < this.CACHE_DURATION;
+  }
+
+  private async retry<T>(fn: () => Promise<T>, retries = this.MAX_RETRIES): Promise<T> {
+    try {
+      return await fn();
+    } catch (error) {
+      if (retries > 0) {
+        console.log(`Retrying... ${retries} attempts left`);
+        await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+        return this.retry(fn, retries - 1);
+      }
+      throw error;
+    }
   }
 
   async fetchPrice(symbol: string): Promise<number | null> {
@@ -21,17 +34,25 @@ class PriceUpdater {
 
       let price: number | null = null;
 
-      // Try crypto first
+      // Try crypto first with retries
       try {
-        price = await fetchCryptoPrice(symbol);
+        price = await this.retry(async () => {
+          const cryptoPrice = await fetchCryptoPrice(symbol);
+          if (cryptoPrice && cryptoPrice > 0) return cryptoPrice;
+          throw new Error('Invalid crypto price');
+        });
       } catch (error) {
         console.log(`Failed to fetch crypto price for ${symbol}, trying forex...`);
       }
 
-      // If crypto fails, try forex
+      // If crypto fails, try forex with retries
       if (!price) {
         try {
-          price = await fetchForexPrice(symbol);
+          price = await this.retry(async () => {
+            const forexPrice = await fetchForexPrice(symbol);
+            if (forexPrice && forexPrice > 0) return forexPrice;
+            throw new Error('Invalid forex price');
+          });
         } catch (error) {
           console.log(`Failed to fetch forex price for ${symbol}`);
         }
