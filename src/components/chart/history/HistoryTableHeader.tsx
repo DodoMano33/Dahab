@@ -1,6 +1,5 @@
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckSquare, Square } from "lucide-react";
 
 interface HistoryTableHeaderProps {
   showCheckbox?: boolean;
@@ -22,13 +21,8 @@ export const HistoryTableHeader = ({
           <div className="flex items-center justify-center">
             <Checkbox
               checked={allSelected}
-              className="data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground"
+              className={someSelected && !allSelected ? "data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground" : ""}
               onCheckedChange={onSelectAll}
-              ref={(ref) => {
-                if (ref) {
-                  ref.indeterminate = someSelected && !allSelected;
-                }
-              }}
             />
           </div>
         </TableHead>
