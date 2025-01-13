@@ -3,7 +3,6 @@ import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
-import { TradingViewSelector } from "@/components/TradingViewSelector";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -32,21 +31,23 @@ export const AutoAnalysis = ({
       return;
     }
 
-    // Get the current price from the price input field
-    const priceInput = document.querySelector('input[type="number"]') as HTMLInputElement;
+    // Get the symbol input value
+    const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
+    const symbol = symbolInput?.value;
+
+    // Get the price input value
+    const priceInput = document.querySelector('input#price') as HTMLInputElement;
     const currentPrice = priceInput ? Number(priceInput.value) : undefined;
 
-    if (!currentPrice) {
-      toast.error("الرجاء إدخال السعر الحالي للتحليل");
+    console.log("Auto analysis inputs:", { symbol, currentPrice });
+
+    if (!symbol) {
+      toast.error("الرجاء إدخال رمز العملة أو الزوج");
       return;
     }
 
-    // Get the symbol from the TradingViewSelector component
-    const symbolSelect = document.querySelector('select[value]') as HTMLSelectElement;
-    const symbol = symbolSelect?.value;
-
-    if (!symbol) {
-      toast.error("الرجاء اختيار رمز العملة أو الزوج");
+    if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) {
+      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
       return;
     }
 
