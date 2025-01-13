@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, memo } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -16,9 +16,9 @@ function TradingViewWidget({
   useEffect(() => {
     if (!container.current) return;
 
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-    script.type = "text/javascript";
+    script.type = 'text/javascript';
     script.async = true;
     script.innerHTML = `
       {
@@ -28,20 +28,21 @@ function TradingViewWidget({
         "timezone": "Asia/Jerusalem",
         "theme": "dark",
         "style": "1",
-        "locale": "ar",
+        "locale": "en",
         "hide_legend": true,
         "allow_symbol_change": true,
         "save_image": false,
         "calendar": false,
         "hide_volume": true,
-        "support_host": "https://www.tradingview.com",
-        "container_id": "tradingview_chart"
+        "support_host": "https://www.tradingview.com"
       }`;
 
-    // تنظيف المكون قبل إضافة السكريبت الجديد
-    container.current.innerHTML = '';
+    // Clean up existing content
+    if (container.current) {
+      container.current.innerHTML = '';
+    }
 
-    // إنشاء حاوية العنصر
+    // Create widget container structure
     const widgetContainer = document.createElement('div');
     widgetContainer.className = 'tradingview-widget-container';
     widgetContainer.style.height = '100%';
@@ -59,17 +60,24 @@ function TradingViewWidget({
     widgetContainer.appendChild(widgetDiv);
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
-    container.current.appendChild(widgetContainer);
 
-    // إضافة مستمع للتغييرات في الرمز والسعر
+    if (container.current) {
+      container.current.appendChild(widgetContainer);
+    }
+
+    // Add event listeners for symbol and price updates
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.name === 'symbol-change') {
-        console.log('Symbol changed to:', event.data.symbol);
-        onSymbolChange?.(event.data.symbol);
-      }
-      if (event.data.name === 'price-update') {
-        console.log('Price updated to:', event.data.price);
-        onPriceUpdate?.(event.data.price);
+      try {
+        if (event.data.name === 'symbol-change') {
+          console.log('Symbol changed to:', event.data.symbol);
+          onSymbolChange?.(event.data.symbol);
+        }
+        if (event.data.name === 'price-update') {
+          console.log('Price updated to:', event.data.price);
+          onPriceUpdate?.(event.data.price);
+        }
+      } catch (error) {
+        console.error('Error handling TradingView message:', error);
       }
     };
 
@@ -81,7 +89,7 @@ function TradingViewWidget({
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return (
-    <div className="relative w-full h-[600px] bg-white rounded-lg shadow-lg">
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
@@ -90,4 +98,4 @@ function TradingViewWidget({
   );
 }
 
-export default memo(TradingViewWidget);
+export default TradingViewWidget;
