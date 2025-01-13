@@ -5,13 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy } from "lucide-react";
+import { Copy, X, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AnalysisStats {
   type: string;
@@ -97,87 +98,100 @@ export const BackTestResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl">
-        <DialogHeader>
+      <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+        <DialogHeader className="sticky top-0 z-50 bg-background p-6 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-primary">
+            <DialogTitle className="text-xl font-bold text-primary flex items-center gap-2">
+              <Scroll className="h-5 w-5" />
               نتائج الباك تست
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <Copy className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Copy className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
-        <div className="mt-6">
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-4 mb-8">
-            {analysisStats.map((stat) => (
-              <div
-                key={stat.type}
-                className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
-              >
-                <div className="text-sm font-medium mb-3">{stat.type}</div>
-                <div className="flex gap-2">
-                  <Badge variant="success" className="flex flex-col items-center p-2">
-                    <span>ناجح</span>
-                    <span className="text-lg font-bold">{stat.success}</span>
-                  </Badge>
-                  <Badge variant="destructive" className="flex flex-col items-center p-2">
-                    <span>فاشل</span>
-                    <span className="text-lg font-bold">{stat.fail}</span>
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="border rounded-lg bg-white shadow-sm">
-            <div className="grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b">
-              <div className="text-center">تحديد</div>
-              <div>وقف الخسارة</div>
-              <div>الهدف الأول</div>
-              <div>السعر عند التحليل</div>
-              <div>أفضل نقطة دخول</div>
-              <div>الربح/الخسارة</div>
-              <div>الاطار الزمني</div>
-              <div>نوع التحليل</div>
-              <div>الرمز</div>
-              <div>تاريخ النتيجة</div>
-            </div>
-            <div className="divide-y">
-              {completedAnalyses.map((analysis) => (
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+              {analysisStats.map((stat) => (
                 <div
-                  key={analysis.id}
-                  className={`grid grid-cols-10 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
-                    analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
-                  }`}
+                  key={stat.type}
+                  className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
                 >
-                  <div className="flex justify-center">
-                    <Checkbox />
-                  </div>
-                  <div>{analysis.stop_loss}</div>
-                  <div>{analysis.target_price}</div>
-                  <div>{analysis.entry_price}</div>
-                  <div>{analysis.entry_price}</div>
-                  <div className={`font-medium ${analysis.profit_loss >= 0 ? 'text-success' : 'text-destructive'}`}>
-                    {analysis.profit_loss}
-                  </div>
-                  <div>{analysis.timeframe}</div>
-                  <div>{analysis.analysis_type}</div>
-                  <div>{analysis.symbol}</div>
-                  <div>
-                    {analysis.result_timestamp && 
-                      format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
+                  <div className="text-sm font-medium mb-3">{stat.type}</div>
+                  <div className="flex gap-2">
+                    <Badge variant="success" className="flex flex-col items-center p-2">
+                      <span>ناجح</span>
+                      <span className="text-lg font-bold">{stat.success}</span>
+                    </Badge>
+                    <Badge variant="destructive" className="flex flex-col items-center p-2">
+                      <span>فاشل</span>
+                      <span className="text-lg font-bold">{stat.fail}</span>
+                    </Badge>
                   </div>
                 </div>
               ))}
             </div>
+
+            <div className="border rounded-lg bg-white shadow-sm">
+              <div className="sticky top-0 z-40 grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b">
+                <div className="text-center">تحديد</div>
+                <div>وقف الخسارة</div>
+                <div>الهدف الأول</div>
+                <div>السعر عند التحليل</div>
+                <div>أفضل نقطة دخول</div>
+                <div>الربح/الخسارة</div>
+                <div>الاطار الزمني</div>
+                <div>نوع التحليل</div>
+                <div>الرمز</div>
+                <div>تاريخ النتيجة</div>
+              </div>
+              <div className="divide-y">
+                {completedAnalyses.map((analysis) => (
+                  <div
+                    key={analysis.id}
+                    className={`grid grid-cols-10 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
+                      analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
+                    }`}
+                  >
+                    <div className="flex justify-center">
+                      <Checkbox />
+                    </div>
+                    <div>{analysis.stop_loss}</div>
+                    <div>{analysis.target_price}</div>
+                    <div>{analysis.entry_price}</div>
+                    <div>{analysis.entry_price}</div>
+                    <div className={`font-medium ${analysis.profit_loss >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {analysis.profit_loss}
+                    </div>
+                    <div>{analysis.timeframe}</div>
+                    <div>{analysis.analysis_type}</div>
+                    <div>{analysis.symbol}</div>
+                    <div>
+                      {analysis.result_timestamp && 
+                        format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
