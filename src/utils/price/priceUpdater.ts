@@ -1,3 +1,5 @@
+import { fetchCryptoPrice, fetchForexPrice } from './api';
+
 class PriceUpdater {
   private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
   private CACHE_DURATION = 5000; // 5 seconds
