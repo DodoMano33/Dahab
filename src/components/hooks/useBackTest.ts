@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 export const useBackTest = () => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCheckRef = useRef<{ [key: string]: number }>({});
 
   const updateAnalysisStatus = async (id: string, currentPrice: number) => {
     try {
@@ -21,13 +22,11 @@ export const useBackTest = () => {
         return;
       }
 
-      // If analysis doesn't exist anymore, skip processing
       if (!analysis) {
         console.log(`Analysis ${id} not found, skipping update`);
         return;
       }
 
-      // If analysis has already hit target or stop loss, skip processing
       if (analysis.target_hit || analysis.stop_loss_hit) {
         console.log(`Analysis ${id} already completed, skipping update`);
         return;
@@ -73,37 +72,54 @@ export const useBackTest = () => {
 
       console.log(`Found ${activeAnalyses.length} active analyses to check`);
 
-      for (const analysis of activeAnalyses) {
+      // Group analyses by symbol to minimize API calls
+      const analysesBySymbol: { [key: string]: typeof activeAnalyses } = {};
+      activeAnalyses.forEach(analysis => {
+        if (!analysesBySymbol[analysis.symbol]) {
+          analysesBySymbol[analysis.symbol] = [];
+        }
+        analysesBySymbol[analysis.symbol].push(analysis);
+      });
+
+      for (const [symbol, analyses] of Object.entries(analysesBySymbol)) {
         try {
-          if (!analysis.symbol) {
-            console.error(`Invalid analysis data - missing symbol:`, analysis);
+          // Check if we should skip this symbol due to recent check
+          const now = Date.now();
+          const lastCheck = lastCheckRef.current[symbol] || 0;
+          const timeSinceLastCheck = now - lastCheck;
+          
+          // Skip if checked in the last 5 minutes
+          if (timeSinceLastCheck < 300000) { // 5 minutes in milliseconds
+            console.log(`Skipping ${symbol} - checked ${Math.floor(timeSinceLastCheck/1000)}s ago`);
             continue;
           }
 
-          console.log(`Checking analysis for ${analysis.symbol}:`, {
-            currentTargets: analysis.analysis?.targets,
-            stopLoss: analysis.analysis?.stopLoss,
-            lastCheckedPrice: analysis.last_checked_price
-          });
-
-          let currentPrice;
-          try {
-            currentPrice = await priceUpdater.fetchPrice(analysis.symbol);
-          } catch (priceError) {
-            console.error(`Error fetching price for ${analysis.symbol}:`, priceError);
-            continue;
-          }
+          console.log(`Fetching price for ${symbol}...`);
+          const currentPrice = await priceUpdater.fetchPrice(symbol);
           
           if (currentPrice === null || currentPrice === undefined || isNaN(currentPrice)) {
-            console.log(`Invalid price received for symbol ${analysis.symbol}`);
+            console.log(`Invalid price received for symbol ${symbol}`);
+            if (priceUpdater.isRateLimited()) {
+              toast.error('تم تجاوز حد طلبات API - سيتم المحاولة لاحقاً');
+              return; // Exit early if rate limited
+            }
             continue;
           }
 
-          console.log(`Current price for ${analysis.symbol}: ${currentPrice}`);
-          await updateAnalysisStatus(analysis.id, currentPrice);
+          // Update last check time
+          lastCheckRef.current[symbol] = now;
+
+          // Update all analyses for this symbol
+          for (const analysis of analyses) {
+            await updateAnalysisStatus(analysis.id, currentPrice);
+          }
           
         } catch (error) {
-          console.error(`Error processing analysis ${analysis.id}:`, error);
+          console.error(`Error processing symbol ${symbol}:`, error);
+          if (error instanceof Error && error.message.includes('rate limit')) {
+            toast.error('تم تجاوز حد طلبات API - سيتم المحاولة لاحقاً');
+            return; // Exit early if rate limited
+          }
           continue;
         }
       }
@@ -125,7 +141,8 @@ export const useBackTest = () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
         }
-        intervalRef.current = setInterval(checkAnalyses, 60000); // Check every minute
+        // Check every 5 minutes instead of every minute
+        intervalRef.current = setInterval(checkAnalyses, 300000);
       }
     };
 
