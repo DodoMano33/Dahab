@@ -4,13 +4,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
@@ -24,52 +23,37 @@ serve(async (req) => {
     const { secretName } = await req.json()
     
     if (!secretName) {
-      console.error('No secret name provided in request')
-      return new Response(
-        JSON.stringify({ error: 'Secret name is required' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+      throw new Error('Secret name is required')
     }
 
     console.log(`Fetching secret: ${secretName}`)
-    
-    // Get secret value from Deno environment
-    const secret = Deno.env.get(secretName)
-    
-    if (!secret) {
-      console.error(`Secret ${secretName} not found`)
-      return new Response(
-        JSON.stringify({ error: `Secret ${secretName} not found` }),
-        { 
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
+
+    // Get the secret value using the service role key
+    const { data, error } = await supabaseClient
+      .from('secrets')
+      .select('value')
+      .eq('name', secretName)
+      .single()
+
+    if (error) {
+      throw error
     }
 
-    console.log(`Successfully retrieved secret: ${secretName}`)
-    
-    // Return the secret
     return new Response(
-      JSON.stringify({ secret }),
-      { 
+      JSON.stringify({ secret: data.value }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      },
     )
-
   } catch (error) {
-    console.error('Error in get-secret function:', error)
-    
+    console.error('Error:', error.message)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      },
     )
   }
 })
