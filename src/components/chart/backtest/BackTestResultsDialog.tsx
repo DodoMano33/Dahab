@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy, X, Scroll, RotateCcw, CheckSquare, Trash2 } from "lucide-react";
+import { Copy, X, Scroll, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/lib/supabase";
@@ -33,6 +33,7 @@ export const BackTestResultsDialog = ({
   const [analysisStats, setAnalysisStats] = useState<AnalysisStats[]>([]);
   const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -66,9 +67,9 @@ export const BackTestResultsDialog = ({
         return;
       }
 
+      setIsDeleting(true);
       console.log("Deleting selected backtest results:", selectedArray);
 
-      // Delete selected items from the database
       const { error } = await supabase
         .from('backtest_results')
         .delete()
@@ -81,19 +82,19 @@ export const BackTestResultsDialog = ({
       }
 
       // Update the local state by removing deleted items
-      const updatedAnalyses = completedAnalyses.filter(
-        analysis => !selectedItems.has(analysis.id)
+      setCompletedAnalyses(prevAnalyses => 
+        prevAnalyses.filter(analysis => !selectedItems.has(analysis.id))
       );
-      setCompletedAnalyses(updatedAnalyses);
-      console.log("Updated analyses after deletion:", updatedAnalyses);
-
+      
       // Recalculate statistics after deletion
-      calculateStats(updatedAnalyses);
+      calculateStats(completedAnalyses.filter(analysis => !selectedItems.has(analysis.id)));
       setSelectedItems(new Set());
       toast.success("تم حذف النتائج المحددة بنجاح");
     } catch (error) {
       console.error("Error in handleDeleteSelected:", error);
       toast.error("حدث خطأ أثناء حذف النتائج");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -130,6 +131,7 @@ export const BackTestResultsDialog = ({
 
       if (error) {
         console.error("Error fetching results:", error);
+        toast.error("حدث خطأ أثناء جلب النتائج");
         return;
       }
 
@@ -138,6 +140,7 @@ export const BackTestResultsDialog = ({
       calculateStats(results || []);
     } catch (error) {
       console.error("Error in fetchResults:", error);
+      toast.error("حدث خطأ أثناء جلب النتائج");
     }
   };
 
@@ -162,7 +165,7 @@ export const BackTestResultsDialog = ({
                 size="icon"
                 onClick={handleDeleteSelected}
                 className="text-destructive hover:text-destructive/90"
-                disabled={selectedItems.size === 0}
+                disabled={selectedItems.size === 0 || isDeleting}
               >
                 <Trash2 className="h-5 w-5" />
               </Button>
