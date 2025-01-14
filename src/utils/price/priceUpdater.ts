@@ -1,5 +1,3 @@
-import { fetchCryptoPrice, fetchForexPrice } from './api';
-
 class PriceUpdater {
   private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
   private CACHE_DURATION = 5000; // 5 seconds
@@ -10,7 +8,7 @@ class PriceUpdater {
     return Date.now() - timestamp < this.CACHE_DURATION;
   }
 
-  private async retry<T>(fn: () => Promise<T>, retries = this.MAX_RETRIES): Promise<T> {
+  private async retry<T>(fn: () => Promise<T>, retries = this.MAX_RETRIES): Promise<T | null> {
     try {
       return await fn();
     } catch (error) {
@@ -19,7 +17,8 @@ class PriceUpdater {
         await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
         return this.retry(fn, retries - 1);
       }
-      throw error;
+      console.error("Max retries reached:", error);
+      return null;
     }
   }
 

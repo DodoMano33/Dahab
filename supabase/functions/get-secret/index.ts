@@ -1,7 +1,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { corsHeaders } from '../_shared/cors.ts'
 
-console.log('Hello from get-secret function!')
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS'
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -14,6 +17,7 @@ serve(async (req) => {
     const { secretName } = await req.json()
     
     if (!secretName) {
+      console.error('No secret name provided in request')
       return new Response(
         JSON.stringify({ error: 'Secret name is required' }),
         { 
@@ -23,10 +27,13 @@ serve(async (req) => {
       )
     }
 
+    console.log(`Fetching secret: ${secretName}`)
+    
     // Get secret value from Deno environment
     const secret = Deno.env.get(secretName)
     
     if (!secret) {
+      console.error(`Secret ${secretName} not found`)
       return new Response(
         JSON.stringify({ error: `Secret ${secretName} not found` }),
         { 
@@ -36,6 +43,8 @@ serve(async (req) => {
       )
     }
 
+    console.log(`Successfully retrieved secret: ${secretName}`)
+    
     // Return the secret
     return new Response(
       JSON.stringify({ secret }),
