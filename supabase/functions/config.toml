@@ -3,3 +3,7 @@ project_id = "nhvkviofvefwbvditgxo"
 [[fetch.resources]]
 name = "supabase"
 paths = ["https://nhvkviofvefwbvditgxo.supabase.co/*"]
+
+[[fetch.resources]]
+name = "alphavantage"
+paths = ["https://www.alphavantage.co/*"]
