@@ -28,15 +28,21 @@ serve(async (req) => {
 
     console.log(`Fetching secret: ${secretName}`)
 
-    // Get the secret value using the service role key
+    // Get the secret value using the service role key and maybeSingle() instead of single()
     const { data, error } = await supabaseClient
       .from('secrets')
       .select('value')
       .eq('name', secretName)
-      .single()
+      .maybeSingle()
 
     if (error) {
+      console.error('Database error:', error)
       throw error
+    }
+
+    if (!data) {
+      console.error(`Secret "${secretName}" not found`)
+      throw new Error(`Secret "${secretName}" not found`)
     }
 
     return new Response(
