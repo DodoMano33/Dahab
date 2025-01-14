@@ -1,3 +1,5 @@
+import { fetchCryptoPrice, fetchForexPrice } from './api';
+
 export class PriceUpdater {
   private rateLimitHit: boolean = false;
   private lastRateLimitTime: number = 0;
@@ -63,7 +65,8 @@ export class PriceUpdater {
       // Try forex as fallback
       try {
         const forexPrice = await this.retry(async () => {
-          const formattedSymbol = formatForexSymbol(symbol);
+          // Format forex symbol by ensuring it's 6 characters (e.g., EURUSD)
+          const formattedSymbol = symbol.replace(/[^A-Z]/g, '').slice(0, 6);
           console.log('Fetching forex price for', formattedSymbol, '...');
           return await fetchForexPrice(formattedSymbol);
         });
