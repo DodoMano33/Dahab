@@ -1,4 +1,5 @@
 project_id = "nhvkviofvefwbvditgxo"
 
-[get-secret]
-verify_jwt = false
+[[fetch.resources]]
+name = "supabase"
+paths = ["https://nhvkviofvefwbvditgxo.supabase.co/*"]
