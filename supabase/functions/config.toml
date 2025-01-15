@@ -1,4 +1,3 @@
 project_id = "nhvkviofvefwbvditgxo"
-
 [check-analysis-targets]
 verify_jwt = false
