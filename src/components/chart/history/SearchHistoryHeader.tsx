@@ -10,7 +10,7 @@ export const SearchHistoryHeader = ({ totalCount = 0 }: SearchHistoryHeaderProps
     <DialogHeader className="p-6 pb-0">
       <DialogTitle className="text-2xl font-bold flex items-center gap-2">
         سجل البحث
-        <Badge variant="secondary" className="text-base">
+        <Badge variant="secondary" className="text-base font-bold">
           {totalCount} تحليل
         </Badge>
       </DialogTitle>

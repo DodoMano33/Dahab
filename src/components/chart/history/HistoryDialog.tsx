@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SearchHistoryContent } from "./SearchHistoryContent";
 import { SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryHeader } from "./SearchHistoryHeader";
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -10,14 +11,20 @@ interface HistoryDialogProps {
 }
 
 export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDialogProps) => {
+  const validHistory = history.filter(item => 
+    item && 
+    item.symbol && 
+    typeof item.symbol === 'string' && 
+    item.currentPrice && 
+    item.analysis
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">سجل البحث</DialogTitle>
-        </DialogHeader>
+        <SearchHistoryHeader totalCount={validHistory.length} />
         <div className="flex-1 overflow-hidden mt-4">
-          <SearchHistoryContent history={history} onDelete={onDelete} />
+          <SearchHistoryContent history={validHistory} onDelete={onDelete} />
         </div>
       </DialogContent>
     </Dialog>
