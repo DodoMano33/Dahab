@@ -150,7 +150,7 @@ export const BackTestResultsDialog = ({
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-6">
             <AnalysisStats stats={analysisStats} />
-            <div className="overflow-x-auto">
+            <div className="relative w-full overflow-auto">
               <div className="min-w-[800px]">
                 <AnalysisTable
                   analyses={completedAnalyses}
