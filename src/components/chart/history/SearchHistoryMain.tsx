@@ -14,15 +14,13 @@ export const SearchHistoryMain = ({
   onDelete,
 }: SearchHistoryMainProps) => {
   return (
-    <div className="flex-1 overflow-hidden">
-      <div className="p-6">
-        <HistoryContent
-          history={history}
-          selectedItems={selectedItems}
-          onSelect={onSelect}
-          onDelete={onDelete}
-        />
-      </div>
+    <div className="p-6">
+      <HistoryContent
+        history={history}
+        selectedItems={selectedItems}
+        onSelect={onSelect}
+        onDelete={onDelete}
+      />
     </div>
   );
 };
