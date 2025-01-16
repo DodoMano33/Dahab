@@ -1,19 +1,11 @@
 import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Copy, X, Scroll, RotateCcw, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { BackTestHeader } from "./components/BackTestHeader";
+import { AnalysisStats } from "./components/AnalysisStats";
+import { AnalysisTable } from "./components/AnalysisTable";
 
 interface AnalysisStats {
   type: string;
@@ -42,11 +34,6 @@ export const BackTestResultsDialog = ({
     } else {
       setSelectedItems(new Set());
     }
-  };
-
-  const handleRefresh = async () => {
-    await fetchResults();
-    toast.success("تم تحديث النتائج بنجاح");
   };
 
   const handleSelect = (id: string) => {
@@ -81,12 +68,10 @@ export const BackTestResultsDialog = ({
         return;
       }
 
-      // Update the local state by removing deleted items
       setCompletedAnalyses(prevAnalyses => 
         prevAnalyses.filter(analysis => !selectedItems.has(analysis.id))
       );
       
-      // Recalculate statistics after deletion
       calculateStats(completedAnalyses.filter(analysis => !selectedItems.has(analysis.id)));
       setSelectedItems(new Set());
       toast.success("تم حذف النتائج المحددة بنجاح");
@@ -153,125 +138,24 @@ export const BackTestResultsDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="sticky top-0 z-50 bg-background p-6 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-primary flex items-center gap-2">
-              <Scroll className="h-5 w-5" />
-              نتائج الباك تست
-              <Badge variant="secondary" className="mr-2">
-                {completedAnalyses.length} تحليل
-              </Badge>
-            </DialogTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleDeleteSelected}
-                className="text-destructive hover:text-destructive/90"
-                disabled={selectedItems.size === 0 || isDeleting}
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRefresh}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <RotateCcw className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <Copy className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
+        <BackTestHeader
+          analysesCount={completedAnalyses.length}
+          onClose={onClose}
+          onRefresh={fetchResults}
+          onDeleteSelected={handleDeleteSelected}
+          selectedItemsCount={selectedItems.size}
+          isDeleting={isDeleting}
+        />
 
         <ScrollArea className="flex-1 p-6">
           <div className="space-y-6">
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-              {analysisStats.map((stat) => (
-                <div
-                  key={stat.type}
-                  className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
-                >
-                  <div className="text-sm font-medium mb-3">{stat.type}</div>
-                  <div className="flex gap-2">
-                    <Badge variant="success" className="flex flex-col items-center p-2">
-                      <span>ناجح</span>
-                      <span className="text-lg font-bold">{stat.success}</span>
-                    </Badge>
-                    <Badge variant="destructive" className="flex flex-col items-center p-2">
-                      <span>فاشل</span>
-                      <span className="text-lg font-bold">{stat.fail}</span>
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border rounded-lg bg-white shadow-sm">
-              <div className="sticky top-0 z-40 grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b">
-                <div className="text-center flex items-center justify-center">
-                  <Checkbox 
-                    checked={selectedItems.size === completedAnalyses.length && completedAnalyses.length > 0}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </div>
-                <div>وقف الخسارة</div>
-                <div>الهدف الأول</div>
-                <div>السعر عند التحليل</div>
-                <div>أفضل نقطة دخول</div>
-                <div>الربح/الخسارة</div>
-                <div>الاطار الزمني</div>
-                <div>نوع التحليل</div>
-                <div>الرمز</div>
-                <div>تاريخ النتيجة</div>
-              </div>
-              <div className="divide-y">
-                {completedAnalyses.map((analysis) => (
-                  <div
-                    key={analysis.id}
-                    className={`grid grid-cols-10 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
-                      analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
-                    }`}
-                  >
-                    <div className="flex justify-center">
-                      <Checkbox 
-                        checked={selectedItems.has(analysis.id)}
-                        onCheckedChange={() => handleSelect(analysis.id)}
-                      />
-                    </div>
-                    <div>{analysis.stop_loss}</div>
-                    <div>{analysis.target_price}</div>
-                    <div>{analysis.entry_price}</div>
-                    <div>{analysis.entry_price}</div>
-                    <div className={`font-medium ${analysis.profit_loss >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {analysis.profit_loss}
-                    </div>
-                    <div>{analysis.timeframe}</div>
-                    <div>{analysis.analysis_type}</div>
-                    <div>{analysis.symbol}</div>
-                    <div>
-                      {analysis.result_timestamp && 
-                        format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <AnalysisStats stats={analysisStats} />
+            <AnalysisTable
+              analyses={completedAnalyses}
+              selectedItems={selectedItems}
+              onSelectAll={handleSelectAll}
+              onSelect={handleSelect}
+            />
           </div>
         </ScrollArea>
       </DialogContent>
