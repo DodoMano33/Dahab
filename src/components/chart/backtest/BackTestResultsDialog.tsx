@@ -137,7 +137,7 @@ export const BackTestResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] md:max-w-6xl h-[90vh] flex flex-col p-0">
         <BackTestHeader
           analysesCount={completedAnalyses.length}
           onClose={onClose}
@@ -147,17 +147,21 @@ export const BackTestResultsDialog = ({
           isDeleting={isDeleting}
         />
 
-        <ScrollArea className="flex-1 p-6">
+        <div className="flex-1 p-6 overflow-hidden">
           <div className="space-y-6">
             <AnalysisStats stats={analysisStats} />
-            <AnalysisTable
-              analyses={completedAnalyses}
-              selectedItems={selectedItems}
-              onSelectAll={handleSelectAll}
-              onSelect={handleSelect}
-            />
+            <div className="overflow-x-auto">
+              <div className="min-w-[1000px]">
+                <AnalysisTable
+                  analyses={completedAnalyses}
+                  selectedItems={selectedItems}
+                  onSelectAll={handleSelectAll}
+                  onSelect={handleSelect}
+                />
+              </div>
+            </div>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
