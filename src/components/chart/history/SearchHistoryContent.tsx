@@ -62,11 +62,9 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             setIsDatePickerOpen={setIsDatePickerOpen}
             setDateRange={setDateRange}
           />
-        </div>
 
-        {/* Table Container with Horizontal Scroll */}
-        <ScrollArea className="rounded-md border">
-          <div className="min-w-[1200px]">
+          {/* Table Header */}
+          <div className="border rounded-t-md bg-background">
             <Table>
               <HistoryTableHeader 
                 showCheckbox={true}
@@ -74,6 +72,14 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
                 allSelected={allSelected}
                 someSelected={someSelected}
               />
+            </Table>
+          </div>
+        </div>
+
+        {/* Table Body with Horizontal Scroll */}
+        <div className="border-x border-b rounded-b-md overflow-x-auto">
+          <ScrollArea className="h-[calc(85vh-16rem)]">
+            <Table>
               <TableBody>
                 {validHistory.map((item) => (
                   <HistoryRow
@@ -87,9 +93,9 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
                 ))}
               </TableBody>
             </Table>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
