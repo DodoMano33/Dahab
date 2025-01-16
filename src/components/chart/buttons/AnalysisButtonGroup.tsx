@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AnalysisButtonGroupProps {
   isAnalyzing: boolean;
@@ -28,6 +29,8 @@ export const AnalysisButtonGroup = ({
   onHistoryClick,
   currentAnalysis
 }: AnalysisButtonGroupProps) => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-2">
@@ -40,10 +43,10 @@ export const AnalysisButtonGroup = ({
           type="button"
           disabled={isAnalyzing}
           onClick={(e) => onSubmit(e, true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5"
+          className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5 px-2 md:px-4"
         >
-          <Activity className="w-4 h-4 ml-2" />
-          Scalping
+          <Activity className="w-4 h-4 mr-1.5" />
+          <span className="whitespace-nowrap">Scalping</span>
         </Button>
       </div>
 
@@ -61,20 +64,20 @@ export const AnalysisButtonGroup = ({
             type="button"
             disabled={isAnalyzing}
             onClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-1.5 justify-center text-sm py-1.5 px-2 md:px-4"
           >
             <Waves className="w-4 h-4" />
-            تحليل Waves
+            <span className="whitespace-nowrap">تحليل Waves</span>
           </Button>
 
           <Button
             type="button"
             disabled={isAnalyzing}
             onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 justify-center text-sm py-1.5"
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 justify-center text-sm py-1.5 px-2 md:px-4"
           >
             <CandlestickChart className="w-4 h-4" />
-            تحليل Price Action
+            <span className="whitespace-nowrap">تحليل Price Action</span>
           </Button>
         </div>
       </div>
@@ -92,7 +95,7 @@ export const AnalysisButtonGroup = ({
         className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 py-4"
       >
         <Brain className="w-6 h-6" />
-        تحليل ذكي
+        <span className="whitespace-nowrap">تحليل ذكي</span>
       </Button>
     </div>
   );
