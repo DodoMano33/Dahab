@@ -158,6 +158,9 @@ export const BackTestResultsDialog = ({
             <DialogTitle className="text-xl font-bold text-primary flex items-center gap-2">
               <Scroll className="h-5 w-5" />
               نتائج الباك تست
+              <Badge variant="secondary" className="mr-2">
+                {completedAnalyses.length} تحليل
+              </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2">
               <Button
