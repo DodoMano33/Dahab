@@ -15,6 +15,10 @@ export const AnalysisTable = ({
   onSelectAll,
   onSelect,
 }: AnalysisTableProps) => {
+  const formatNumber = (num: number) => {
+    return Number(num).toFixed(3);
+  };
+
   return (
     <div className="border rounded-lg bg-white shadow-sm">
       <div className="sticky top-0 z-40 grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b">
@@ -48,8 +52,8 @@ export const AnalysisTable = ({
                 onCheckedChange={() => onSelect(analysis.id)}
               />
             </div>
-            <div>{analysis.stop_loss}</div>
-            <div>{analysis.target_price}</div>
+            <div>{formatNumber(analysis.stop_loss)}</div>
+            <div>{formatNumber(analysis.target_price)}</div>
             <div>{analysis.entry_price}</div>
             <div>{analysis.entry_price}</div>
             <div className={`font-medium ${analysis.profit_loss >= 0 ? 'text-success' : 'text-destructive'}`}>
