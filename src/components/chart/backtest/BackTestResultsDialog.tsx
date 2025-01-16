@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { BackTestHeader } from "./components/BackTestHeader";
 import { AnalysisStats } from "./components/AnalysisStats";
 import { AnalysisTable } from "./components/AnalysisTable";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 interface AnalysisStats {
   type: string;
@@ -148,51 +147,21 @@ export const BackTestResultsDialog = ({
           isDeleting={isDeleting}
         />
 
-        <ResizablePanelGroup direction="vertical" className="flex-1">
-          <ResizablePanel defaultSize={30}>
-            <div className="p-6">
-              <AnalysisStats stats={analysisStats} />
+        <div className="flex-1 p-6 overflow-hidden">
+          <div className="space-y-6">
+            <AnalysisStats stats={analysisStats} />
+            <div className="overflow-x-auto">
+              <div className="min-w-[1000px]">
+                <AnalysisTable
+                  analyses={completedAnalyses}
+                  selectedItems={selectedItems}
+                  onSelectAll={handleSelectAll}
+                  onSelect={handleSelect}
+                />
+              </div>
             </div>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={70}>
-            <ResizablePanelGroup direction="horizontal">
-              <ResizablePanel defaultSize={50}>
-                <ScrollArea className="h-full">
-                  <div className="p-6">
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[1000px]">
-                        <AnalysisTable
-                          analyses={completedAnalyses.slice(0, Math.ceil(completedAnalyses.length / 2))}
-                          selectedItems={selectedItems}
-                          onSelectAll={handleSelectAll}
-                          onSelect={handleSelect}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={50}>
-                <ScrollArea className="h-full">
-                  <div className="p-6">
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[1000px]">
-                        <AnalysisTable
-                          analyses={completedAnalyses.slice(Math.ceil(completedAnalyses.length / 2))}
-                          selectedItems={selectedItems}
-                          onSelectAll={handleSelectAll}
-                          onSelect={handleSelect}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
