@@ -63,7 +63,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             setDateRange={setDateRange}
           />
 
-          {/* Table Container */}
+          {/* Table Header */}
           <div className="border rounded-t-md bg-background">
             <Table>
               <HistoryTableHeader 
@@ -76,9 +76,9 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
           </div>
         </div>
 
-        {/* Table Body */}
-        <div className="border-x border-b rounded-b-md">
-          <ScrollArea className="h-[calc(85vh-16rem)]">
+        {/* Table Body with Horizontal Scroll */}
+        <div className="border-x border-b rounded-b-md overflow-x-auto">
+          <ScrollArea className="h-[calc(85vh-16rem)]" orientation="both">
             <Table>
               <TableBody>
                 {validHistory.map((item) => (
