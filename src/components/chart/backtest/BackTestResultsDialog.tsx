@@ -147,21 +147,23 @@ export const BackTestResultsDialog = ({
           isDeleting={isDeleting}
         />
 
-        <ScrollArea className="flex-1">
-          <div className="p-6 space-y-6">
-            <AnalysisStats stats={analysisStats} />
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[800px] overflow-visible">
-                <AnalysisTable
-                  analyses={completedAnalyses}
-                  selectedItems={selectedItems}
-                  onSelectAll={handleSelectAll}
-                  onSelect={handleSelect}
-                />
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            <div className="p-6 space-y-6">
+              <AnalysisStats stats={analysisStats} />
+              <div className="overflow-x-auto">
+                <div style={{ minWidth: '800px' }}>
+                  <AnalysisTable
+                    analyses={completedAnalyses}
+                    selectedItems={selectedItems}
+                    onSelectAll={handleSelectAll}
+                    onSelect={handleSelect}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

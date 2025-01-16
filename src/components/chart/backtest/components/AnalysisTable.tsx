@@ -20,7 +20,7 @@ export const AnalysisTable = ({
   };
 
   return (
-    <div className="relative border rounded-lg bg-white shadow-sm">
+    <div className="border rounded-lg bg-white shadow-sm">
       <div className="grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
         <div className="text-center flex items-center justify-center">
           <Checkbox 
