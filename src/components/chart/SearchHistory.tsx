@@ -32,17 +32,7 @@ export const SearchHistory = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
-        <SearchHistoryHeader totalCount={validHistory.length} />
-        <SearchHistoryToolbar
-          selectedItems={selectedItems}
-          onDelete={onDelete}
-          validHistory={validHistory}
-          dateRange={dateRange}
-          isDatePickerOpen={isDatePickerOpen}
-          setIsDatePickerOpen={setIsDatePickerOpen}
-          setDateRange={setDateRange}
-        />
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 w-full">
           <div className="min-w-[1200px]">
             <SearchHistoryMain
               history={validHistory}
