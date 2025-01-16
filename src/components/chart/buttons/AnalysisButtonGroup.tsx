@@ -33,7 +33,7 @@ export const AnalysisButtonGroup = ({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <PatternButton 
           isAnalyzing={isAnalyzing}
           onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, true)}
@@ -43,14 +43,14 @@ export const AnalysisButtonGroup = ({
           type="button"
           disabled={isAnalyzing}
           onClick={(e) => onSubmit(e, true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5 px-2 md:px-4"
+          className="bg-purple-600 hover:bg-purple-700 text-white h-12 sm:h-10 text-sm px-3 sm:px-4 flex items-center justify-center gap-2"
         >
-          <Activity className="w-4 h-4 mr-1.5" />
+          <Activity className="w-4 h-4" />
           <span className="whitespace-nowrap">Scalping</span>
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <TechnicalButtons
           isAnalyzing={isAnalyzing}
           onSMCClick={(e) => onSubmit(e, false, false, true)}
@@ -59,12 +59,12 @@ export const AnalysisButtonGroup = ({
           onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
         />
         
-        <div className="col-span-2 grid grid-cols-2 gap-2">
+        <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
           <Button
             type="button"
             disabled={isAnalyzing}
             onClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white flex items-center gap-1.5 justify-center text-sm py-1.5 px-2 md:px-4"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
           >
             <Waves className="w-4 h-4" />
             <span className="whitespace-nowrap">تحليل Waves</span>
@@ -74,7 +74,7 @@ export const AnalysisButtonGroup = ({
             type="button"
             disabled={isAnalyzing}
             onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 justify-center text-sm py-1.5 px-2 md:px-4"
+            className="bg-blue-600 hover:bg-blue-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
           >
             <CandlestickChart className="w-4 h-4" />
             <span className="whitespace-nowrap">تحليل Price Action</span>
@@ -92,7 +92,7 @@ export const AnalysisButtonGroup = ({
         type="button"
         disabled={isAnalyzing}
         onClick={(e) => onSubmit(e, false, true)}
-        className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 py-4"
+        className="w-full bg-green-600 hover:bg-green-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2"
       >
         <Brain className="w-6 h-6" />
         <span className="whitespace-nowrap">تحليل ذكي</span>

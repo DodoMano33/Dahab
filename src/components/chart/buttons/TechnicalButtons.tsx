@@ -22,7 +22,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onSMCClick}
-        className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-1.5 text-sm py-1.5 px-2 md:px-4"
+        className="bg-orange-600 hover:bg-orange-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
       >
         <TrendingUp className="w-4 h-4" />
         <span className="whitespace-nowrap">تحليل SMC</span>
@@ -32,7 +32,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onICTClick}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 text-sm py-1.5 px-2 md:px-4"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
       >
         <Building2 className="w-4 h-4" />
         <span className="whitespace-nowrap">تحليل ICT</span>
@@ -42,7 +42,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onTurtleSoupClick}
-        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1.5 text-sm py-1.5 px-2 md:px-4"
+        className="bg-green-600 hover:bg-green-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
       >
         <Turtle className="w-4 h-4" />
         <span className="whitespace-nowrap">تحليل Turtle Soup</span>
@@ -52,7 +52,7 @@ export const TechnicalButtons = ({
         type="button"
         disabled={isAnalyzing}
         onClick={onGannClick}
-        className="bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-1.5 text-sm py-1.5 px-2 md:px-4"
+        className="bg-yellow-600 hover:bg-yellow-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
       >
         <Activity className="w-4 h-4" />
         <span className="whitespace-nowrap">تحليل Gann</span>

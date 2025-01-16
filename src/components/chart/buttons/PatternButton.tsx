@@ -12,7 +12,7 @@ export const PatternButton = ({ isAnalyzing, onClick }: PatternButtonProps) => {
       type="button"
       disabled={isAnalyzing}
       onClick={onClick}
-      className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 text-sm py-1.5 px-2 md:px-4"
+      className="bg-indigo-600 hover:bg-indigo-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
     >
       <Triangle className="w-4 h-4" />
       <span className="whitespace-nowrap">تحليل Patterns</span>
