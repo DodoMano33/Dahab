@@ -3,7 +3,7 @@ import { Table, TableBody } from "@/components/ui/table";
 import { SearchHistoryItem } from "@/types/analysis";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchHistoryToolbar } from "./SearchHistoryToolbar";
 
 interface SearchHistoryContentProps {
@@ -63,7 +63,7 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             setDateRange={setDateRange}
           />
 
-          {/* Table Header */}
+          {/* Table Container */}
           <div className="border rounded-t-md bg-background">
             <Table>
               <HistoryTableHeader 
@@ -76,8 +76,8 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
           </div>
         </div>
 
-        {/* Table Body with Horizontal Scroll */}
-        <div className="border-x border-b rounded-b-md overflow-x-auto">
+        {/* Table Body */}
+        <div className="border-x border-b rounded-b-md">
           <ScrollArea className="h-[calc(85vh-16rem)]">
             <Table>
               <TableBody>
@@ -93,7 +93,6 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
                 ))}
               </TableBody>
             </Table>
-            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
       </div>
