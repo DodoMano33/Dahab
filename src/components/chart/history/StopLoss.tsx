@@ -1,13 +1,16 @@
 interface StopLossProps {
   value: number;
-  isHit: boolean;
+  isHit?: boolean;
 }
 
-export const StopLoss = ({ value, isHit }: StopLossProps) => (
-  <div className={`relative ${isHit ? 'text-red-600 font-semibold' : ''}`}>
-    {value}
-    {isHit && (
-      <div className="absolute bottom-0 left-0 right-0 h-2 bg-red-500 rounded-sm" />
-    )}
-  </div>
-);
+export const StopLoss = ({ value, isHit = false }: StopLossProps) => {
+  const formatNumber = (num: number) => {
+    return Number(num).toFixed(3);
+  };
+
+  return (
+    <div className={`font-medium ${isHit ? 'text-destructive' : ''}`}>
+      {formatNumber(value)}
+    </div>
+  );
+};
