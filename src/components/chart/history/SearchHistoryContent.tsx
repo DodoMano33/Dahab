@@ -39,10 +39,8 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
 
   const handleSelectAll = () => {
     if (selectedItems.size === validHistory.length) {
-      // If all items are selected, clear selection
       setSelectedItems(new Set());
     } else {
-      // Otherwise, select all items
       const allIds = validHistory.map(item => item.id);
       setSelectedItems(new Set(allIds));
     }
@@ -65,36 +63,42 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
             setDateRange={setDateRange}
           />
 
-          {/* Table Header */}
-          <div className="border rounded-t-md bg-background">
-            <Table>
-              <HistoryTableHeader 
-                showCheckbox={true}
-                onSelectAll={handleSelectAll}
-                allSelected={allSelected}
-                someSelected={someSelected}
-              />
-            </Table>
+          {/* Table Container */}
+          <div className="border rounded-t-md bg-background overflow-x-auto">
+            <div className="min-w-[1200px]"> {/* Minimum width to ensure all columns are visible */}
+              <Table>
+                <HistoryTableHeader 
+                  showCheckbox={true}
+                  onSelectAll={handleSelectAll}
+                  allSelected={allSelected}
+                  someSelected={someSelected}
+                />
+              </Table>
+            </div>
           </div>
         </div>
 
-        {/* Table Body */}
-        <ScrollArea className="h-[calc(85vh-16rem)] border-x border-b rounded-b-md">
-          <Table>
-            <TableBody>
-              {validHistory.map((item) => (
-                <HistoryRow
-                  key={item.id}
-                  {...item}
-                  isSelected={selectedItems.has(item.id)}
-                  onSelect={() => handleSelect(item.id)}
-                  target_hit={item.targetHit}
-                  stop_loss_hit={item.stopLossHit}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+        {/* Table Body with Horizontal Scroll */}
+        <div className="border-x border-b rounded-b-md overflow-x-auto">
+          <div className="min-w-[1200px]"> {/* Same minimum width as header */}
+            <ScrollArea className="h-[calc(85vh-16rem)]">
+              <Table>
+                <TableBody>
+                  {validHistory.map((item) => (
+                    <HistoryRow
+                      key={item.id}
+                      {...item}
+                      isSelected={selectedItems.has(item.id)}
+                      onSelect={() => handleSelect(item.id)}
+                      target_hit={item.targetHit}
+                      stop_loss_hit={item.stopLossHit}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </div>
+        </div>
       </div>
     </div>
   );
