@@ -150,8 +150,8 @@ export const BackTestResultsDialog = ({
         <ScrollArea className="flex-1">
           <div className="p-6 space-y-6">
             <AnalysisStats stats={analysisStats} />
-            <ScrollArea className="h-[calc(80vh-200px)]">
-              <div className="min-w-[1000px]">
+            <div className="overflow-x-auto">
+              <div className="min-w-[800px]">
                 <AnalysisTable
                   analyses={completedAnalyses}
                   selectedItems={selectedItems}
@@ -159,7 +159,7 @@ export const BackTestResultsDialog = ({
                   onSelect={handleSelect}
                 />
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>
