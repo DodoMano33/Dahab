@@ -64,36 +64,40 @@ export const SearchHistoryContent = ({ history, onDelete }: SearchHistoryContent
           />
 
           {/* Table Container */}
-          <div className="border rounded-t-md bg-background">
-            <Table>
-              <HistoryTableHeader 
-                showCheckbox={true}
-                onSelectAll={handleSelectAll}
-                allSelected={allSelected}
-                someSelected={someSelected}
-              />
-            </Table>
+          <div className="border rounded-t-md bg-background overflow-x-auto">
+            <div className="min-w-[1200px]"> {/* Minimum width to ensure all columns are visible */}
+              <Table>
+                <HistoryTableHeader 
+                  showCheckbox={true}
+                  onSelectAll={handleSelectAll}
+                  allSelected={allSelected}
+                  someSelected={someSelected}
+                />
+              </Table>
+            </div>
           </div>
         </div>
 
-        {/* Table Body */}
-        <div className="border-x border-b rounded-b-md">
-          <ScrollArea className="h-[calc(85vh-16rem)]">
-            <Table>
-              <TableBody>
-                {validHistory.map((item) => (
-                  <HistoryRow
-                    key={item.id}
-                    {...item}
-                    isSelected={selectedItems.has(item.id)}
-                    onSelect={() => handleSelect(item.id)}
-                    target_hit={item.targetHit}
-                    stop_loss_hit={item.stopLossHit}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </ScrollArea>
+        {/* Table Body with Horizontal Scroll */}
+        <div className="border-x border-b rounded-b-md overflow-x-auto">
+          <div className="min-w-[1200px]"> {/* Same minimum width as header */}
+            <ScrollArea className="h-[calc(85vh-16rem)]">
+              <Table>
+                <TableBody>
+                  {validHistory.map((item) => (
+                    <HistoryRow
+                      key={item.id}
+                      {...item}
+                      isSelected={selectedItems.has(item.id)}
+                      onSelect={() => handleSelect(item.id)}
+                      target_hit={item.targetHit}
+                      stop_loss_hit={item.stopLossHit}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </div>
         </div>
       </div>
     </div>
