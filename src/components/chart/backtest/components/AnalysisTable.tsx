@@ -54,10 +54,10 @@ export const AnalysisTable = ({
             </div>
             <div>{formatNumber(analysis.stop_loss)}</div>
             <div>{formatNumber(analysis.target_price)}</div>
-            <div>{analysis.entry_price}</div>
-            <div>{analysis.entry_price}</div>
+            <div>{formatNumber(analysis.entry_price)}</div>
+            <div>{formatNumber(analysis.entry_price)}</div>
             <div className={`font-medium ${analysis.profit_loss >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {analysis.profit_loss}
+              {formatNumber(analysis.profit_loss)}
             </div>
             <div>{analysis.timeframe}</div>
             <div>{analysis.analysis_type}</div>
