@@ -30,29 +30,25 @@ export const SearchHistory = ({
 }: SearchHistoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0" dir="rtl">
-        <div className="flex flex-col h-full">
-          <div className="sticky top-0 z-50 bg-background border-b">
-            <SearchHistoryHeader totalCount={validHistory.length} />
-            <SearchHistoryToolbar
-              selectedItems={selectedItems}
-              onDelete={onDelete}
-              validHistory={validHistory}
-              dateRange={dateRange}
-              isDatePickerOpen={isDatePickerOpen}
-              setIsDatePickerOpen={setIsDatePickerOpen}
-              setDateRange={setDateRange}
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <SearchHistoryMain
-              history={validHistory}
-              selectedItems={selectedItems}
-              onSelect={handleSelect}
-              onDelete={onDelete}
-            />
-          </div>
+      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
+        <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
+          <SearchHistoryHeader totalCount={validHistory.length} />
+          <SearchHistoryToolbar
+            selectedItems={selectedItems}
+            onDelete={onDelete}
+            validHistory={validHistory}
+            dateRange={dateRange}
+            isDatePickerOpen={isDatePickerOpen}
+            setIsDatePickerOpen={setIsDatePickerOpen}
+            setDateRange={setDateRange}
+          />
         </div>
+        <SearchHistoryMain
+          history={validHistory}
+          selectedItems={selectedItems}
+          onSelect={handleSelect}
+          onDelete={onDelete}
+        />
       </DialogContent>
     </Dialog>
   );
