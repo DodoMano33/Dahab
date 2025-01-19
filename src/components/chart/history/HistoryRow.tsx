@@ -51,19 +51,27 @@ export const HistoryRow = ({
 
   return (
     <TableRow className={rowBackgroundColor}>
-      <TableCell className="w-[120px] text-center p-2 whitespace-normal">
-        <StopLoss 
-          value={analysis.stopLoss} 
-          isHit={stop_loss_hit}
-        />
-      </TableCell>
-      <TableCell className="w-[140px] text-center p-2 whitespace-normal">
-        <div className="flex justify-center">
-          <TargetsList 
-            targets={analysis.targets?.slice(0, 3) || []} 
-            isTargetHit={target_hit}
-          />
+      {onSelect !== undefined && (
+        <TableCell className="w-[60px] text-center p-2">
+          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+        </TableCell>
+      )}
+      <DateCell date={date} />
+      <TableCell className="w-[100px] text-center p-2 font-medium">
+        <div className="flex flex-col items-center">
+          <span>{symbol.toUpperCase()}</span>
+          <div className={statusIndicator} />
         </div>
+      </TableCell>
+      <AnalysisTypeCell 
+        analysisType={analysisType} 
+        pattern={analysis.pattern}
+        activation_type={analysis.activation_type}
+      />
+      <TimeframeCell timeframe={timeframe} />
+      <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
+      <TableCell className="w-[80px] text-center p-2">
+        <DirectionIndicator direction={analysis.direction} />
       </TableCell>
       <TableCell className="w-[160px] text-center p-2 whitespace-normal">
         <div className="flex justify-center">
@@ -73,28 +81,20 @@ export const HistoryRow = ({
           />
         </div>
       </TableCell>
-      <TableCell className="w-[80px] text-center p-2">
-        <DirectionIndicator direction={analysis.direction} />
-      </TableCell>
-      <TableCell className="w-[120px] text-center p-2">{currentPrice}</TableCell>
-      <TimeframeCell timeframe={timeframe} />
-      <AnalysisTypeCell 
-        analysisType={analysisType} 
-        pattern={analysis.pattern}
-        activation_type={analysis.activation_type}
-      />
-      <TableCell className="w-[100px] text-center p-2 font-medium">
-        <div className="flex flex-col items-center">
-          <span>{symbol.toUpperCase()}</span>
-          <div className={statusIndicator} />
+      <TableCell className="w-[140px] text-center p-2 whitespace-normal">
+        <div className="flex justify-center">
+          <TargetsList 
+            targets={analysis.targets?.slice(0, 3) || []} 
+            isTargetHit={target_hit}
+          />
         </div>
       </TableCell>
-      <DateCell date={date} />
-      {onSelect !== undefined && (
-        <TableCell className="w-[60px] text-center p-2">
-          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
-        </TableCell>
-      )}
+      <TableCell className="w-[120px] text-center p-2 whitespace-normal">
+        <StopLoss 
+          value={analysis.stopLoss} 
+          isHit={stop_loss_hit}
+        />
+      </TableCell>
     </TableRow>
   );
 };

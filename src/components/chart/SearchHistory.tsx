@@ -30,7 +30,7 @@ export const SearchHistory = ({
 }: SearchHistoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0" dir="rtl">
+      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
         <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
           <SearchHistoryHeader totalCount={validHistory.length} />
           <SearchHistoryToolbar
