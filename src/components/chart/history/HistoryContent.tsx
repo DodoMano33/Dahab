@@ -29,6 +29,7 @@ export const HistoryContent = ({
   return (
     <div className="relative rounded-md border bg-background">
       <div className="overflow-x-auto">
+   <div className="overflow-y-auto">
         <Table>
           <HistoryTableHeader showCheckbox={true} />
           <TableBody>
