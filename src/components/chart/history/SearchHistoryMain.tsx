@@ -14,7 +14,7 @@ export const SearchHistoryMain = ({
   onDelete,
 }: SearchHistoryMainProps) => {
   return (
-    <div className="p-4">
+    <div className="p-4 h-full overflow-y-auto">
       <HistoryContent
         history={history}
         selectedItems={selectedItems}
