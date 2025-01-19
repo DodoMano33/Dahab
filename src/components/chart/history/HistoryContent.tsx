@@ -24,7 +24,7 @@ export const HistoryContent = ({
   history,
   selectedItems,
   onSelect,
-  onDelete
+  onDelete,
 }: HistoryContentProps) => {
   return (
     <div className="relative rounded-md border bg-background">
