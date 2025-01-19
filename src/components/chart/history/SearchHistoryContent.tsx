@@ -27,7 +27,7 @@ export const HistoryContent = ({
   onDelete,
 }: HistoryContentProps) => {
   return (
-    <div className="relative rounded-md border bg-background h-full">
+    <div className="relative rounded-md border bg-background h-full overflow-y-auto">
       <div className="overflow-x-auto">
         <Table>
           <HistoryTableHeader showCheckbox={true} />
