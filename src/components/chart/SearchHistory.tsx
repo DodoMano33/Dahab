@@ -30,7 +30,7 @@ export const SearchHistory = ({
 }: SearchHistoryProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 overflow-hidden" dir="rtl">
+      <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0" dir="rtl">
         <div className="flex flex-col h-full">
           <div className="sticky top-0 z-50 bg-background border-b">
             <SearchHistoryHeader totalCount={validHistory.length} />
@@ -44,7 +44,7 @@ export const SearchHistory = ({
               setDateRange={setDateRange}
             />
           </div>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-y-auto">
             <SearchHistoryMain
               history={validHistory}
               selectedItems={selectedItems}
