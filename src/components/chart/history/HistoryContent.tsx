@@ -27,11 +27,11 @@ export const HistoryContent = ({
   onDelete
 }: HistoryContentProps) => {
   return (
-    <div className="relative rounded-md border bg-background overflow-hidden">
+    <div className="relative rounded-md border bg-background">
       <div className="overflow-x-auto">
         <Table>
           <HistoryTableHeader showCheckbox={true} />
-          <TableBody className="relative">
+          <TableBody>
             {history.map((item) => (
               <HistoryRow
                 key={item.id}
