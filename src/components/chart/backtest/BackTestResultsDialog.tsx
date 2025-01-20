@@ -7,22 +7,18 @@ import { BackTestHeader } from "./components/BackTestHeader";
 import { AnalysisStats } from "./components/AnalysisStats";
 import { AnalysisTable } from "./components/AnalysisTable";
 
-interface AnalysisStats {
-  type: string;
-  success: number;
-  fail: number;
-}
-
 interface BackTestResultsDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  useEntryPoint?: boolean;
 }
 
 export const BackTestResultsDialog = ({
   isOpen,
   onClose,
+  useEntryPoint = false
 }: BackTestResultsDialogProps) => {
-  const [analysisStats, setAnalysisStats] = useState<AnalysisStats[]>([]);
+  const [analysisStats, setAnalysisStats] = useState<any[]>([]);
   const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -145,6 +141,7 @@ export const BackTestResultsDialog = ({
           onDeleteSelected={handleDeleteSelected}
           selectedItemsCount={selectedItems.size}
           isDeleting={isDeleting}
+          useEntryPoint={useEntryPoint}
         />
 
         <div className="flex-1 overflow-hidden">

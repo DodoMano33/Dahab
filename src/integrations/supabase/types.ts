@@ -174,6 +174,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_analysis_status_with_entry_point: {
+        Args: {
+          p_id: string
+          p_current_price: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

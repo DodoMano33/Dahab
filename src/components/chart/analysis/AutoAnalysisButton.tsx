@@ -18,6 +18,7 @@ export const AutoAnalysisButton = ({
   setIsHistoryOpen
 }: AutoAnalysisButtonProps) => {
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
+  const [isEntryPointBackTestOpen, setIsEntryPointBackTestOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,6 +52,14 @@ export const AutoAnalysisButton = ({
         </Button>
 
         <Button
+          onClick={() => setIsEntryPointBackTestOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white h-20 flex items-center gap-2 max-w-[600px] w-full"
+        >
+          <History className="w-5 h-20" />
+          Back Test Results (أفضل نقطة دخول)
+        </Button>
+
+        <Button
           variant="outline"
           className="h-20 flex items-center gap-2 max-w-[600px] w-full"
           onClick={() => setIsHistoryOpen(true)}
@@ -63,6 +72,12 @@ export const AutoAnalysisButton = ({
       <BackTestResultsDialog 
         isOpen={isBackTestOpen}
         onClose={() => setIsBackTestOpen(false)}
+      />
+
+      <BackTestResultsDialog 
+        isOpen={isEntryPointBackTestOpen}
+        onClose={() => setIsEntryPointBackTestOpen(false)}
+        useEntryPoint={true}
       />
     </div>
   );
