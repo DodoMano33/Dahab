@@ -1,7 +1,7 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { HistoryContent } from "./SearchHistoryContent";
-import { SearchHistoryItem } from "@/types/analysis";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { HistoryContent } from "./HistoryContent";
 import { SearchHistoryHeader } from "./SearchHistoryHeader";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface HistoryDialogProps {
   isOpen: boolean;

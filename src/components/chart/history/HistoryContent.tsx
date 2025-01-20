@@ -1,20 +1,10 @@
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
 
 interface HistoryContentProps {
-  history: Array<{
-    id: string;
-    date: Date;
-    symbol: string;
-    currentPrice: number;
-    analysis: AnalysisData;
-    targetHit?: boolean;
-    stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action";
-    timeframe: string;
-  }>;
+  history: SearchHistoryItem[];
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
@@ -27,7 +17,7 @@ export const HistoryContent = ({
   onDelete,
 }: HistoryContentProps) => {
   return (
-    <div className="relative rounded-md border bg-background">
+    <div className="relative rounded-md border bg-background h-full overflow-y-auto">
       <div className="overflow-x-auto">
         <Table>
           <HistoryTableHeader showCheckbox={true} />

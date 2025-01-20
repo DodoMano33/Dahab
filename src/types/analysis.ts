@@ -1,5 +1,11 @@
 export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action" | "عادي";
 
+export interface ImageData {
+  height: number;
+  width: number;
+  data: Uint8ClampedArray;
+}
+
 export interface AnalysisData {
   pattern: string;
   direction: "صاعد" | "هابط" | "محايد";
