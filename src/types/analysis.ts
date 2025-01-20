@@ -34,9 +34,3 @@ export interface SearchHistoryItem {
   analysisType: AnalysisType;
   timeframe: string;
 }
-
-export interface ImageData {
-  height: number;
-  width: number;
-  data: Uint8ClampedArray;
-}
