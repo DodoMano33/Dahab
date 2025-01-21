@@ -11,7 +11,7 @@ import { TimeframeCell } from "./cells/TimeframeCell";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { differenceInHours, differenceInMinutes, addHours } from "date-fns";
+import { differenceInHours, differenceInMinutes, differenceInSeconds, addHours } from "date-fns";
 import { supabase } from "@/lib/supabase";
 
 interface HistoryRowProps {
@@ -80,15 +80,17 @@ export const HistoryRow = ({
 
       const hoursLeft = differenceInHours(expiryDate, now);
       const minutesLeft = differenceInMinutes(expiryDate, now) % 60;
+      const secondsLeft = differenceInSeconds(expiryDate, now) % 60;
 
-      // Format as digital clock: HH:MM
+      // Format as digital clock: HH:MM:SS
       const formattedHours = String(hoursLeft).padStart(2, '0');
       const formattedMinutes = String(minutesLeft).padStart(2, '0');
-      setTimeLeft(`${formattedHours}:${formattedMinutes}`);
+      const formattedSeconds = String(secondsLeft).padStart(2, '0');
+      setTimeLeft(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
     };
 
     updateTimer();
-    const interval = setInterval(updateTimer, 60000); // Update every minute
+    const interval = setInterval(updateTimer, 1000); // Update every second
 
     return () => clearInterval(interval);
   }, [analysis_expiry_date, date, id]);
