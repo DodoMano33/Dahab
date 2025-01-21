@@ -11,7 +11,8 @@ import { TimeframeCell } from "./cells/TimeframeCell";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { differenceInHours, differenceInMinutes } from "date-fns";
+import { differenceInHours, differenceInMinutes, addHours } from "date-fns";
+import { supabase } from "@/lib/supabase";
 
 interface HistoryRowProps {
   id: string;
@@ -43,16 +44,37 @@ export const HistoryRow = ({
   analysis_expiry_date
 }: HistoryRowProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
     const updateTimer = () => {
-      if (!analysis_expiry_date) return;
+      if (!analysis_expiry_date) {
+        // If no expiry date is set, set it to 72 hours from creation
+        const expiryDate = addHours(new Date(date), 72);
+        analysis_expiry_date = expiryDate;
+      }
 
       const now = new Date();
       const expiryDate = new Date(analysis_expiry_date);
       
       if (now >= expiryDate) {
-        setTimeLeft("منتهي");
+        setIsExpired(true);
+        // Delete the expired analysis
+        const deleteExpiredAnalysis = async () => {
+          try {
+            const { error } = await supabase
+              .from('search_history')
+              .delete()
+              .eq('id', id);
+
+            if (error) {
+              console.error("Error deleting expired analysis:", error);
+            }
+          } catch (error) {
+            console.error("Error in deleteExpiredAnalysis:", error);
+          }
+        };
+        deleteExpiredAnalysis();
         return;
       }
 
@@ -66,7 +88,11 @@ export const HistoryRow = ({
     const interval = setInterval(updateTimer, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [analysis_expiry_date]);
+  }, [analysis_expiry_date, date, id]);
+
+  if (isExpired) {
+    return null; // Don't render expired analyses
+  }
 
   const rowBackgroundColor = cn(
     "transition-colors duration-200",
@@ -127,11 +153,9 @@ export const HistoryRow = ({
         />
       </TableCell>
       <TableCell className="w-[100px] text-center p-2">
-        {analysis_expiry_date && (
-          <Badge variant={timeLeft === "منتهي" ? "destructive" : "secondary"}>
-            {timeLeft}
-          </Badge>
-        )}
+        <Badge variant="secondary" className="font-medium">
+          {timeLeft}
+        </Badge>
       </TableCell>
     </TableRow>
   );
