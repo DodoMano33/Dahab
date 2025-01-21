@@ -49,8 +49,8 @@ export const HistoryRow = ({
   useEffect(() => {
     const updateTimer = () => {
       if (!analysis_expiry_date) {
-        // If no expiry date is set, set it to 72 hours from creation
-        const expiryDate = addHours(new Date(date), 72);
+        // If no expiry date is set, set it to 36 hours from creation
+        const expiryDate = addHours(new Date(date), 36);
         analysis_expiry_date = expiryDate;
       }
 
