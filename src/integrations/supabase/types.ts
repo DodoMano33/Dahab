@@ -69,9 +69,11 @@ export type Database = {
           analysis_type: string
           created_at: string
           current_price: number
+          entry_point_analysis_completed: boolean | null
           id: string
           is_success: boolean | null
           last_checked_price: number | null
+          original_analysis_completed: boolean | null
           result_timestamp: string | null
           stop_loss_hit: boolean
           symbol: string
@@ -84,9 +86,11 @@ export type Database = {
           analysis_type: string
           created_at?: string
           current_price: number
+          entry_point_analysis_completed?: boolean | null
           id?: string
           is_success?: boolean | null
           last_checked_price?: number | null
+          original_analysis_completed?: boolean | null
           result_timestamp?: string | null
           stop_loss_hit?: boolean
           symbol: string
@@ -99,9 +103,11 @@ export type Database = {
           analysis_type?: string
           created_at?: string
           current_price?: number
+          entry_point_analysis_completed?: boolean | null
           id?: string
           is_success?: boolean | null
           last_checked_price?: number | null
+          original_analysis_completed?: boolean | null
           result_timestamp?: string | null
           stop_loss_hit?: boolean
           symbol?: string
@@ -159,14 +165,24 @@ export type Database = {
             }
             Returns: undefined
           }
-      move_to_backtest_results: {
-        Args: {
-          p_search_history_id: string
-          p_exit_price: number
-          p_is_success: boolean
-        }
-        Returns: undefined
-      }
+      move_to_backtest_results:
+        | {
+            Args: {
+              p_search_history_id: string
+              p_exit_price: number
+              p_is_success: boolean
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_search_history_id: string
+              p_exit_price: number
+              p_is_success: boolean
+              p_is_entry_point_analysis?: boolean
+            }
+            Returns: undefined
+          }
       update_analysis_status: {
         Args: {
           p_id: string
