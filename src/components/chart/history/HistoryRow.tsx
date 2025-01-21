@@ -9,6 +9,9 @@ import { DateCell } from "./cells/DateCell";
 import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { differenceInHours, differenceInMinutes } from "date-fns";
 
 interface HistoryRowProps {
   id: string;
@@ -22,6 +25,7 @@ interface HistoryRowProps {
   onSelect?: () => void;
   target_hit?: boolean;
   stop_loss_hit?: boolean;
+  analysis_expiry_date?: Date;
 }
 
 export const HistoryRow = ({ 
@@ -35,8 +39,35 @@ export const HistoryRow = ({
   isSelected,
   onSelect,
   target_hit = false,
-  stop_loss_hit = false
+  stop_loss_hit = false,
+  analysis_expiry_date
 }: HistoryRowProps) => {
+  const [timeLeft, setTimeLeft] = useState<string>("");
+
+  useEffect(() => {
+    const updateTimer = () => {
+      if (!analysis_expiry_date) return;
+
+      const now = new Date();
+      const expiryDate = new Date(analysis_expiry_date);
+      
+      if (now >= expiryDate) {
+        setTimeLeft("منتهي");
+        return;
+      }
+
+      const hoursLeft = differenceInHours(expiryDate, now);
+      const minutesLeft = differenceInMinutes(expiryDate, now) % 60;
+
+      setTimeLeft(`${hoursLeft}س ${minutesLeft}د`);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [analysis_expiry_date]);
+
   const rowBackgroundColor = cn(
     "transition-colors duration-200",
     target_hit && "bg-green-50 hover:bg-green-100",
@@ -94,6 +125,13 @@ export const HistoryRow = ({
           value={analysis.stopLoss} 
           isHit={stop_loss_hit}
         />
+      </TableCell>
+      <TableCell className="w-[100px] text-center p-2">
+        {analysis_expiry_date && (
+          <Badge variant={timeLeft === "منتهي" ? "destructive" : "secondary"}>
+            {timeLeft}
+          </Badge>
+        )}
       </TableCell>
     </TableRow>
   );

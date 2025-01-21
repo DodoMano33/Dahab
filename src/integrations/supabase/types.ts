@@ -66,6 +66,7 @@ export type Database = {
       search_history: {
         Row: {
           analysis: Json
+          analysis_expiry_date: string | null
           analysis_type: string
           created_at: string
           current_price: number
@@ -83,6 +84,7 @@ export type Database = {
         }
         Insert: {
           analysis: Json
+          analysis_expiry_date?: string | null
           analysis_type: string
           created_at?: string
           current_price: number
@@ -100,6 +102,7 @@ export type Database = {
         }
         Update: {
           analysis?: Json
+          analysis_expiry_date?: string | null
           analysis_type?: string
           created_at?: string
           current_price?: number
@@ -165,6 +168,16 @@ export type Database = {
             }
             Returns: undefined
           }
+      calculate_analysis_expiry: {
+        Args: {
+          start_timestamp: string
+        }
+        Returns: string
+      }
+      delete_expired_analyses: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       move_to_backtest_results:
         | {
             Args: {

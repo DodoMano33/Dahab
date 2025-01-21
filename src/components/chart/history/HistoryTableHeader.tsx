@@ -36,6 +36,7 @@ export const HistoryTableHeader = ({
       <TableHead className="w-[160px] text-center p-2 font-bold">أفضل نقطة دخول</TableHead>
       <TableHead className="w-[140px] text-center p-2 font-bold">الأهداف</TableHead>
       <TableHead className="w-[120px] text-center p-2 font-bold">وقف الخسارة</TableHead>
+      <TableHead className="w-[100px] text-center p-2 font-bold">الوقت المتبقي</TableHead>
     </TableRow>
   </TableHeader>
 );
