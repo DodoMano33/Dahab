@@ -81,7 +81,10 @@ export const HistoryRow = ({
       const hoursLeft = differenceInHours(expiryDate, now);
       const minutesLeft = differenceInMinutes(expiryDate, now) % 60;
 
-      setTimeLeft(`${hoursLeft}س ${minutesLeft}د`);
+      // Format as digital clock: HH:MM
+      const formattedHours = String(hoursLeft).padStart(2, '0');
+      const formattedMinutes = String(minutesLeft).padStart(2, '0');
+      setTimeLeft(`${formattedHours}:${formattedMinutes}`);
     };
 
     updateTimer();
@@ -153,7 +156,7 @@ export const HistoryRow = ({
         />
       </TableCell>
       <TableCell className="w-[100px] text-center p-2">
-        <Badge variant="secondary" className="font-medium">
+        <Badge variant="secondary" className="font-mono text-base bg-black text-white">
           {timeLeft}
         </Badge>
       </TableCell>
