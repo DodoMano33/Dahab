@@ -9,10 +9,8 @@ import { DateCell } from "./cells/DateCell";
 import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { differenceInHours, differenceInMinutes, differenceInSeconds, addHours } from "date-fns";
-import { supabase } from "@/lib/supabase";
+import { useExpiryTimer } from "./hooks/useExpiryTimer";
 
 interface HistoryRowProps {
   id: string;
@@ -43,60 +41,10 @@ export const HistoryRow = ({
   stop_loss_hit = false,
   analysis_expiry_date
 }: HistoryRowProps) => {
-  const [timeLeft, setTimeLeft] = useState<string>("");
-  const [isExpired, setIsExpired] = useState(false);
-
-  useEffect(() => {
-    const updateTimer = () => {
-      if (!analysis_expiry_date) {
-        // If no expiry date is set, set it to 36 hours from creation
-        const expiryDate = addHours(new Date(date), 36);
-        analysis_expiry_date = expiryDate;
-      }
-
-      const now = new Date();
-      const expiryDate = new Date(analysis_expiry_date);
-      
-      if (now >= expiryDate) {
-        setIsExpired(true);
-        // Delete the expired analysis
-        const deleteExpiredAnalysis = async () => {
-          try {
-            const { error } = await supabase
-              .from('search_history')
-              .delete()
-              .eq('id', id);
-
-            if (error) {
-              console.error("Error deleting expired analysis:", error);
-            }
-          } catch (error) {
-            console.error("Error in deleteExpiredAnalysis:", error);
-          }
-        };
-        deleteExpiredAnalysis();
-        return;
-      }
-
-      const hoursLeft = differenceInHours(expiryDate, now);
-      const minutesLeft = differenceInMinutes(expiryDate, now) % 60;
-      const secondsLeft = differenceInSeconds(expiryDate, now) % 60;
-
-      // Format as digital clock: HH:MM:SS
-      const formattedHours = String(hoursLeft).padStart(2, '0');
-      const formattedMinutes = String(minutesLeft).padStart(2, '0');
-      const formattedSeconds = String(secondsLeft).padStart(2, '0');
-      setTimeLeft(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000); // Update every second
-
-    return () => clearInterval(interval);
-  }, [analysis_expiry_date, date, id]);
+  const { timeLeft, isExpired } = useExpiryTimer(date, id, analysis_expiry_date);
 
   if (isExpired) {
-    return null; // Don't render expired analyses
+    return null;
   }
 
   const rowBackgroundColor = cn(
