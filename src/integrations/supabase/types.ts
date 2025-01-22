@@ -178,6 +178,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_backtest_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          type: string
+          success: number
+          fail: number
+        }[]
+      }
       move_to_backtest_results:
         | {
             Args: {

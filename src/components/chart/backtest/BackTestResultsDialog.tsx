@@ -49,6 +49,11 @@ export const BackTestResultsDialog = ({
     setSelectedItems(newSelected);
   };
 
+  const handleDeleteSelected = async () => {
+    // TODO: Implement delete functionality
+    console.log("Delete selected items:", Array.from(selectedItems));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] md:max-w-6xl h-[90vh] flex flex-col p-0">
@@ -56,6 +61,7 @@ export const BackTestResultsDialog = ({
           analysesCount={completedAnalyses.length}
           onClose={onClose}
           onRefresh={refresh}
+          onDeleteSelected={handleDeleteSelected}
           selectedItemsCount={selectedItems.size}
           isDeleting={false}
           useEntryPoint={useEntryPoint}
