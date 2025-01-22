@@ -54,13 +54,18 @@ export const BackTestResultsDialog = ({
     console.log("Delete selected items:", Array.from(selectedItems));
   };
 
+  // Wrap refresh in an async function to ensure it returns a Promise
+  const handleRefresh = async () => {
+    await refresh();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] md:max-w-6xl h-[90vh] flex flex-col p-0">
         <BackTestHeader
           analysesCount={completedAnalyses.length}
           onClose={onClose}
-          onRefresh={refresh}
+          onRefresh={handleRefresh}
           onDeleteSelected={handleDeleteSelected}
           selectedItemsCount={selectedItems.size}
           isDeleting={false}
