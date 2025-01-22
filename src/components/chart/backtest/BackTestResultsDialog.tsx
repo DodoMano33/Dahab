@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { supabase } from "@/lib/supabase";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "sonner";
 import { BackTestHeader } from "./components/BackTestHeader";
 import { AnalysisStats } from "./components/AnalysisStats";
 import { AnalysisTable } from "./components/AnalysisTable";
+import { useBacktestStats } from "./hooks/useBacktestStats";
+import { useBacktestResults } from "./hooks/useBacktestResults";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface BackTestResultsDialogProps {
   isOpen: boolean;
@@ -18,10 +20,15 @@ export const BackTestResultsDialog = ({
   onClose,
   useEntryPoint = false
 }: BackTestResultsDialogProps) => {
-  const [analysisStats, setAnalysisStats] = useState<any[]>([]);
-  const [completedAnalyses, setCompletedAnalyses] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { stats, isLoading: isLoadingStats } = useBacktestStats();
+  const {
+    results: completedAnalyses,
+    isLoading: isLoadingResults,
+    hasMore,
+    loadMore,
+    refresh
+  } = useBacktestResults();
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -42,112 +49,23 @@ export const BackTestResultsDialog = ({
     setSelectedItems(newSelected);
   };
 
-  const handleDeleteSelected = async () => {
-    try {
-      const selectedArray = Array.from(selectedItems);
-      if (selectedArray.length === 0) {
-        toast.error("الرجاء تحديد عناصر للحذف");
-        return;
-      }
-
-      setIsDeleting(true);
-      console.log("Deleting selected backtest results:", selectedArray);
-
-      const { error } = await supabase
-        .from('backtest_results')
-        .delete()
-        .in('id', selectedArray);
-
-      if (error) {
-        console.error("Error deleting results:", error);
-        toast.error("حدث خطأ أثناء حذف النتائج");
-        return;
-      }
-
-      setCompletedAnalyses(prevAnalyses => 
-        prevAnalyses.filter(analysis => !selectedItems.has(analysis.id))
-      );
-      
-      calculateStats(completedAnalyses.filter(analysis => !selectedItems.has(analysis.id)));
-      setSelectedItems(new Set());
-      toast.success("تم حذف النتائج المحددة بنجاح");
-    } catch (error) {
-      console.error("Error in handleDeleteSelected:", error);
-      toast.error("حدث خطأ أثناء حذف النتائج");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const calculateStats = (analyses: any[]) => {
-    const stats: { [key: string]: { success: number; fail: number } } = {};
-    analyses.forEach(result => {
-      if (!stats[result.analysis_type]) {
-        stats[result.analysis_type] = { success: 0, fail: 0 };
-      }
-      if (result.is_success) {
-        stats[result.analysis_type].success++;
-      } else {
-        stats[result.analysis_type].fail++;
-      }
-    });
-
-    const formattedStats = Object.entries(stats).map(([type, counts]) => ({
-      type,
-      success: counts.success,
-      fail: counts.fail,
-    }));
-
-    console.log("Calculated new stats:", formattedStats);
-    setAnalysisStats(formattedStats);
-  };
-
-  const fetchResults = async () => {
-    try {
-      console.log("Fetching backtest results...");
-      const { data: results, error } = await supabase
-        .from('backtest_results')
-        .select('*')
-        .order('result_timestamp', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching results:", error);
-        toast.error("حدث خطأ أثناء جلب النتائج");
-        return;
-      }
-
-      console.log("Fetched backtest results:", results);
-      setCompletedAnalyses(results || []);
-      calculateStats(results || []);
-    } catch (error) {
-      console.error("Error in fetchResults:", error);
-      toast.error("حدث خطأ أثناء جلب النتائج");
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchResults();
-    }
-  }, [isOpen]);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] md:max-w-6xl h-[90vh] flex flex-col p-0">
         <BackTestHeader
           analysesCount={completedAnalyses.length}
           onClose={onClose}
-          onRefresh={fetchResults}
-          onDeleteSelected={handleDeleteSelected}
+          onRefresh={refresh}
           selectedItemsCount={selectedItems.size}
-          isDeleting={isDeleting}
+          isDeleting={false}
           useEntryPoint={useEntryPoint}
         />
 
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
             <div className="p-6 space-y-6">
-              <AnalysisStats stats={analysisStats} />
+              {!isLoadingStats && <AnalysisStats stats={stats} />}
+              
               <div className="overflow-x-auto">
                 <div style={{ minWidth: '800px' }}>
                   <AnalysisTable
@@ -156,6 +74,25 @@ export const BackTestResultsDialog = ({
                     onSelectAll={handleSelectAll}
                     onSelect={handleSelect}
                   />
+                  
+                  {hasMore && (
+                    <div className="flex justify-center mt-4">
+                      <Button
+                        onClick={loadMore}
+                        disabled={isLoadingResults}
+                        variant="outline"
+                      >
+                        {isLoadingResults ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            جاري التحميل...
+                          </>
+                        ) : (
+                          'تحميل المزيد'
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
