@@ -43,12 +43,32 @@ export const HistoryRow = ({
       <TableCell className="font-medium">{symbol}</TableCell>
       <TableCell><DateCell date={date} /></TableCell>
       <TableCell><TimeframeCell timeframe={timeframe} /></TableCell>
-      <TableCell><AnalysisTypeCell type={analysisType} /></TableCell>
+      <TableCell>
+        <AnalysisTypeCell 
+          analysisType={analysisType} 
+          pattern={analysis.pattern}
+        />
+      </TableCell>
       <TableCell>{currentPrice}</TableCell>
       <TableCell><DirectionIndicator direction={analysis.direction} /></TableCell>
-      <TableCell><StopLoss stopLoss={analysis.stopLoss} /></TableCell>
-      <TableCell><TargetsList targets={analysis.targets} /></TableCell>
-      <TableCell><BestEntryPoint bestEntryPoint={analysis.bestEntryPoint} /></TableCell>
+      <TableCell>
+        <StopLoss 
+          value={analysis.stopLoss} 
+          isHit={false}
+        />
+      </TableCell>
+      <TableCell>
+        <TargetsList 
+          targets={analysis.targets || []} 
+          isTargetHit={false}
+        />
+      </TableCell>
+      <TableCell>
+        <BestEntryPoint 
+          price={analysis.bestEntryPoint?.price}
+          reason={analysis.bestEntryPoint?.reason}
+        />
+      </TableCell>
       <TableCell><ExpiryTimer createdAt={date} /></TableCell>
     </TableRow>
   );

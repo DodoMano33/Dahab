@@ -1,4 +1,4 @@
-interface StopLossProps {
+export interface StopLossProps {
   value: number;
   isHit?: boolean;
 }

@@ -3,7 +3,7 @@ interface Target {
   expectedTime: Date;
 }
 
-interface TargetsListProps {
+export interface TargetsListProps {
   targets: Target[];
   isTargetHit: boolean;
 }

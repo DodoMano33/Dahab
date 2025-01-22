@@ -1,13 +1,17 @@
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-interface AnalysisTypeCellProps {
+export interface AnalysisTypeCellProps {
   analysisType: string;
   pattern?: string;
   activation_type?: 'تلقائي' | 'يدوي';
 }
 
-export const AnalysisTypeCell = ({ analysisType, pattern, activation_type = 'يدوي' }: AnalysisTypeCellProps) => {
+export const AnalysisTypeCell = ({ 
+  analysisType, 
+  pattern, 
+  activation_type = 'يدوي' 
+}: AnalysisTypeCellProps) => {
   return (
     <TableCell className="w-[140px] text-center p-2">
       <div className="flex flex-col items-center">
