@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -12,30 +12,35 @@ export const useBacktestStats = () => {
   const [stats, setStats] = useState<AnalysisStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        console.log('Fetching backtest stats...');
-        const { data: results, error } = await supabase.rpc('get_backtest_stats');
+  const fetchStats = async () => {
+    try {
+      console.log('Fetching backtest stats...');
+      const { data: results, error } = await supabase.rpc('get_backtest_stats');
 
-        if (error) {
-          console.error('Error fetching stats:', error);
-          toast.error('حدث خطأ أثناء جلب الإحصائيات');
-          return;
-        }
-
-        console.log('Fetched backtest stats:', results);
-        setStats(results || []);
-      } catch (error) {
-        console.error('Error in fetchStats:', error);
+      if (error) {
+        console.error('Error fetching stats:', error);
         toast.error('حدث خطأ أثناء جلب الإحصائيات');
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
 
+      console.log('Fetched backtest stats:', results);
+      setStats(results || []);
+    } catch (error) {
+      console.error('Error in fetchStats:', error);
+      toast.error('حدث خطأ أثناء جلب الإحصائيات');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refresh = useCallback(async () => {
+    setIsLoading(true);
+    await fetchStats();
+  }, []);
+
+  useEffect(() => {
     fetchStats();
   }, []);
 
-  return { stats, isLoading };
+  return { stats, isLoading, refresh };
 };

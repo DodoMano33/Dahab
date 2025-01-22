@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -50,12 +50,12 @@ export const useBacktestResults = () => {
     }
   };
 
-  const refresh = () => {
+  const refresh = useCallback(async () => {
     setPage(0);
     setHasMore(true);
     setIsLoading(true);
-    fetchResults(0);
-  };
+    await fetchResults(0);
+  }, []);
 
   useEffect(() => {
     fetchResults(page);

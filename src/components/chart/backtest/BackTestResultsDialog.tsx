@@ -8,6 +8,8 @@ import { useBacktestStats } from "./hooks/useBacktestStats";
 import { useBacktestResults } from "./hooks/useBacktestResults";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface BackTestResultsDialogProps {
   isOpen: boolean;
@@ -21,13 +23,14 @@ export const BackTestResultsDialog = ({
   useEntryPoint = false
 }: BackTestResultsDialogProps) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const { stats, isLoading: isLoadingStats } = useBacktestStats();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { stats, isLoading: isLoadingStats, refresh: refreshStats } = useBacktestStats();
   const {
     results: completedAnalyses,
     isLoading: isLoadingResults,
     hasMore,
     loadMore,
-    refresh
+    refresh: refreshResults
   } = useBacktestResults();
 
   const handleSelectAll = (checked: boolean) => {
@@ -50,13 +53,40 @@ export const BackTestResultsDialog = ({
   };
 
   const handleDeleteSelected = async () => {
-    // TODO: Implement delete functionality
-    console.log("Delete selected items:", Array.from(selectedItems));
+    if (selectedItems.size === 0) {
+      toast.error("الرجاء تحديد عناصر للحذف");
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      const selectedArray = Array.from(selectedItems);
+      
+      const { error } = await supabase
+        .from('backtest_results')
+        .delete()
+        .in('id', selectedArray);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("تم حذف العناصر المحددة بنجاح");
+      setSelectedItems(new Set());
+      await refreshResults();
+      await refreshStats();
+    } catch (error) {
+      console.error('Error deleting items:', error);
+      toast.error("حدث خطأ أثناء حذف العناصر");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Wrap refresh in an async function to ensure it returns a Promise
   const handleRefresh = async () => {
-    await refresh();
+    await refreshResults();
+    await refreshStats();
   };
 
   return (
@@ -68,7 +98,7 @@ export const BackTestResultsDialog = ({
           onRefresh={handleRefresh}
           onDeleteSelected={handleDeleteSelected}
           selectedItemsCount={selectedItems.size}
-          isDeleting={false}
+          isDeleting={isDeleting}
           useEntryPoint={useEntryPoint}
         />
 
