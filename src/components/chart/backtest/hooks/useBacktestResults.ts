@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-const PAGE_SIZE = 100; // Changed from 20 to 100
+const PAGE_SIZE = 500; // Changed from 100 to 500
 
 export const useBacktestResults = () => {
   const [results, setResults] = useState<any[]>([]);
