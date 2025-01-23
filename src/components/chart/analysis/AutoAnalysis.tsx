@@ -11,6 +11,9 @@ interface AutoAnalysisProps {
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions: number;
   setIsHistoryOpen: (open: boolean) => void;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
+  defaultDuration?: string;
 }
 
 export const AutoAnalysis = ({
@@ -19,7 +22,10 @@ export const AutoAnalysis = ({
   selectedAnalysisTypes,
   onAnalysisComplete,
   repetitions,
-  setIsHistoryOpen
+  setIsHistoryOpen,
+  defaultSymbol,
+  defaultPrice,
+  defaultDuration
 }: AutoAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
@@ -33,13 +39,13 @@ export const AutoAnalysis = ({
 
     // Get the symbol input value
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
-    const symbol = symbolInput?.value;
+    const symbol = symbolInput?.value || defaultSymbol;
 
     // Get the price input value
     const priceInput = document.querySelector('input#price') as HTMLInputElement;
-    const currentPrice = priceInput ? Number(priceInput.value) : undefined;
+    const currentPrice = priceInput ? Number(priceInput.value) : defaultPrice;
 
-    console.log("Auto analysis inputs:", { symbol, currentPrice });
+    console.log("Auto analysis inputs:", { symbol, currentPrice, defaultDuration });
 
     if (!symbol) {
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
@@ -62,6 +68,7 @@ export const AutoAnalysis = ({
         repetitions,
         currentPrice,
         symbol,
+        customHours: parseInt(defaultDuration || "8"),
         onAnalysisComplete: (result) => {
           console.log("Auto analysis result:", result);
           if (result && onAnalysisComplete) {
