@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
+import { AnalysisForm } from "./chart/analysis/AnalysisForm";
+import { HistoryDialog } from "./chart/history/HistoryDialog";
+import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 import { useSearchHistory } from "./hooks/useSearchHistory";
 import { useBackTest } from "./hooks/useBackTest";
-import { ChartManager } from "./chart/components/ChartManager";
-import { AnalysisManager } from "./chart/analysis/components/AnalysisManager";
-import { HistoryManager } from "./chart/history/components/HistoryManager";
+import { LiveTradingViewChart } from "./chart/LiveTradingViewChart";
+import { AnalysisContainer } from "./chart/analysis/components/AnalysisContainer";
 
 export const ChartAnalyzer = () => {
   const {
@@ -18,7 +20,7 @@ export const ChartAnalyzer = () => {
   } = useAnalysisHandler();
 
   const {
-    searchHistory,
+    searchHistory = [],
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
@@ -52,46 +54,51 @@ export const ChartAnalyzer = () => {
     setAnalysisDuration(duration);
   };
 
-  const handleHistoryClose = () => {
-    console.log("Closing history dialog");
-    setIsHistoryOpen(false);
-  };
-
-  console.log("Current search history:", searchHistory);
-  console.log("History dialog open state:", isHistoryOpen);
-
   return (
     <div className="flex flex-col space-y-6 p-6">
-      <ChartManager
+      <LiveTradingViewChart
         symbol={autoSymbol}
         onSymbolChange={handleSymbolChange}
         onPriceUpdate={handlePriceUpdate}
       />
 
-      <AnalysisManager
+      <AnalysisForm
+        onAnalysis={addToSearchHistory}
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}
-        autoSymbol={autoSymbol}
-        autoPrice={autoPrice}
-        analysisDuration={analysisDuration}
-        onAnalysis={addToSearchHistory}
-        onAnalysisComplete={handleAnalysisComplete}
+        defaultSymbol={autoSymbol}
+        defaultPrice={autoPrice}
+        defaultDuration={analysisDuration}
         onDurationChange={handleAnalysisDurationChange}
+      />
+
+      <AnalysisSettings
+        onAnalysisComplete={handleAnalysisComplete}
+        defaultSymbol={autoSymbol}
+        defaultPrice={autoPrice}
+        defaultDuration={analysisDuration}
+      />
+      
+      <AnalysisContainer
         image={image}
         analysis={analysis}
+        isAnalyzing={isAnalyzing}
         onClose={() => {
           setImage(null);
           setAnalysis(null);
         }}
         symbol={currentSymbol}
+        currentAnalysis={currentAnalysis}
       />
       
-      <HistoryManager
-        isOpen={isHistoryOpen}
-        onClose={handleHistoryClose}
-        history={searchHistory || []}
-        onDelete={handleDeleteHistoryItem}
-      />
+      {isHistoryOpen && (
+        <HistoryDialog
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          history={searchHistory}
+          onDelete={handleDeleteHistoryItem}
+        />
+      )}
     </div>
   );
 };

@@ -4,7 +4,6 @@ import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
-import { AnalysisDurationInput } from "../inputs/AnalysisDurationInput";
 import { toast } from "sonner";
 
 interface ChartAnalysisFormProps {
@@ -27,8 +26,6 @@ interface ChartAnalysisFormProps {
   currentAnalysis?: string;
   defaultSymbol?: string;
   defaultPrice?: number | null;
-  defaultDuration?: string;
-  onDurationChange?: (duration: string) => void;
 }
 
 export const ChartAnalysisForm = ({
@@ -37,28 +34,18 @@ export const ChartAnalysisForm = ({
   onHistoryClick,
   currentAnalysis,
   defaultSymbol,
-  defaultPrice,
-  defaultDuration,
-  onDurationChange
+  defaultPrice
 }: ChartAnalysisFormProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
-  const [customHours, setCustomHours] = useState(defaultDuration || "8");
 
+  // تحديث القيم عندما تتغير القيم الافتراضية
   useEffect(() => {
     if (defaultSymbol) setSymbol(defaultSymbol);
     if (defaultPrice) setPrice(defaultPrice.toString());
-    if (defaultDuration) setCustomHours(defaultDuration);
-  }, [defaultSymbol, defaultPrice, defaultDuration]);
-
-  const handleCustomHoursChange = (value: string) => {
-    setCustomHours(value);
-    if (onDurationChange) {
-      onDurationChange(value);
-    }
-  };
+  }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = (
     e: React.MouseEvent,
@@ -164,10 +151,6 @@ export const ChartAnalysisForm = ({
         defaultValue={defaultPrice?.toString()}
       />
       <TimeframeInput value={timeframe} onChange={setTimeframe} />
-      <AnalysisDurationInput
-        value={customHours}
-        onChange={handleCustomHoursChange}
-      />
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
         onSubmit={handleSubmit}

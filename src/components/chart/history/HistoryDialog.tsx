@@ -5,7 +5,6 @@ import { SearchHistoryItem } from "@/types/analysis";
 import { useState } from "react";
 import { HistoryActions } from "./HistoryActions";
 import { toast } from "sonner";
-import { DateRangePicker } from "./DateRangePicker";
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -16,13 +15,6 @@ interface HistoryDialogProps {
 
 export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDialogProps) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined
-  });
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-
-  console.log("History items received:", history);
 
   const validHistory = history.filter(item => 
     item && 
@@ -31,8 +23,6 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
     item.currentPrice && 
     item.analysis
   );
-
-  console.log("Valid history items:", validHistory);
 
   const handleSelect = (id: string) => {
     setSelectedItems(prev => {
@@ -69,17 +59,11 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
         <SearchHistoryHeader totalCount={validHistory.length} />
-        <div className="flex justify-between items-center p-2 bg-muted/50">
+        <div className="flex justify-end p-2">
           <HistoryActions
             selectedItems={selectedItems}
             onDelete={handleDeleteSelected}
             history={validHistory}
-          />
-          <DateRangePicker
-            dateRange={dateRange}
-            isOpen={isDatePickerOpen}
-            onOpenChange={setIsDatePickerOpen}
-            onSelect={setDateRange}
           />
         </div>
         <div className="flex-1 overflow-hidden mt-4">

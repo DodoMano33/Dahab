@@ -13,7 +13,6 @@ interface AutoAnalysisConfig {
   repetitions: number;
   currentPrice: number;
   symbol: string;
-  customHours?: number;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
 }
 
@@ -60,7 +59,7 @@ export const useAutoAnalysis = () => {
   };
 
   const startAutoAnalysis = async (config: AutoAnalysisConfig) => {
-    const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, customHours, onAnalysisComplete } = config;
+    const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, onAnalysisComplete } = config;
 
     if (!user) {
       toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
@@ -72,7 +71,7 @@ export const useAutoAnalysis = () => {
     }
 
     setIsAnalyzing(true);
-    console.log("Starting auto analysis with config:", { ...config, symbol, customHours });
+    console.log("Starting auto analysis with config:", { ...config, symbol });
 
     const runAnalysis = async () => {
       try {
@@ -106,8 +105,7 @@ export const useAutoAnalysis = () => {
                   currentPrice: currentPrice,
                   analysisResult: result.analysisResult,
                   analysisType: mappedAnalysisType,
-                  timeframe: timeframe,
-                  customHours: customHours
+                  timeframe: timeframe
                 });
 
                 if (savedData && onAnalysisComplete) {
