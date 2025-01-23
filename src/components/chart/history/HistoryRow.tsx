@@ -36,8 +36,12 @@ export const HistoryRow = ({
   return (
     <TableRow>
       {onSelect && (
-        <TableCell>
-          <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+        <TableCell className="w-12">
+          <Checkbox 
+            checked={isSelected} 
+            onCheckedChange={onSelect}
+            className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+          />
         </TableCell>
       )}
       <TableCell className="font-medium">{symbol}</TableCell>
