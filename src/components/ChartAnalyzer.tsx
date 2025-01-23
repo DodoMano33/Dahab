@@ -54,6 +54,16 @@ export const ChartAnalyzer = () => {
     setAnalysisDuration(duration);
   };
 
+  const handleHistoryOpen = () => {
+    console.log("Opening history dialog, current state:", isHistoryOpen);
+    setIsHistoryOpen(true);
+  };
+
+  const handleHistoryClose = () => {
+    console.log("Closing history dialog");
+    setIsHistoryOpen(false);
+  };
+
   console.log("Current search history:", searchHistory);
   console.log("History dialog open state:", isHistoryOpen);
 
@@ -96,7 +106,7 @@ export const ChartAnalyzer = () => {
       
       <HistoryDialog
         isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
+        onClose={handleHistoryClose}
         history={searchHistory || []}
         onDelete={handleDeleteHistoryItem}
       />
