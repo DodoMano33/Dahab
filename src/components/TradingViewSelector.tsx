@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 
 interface TradingViewSelectorProps {
-  onConfigSubmit: (symbol: string, timeframe: string, currentPrice?: number) => void;
+  onConfigSubmit: (symbol: string, timeframe: string, currentPrice?: number, customHours?: number) => void;
   isLoading: boolean;
   onHistoryClick: () => void;
   defaultSymbol?: string;
@@ -41,6 +41,7 @@ export const TradingViewSelector = ({
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [currentPrice, setCurrentPrice] = useState<string>(defaultPrice?.toString() || "");
+  const [customHours, setCustomHours] = useState<string>("8");
 
   useEffect(() => {
     if (defaultSymbol) {
@@ -75,13 +76,20 @@ export const TradingViewSelector = ({
         toast.error("الرجاء التأكد من صحة السعر");
         return;
       }
+
+      const hours = Number(customHours);
+      if (isNaN(hours) || hours < 1 || hours > 72) {
+        toast.error("الرجاء إدخال مدة صالحة بين 1 و 72 ساعة");
+        return;
+      }
       
       console.log("تقديم تحليل:", { 
         symbol: symbol || defaultSymbol, 
-        currentPrice: price 
+        currentPrice: price,
+        customHours: hours
       });
       
-      await onConfigSubmit(symbol || defaultSymbol || "", "1d", price);
+      await onConfigSubmit(symbol || defaultSymbol || "", "1d", price, hours);
       
     } catch (error) {
       console.error("خطأ في تقديم التحليل:", error);
@@ -131,6 +139,25 @@ export const TradingViewSelector = ({
             سيتم استخدام السعر {defaultPrice} من الشارت
           </p>
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          مدة بقاء التحليل (بالساعات)
+        </label>
+        <Input
+          type="number"
+          min="1"
+          max="72"
+          placeholder="أدخل عدد الساعات (8 ساعات افتراضياً)"
+          value={customHours}
+          onChange={(e) => setCustomHours(e.target.value)}
+          className="w-full"
+          dir="ltr"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          يجب أن تكون المدة بين 1 و 72 ساعة
+        </p>
       </div>
 
       <div className="flex gap-2">

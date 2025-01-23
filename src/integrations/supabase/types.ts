@@ -168,12 +168,32 @@ export type Database = {
             }
             Returns: undefined
           }
-      calculate_analysis_expiry: {
-        Args: {
-          start_timestamp: string
-        }
-        Returns: string
-      }
+        | {
+            Args: {
+              p_user_id: string
+              p_symbol: string
+              p_current_price: number
+              p_analysis: Json
+              p_analysis_type: string
+              p_timeframe?: string
+              p_custom_hours?: number
+            }
+            Returns: undefined
+          }
+      calculate_analysis_expiry:
+        | {
+            Args: {
+              start_timestamp: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              start_timestamp: string
+              custom_hours?: number
+            }
+            Returns: string
+          }
       delete_expired_analyses: {
         Args: Record<PropertyKey, never>
         Returns: undefined
