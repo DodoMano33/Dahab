@@ -98,14 +98,23 @@ Deno.serve(async (req) => {
       for (const analysis of analyses) {
         console.log(`Checking analysis status for ID ${analysis.id}`)
         
-        // تحديث حالة التحليل
-        const { error: updateError } = await supabase.rpc('update_analysis_status', {
-          p_id: analysis.id,
-          p_current_price: currentPrice
-        })
-
-        if (updateError) {
-          console.error(`Error updating analysis ${analysis.id}:`, updateError)
+        // تحديث حالة التحليل باستخدام الدالة المناسبة
+        if (analysis.analysis?.bestEntryPoint?.price) {
+          const { error: updateError } = await supabase.rpc('update_analysis_status_with_entry_point', {
+            p_id: analysis.id,
+            p_current_price: currentPrice
+          })
+          if (updateError) {
+            console.error(`Error updating analysis with entry point ${analysis.id}:`, updateError)
+          }
+        } else {
+          const { error: updateError } = await supabase.rpc('update_analysis_status', {
+            p_id: analysis.id,
+            p_current_price: currentPrice
+          })
+          if (updateError) {
+            console.error(`Error updating analysis ${analysis.id}:`, updateError)
+          }
         }
       }
     }
