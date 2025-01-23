@@ -23,7 +23,7 @@ export const useSearchHistory = () => {
       const { data, error } = await supabase
         .from('search_history')
         .select('*')
-        .gt('analysis_expiry_date', new Date().toISOString()) // التحليلات التي لم تنتهي صلاحيتها بعد
+        .gt('analysis_expiry_date', new Date().toISOString())
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -56,11 +56,10 @@ export const useSearchHistory = () => {
     try {
       console.log("Attempting to delete history item:", id);
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('search_history')
         .delete()
-        .eq('id', id)
-        .maybeSingle();
+        .eq('id', id);
 
       if (error) {
         console.error("Error deleting history item:", error);
@@ -88,6 +87,7 @@ export const useSearchHistory = () => {
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
-    addToSearchHistory
+    addToSearchHistory,
+    fetchSearchHistory
   };
 };
