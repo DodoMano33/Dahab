@@ -20,7 +20,7 @@ export const ChartAnalyzer = () => {
   } = useAnalysisHandler();
 
   const {
-    searchHistory = [],
+    searchHistory,
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
@@ -53,6 +53,9 @@ export const ChartAnalyzer = () => {
     console.log("Analysis duration changed to:", duration);
     setAnalysisDuration(duration);
   };
+
+  console.log("Current search history:", searchHistory);
+  console.log("History dialog open state:", isHistoryOpen);
 
   return (
     <div className="flex flex-col space-y-6 p-6">
@@ -91,14 +94,12 @@ export const ChartAnalyzer = () => {
         currentAnalysis={currentAnalysis}
       />
       
-      {isHistoryOpen && (
-        <HistoryDialog
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
-          history={searchHistory}
-          onDelete={handleDeleteHistoryItem}
-        />
-      )}
+      <HistoryDialog
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        history={searchHistory || []}
+        onDelete={handleDeleteHistoryItem}
+      />
     </div>
   );
 };
