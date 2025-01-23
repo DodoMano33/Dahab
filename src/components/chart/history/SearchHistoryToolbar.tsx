@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 interface SearchHistoryToolbarProps {
   selectedItems: Set<string>;
-  onDelete: () => void;  // Updated to match the expected signature
+  onDelete: () => void;
   validHistory: any[];
   dateRange: { from: Date | undefined; to: Date | undefined };
   isDatePickerOpen: boolean;

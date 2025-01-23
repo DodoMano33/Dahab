@@ -28,6 +28,10 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
+  const handleBulkDelete = () => {
+    selectedItems.forEach(id => onDelete(id));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
@@ -35,7 +39,7 @@ export const SearchHistory = ({
           <SearchHistoryHeader totalCount={validHistory.length} />
           <SearchHistoryToolbar
             selectedItems={selectedItems}
-            onDelete={onDelete}
+            onDelete={handleBulkDelete}
             validHistory={validHistory}
             dateRange={dateRange}
             isDatePickerOpen={isDatePickerOpen}
