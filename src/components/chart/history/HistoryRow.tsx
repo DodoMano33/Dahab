@@ -69,7 +69,7 @@ export const HistoryRow = ({
           reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
-      <TableCell><ExpiryTimer createdAt={date} /></TableCell>
+      <TableCell><ExpiryTimer createdAt={date} analysisId={id} /></TableCell>
     </TableRow>
   );
 };
