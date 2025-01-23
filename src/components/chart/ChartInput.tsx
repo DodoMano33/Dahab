@@ -16,20 +16,32 @@ interface ChartInputProps {
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean
   ) => void;
-  onHistoryClick?: () => void;  // Made optional with ?
+  onHistoryClick?: () => void;
   isAnalyzing: boolean;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
+  defaultDuration?: string;
+  onDurationChange?: (duration: string) => void;
 }
 
 export const ChartInput = ({
   onTradingViewConfig,
   onHistoryClick,
-  isAnalyzing
+  isAnalyzing,
+  defaultSymbol,
+  defaultPrice,
+  defaultDuration,
+  onDurationChange
 }: ChartInputProps) => {
   return (
     <ChartAnalysisForm
       onSubmit={onTradingViewConfig}
       isAnalyzing={isAnalyzing}
       onHistoryClick={onHistoryClick}
+      defaultSymbol={defaultSymbol}
+      defaultPrice={defaultPrice}
+      defaultDuration={defaultDuration}
+      onDurationChange={onDurationChange}
     />
   );
 };

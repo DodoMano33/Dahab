@@ -12,6 +12,8 @@ interface TradingViewSelectorProps {
   onHistoryClick: () => void;
   defaultSymbol?: string;
   defaultPrice?: number | null;
+  defaultDuration?: string;
+  onDurationChange?: (duration: string) => void;
 }
 
 export const TradingViewSelector = ({ 
@@ -19,11 +21,13 @@ export const TradingViewSelector = ({
   isLoading, 
   onHistoryClick,
   defaultSymbol,
-  defaultPrice
+  defaultPrice,
+  defaultDuration,
+  onDurationChange
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [currentPrice, setCurrentPrice] = useState<string>(defaultPrice?.toString() || "");
-  const [customHours, setCustomHours] = useState<string>("8");
+  const [customHours, setCustomHours] = useState<string>(defaultDuration || "8");
 
   useEffect(() => {
     if (defaultSymbol) {
@@ -37,6 +41,19 @@ export const TradingViewSelector = ({
       console.log("Price updated from chart:", defaultPrice);
     }
   }, [defaultPrice]);
+
+  useEffect(() => {
+    if (defaultDuration) {
+      setCustomHours(defaultDuration);
+    }
+  }, [defaultDuration]);
+
+  const handleCustomHoursChange = (value: string) => {
+    setCustomHours(value);
+    if (onDurationChange) {
+      onDurationChange(value);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +112,7 @@ export const TradingViewSelector = ({
 
       <AnalysisDurationInput
         value={customHours}
-        onChange={setCustomHours}
+        onChange={handleCustomHoursChange}
       />
 
       <div className="flex gap-2">

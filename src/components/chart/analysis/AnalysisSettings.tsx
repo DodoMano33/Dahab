@@ -7,21 +7,23 @@ import { RepetitionInput } from "./RepetitionInput";
 import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
-  onTimeframesChange: (timeframes: string[]) => void;
-  onIntervalChange: (interval: string) => void;
-  setIsHistoryOpen: (open: boolean) => void;
+  onTimeframesChange?: (timeframes: string[]) => void;
+  onIntervalChange?: (interval: string) => void;
+  setIsHistoryOpen?: (open: boolean) => void;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   defaultSymbol?: string;
   defaultPrice?: number | null;
+  defaultDuration?: string;
 }
 
 export const AnalysisSettings = ({
-  onTimeframesChange,
-  onIntervalChange,
-  setIsHistoryOpen,
+  onTimeframesChange = () => {},
+  onIntervalChange = () => {},
+  setIsHistoryOpen = () => {},
   onAnalysisComplete,
   defaultSymbol,
-  defaultPrice
+  defaultPrice,
+  defaultDuration
 }: AnalysisSettingsProps) => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
@@ -68,6 +70,9 @@ export const AnalysisSettings = ({
             onAnalysisComplete={onAnalysisComplete}
             repetitions={parseInt(repetitions)}
             setIsHistoryOpen={setIsHistoryOpen}
+            defaultSymbol={defaultSymbol}
+            defaultPrice={defaultPrice}
+            defaultDuration={defaultDuration}
           />
         </div>
       </div>
