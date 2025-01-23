@@ -66,6 +66,7 @@ export type Database = {
       search_history: {
         Row: {
           analysis: Json
+          analysis_duration_hours: number | null
           analysis_expiry_date: string | null
           analysis_type: string
           created_at: string
@@ -84,6 +85,7 @@ export type Database = {
         }
         Insert: {
           analysis: Json
+          analysis_duration_hours?: number | null
           analysis_expiry_date?: string | null
           analysis_type: string
           created_at?: string
@@ -102,6 +104,7 @@ export type Database = {
         }
         Update: {
           analysis?: Json
+          analysis_duration_hours?: number | null
           analysis_expiry_date?: string | null
           analysis_type?: string
           created_at?: string
