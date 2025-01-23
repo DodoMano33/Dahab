@@ -38,7 +38,6 @@ Deno.serve(async (req) => {
   try {
     console.log('Starting analysis check...')
     
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
@@ -48,12 +47,21 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Fetch active analyses
+    // حذف التحليلات المنتهية
+    const { error: deleteError } = await supabase.rpc('delete_expired_analyses')
+    if (deleteError) {
+      console.error('Error deleting expired analyses:', deleteError)
+    }
+
+    // جلب التحليلات النشطة التي لم يتم فحصها من قبل
     const { data: activeAnalyses, error: fetchError } = await supabase
       .from('search_history')
       .select('*')
       .is('target_hit', false)
       .is('stop_loss_hit', false)
+      .is('result_timestamp', null)  // لم يتم فحصها من قبل
+      .is('is_success', null)        // لم يتم تحديد نتيجتها بعد
+      .not('analysis_expiry_date', 'is', null)  // لديها تاريخ انتهاء صالح
 
     if (fetchError) {
       throw fetchError
@@ -67,7 +75,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Group analyses by symbol to minimize API calls
+    // تجميع التحليلات حسب الرمز لتقليل عدد طلبات API
     const analysesBySymbol: { [key: string]: typeof activeAnalyses } = {}
     activeAnalyses.forEach(analysis => {
       if (!analysesBySymbol[analysis.symbol]) {
@@ -76,7 +84,7 @@ Deno.serve(async (req) => {
       analysesBySymbol[analysis.symbol].push(analysis)
     })
 
-    // Process each symbol group
+    // معالجة كل مجموعة رموز
     for (const [symbol, analyses] of Object.entries(analysesBySymbol)) {
       console.log(`Processing symbol: ${symbol}`)
       const currentPrice = await fetchPrice(symbol)
@@ -86,9 +94,11 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Update each analysis for this symbol
+      // تحديث كل تحليل لهذا الرمز
       for (const analysis of analyses) {
-        console.log(`Updating analysis status for ID ${analysis.id}`)
+        console.log(`Checking analysis status for ID ${analysis.id}`)
+        
+        // تحديث حالة التحليل
         const { error: updateError } = await supabase.rpc('update_analysis_status', {
           p_id: analysis.id,
           p_current_price: currentPrice
