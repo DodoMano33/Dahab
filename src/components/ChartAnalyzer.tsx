@@ -1,12 +1,10 @@
 import { useState, useCallback } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
-import { AnalysisForm } from "./chart/analysis/AnalysisForm";
-import { HistoryDialog } from "./chart/history/HistoryDialog";
-import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 import { useSearchHistory } from "./hooks/useSearchHistory";
 import { useBackTest } from "./hooks/useBackTest";
-import { LiveTradingViewChart } from "./chart/LiveTradingViewChart";
-import { AnalysisContainer } from "./chart/analysis/components/AnalysisContainer";
+import { ChartManager } from "./chart/components/ChartManager";
+import { AnalysisManager } from "./chart/analysis/components/AnalysisManager";
+import { HistoryManager } from "./chart/history/components/HistoryManager";
 
 export const ChartAnalyzer = () => {
   const {
@@ -54,11 +52,6 @@ export const ChartAnalyzer = () => {
     setAnalysisDuration(duration);
   };
 
-  const handleHistoryOpen = () => {
-    console.log("Opening history dialog, current state:", isHistoryOpen);
-    setIsHistoryOpen(true);
-  };
-
   const handleHistoryClose = () => {
     console.log("Closing history dialog");
     setIsHistoryOpen(false);
@@ -69,42 +62,31 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="flex flex-col space-y-6 p-6">
-      <LiveTradingViewChart
+      <ChartManager
         symbol={autoSymbol}
         onSymbolChange={handleSymbolChange}
         onPriceUpdate={handlePriceUpdate}
       />
 
-      <AnalysisForm
-        onAnalysis={addToSearchHistory}
+      <AnalysisManager
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}
-        defaultSymbol={autoSymbol}
-        defaultPrice={autoPrice}
-        defaultDuration={analysisDuration}
-        onDurationChange={handleAnalysisDurationChange}
-      />
-
-      <AnalysisSettings
+        autoSymbol={autoSymbol}
+        autoPrice={autoPrice}
+        analysisDuration={analysisDuration}
+        onAnalysis={addToSearchHistory}
         onAnalysisComplete={handleAnalysisComplete}
-        defaultSymbol={autoSymbol}
-        defaultPrice={autoPrice}
-        defaultDuration={analysisDuration}
-      />
-      
-      <AnalysisContainer
+        onDurationChange={handleAnalysisDurationChange}
         image={image}
         analysis={analysis}
-        isAnalyzing={isAnalyzing}
         onClose={() => {
           setImage(null);
           setAnalysis(null);
         }}
         symbol={currentSymbol}
-        currentAnalysis={currentAnalysis}
       />
       
-      <HistoryDialog
+      <HistoryManager
         isOpen={isHistoryOpen}
         onClose={handleHistoryClose}
         history={searchHistory || []}
