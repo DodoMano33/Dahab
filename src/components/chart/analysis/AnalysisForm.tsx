@@ -9,6 +9,8 @@ interface AnalysisFormProps {
   onHistoryClick?: () => void;
   defaultSymbol?: string;
   defaultPrice?: number | null;
+  defaultDuration?: string;
+  onDurationChange?: (duration: string) => void;
 }
 
 export const AnalysisForm = ({ 
@@ -17,16 +19,24 @@ export const AnalysisForm = ({
   currentAnalysis,
   onHistoryClick,
   defaultSymbol,
-  defaultPrice
+  defaultPrice,
+  defaultDuration,
+  onDurationChange
 }: AnalysisFormProps) => {
   const { handleAnalysis } = useAnalysisSubmit({ onAnalysis });
 
   return (
-    <ChartInput
-      mode="tradingview"
-      onTradingViewConfig={handleAnalysis}
-      onHistoryClick={onHistoryClick}
-      isAnalyzing={isAnalyzing}
-    />
+    <div className="space-y-4">
+      <ChartInput
+        mode="tradingview"
+        onTradingViewConfig={handleAnalysis}
+        onHistoryClick={onHistoryClick}
+        isAnalyzing={isAnalyzing}
+        defaultSymbol={defaultSymbol}
+        defaultPrice={defaultPrice}
+        defaultDuration={defaultDuration}
+        onDurationChange={onDurationChange}
+      />
+    </div>
   );
 };
