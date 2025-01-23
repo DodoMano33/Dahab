@@ -23,7 +23,7 @@ export const useSearchHistory = () => {
       const { data, error } = await supabase
         .from('search_history')
         .select('*')
-        .lt('analysis_expiry_date', new Date().toISOString()) // فقط التحليلات غير المنتهية
+        .gt('analysis_expiry_date', new Date().toISOString()) // التحليلات التي لم تنتهي صلاحيتها بعد
         .order('created_at', { ascending: false });
 
       if (error) {
