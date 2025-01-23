@@ -20,7 +20,7 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
         return;
       }
 
-      const shareText = selectedHistory.map(item => generateShareText(item)).join('\n');
+      const shareText = selectedHistory.map(item => generateShareText(item)).join('\n\n---\n\n');
       await navigator.clipboard.writeText(shareText);
       toast.success("تم نسخ المحتوى بنجاح");
     } catch (error) {

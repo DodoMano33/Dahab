@@ -1,25 +1,23 @@
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem } from "@/types/analysis";
 
-export const formatAnalysisData = (analysis: AnalysisData) => {
-  const targets = analysis.targets?.map((target, idx) => 
-    `الهدف ${idx + 1}: ${target.price} (${format(target.expectedTime, 'PPpp', { locale: ar })})`
-  ).join('\n') || 'لا توجد أهداف';
+export const generateShareText = (item: SearchHistoryItem) => {
+  const { symbol, currentPrice, analysis, analysisType, timeframe } = item;
+  
+  const targets = analysis.targets?.map((target, index) => 
+    `الهدف ${index + 1}: ${target.price}`
+  ).join('\n') || '';
 
-  return `الاتجاه: ${analysis.direction}
-نقطة الدخول: ${analysis.bestEntryPoint?.price || 'غير محدد'}
-سبب الدخول: ${analysis.bestEntryPoint?.reason || 'غير محدد'}
+  const bestEntryPoint = analysis.bestEntryPoint 
+    ? `\nأفضل نقطة دخول: ${analysis.bestEntryPoint.price}\nالسبب: ${analysis.bestEntryPoint.reason}`
+    : '';
+
+  return `
+الرمز: ${symbol}
+السعر الحالي: ${currentPrice}
+نوع التحليل: ${analysisType}
+الإطار الزمني: ${timeframe}
+الاتجاه: ${analysis.direction}
 وقف الخسارة: ${analysis.stopLoss}
-الأهداف:
-${targets}`;
+${targets}${bestEntryPoint}
+`.trim();
 };
-
-export const generateShareText = (item: SearchHistoryItem) => `
-تاريخ التحليل: ${format(item.date, 'PPpp', { locale: ar })}
-الرمز: ${item.symbol}
-نوع التحليل: ${item.analysisType}
-الإطار الزمني: ${item.timeframe}
-السعر عند التحليل: ${item.currentPrice}
-${formatAnalysisData(item.analysis)}
-${'-'.repeat(50)}`;

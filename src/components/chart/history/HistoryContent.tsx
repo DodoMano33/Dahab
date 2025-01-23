@@ -1,7 +1,7 @@
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { AnalysisData, SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem } from "@/types/analysis";
 
 interface HistoryContentProps {
   history: SearchHistoryItem[];
