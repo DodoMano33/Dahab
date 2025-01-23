@@ -10,6 +10,7 @@ interface SaveAnalysisParams {
   analysisResult: AnalysisData;
   analysisType: AnalysisType;
   timeframe: string;
+  customHours?: number;
 }
 
 export const saveAnalysis = async ({
@@ -18,7 +19,8 @@ export const saveAnalysis = async ({
   currentPrice,
   analysisResult,
   analysisType,
-  timeframe
+  timeframe,
+  customHours = 8
 }: SaveAnalysisParams) => {
   // Validate required fields
   if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
@@ -38,21 +40,19 @@ export const saveAnalysis = async ({
     current_price: currentPrice,
     analysis: analysisResult,
     analysis_type: analysisType,
-    timeframe
+    timeframe,
+    custom_hours: customHours
   });
 
-  const { data, error } = await supabase
-    .from('search_history')
-    .insert({
-      user_id: userId,
-      symbol,
-      current_price: currentPrice,
-      analysis: analysisResult,
-      analysis_type: analysisType,
-      timeframe
-    })
-    .select()
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('add_analysis_type', {
+    p_user_id: userId,
+    p_symbol: symbol,
+    p_current_price: currentPrice,
+    p_analysis: analysisResult,
+    p_analysis_type: analysisType,
+    p_timeframe: timeframe,
+    p_custom_hours: customHours
+  });
 
   if (error) {
     console.error("Error saving to Supabase:", error);
