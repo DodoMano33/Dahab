@@ -68,6 +68,8 @@ export const AnalysisSettings = ({
             onAnalysisComplete={onAnalysisComplete}
             repetitions={parseInt(repetitions)}
             setIsHistoryOpen={setIsHistoryOpen}
+            defaultSymbol={defaultSymbol}
+            defaultPrice={defaultPrice}
           />
         </div>
       </div>
