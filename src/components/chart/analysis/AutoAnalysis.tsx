@@ -74,7 +74,8 @@ export const AutoAnalysis = ({
     }
   };
 
-  const isButtonDisabled = !defaultSymbol || !defaultPrice;
+  // تحديث شرط تعطيل الزر
+  const isButtonDisabled = !defaultSymbol || defaultPrice === null || defaultPrice === undefined;
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,10 +84,10 @@ export const AutoAnalysis = ({
         disabled={isButtonDisabled}
         className={`${
           isAnalyzing 
-            ? 'bg-red-600 hover:bg-red-700 opacity-100' 
+            ? 'bg-red-600 hover:bg-red-700' 
             : isButtonDisabled 
-              ? 'bg-gray-400 cursor-not-allowed opacity-50'
-              : 'bg-green-600 hover:bg-green-700 opacity-100'
+              ? 'bg-gray-400'
+              : 'bg-green-600 hover:bg-green-700'
         } text-white px-8 py-2 text-lg flex items-center gap-2 h-17 max-w-[600px] w-full transition-all duration-200`}
       >
         {isAnalyzing ? (
