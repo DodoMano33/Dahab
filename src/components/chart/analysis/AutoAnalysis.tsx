@@ -49,7 +49,7 @@ export const AutoAnalysis = ({
       return;
     }
 
-    console.log("Starting auto analysis with symbol:", defaultSymbol);
+    console.log("Starting auto analysis with symbol:", defaultSymbol, "and price:", defaultPrice);
 
     setIsAnalyzing(true);
     try {
@@ -74,8 +74,8 @@ export const AutoAnalysis = ({
     }
   };
 
-  // تحديث شرط تعطيل الزر
-  const isButtonDisabled = !defaultSymbol || defaultPrice === null || defaultPrice === undefined;
+  // تحديث شرط تعطيل الزر بشكل أكثر دقة
+  const isButtonDisabled = !defaultSymbol || !defaultPrice || defaultPrice <= 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -85,9 +85,9 @@ export const AutoAnalysis = ({
         className={`${
           isAnalyzing 
             ? 'bg-red-600 hover:bg-red-700' 
-            : isButtonDisabled 
-              ? 'bg-gray-400'
-              : 'bg-green-600 hover:bg-green-700'
+            : !isButtonDisabled
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-gray-400'
         } text-white px-8 py-2 text-lg flex items-center gap-2 h-17 max-w-[600px] w-full transition-all duration-200`}
       >
         {isAnalyzing ? (
