@@ -24,7 +24,35 @@ export const AnalysisForm = ({
   return (
     <ChartInput
       mode="tradingview"
-      onTradingViewConfig={handleAnalysis}
+      onTradingViewConfig={(
+        symbol: string,
+        timeframe: string,
+        providedPrice?: number,
+        customHours?: number,
+        isScalping?: boolean,
+        isAI?: boolean,
+        isSMC?: boolean,
+        isICT?: boolean,
+        isTurtleSoup?: boolean,
+        isGann?: boolean,
+        isWaves?: boolean,
+        isPatternAnalysis?: boolean,
+        isPriceAction?: boolean
+      ) => handleAnalysis(
+        symbol,
+        timeframe,
+        providedPrice,
+        customHours,
+        isScalping,
+        isAI,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction
+      )}
       onHistoryClick={onHistoryClick}
       isAnalyzing={isAnalyzing}
     />
