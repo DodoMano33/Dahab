@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
 import { AnalysisDurationInput } from "../inputs/AnalysisDurationInput";
-import { toast } from "sonner";
+import { useFormValidation } from "./validation/useFormValidation";
+import { useCombinedAnalysis } from "./handlers/useCombinedAnalysis";
 
 interface ChartAnalysisFormProps {
   onSubmit: (
@@ -40,14 +41,17 @@ export const ChartAnalysisForm = ({
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
-  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
-  const [duration, setDuration] = useState("8"); // القيمة الافتراضية 8 ساعات
+  const [duration, setDuration] = useState("8");
 
-  // تحديث القيم عندما تتغير القيم الافتراضية
-  useEffect(() => {
-    if (defaultSymbol) setSymbol(defaultSymbol);
-    if (defaultPrice) setPrice(defaultPrice.toString());
-  }, [defaultSymbol, defaultPrice]);
+  const { validateInputs } = useFormValidation();
+  const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
+    symbol,
+    defaultSymbol: defaultSymbol || "",
+    price,
+    defaultPrice,
+    timeframe,
+    onSubmit
+  });
 
   const handleSubmit = (
     e: React.MouseEvent,
@@ -63,27 +67,15 @@ export const ChartAnalysisForm = ({
   ) => {
     e.preventDefault();
     
-    if (!symbol && !defaultSymbol) {
-      toast.error("الرجاء إدخال رمز العملة أو انتظار تحميل الشارت");
-      return;
-    }
+    const isValid = validateInputs({
+      symbol,
+      defaultSymbol,
+      price,
+      defaultPrice,
+      duration
+    });
 
-    const providedPrice = price ? Number(price) : defaultPrice;
-    if (!providedPrice) {
-      toast.error("الرجاء إدخال السعر أو انتظار تحميل الشارت");
-      return;
-    }
-
-    if (isNaN(providedPrice)) {
-      toast.error("الرجاء إدخال سعر صحيح");
-      return;
-    }
-
-    const durationHours = Number(duration);
-    if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
-      toast.error("الرجاء إدخال مدة صالحة بين 1 و 72 ساعة");
-      return;
-    }
+    if (!isValid) return;
 
     if (isAI) {
       setIsAIDialogOpen(true);
@@ -91,8 +83,8 @@ export const ChartAnalysisForm = ({
     }
     
     console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
-    console.log("Price Action Analysis:", isPriceAction);
     
+    const providedPrice = price ? Number(price) : defaultPrice;
     onSubmit(
       symbol || defaultSymbol || "",
       timeframe,
@@ -106,43 +98,6 @@ export const ChartAnalysisForm = ({
       isWaves,
       isPatternAnalysis,
       isPriceAction
-    );
-  };
-
-  const handleCombinedAnalysis = (selectedTypes: string[]) => {
-    const providedPrice = price ? Number(price) : defaultPrice;
-    if (!providedPrice) {
-      toast.error("الرجاء إدخال السعر الحالي للتحليل المدمج أو انتظار تحميل الشارت");
-      return;
-    }
-
-    console.log("Starting combined analysis with types:", selectedTypes);
-    
-    const analysisFlags = {
-      isScalping: selectedTypes.includes("scalping"),
-      isAI: true,
-      isSMC: selectedTypes.includes("smc"),
-      isICT: selectedTypes.includes("ict"),
-      isTurtleSoup: selectedTypes.includes("turtleSoup"),
-      isGann: selectedTypes.includes("gann"),
-      isWaves: selectedTypes.includes("waves"),
-      isPatternAnalysis: selectedTypes.includes("patterns"),
-      isPriceAction: selectedTypes.includes("priceAction")
-    };
-
-    onSubmit(
-      symbol || defaultSymbol || "",
-      timeframe,
-      providedPrice,
-      analysisFlags.isScalping,
-      analysisFlags.isAI,
-      analysisFlags.isSMC,
-      analysisFlags.isICT,
-      analysisFlags.isTurtleSoup,
-      analysisFlags.isGann,
-      analysisFlags.isWaves,
-      analysisFlags.isPatternAnalysis,
-      analysisFlags.isPriceAction
     );
   };
 
