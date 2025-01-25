@@ -27,6 +27,8 @@ export const HistoryContent = ({
   onSelect,
   onDelete,
 }: HistoryContentProps) => {
+  console.log("HistoryContent history:", history); // للتأكد من البيانات
+
   return (
     <div className="relative rounded-md border bg-background h-full overflow-y-auto">
       <div className="overflow-x-auto">
@@ -37,7 +39,7 @@ export const HistoryContent = ({
               <HistoryRow
                 key={item.id}
                 {...item}
-                durationHours={item.analysis_duration_hours}
+                analysis_duration_hours={item.analysis_duration_hours}
                 isSelected={selectedItems.has(item.id)}
                 onSelect={() => onSelect(item.id)}
               />

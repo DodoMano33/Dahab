@@ -15,6 +15,8 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Expiry
   const [isExpired, setIsExpired] = useState(false);
   const [deletionTimeout, setDeletionTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  console.log("ExpiryTimer durationHours:", durationHours); // للتأكد من وصول القيمة
+
   const deleteAnalysis = async () => {
     try {
       console.log('Deleting expired analysis:', analysisId);
@@ -41,17 +43,16 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Expiry
     const updateTimer = () => {
       const now = new Date();
       const expiryDate = new Date(createdAt);
-      expiryDate.setHours(expiryDate.getHours() + durationHours);
+      expiryDate.setHours(expiryDate.getHours() + (durationHours || 8));
 
       if (now >= expiryDate) {
         if (!isExpired) {
           setIsExpired(true);
           setTimeLeft("منتهي");
           
-          // Set timeout to delete after 1 minute
           const timeout = setTimeout(() => {
             deleteAnalysis();
-          }, 60000); // 60000ms = 1 minute
+          }, 60000);
           
           setDeletionTimeout(timeout);
         }

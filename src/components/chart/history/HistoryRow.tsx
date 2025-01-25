@@ -20,7 +20,7 @@ interface HistoryRowProps {
   timeframe: string;
   isSelected?: boolean;
   onSelect?: () => void;
-  durationHours?: number;
+  analysis_duration_hours?: number;
 }
 
 export const HistoryRow = ({
@@ -33,8 +33,10 @@ export const HistoryRow = ({
   timeframe,
   isSelected,
   onSelect,
-  durationHours = 8,
+  analysis_duration_hours,
 }: HistoryRowProps) => {
+  console.log("HistoryRow analysis_duration_hours:", analysis_duration_hours); // للتأكد من وصول القيمة
+
   return (
     <TableRow>
       {onSelect && (
@@ -79,7 +81,7 @@ export const HistoryRow = ({
         <ExpiryTimer 
           createdAt={date} 
           analysisId={id} 
-          durationHours={durationHours}
+          durationHours={analysis_duration_hours}
         />
       </TableCell>
     </TableRow>
