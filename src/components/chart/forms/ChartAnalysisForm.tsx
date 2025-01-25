@@ -4,6 +4,7 @@ import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
+import { AnalysisDurationInput } from "../inputs/AnalysisDurationInput";
 import { toast } from "sonner";
 
 interface ChartAnalysisFormProps {
@@ -40,6 +41,7 @@ export const ChartAnalysisForm = ({
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+  const [duration, setDuration] = useState("8"); // القيمة الافتراضية 8 ساعات
 
   // تحديث القيم عندما تتغير القيم الافتراضية
   useEffect(() => {
@@ -77,12 +79,18 @@ export const ChartAnalysisForm = ({
       return;
     }
 
+    const durationHours = Number(duration);
+    if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
+      toast.error("الرجاء إدخال مدة صالحة بين 1 و 72 ساعة");
+      return;
+    }
+
     if (isAI) {
       setIsAIDialogOpen(true);
       return;
     }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe}`);
+    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
     console.log("Price Action Analysis:", isPriceAction);
     
     onSubmit(
@@ -149,6 +157,10 @@ export const ChartAnalysisForm = ({
         value={price} 
         onChange={setPrice}
         defaultValue={defaultPrice?.toString()}
+      />
+      <AnalysisDurationInput
+        value={duration}
+        onChange={setDuration}
       />
       <TimeframeInput value={timeframe} onChange={setTimeframe} />
       <AnalysisButtonGroup
