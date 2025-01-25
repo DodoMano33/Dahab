@@ -7,9 +7,10 @@ import { toast } from 'sonner';
 interface ExpiryTimerProps {
   createdAt: Date;
   analysisId: string;
+  durationHours?: number;
 }
 
-export const ExpiryTimer = ({ createdAt, analysisId }: ExpiryTimerProps) => {
+export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: ExpiryTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
   const [deletionTimeout, setDeletionTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -40,7 +41,7 @@ export const ExpiryTimer = ({ createdAt, analysisId }: ExpiryTimerProps) => {
     const updateTimer = () => {
       const now = new Date();
       const expiryDate = new Date(createdAt);
-      expiryDate.setHours(expiryDate.getHours() + 8);
+      expiryDate.setHours(expiryDate.getHours() + durationHours);
 
       if (now >= expiryDate) {
         if (!isExpired) {
@@ -73,7 +74,7 @@ export const ExpiryTimer = ({ createdAt, analysisId }: ExpiryTimerProps) => {
         clearTimeout(deletionTimeout);
       }
     };
-  }, [createdAt, isExpired, analysisId]);
+  }, [createdAt, isExpired, analysisId, durationHours]);
 
   return (
     <Badge variant={isExpired ? "destructive" : "secondary"}>

@@ -20,6 +20,7 @@ interface HistoryRowProps {
   timeframe: string;
   isSelected?: boolean;
   onSelect?: () => void;
+  durationHours?: number;
 }
 
 export const HistoryRow = ({
@@ -32,6 +33,7 @@ export const HistoryRow = ({
   timeframe,
   isSelected,
   onSelect,
+  durationHours = 8,
 }: HistoryRowProps) => {
   return (
     <TableRow>
@@ -73,7 +75,13 @@ export const HistoryRow = ({
           reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
-      <TableCell><ExpiryTimer createdAt={date} analysisId={id} /></TableCell>
+      <TableCell>
+        <ExpiryTimer 
+          createdAt={date} 
+          analysisId={id} 
+          durationHours={durationHours}
+        />
+      </TableCell>
     </TableRow>
   );
 };
