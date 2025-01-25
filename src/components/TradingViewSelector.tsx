@@ -22,21 +22,13 @@ export const TradingViewSelector = ({
   defaultPrice
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
-  const [currentPrice, setCurrentPrice] = useState<string>(defaultPrice?.toString() || "");
+  const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
   const [customHours, setCustomHours] = useState<string>("8");
 
   useEffect(() => {
-    if (defaultSymbol) {
-      setSymbol(defaultSymbol);
-    }
-  }, [defaultSymbol]);
-
-  useEffect(() => {
-    if (defaultPrice !== undefined && defaultPrice !== null) {
-      setCurrentPrice(defaultPrice.toString());
-      console.log("Price updated from chart:", defaultPrice);
-    }
-  }, [defaultPrice]);
+    if (defaultSymbol) setSymbol(defaultSymbol);
+    if (defaultPrice) setCurrentPrice(defaultPrice.toString());
+  }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
