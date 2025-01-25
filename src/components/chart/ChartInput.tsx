@@ -6,7 +6,6 @@ interface ChartInputProps {
     symbol: string,
     timeframe: string,
     providedPrice?: number,
-    customHours?: number,
     isScalping?: boolean,
     isAI?: boolean,
     isSMC?: boolean,
@@ -17,7 +16,7 @@ interface ChartInputProps {
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean
   ) => void;
-  onHistoryClick?: () => void;
+  onHistoryClick?: () => void;  // Made optional with ?
   isAnalyzing: boolean;
 }
 

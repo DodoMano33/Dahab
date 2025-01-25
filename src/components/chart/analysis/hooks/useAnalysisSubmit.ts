@@ -19,7 +19,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     symbol: string, 
     timeframe: string, 
     providedPrice?: number,
-    customHours: number = 8,
     isScalping: boolean = false,
     isAI: boolean = false,
     isSMC: boolean = false,
@@ -38,11 +37,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
 
       if (!symbol || !timeframe || !providedPrice) {
         toast.error("جميع الحقول مطلوبة");
-        return;
-      }
-
-      if (customHours < 1 || customHours > 72) {
-        toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
         return;
       }
 
@@ -99,8 +93,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
             currentPrice,
             analysisResult,
             analysisType,
-            timeframe,
-            customHours
+            timeframe
           });
 
           if (savedData) {

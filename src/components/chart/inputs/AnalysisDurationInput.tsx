@@ -8,11 +8,10 @@ interface AnalysisDurationInputProps {
 export const AnalysisDurationInput = ({ value, onChange }: AnalysisDurationInputProps) => {
   return (
     <div>
-      <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
         مدة بقاء التحليل (بالساعات)
       </label>
       <Input
-        id="duration"
         type="number"
         min="1"
         max="72"
