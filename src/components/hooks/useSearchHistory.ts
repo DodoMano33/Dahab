@@ -22,7 +22,7 @@ export const useSearchHistory = () => {
       console.log("Fetching search history...");
       const { data, error } = await supabase
         .from('search_history')
-        .select('*')
+        .select('*, analysis_duration_hours')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -41,7 +41,8 @@ export const useSearchHistory = () => {
         analysisType: item.analysis_type,
         timeframe: item.timeframe || '1d',
         targetHit: item.target_hit || false,
-        stopLossHit: item.stop_loss_hit || false
+        stopLossHit: item.stop_loss_hit || false,
+        analysis_duration_hours: item.analysis_duration_hours || 8
       }));
 
       setSearchHistory(formattedHistory);

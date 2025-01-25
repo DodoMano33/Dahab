@@ -1,7 +1,18 @@
 import { HistoryContent } from "./HistoryContent";
 
 interface SearchHistoryMainProps {
-  history: any[];
+  history: Array<{
+    id: string;
+    date: Date;
+    symbol: string;
+    currentPrice: number;
+    analysis: any;
+    targetHit?: boolean;
+    stopLossHit?: boolean;
+    analysisType: string;
+    timeframe: string;
+    analysis_duration_hours?: number;
+  }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;

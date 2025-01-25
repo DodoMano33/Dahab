@@ -1,10 +1,21 @@
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { SearchHistoryItem } from "@/types/analysis";
+import { AnalysisData } from "@/types/analysis";
 
 interface HistoryContentProps {
-  history: SearchHistoryItem[];
+  history: Array<{
+    id: string;
+    date: Date;
+    symbol: string;
+    currentPrice: number;
+    analysis: AnalysisData;
+    targetHit?: boolean;
+    stopLossHit?: boolean;
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+    timeframe: string;
+    analysis_duration_hours?: number;
+  }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
@@ -26,6 +37,7 @@ export const HistoryContent = ({
               <HistoryRow
                 key={item.id}
                 {...item}
+                durationHours={item.analysis_duration_hours}
                 isSelected={selectedItems.has(item.id)}
                 onSelect={() => onSelect(item.id)}
               />
