@@ -1,4 +1,5 @@
 import { HistoryContent } from "./HistoryContent";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 
 interface SearchHistoryMainProps {
   history: Array<{
@@ -6,10 +7,10 @@ interface SearchHistoryMainProps {
     date: Date;
     symbol: string;
     currentPrice: number;
-    analysis: any;
+    analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
-    analysisType: string;
+    analysisType: AnalysisType;
     timeframe: string;
     analysis_duration_hours?: number;
   }>;

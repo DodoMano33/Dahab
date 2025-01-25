@@ -1,15 +1,26 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { HistoryContent } from "./HistoryContent";
 import { SearchHistoryHeader } from "./SearchHistoryHeader";
-import { SearchHistoryItem } from "@/types/analysis";
-import { useState } from "react";
 import { HistoryActions } from "./HistoryActions";
+import { useState } from "react";
 import { toast } from "sonner";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 
 interface HistoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  history: SearchHistoryItem[];
+  history: Array<{
+    id: string;
+    date: Date;
+    symbol: string;
+    currentPrice: number;
+    analysis: AnalysisData;
+    analysisType: AnalysisType;
+    timeframe: string;
+    targetHit?: boolean;
+    stopLossHit?: boolean;
+    analysis_duration_hours?: number;
+  }>;
   onDelete: (id: string) => void;
 }
 

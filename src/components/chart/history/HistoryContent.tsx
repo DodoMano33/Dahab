@@ -1,7 +1,7 @@
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 
 interface HistoryContentProps {
   history: Array<{
@@ -12,7 +12,7 @@ interface HistoryContentProps {
     analysis: AnalysisData;
     targetHit?: boolean;
     stopLossHit?: boolean;
-    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+    analysisType: AnalysisType;
     timeframe: string;
     analysis_duration_hours?: number;
   }>;
