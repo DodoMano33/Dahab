@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 type AuthContextType = {
   user: User | null;
@@ -16,9 +17,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log("AuthProvider: Initializing auth state");
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("AuthProvider: Auth state changed", { event: _event, hasSession: !!session });
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+        toast.error('حدث خطأ أثناء تحميل بيانات المستخدم');
+      }
       setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Set up auth subscription
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("AuthProvider: Auth state changed", { event, hasSession: !!session });
+      
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        // Clear any stored tokens
+        localStorage.removeItem('supabase.auth.token');
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session?.user ?? null);
+      }
+      
       setLoading(false);
     });
 
