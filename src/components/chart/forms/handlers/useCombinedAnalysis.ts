@@ -6,6 +6,7 @@ interface CombinedAnalysisProps {
   price: string;
   defaultPrice: number | null;
   timeframe: string;
+  duration: string;
   onSubmit: (
     symbol: string,
     timeframe: string,
@@ -18,7 +19,8 @@ interface CombinedAnalysisProps {
     isGann?: boolean,
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
-    isPriceAction?: boolean
+    isPriceAction?: boolean,
+    duration?: string
   ) => void;
 }
 
@@ -28,6 +30,7 @@ export const useCombinedAnalysis = ({
   price,
   defaultPrice,
   timeframe,
+  duration,
   onSubmit
 }: CombinedAnalysisProps) => {
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
@@ -61,7 +64,8 @@ export const useCombinedAnalysis = ({
       analysisFlags.isGann,
       analysisFlags.isWaves,
       analysisFlags.isPatternAnalysis,
-      analysisFlags.isPriceAction
+      analysisFlags.isPriceAction,
+      duration
     );
   };
 
