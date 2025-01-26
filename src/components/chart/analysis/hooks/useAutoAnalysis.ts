@@ -38,20 +38,20 @@ export const useAutoAnalysis = () => {
     }
 
     setIsAnalyzing(true);
-    console.log("Starting auto analysis with config:", { ...config, symbol });
+    console.log("Starting auto analysis with config:", { ...config, symbol, duration });
 
     const runAnalysis = async () => {
       try {
         for (const timeframe of timeframes) {
           for (const analysisType of analysisTypes) {
-            console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType}`);
+            console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
               currentPrice,
               analysisType === "scalping",
-              false, // isAI
+              false,
               analysisType === "smc",
               analysisType === "ict",
               analysisType === "turtle_soup",

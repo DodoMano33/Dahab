@@ -57,7 +57,7 @@ export const AutoAnalysis = ({
       return;
     }
 
-    console.log("Starting auto analysis with symbol:", symbol);
+    console.log("Starting auto analysis with symbol:", symbol, "and duration:", durationHours);
 
     setIsAnalyzing(true);
     try {
