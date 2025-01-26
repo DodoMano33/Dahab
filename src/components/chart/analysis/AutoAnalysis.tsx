@@ -11,6 +11,7 @@ interface AutoAnalysisProps {
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
   repetitions: number;
   setIsHistoryOpen: (open: boolean) => void;
+  duration?: string;
 }
 
 export const AutoAnalysis = ({
@@ -19,7 +20,8 @@ export const AutoAnalysis = ({
   selectedAnalysisTypes,
   onAnalysisComplete,
   repetitions,
-  setIsHistoryOpen
+  setIsHistoryOpen,
+  duration = "8"
 }: AutoAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
@@ -31,15 +33,13 @@ export const AutoAnalysis = ({
       return;
     }
 
-    // Get the symbol input value
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
     const symbol = symbolInput?.value;
 
-    // Get the price input value
     const priceInput = document.querySelector('input#price') as HTMLInputElement;
     const currentPrice = priceInput ? Number(priceInput.value) : undefined;
 
-    console.log("Auto analysis inputs:", { symbol, currentPrice });
+    console.log("Auto analysis inputs:", { symbol, currentPrice, duration });
 
     if (!symbol) {
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
@@ -48,6 +48,12 @@ export const AutoAnalysis = ({
 
     if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) {
       toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      return;
+    }
+
+    const durationHours = Number(duration);
+    if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
+      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
       return;
     }
 
@@ -62,6 +68,7 @@ export const AutoAnalysis = ({
         repetitions,
         currentPrice,
         symbol,
+        duration: durationHours,
         onAnalysisComplete: (result) => {
           console.log("Auto analysis result:", result);
           if (result && onAnalysisComplete) {

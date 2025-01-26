@@ -4,6 +4,7 @@ import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
 import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
+import { AnalysisDurationInput } from "./inputs/AnalysisDurationInput";
 import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
@@ -27,6 +28,7 @@ export const AnalysisSettings = ({
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [repetitions, setRepetitions] = useState<string>("1");
+  const [duration, setDuration] = useState<string>("8");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
@@ -56,10 +58,18 @@ export const AnalysisSettings = ({
       </div>
 
       <div className="flex flex-col md:flex-row items-start gap-4">
-        <RepetitionInput
-          repetitions={repetitions}
-          onRepetitionsChange={setRepetitions}
-        />
+        <div className="w-full md:w-1/3">
+          <RepetitionInput
+            repetitions={repetitions}
+            onRepetitionsChange={setRepetitions}
+          />
+        </div>
+        <div className="w-full md:w-1/3">
+          <AnalysisDurationInput
+            value={duration}
+            onChange={setDuration}
+          />
+        </div>
         <div className="flex-1">
           <AutoAnalysis
             selectedTimeframes={selectedTimeframes}
@@ -68,6 +78,7 @@ export const AnalysisSettings = ({
             onAnalysisComplete={onAnalysisComplete}
             repetitions={parseInt(repetitions)}
             setIsHistoryOpen={setIsHistoryOpen}
+            duration={duration}
           />
         </div>
       </div>

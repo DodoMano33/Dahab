@@ -13,6 +13,7 @@ interface AutoAnalysisConfig {
   repetitions: number;
   currentPrice: number;
   symbol: string;
+  duration: number;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
 }
 
@@ -22,7 +23,7 @@ export const useAutoAnalysis = () => {
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();
 
-  const validateInputs = (timeframes: string[], interval: string, analysisTypes: string[], currentPrice?: number) => {
+  const validateInputs = (timeframes: string[], interval: string, analysisTypes: string[], currentPrice?: number, duration?: number) => {
     if (timeframes.length === 0) {
       toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
       return false;
@@ -43,6 +44,11 @@ export const useAutoAnalysis = () => {
       return false;
     }
 
+    if (!duration || duration < 1 || duration > 72) {
+      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
+      return false;
+    }
+
     return true;
   };
 
@@ -59,14 +65,14 @@ export const useAutoAnalysis = () => {
   };
 
   const startAutoAnalysis = async (config: AutoAnalysisConfig) => {
-    const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, onAnalysisComplete } = config;
+    const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, duration, onAnalysisComplete } = config;
 
     if (!user) {
       toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
       return;
     }
 
-    if (!validateInputs(timeframes, interval, analysisTypes, currentPrice)) {
+    if (!validateInputs(timeframes, interval, analysisTypes, currentPrice, duration)) {
       return;
     }
 
@@ -90,7 +96,8 @@ export const useAutoAnalysis = () => {
               analysisType === "gann",
               analysisType === "waves",
               analysisType === "patterns",
-              analysisType === "price_action"
+              analysisType === "price_action",
+              duration.toString()
             );
 
             if (result && result.analysisResult) {
@@ -105,7 +112,8 @@ export const useAutoAnalysis = () => {
                   currentPrice: currentPrice,
                   analysisResult: result.analysisResult,
                   analysisType: mappedAnalysisType,
-                  timeframe: timeframe
+                  timeframe: timeframe,
+                  durationHours: duration
                 });
 
                 if (savedData && onAnalysisComplete) {
@@ -118,7 +126,8 @@ export const useAutoAnalysis = () => {
                     targetHit: false,
                     stopLossHit: false,
                     analysisType: mappedAnalysisType,
-                    timeframe: timeframe
+                    timeframe: timeframe,
+                    analysis_duration_hours: duration
                   };
                   
                   console.log("Adding new analysis to history:", newHistoryEntry);
@@ -137,10 +146,8 @@ export const useAutoAnalysis = () => {
       }
     };
 
-    // Run initial analysis
     await runAnalysis();
 
-    // Set up interval for repeated analysis
     if (repetitions > 1) {
       const intervalId = setInterval(runAnalysis, getIntervalInMs(interval));
       setAnalysisInterval(intervalId);
