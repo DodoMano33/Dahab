@@ -96,7 +96,8 @@ export const useAutoAnalysis = () => {
               analysisType === "gann",
               analysisType === "waves",
               analysisType === "patterns",
-              analysisType === "price_action"
+              analysisType === "price_action",
+              duration.toString()
             );
 
             if (result && result.analysisResult) {
@@ -112,7 +113,7 @@ export const useAutoAnalysis = () => {
                   analysisResult: result.analysisResult,
                   analysisType: mappedAnalysisType,
                   timeframe: timeframe,
-                  durationHours: Number(duration)
+                  durationHours: duration
                 });
 
                 if (savedData && onAnalysisComplete) {
@@ -126,7 +127,7 @@ export const useAutoAnalysis = () => {
                     stopLossHit: false,
                     analysisType: mappedAnalysisType,
                     timeframe: timeframe,
-                    analysis_duration_hours: Number(duration)
+                    analysis_duration_hours: duration
                   };
                   
                   console.log("Adding new analysis to history:", newHistoryEntry);
