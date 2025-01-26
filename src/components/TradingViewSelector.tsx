@@ -23,7 +23,7 @@ export const TradingViewSelector = ({
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
-  const [customHours, setCustomHours] = useState<string>("8");
+  const [customHours, setCustomHours] = useState<string>("24");
 
   useEffect(() => {
     if (defaultSymbol) setSymbol(defaultSymbol);

@@ -28,7 +28,7 @@ export const AnalysisSettings = ({
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [repetitions, setRepetitions] = useState<string>("1");
-  const [duration, setDuration] = useState<string>("8");
+  const [duration, setDuration] = useState<string>("24");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
