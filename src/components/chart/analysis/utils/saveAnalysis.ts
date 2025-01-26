@@ -10,6 +10,7 @@ interface SaveAnalysisParams {
   analysisResult: AnalysisData;
   analysisType: AnalysisType;
   timeframe: string;
+  durationHours?: number;
 }
 
 export const saveAnalysis = async ({
@@ -18,7 +19,8 @@ export const saveAnalysis = async ({
   currentPrice,
   analysisResult,
   analysisType,
-  timeframe
+  timeframe,
+  durationHours = 8
 }: SaveAnalysisParams) => {
   // Validate required fields
   if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
@@ -32,13 +34,14 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  console.log("Inserting analysis data:", {
+  console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,
     current_price: currentPrice,
     analysis: analysisResult,
     analysis_type: analysisType,
-    timeframe
+    timeframe,
+    analysis_duration_hours: durationHours
   });
 
   const { data, error } = await supabase
@@ -49,7 +52,8 @@ export const saveAnalysis = async ({
       current_price: currentPrice,
       analysis: analysisResult,
       analysis_type: analysisType,
-      timeframe
+      timeframe,
+      analysis_duration_hours: durationHours
     })
     .select()
     .maybeSingle();

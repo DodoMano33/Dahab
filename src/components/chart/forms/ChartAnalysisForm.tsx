@@ -21,7 +21,8 @@ interface ChartAnalysisFormProps {
     isGann?: boolean,
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
-    isPriceAction?: boolean
+    isPriceAction?: boolean,
+    duration?: string
   ) => void;
   isAnalyzing: boolean;
   onHistoryClick: () => void;
@@ -50,6 +51,7 @@ export const ChartAnalysisForm = ({
     price,
     defaultPrice,
     timeframe,
+    duration,
     onSubmit
   });
 
@@ -97,7 +99,8 @@ export const ChartAnalysisForm = ({
       isGann,
       isWaves,
       isPatternAnalysis,
-      isPriceAction
+      isPriceAction,
+      duration
     );
   };
 

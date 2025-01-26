@@ -27,7 +27,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isGann: boolean = false,
     isWaves: boolean = false,
     isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false
+    isPriceAction: boolean = false,
+    duration?: string
   ) => {
     try {
       if (!user) {
@@ -37,6 +38,13 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
 
       if (!symbol || !timeframe || !providedPrice) {
         toast.error("جميع الحقول مطلوبة");
+        return;
+      }
+
+      // التحقق من صحة مدة التحليل
+      const durationHours = duration ? parseInt(duration) : 8;
+      if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
+        toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
         return;
       }
 
@@ -87,13 +95,15 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         );
 
         try {
+          console.log("Saving analysis with duration:", durationHours);
           const savedData = await saveAnalysis({
             userId: user.id,
             symbol: upperSymbol,
             currentPrice,
             analysisResult,
             analysisType,
-            timeframe
+            timeframe,
+            durationHours
           });
 
           if (savedData) {
@@ -106,7 +116,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
               targetHit: false,
               stopLossHit: false,
               analysisType,
-              timeframe
+              timeframe,
+              analysis_duration_hours: durationHours
             };
 
             onAnalysis(newHistoryEntry);
