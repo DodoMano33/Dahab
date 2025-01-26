@@ -10,12 +10,10 @@ interface ExpiryTimerProps {
   durationHours?: number;
 }
 
-export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: ExpiryTimerProps) => {
+export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 24 }: ExpiryTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
   const [deletionTimeout, setDeletionTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  console.log("ExpiryTimer durationHours:", durationHours); // للتأكد من وصول القيمة
 
   const deleteAnalysis = async () => {
     try {
@@ -43,16 +41,17 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Expiry
     const updateTimer = () => {
       const now = new Date();
       const expiryDate = new Date(createdAt);
-      expiryDate.setHours(expiryDate.getHours() + (durationHours || 8));
+      expiryDate.setHours(expiryDate.getHours() + (durationHours || 24));
 
       if (now >= expiryDate) {
         if (!isExpired) {
           setIsExpired(true);
           setTimeLeft("منتهي");
           
+          // حذف التحليل بعد 5 دقائق من انتهاء صلاحيته
           const timeout = setTimeout(() => {
             deleteAnalysis();
-          }, 60000);
+          }, 5 * 60 * 1000); // 5 دقائق بالميلي ثانية
           
           setDeletionTimeout(timeout);
         }
