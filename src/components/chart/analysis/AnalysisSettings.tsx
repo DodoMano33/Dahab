@@ -4,7 +4,7 @@ import { IntervalAnalysis } from "./IntervalAnalysis";
 import { AnalysisTypes } from "./AnalysisTypes";
 import { AutoAnalysis } from "./AutoAnalysis";
 import { RepetitionInput } from "./RepetitionInput";
-import { AnalysisDurationInput } from "./inputs/AnalysisDurationInput";
+import { AnalysisDurationInput } from "@/components/chart/inputs/AnalysisDurationInput";
 import { SearchHistoryItem } from "@/types/analysis";
 
 interface AnalysisSettingsProps {
