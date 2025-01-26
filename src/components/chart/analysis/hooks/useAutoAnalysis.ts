@@ -84,21 +84,20 @@ export const useAutoAnalysis = () => {
         for (const timeframe of timeframes) {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType}`);
-            const result = await handleTradingViewConfig({
+            const result = await handleTradingViewConfig(
               symbol,
               timeframe,
               currentPrice,
-              isScalping: analysisType === "scalping",
-              isAI: false,
-              isSMC: analysisType === "smc",
-              isICT: analysisType === "ict",
-              isTurtleSoup: analysisType === "turtle_soup",
-              isGann: analysisType === "gann",
-              isWaves: analysisType === "waves",
-              isPatterns: analysisType === "patterns",
-              isPriceAction: analysisType === "price_action",
-              duration: duration.toString()
-            });
+              analysisType === "scalping",
+              false,
+              analysisType === "smc",
+              analysisType === "ict",
+              analysisType === "turtle_soup",
+              analysisType === "gann",
+              analysisType === "waves",
+              analysisType === "patterns",
+              analysisType === "price_action"
+            );
 
             if (result && result.analysisResult) {
               console.log("Analysis completed successfully:", result);
