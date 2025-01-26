@@ -98,8 +98,7 @@ export const useAutoAnalysis = () => {
               analysisType === "gann",
               analysisType === "waves",
               analysisType === "patterns",
-              analysisType === "price_action",
-              duration.toString()
+              analysisType === "price_action"
             );
 
             if (result && result.analysisResult) {
