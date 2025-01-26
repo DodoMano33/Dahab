@@ -84,12 +84,14 @@ export const useAutoAnalysis = () => {
         for (const timeframe of timeframes) {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType}`);
+            
+            // Pass only the required arguments in the correct order
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
               currentPrice,
               analysisType === "scalping",
-              false,
+              false, // isAI
               analysisType === "smc",
               analysisType === "ict",
               analysisType === "turtle_soup",
