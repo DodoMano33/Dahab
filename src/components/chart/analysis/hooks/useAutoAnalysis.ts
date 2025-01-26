@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { saveAnalysis } from "../utils/saveAnalysis";
 import { SearchHistoryItem } from "@/types/analysis";
-import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { useAnalysisHandler } from "../AnalysisHandler";
+import { validateAnalysisInputs } from "../utils/analysisValidation";
+import { getIntervalInMs } from "../utils/intervalUtils";
+import { useSaveAnalysis } from "./useSaveAnalysis";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -22,47 +23,7 @@ export const useAutoAnalysis = () => {
   const [analysisInterval, setAnalysisInterval] = useState<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
   const { handleTradingViewConfig } = useAnalysisHandler();
-
-  const validateInputs = (timeframes: string[], interval: string, analysisTypes: string[], currentPrice?: number, duration?: number) => {
-    if (timeframes.length === 0) {
-      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
-      return false;
-    }
-
-    if (!interval) {
-      toast.error("الرجاء اختيار الفاصل الزمني");
-      return false;
-    }
-
-    if (analysisTypes.length === 0) {
-      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
-      return false;
-    }
-
-    if (!currentPrice) {
-      toast.error("الرجاء إدخال السعر الحالي للتحليل");
-      return false;
-    }
-
-    if (!duration || duration < 1 || duration > 72) {
-      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
-      return false;
-    }
-
-    return true;
-  };
-
-  const getIntervalInMs = (interval: string) => {
-    const intervals: { [key: string]: number } = {
-      "1m": 60000,
-      "5m": 300000,
-      "30m": 1800000,
-      "1h": 3600000,
-      "4h": 14400000,
-      "1d": 86400000
-    };
-    return intervals[interval] || 60000;
-  };
+  const { saveAnalysisResult } = useSaveAnalysis();
 
   const startAutoAnalysis = async (config: AutoAnalysisConfig) => {
     const { timeframes, interval, analysisTypes, repetitions, currentPrice, symbol, duration, onAnalysisComplete } = config;
@@ -72,7 +33,7 @@ export const useAutoAnalysis = () => {
       return;
     }
 
-    if (!validateInputs(timeframes, interval, analysisTypes, currentPrice, duration)) {
+    if (!validateAnalysisInputs(timeframes, interval, analysisTypes, currentPrice, duration)) {
       return;
     }
 
@@ -85,7 +46,6 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType}`);
             
-            // Pass only the required arguments in the correct order
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
@@ -104,40 +64,16 @@ export const useAutoAnalysis = () => {
             if (result && result.analysisResult) {
               console.log("Analysis completed successfully:", result);
               
-              try {
-                const mappedAnalysisType = mapToAnalysisType(analysisType);
-                
-                const savedData = await saveAnalysis({
-                  userId: user.id,
-                  symbol: symbol,
-                  currentPrice: currentPrice,
-                  analysisResult: result.analysisResult,
-                  analysisType: mappedAnalysisType,
-                  timeframe: timeframe,
-                  durationHours: duration
-                });
-
-                if (savedData && onAnalysisComplete) {
-                  const newHistoryEntry: SearchHistoryItem = {
-                    id: savedData.id,
-                    date: new Date(),
-                    symbol: symbol,
-                    currentPrice: currentPrice,
-                    analysis: result.analysisResult,
-                    targetHit: false,
-                    stopLossHit: false,
-                    analysisType: mappedAnalysisType,
-                    timeframe: timeframe,
-                    analysis_duration_hours: duration
-                  };
-                  
-                  console.log("Adding new analysis to history:", newHistoryEntry);
-                  onAnalysisComplete(newHistoryEntry);
-                }
-              } catch (saveError) {
-                console.error("Error saving analysis:", saveError);
-                toast.error("حدث خطأ أثناء حفظ التحليل");
-              }
+              await saveAnalysisResult({
+                userId: user.id,
+                symbol,
+                currentPrice,
+                result,
+                analysisType,
+                timeframe,
+                duration,
+                onAnalysisComplete
+              });
             }
           }
         }
