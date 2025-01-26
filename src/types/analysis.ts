@@ -39,4 +39,29 @@ export interface SearchHistoryItem {
   stopLossHit?: boolean;
   analysisType: AnalysisType;
   timeframe: string;
+  analysis_duration_hours?: number;
+}
+
+export interface CombinedAnalysisProps {
+  symbol: string;
+  defaultSymbol: string;
+  price: string;
+  defaultPrice: number | null;
+  timeframe: string;
+  duration?: string;
+  onSubmit: (
+    symbol: string,
+    timeframe: string,
+    providedPrice?: number,
+    isScalping?: boolean,
+    isAI?: boolean,
+    isSMC?: boolean,
+    isICT?: boolean,
+    isTurtleSoup?: boolean,
+    isGann?: boolean,
+    isWaves?: boolean,
+    isPatternAnalysis?: boolean,
+    isPriceAction?: boolean,
+    duration?: string
+  ) => void;
 }
