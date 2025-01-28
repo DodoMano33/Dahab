@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Play, Square, History } from "lucide-react";
+import { Play, Square } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
+import { HistoryButton } from "./components/HistoryButton";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
@@ -99,47 +99,32 @@ export const AutoAnalysisButton = ({
       </Button>
 
       <div className="grid grid-cols-1 gap-4 mt-4">
-        <Button
+        <HistoryButton
           onClick={() => setIsBackTestOpen(true)}
-          className="bg-[#800000] hover:bg-[#600000] text-white h-20 flex items-center justify-between gap-2 max-w-[600px] w-full px-4"
-        >
-          <div className="flex items-center gap-2">
-            <History className="w-5 h-20" />
-            Back Test Results
-          </div>
-          <Badge variant="secondary" className="text-sm">
-            {backtestCount} تحليل
-          </Badge>
-        </Button>
+          title="Back Test Results"
+          count={backtestCount}
+          className="bg-[#800000] hover:bg-[#600000] text-white"
+        />
 
-        <Button
+        <HistoryButton
           onClick={() => setIsEntryPointBackTestOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-20 flex items-center justify-between gap-2 max-w-[600px] w-full px-4"
-        >
-          <div className="flex items-center gap-2">
-            <History className="w-5 h-20" />
-            Back Test Results
-            <br />
-            (أفضل نقطة دخول)
-          </div>
-          <Badge variant="secondary" className="text-sm">
-            {backtestCount} تحليل
-          </Badge>
-        </Button>
+          title={
+            <>
+              Back Test Results
+              <br />
+              (أفضل نقطة دخول)
+            </>
+          }
+          count={backtestCount}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        />
 
-        <Button
-          variant="outline"
-          className="h-20 flex items-center justify-between gap-2 max-w-[600px] w-full px-4"
+        <HistoryButton
           onClick={() => setIsHistoryOpen(true)}
-        >
-          <div className="flex items-center gap-2">
-            <History className="w-5 h-20" />
-            سجل البحث
-          </div>
-          <Badge variant="secondary" className="text-sm">
-            {searchHistoryCount} تحليل
-          </Badge>
-        </Button>
+          title="سجل البحث"
+          count={searchHistoryCount}
+          variant="outline"
+        />
       </div>
 
       <BackTestResultsDialog 
