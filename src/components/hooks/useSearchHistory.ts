@@ -12,6 +12,27 @@ export const useSearchHistory = () => {
   useEffect(() => {
     if (user) {
       fetchSearchHistory();
+      
+      // إعداد قناة الاستماع للتغييرات في الوقت الفعلي
+      const channel = supabase
+        .channel('search_history_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'search_history'
+          },
+          (payload) => {
+            console.log('Realtime deletion detected:', payload);
+            setSearchHistory(prev => prev.filter(item => item.id !== payload.old.id));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     } else {
       setSearchHistory([]);
     }
@@ -68,7 +89,7 @@ export const useSearchHistory = () => {
         return;
       }
 
-      setSearchHistory(prev => prev.filter(item => item.id !== id));
+      // لا نحتاج لتحديث القائمة يدويًا لأن الـ realtime subscription سيقوم بذلك
       toast.success("تم حذف العنصر بنجاح");
       
       console.log("Successfully deleted history item:", id);
