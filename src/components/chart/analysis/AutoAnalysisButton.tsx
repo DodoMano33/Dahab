@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Play, Square, History } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/lib/supabase";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
@@ -19,6 +21,60 @@ export const AutoAnalysisButton = ({
 }: AutoAnalysisButtonProps) => {
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
   const [isEntryPointBackTestOpen, setIsEntryPointBackTestOpen] = useState(false);
+  const [backtestCount, setBacktestCount] = useState(0);
+  const [searchHistoryCount, setSearchHistoryCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        // Get backtest results count
+        const { count: backtestCount, error: backtestError } = await supabase
+          .from('backtest_results')
+          .select('*', { count: 'exact', head: true });
+
+        if (backtestError) {
+          console.error('Error fetching backtest count:', backtestError);
+          return;
+        }
+
+        // Get search history count
+        const { count: historyCount, error: historyError } = await supabase
+          .from('search_history')
+          .select('*', { count: 'exact', head: true });
+
+        if (historyError) {
+          console.error('Error fetching history count:', historyError);
+          return;
+        }
+
+        setBacktestCount(backtestCount || 0);
+        setSearchHistoryCount(historyCount || 0);
+
+        // Set up realtime subscription for counts
+        const channel = supabase
+          .channel('counts_changes')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'backtest_results' },
+            () => fetchCounts()
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'search_history' },
+            () => fetchCounts()
+          )
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
+      } catch (error) {
+        console.error('Error in fetchCounts:', error);
+      }
+    };
+
+    fetchCounts();
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -45,27 +101,42 @@ export const AutoAnalysisButton = ({
       <div className="grid grid-cols-1 gap-4 mt-4">
         <Button
           onClick={() => setIsBackTestOpen(true)}
-          className="bg-[#800000] hover:bg-[#600000] text-white h-20 flex items-center gap-2 max-w-[600px] w-full"
+          className="bg-[#800000] hover:bg-[#600000] text-white h-20 flex items-center justify-between gap-2 max-w-[600px] w-full px-4"
         >
-          <History className="w-5 h-20" />
-          Back Test Results
+          <div className="flex items-center gap-2">
+            <History className="w-5 h-20" />
+            Back Test Results
+          </div>
+          <Badge variant="secondary" className="text-sm">
+            {backtestCount} تحليل
+          </Badge>
         </Button>
 
         <Button
           onClick={() => setIsEntryPointBackTestOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-20 flex items-center gap-2 max-w-[600px] w-full"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-20 flex items-center justify-between gap-2 max-w-[600px] w-full px-4"
         >
-          <History className="w-5 h-20" />
-          Back Test Results (أفضل نقطة دخول)
+          <div className="flex items-center gap-2">
+            <History className="w-5 h-20" />
+            Back Test Results (أفضل نقطة دخول)
+          </div>
+          <Badge variant="secondary" className="text-sm">
+            {backtestCount} تحليل
+          </Badge>
         </Button>
 
         <Button
           variant="outline"
-          className="h-20 flex items-center gap-2 max-w-[600px] w-full"
+          className="h-20 flex items-center justify-between gap-2 max-w-[600px] w-full px-4"
           onClick={() => setIsHistoryOpen(true)}
         >
-          <History className="w-5 h-20" />
-          سجل البحث
+          <div className="flex items-center gap-2">
+            <History className="w-5 h-20" />
+            سجل البحث
+          </div>
+          <Badge variant="secondary" className="text-sm">
+            {searchHistoryCount} تحليل
+          </Badge>
         </Button>
       </div>
 
