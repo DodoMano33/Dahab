@@ -118,7 +118,9 @@ export const AutoAnalysisButton = ({
         >
           <div className="flex items-center gap-2">
             <History className="w-5 h-20" />
-            Back Test Results (أفضل نقطة دخول)
+            Back Test Results
+            <br />
+            (أفضل نقطة دخول)
           </div>
           <Badge variant="secondary" className="text-sm">
             {backtestCount} تحليل
