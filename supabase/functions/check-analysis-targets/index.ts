@@ -106,12 +106,9 @@ Deno.serve(async (req) => {
         console.log(`\nChecking analysis ID ${analysis.id}:`)
         console.log(`Analysis type: ${analysis.analysis_type}`)
         console.log(`Direction: ${analysis.analysis.direction}`)
-        console.log(`Current price: ${currentPrice}`)
+        console.log(`Initial price: ${analysis.current_price}`)
         console.log(`Target price: ${analysis.analysis.targets?.[0]?.price}`)
         console.log(`Stop loss: ${analysis.analysis.stopLoss}`)
-        if (analysis.analysis.bestEntryPoint) {
-          console.log(`Best entry point: ${analysis.analysis.bestEntryPoint.price}`)
-        }
         
         // تحديث حالة التحليل باستخدام الدالة المناسبة
         if (analysis.analysis?.bestEntryPoint?.price) {
