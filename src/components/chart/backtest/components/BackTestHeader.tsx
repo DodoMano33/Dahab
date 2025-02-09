@@ -1,11 +1,15 @@
+
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, X, Scroll, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BackTestHeaderProps {
-  analysesCount: number;
+  initialAnalysesCount: number;
   onClose: () => void;
   onRefresh: () => Promise<void>;
   onDeleteSelected: () => Promise<void>;
@@ -15,7 +19,7 @@ interface BackTestHeaderProps {
 }
 
 export const BackTestHeader = ({
-  analysesCount,
+  initialAnalysesCount,
   onClose,
   onRefresh,
   onDeleteSelected,
@@ -23,6 +27,37 @@ export const BackTestHeader = ({
   isDeleting,
   useEntryPoint = false
 }: BackTestHeaderProps) => {
+  const [analysesCount, setAnalysesCount] = useState(initialAnalysesCount);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    setAnalysesCount(initialAnalysesCount);
+
+    const channel = supabase
+      .channel('backtest_results_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'backtest_results',
+          filter: user ? `user_id=eq.${user.id}` : undefined
+        },
+        async () => {
+          const { count } = await supabase
+            .from('backtest_results')
+            .select('*', { count: 'exact', head: true });
+          
+          setAnalysesCount(count || 0);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [initialAnalysesCount, user]);
+
   const handleRefresh = async () => {
     await onRefresh();
     toast.success("تم تحديث النتائج بنجاح");
