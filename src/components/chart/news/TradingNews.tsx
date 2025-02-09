@@ -60,7 +60,7 @@ export const TradingNews = () => {
               <div className="flex-1">
                 <p className="font-medium">{item.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  {item.source} • {new Date(item.published_at).toLocaleDateString("ar-SA")}
+                  {item.source} • {new Date(item.published_at).toLocaleDateString("en")}
                 </p>
               </div>
             </a>
