@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,18 @@ interface ExpiryTimerProps {
 export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 24 }: ExpiryTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
+  const [isMarketOpen, setIsMarketOpen] = useState(true);
+
+  const checkMarketStatus = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-market-status');
+      if (error) throw error;
+      return data.isOpen;
+    } catch (error) {
+      console.error('Error checking market status:', error);
+      return true; // افتراضياً السوق مفتوح في حالة الخطأ
+    }
+  };
 
   const deleteAnalysis = async () => {
     console.log('Attempting to delete expired analysis:', analysisId);
@@ -37,7 +50,19 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 24 }: Expir
   };
 
   useEffect(() => {
-    const updateTimer = () => {
+    let intervalId: NodeJS.Timeout;
+    let marketCheckIntervalId: NodeJS.Timeout;
+
+    const updateTimer = async () => {
+      // التحقق من حالة السوق كل 5 دقائق
+      const marketStatus = await checkMarketStatus();
+      setIsMarketOpen(marketStatus);
+
+      if (!marketStatus) {
+        setTimeLeft("السوق مغلق");
+        return;
+      }
+
       const now = new Date();
       const expiryDate = new Date(createdAt);
       expiryDate.setHours(expiryDate.getHours() + (durationHours || 24));
@@ -48,11 +73,10 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 24 }: Expir
           setIsExpired(true);
           setTimeLeft("منتهي");
           
-          // حذف التحليل بعد دقيقة واحدة من انتهاء صلاحيته
           const timeoutId = setTimeout(() => {
             console.log('Executing delete for expired analysis:', analysisId);
             deleteAnalysis();
-          }, 60 * 1000); // دقيقة واحدة
+          }, 60 * 1000);
 
           return () => {
             clearTimeout(timeoutId);
@@ -68,16 +92,24 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 24 }: Expir
       setTimeLeft(`${String(hoursLeft).padStart(2, '0')}:${String(minutesLeft).padStart(2, '0')}:${String(secondsLeft).padStart(2, '0')}`);
     };
 
-    const intervalId = setInterval(updateTimer, 1000);
-    updateTimer(); // تحديث أولي
+    // تحديث الوقت كل ثانية
+    intervalId = setInterval(updateTimer, 1000);
+    // التحقق من حالة السوق كل 5 دقائق
+    marketCheckIntervalId = setInterval(async () => {
+      const marketStatus = await checkMarketStatus();
+      setIsMarketOpen(marketStatus);
+    }, 5 * 60 * 1000);
+
+    updateTimer();
 
     return () => {
       clearInterval(intervalId);
+      clearInterval(marketCheckIntervalId);
     };
   }, [createdAt, isExpired, analysisId, durationHours]);
 
   return (
-    <Badge variant={isExpired ? "destructive" : "secondary"}>
+    <Badge variant={isExpired ? "destructive" : isMarketOpen ? "secondary" : "outline"}>
       {timeLeft}
     </Badge>
   );
