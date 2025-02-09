@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -93,7 +94,7 @@ export const BackTestResultsDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] md:max-w-6xl h-[90vh] flex flex-col p-0">
         <BackTestHeader
-          analysesCount={completedAnalyses.length}
+          initialAnalysesCount={completedAnalyses.length}
           onClose={onClose}
           onRefresh={handleRefresh}
           onDeleteSelected={handleDeleteSelected}

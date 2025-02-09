@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SearchHistoryHeader } from "./history/SearchHistoryHeader";
 import { SearchHistoryToolbar } from "./history/SearchHistoryToolbar";
@@ -36,7 +37,7 @@ export const SearchHistory = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
         <div className="sticky top-0 z-50 bg-background border-b">
-          <SearchHistoryHeader totalCount={validHistory.length} />
+          <SearchHistoryHeader initialCount={validHistory.length} />
           <SearchHistoryToolbar
             selectedItems={selectedItems}
             onDelete={handleBulkDelete}

@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { HistoryContent } from "./HistoryContent";
 import { SearchHistoryHeader } from "./SearchHistoryHeader";
@@ -69,7 +70,7 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
-        <SearchHistoryHeader totalCount={validHistory.length} />
+        <SearchHistoryHeader initialCount={validHistory.length} />
         <div className="flex justify-end p-2">
           <HistoryActions
             selectedItems={selectedItems}
