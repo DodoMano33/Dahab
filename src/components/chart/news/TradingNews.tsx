@@ -17,15 +17,22 @@ export const TradingNews = () => {
   const { data: news, isLoading } = useQuery({
     queryKey: ["trading-news"],
     queryFn: async () => {
+      console.log("Fetching trading news...");
       const { data, error } = await supabase
         .from("trading_news")
         .select("*")
         .order("published_at", { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching trading news:", error);
+        throw error;
+      }
+      
+      console.log("Fetched trading news:", data);
       return data as TradingNewsItem[];
-    }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   if (isLoading) {
