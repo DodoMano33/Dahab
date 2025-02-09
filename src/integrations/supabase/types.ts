@@ -144,6 +144,36 @@ export type Database = {
         }
         Relationships: []
       }
+      trading_news: {
+        Row: {
+          created_at: string | null
+          id: string
+          published_at: string
+          source: string
+          title: string
+          url: string
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          published_at: string
+          source: string
+          title: string
+          url: string
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          published_at?: string
+          source?: string
+          title?: string
+          url?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

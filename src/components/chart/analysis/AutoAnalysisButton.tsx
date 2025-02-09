@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { Play, Square } from "lucide-react";
 import { useState, useEffect } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
 import { supabase } from "@/lib/supabase";
 import { HistoryButton } from "./components/HistoryButton";
+import { TradingNews } from "../news/TradingNews";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
@@ -125,6 +127,8 @@ export const AutoAnalysisButton = ({
           count={searchHistoryCount}
           variant="outline"
         />
+
+        <TradingNews />
       </div>
 
       <BackTestResultsDialog 
