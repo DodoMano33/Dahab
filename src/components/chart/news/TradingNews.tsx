@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase";
 import { ExternalLink } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface TradingNewsItem {
   id: string;
@@ -43,6 +45,20 @@ export const TradingNews = () => {
     );
   }
 
+  const formatDate = (date: string) => {
+    const publishDate = new Date(date);
+    const now = new Date();
+    const diffInHours = Math.abs(now.getTime() - publishDate.getTime()) / 36e5;
+
+    if (diffInHours < 24) {
+      // إذا كان الخبر في نفس اليوم، نعرض الساعة
+      return format(publishDate, "الساعة h:mm a", { locale: ar });
+    } else {
+      // إذا كان الخبر من يوم سابق، نعرض التاريخ والساعة
+      return format(publishDate, "d MMMM yyyy الساعة h:mm a", { locale: ar });
+    }
+  };
+
   return (
     <Card className="p-4 mt-4">
       <h3 className="text-lg font-semibold mb-4">آخر أخبار التداول</h3>
@@ -60,7 +76,7 @@ export const TradingNews = () => {
               <div className="flex-1">
                 <p className="font-medium">{item.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  {item.source} • {new Date(item.published_at).toLocaleDateString("en")}
+                  {item.source} • {formatDate(item.published_at)}
                 </p>
               </div>
             </a>
