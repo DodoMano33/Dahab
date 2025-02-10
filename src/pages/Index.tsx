@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ChartAnalyzer } from "@/components/ChartAnalyzer";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -6,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { EconomicCalendar } from "@/components/chart/news/EconomicCalendar";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -45,6 +47,9 @@ const Index = () => {
           <div className="bg-white rounded-lg shadow-sm">
             <ChartAnalyzer />
           </div>
+          
+          {/* Economic Calendar */}
+          <EconomicCalendar />
         </div>
 
         <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
