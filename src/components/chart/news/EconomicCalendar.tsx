@@ -10,8 +10,9 @@ export const EconomicCalendar = () => {
           src="https://widgets.myfxbook.com/widgets/calendar.html?lang=ar"
           className="w-full h-full border-0"
           title="Economic Calendar"
-          sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
           loading="lazy"
+          referrerPolicy="no-referrer"
         />
       </div>
     </Card>
