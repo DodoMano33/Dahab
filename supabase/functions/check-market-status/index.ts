@@ -4,6 +4,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
 function isWeekend(date: Date): boolean {
@@ -18,16 +19,31 @@ function isMarketHours(date: Date): boolean {
 }
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    // Only allow POST and GET methods
+    if (req.method !== 'POST' && req.method !== 'GET') {
+      console.error(`Invalid method: ${req.method}`);
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { 
+          status: 405,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     const now = new Date();
     const isOpen = !isWeekend(now) && isMarketHours(now);
 
     console.log(`Checking market status at ${now.toISOString()}`);
     console.log(`Market is ${isOpen ? 'open' : 'closed'}`);
+    console.log(`Request method: ${req.method}`);
+    console.log(`Request headers:`, Object.fromEntries(req.headers));
 
     return new Response(
       JSON.stringify({
@@ -35,16 +51,26 @@ Deno.serve(async (req) => {
         timestamp: now.toISOString(),
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        },
       }
     );
   } catch (error) {
     console.error('Error checking market status:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        },
       }
     );
   }
