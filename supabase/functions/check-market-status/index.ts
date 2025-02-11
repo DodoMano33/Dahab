@@ -28,6 +28,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
     console.log('Received request:', req.method);
     const now = new Date();
     const isOpen = !isWeekend(now) && isMarketHours(now);
