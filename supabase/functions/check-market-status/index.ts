@@ -20,15 +20,22 @@ function isMarketHours(date: Date): boolean {
 }
 
 serve(async (req) => {
-  console.log('Received request:', req.method);
-  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
-  
+  // Log request details for debugging
+  console.log('Request received:', {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries())
+  });
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request');
     return new Response(null, {
       status: 204,
-      headers: corsHeaders
+      headers: {
+        ...corsHeaders,
+        'Content-Length': '0',
+      }
     });
   }
 
@@ -41,8 +48,8 @@ serve(async (req) => {
     const now = new Date();
     const isOpen = !isWeekend(now) && isMarketHours(now);
 
-    console.log(`Checking market status at ${now.toISOString()}`);
-    console.log(`Market is ${isOpen ? 'open' : 'closed'}`);
+    console.log(`Current time: ${now.toISOString()}`);
+    console.log(`Market status: ${isOpen ? 'open' : 'closed'}`);
 
     const response = {
       isOpen,
@@ -56,6 +63,7 @@ serve(async (req) => {
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
         },
       }
     );
@@ -72,6 +80,7 @@ serve(async (req) => {
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
         },
       }
     );
