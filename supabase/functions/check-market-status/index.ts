@@ -1,5 +1,6 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+// @ts-ignore
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +19,7 @@ function isMarketHours(date: Date): boolean {
   return hours >= 22 || hours < 21;
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   console.log('Received request:', req.method);
   
   // Handle CORS preflight requests
@@ -75,4 +76,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
