@@ -4,6 +4,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
 function isWeekend(date: Date): boolean {
@@ -18,34 +19,60 @@ function isMarketHours(date: Date): boolean {
 }
 
 Deno.serve(async (req) => {
+  console.log('Received request:', req.method);
+  
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log('Handling OPTIONS request');
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
   }
 
   try {
+    // Allow both GET and POST methods
+    if (req.method !== 'POST' && req.method !== 'GET') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
     const now = new Date();
     const isOpen = !isWeekend(now) && isMarketHours(now);
 
     console.log(`Checking market status at ${now.toISOString()}`);
     console.log(`Market is ${isOpen ? 'open' : 'closed'}`);
 
+    const response = {
+      isOpen,
+      timestamp: now.toISOString(),
+    };
+
     return new Response(
-      JSON.stringify({
-        isOpen,
-        timestamp: now.toISOString(),
-      }),
+      JSON.stringify(response),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
       }
     );
   } catch (error) {
-    console.error('Error checking market status:', error);
+    console.error('Error in check-market-status:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: error.message || 'Internal server error',
+        timestamp: new Date().toISOString(),
+      }),
       {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: error.message?.includes('not allowed') ? 405 : 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
       }
     );
   }
 });
+
