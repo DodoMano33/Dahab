@@ -21,6 +21,7 @@ function isMarketHours(date: Date): boolean {
 
 serve(async (req) => {
   console.log('Received request:', req.method);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
