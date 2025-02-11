@@ -21,18 +21,22 @@ function isMarketHours(date: Date): boolean {
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
+    return new Response('', {
       status: 204,
       headers: corsHeaders
     });
   }
 
   try {
+    console.log('Received request:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+    console.log('Request URL:', req.url);
+
+    // Check for allowed methods
     if (req.method !== 'GET' && req.method !== 'POST') {
       throw new Error(`Method ${req.method} not allowed`);
     }
 
-    console.log('Received request:', req.method);
     const now = new Date();
     const isOpen = !isWeekend(now) && isMarketHours(now);
 
@@ -47,7 +51,7 @@ Deno.serve(async (req) => {
       {
         status: 200,
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
         },
       }
@@ -62,7 +66,7 @@ Deno.serve(async (req) => {
       {
         status: 500,
         headers: { 
-          ...corsHeaders, 
+          ...corsHeaders,
           'Content-Type': 'application/json'
         },
       }
