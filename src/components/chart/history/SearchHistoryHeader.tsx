@@ -30,7 +30,8 @@ export const SearchHistoryHeader = ({ initialCount = 0 }: SearchHistoryHeaderPro
           // تحديث العدد عند أي تغيير
           const { count } = await supabase
             .from('search_history')
-            .select('*', { count: 'exact', head: true });
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user?.id);
           
           setTotalCount(count || 0);
         }
