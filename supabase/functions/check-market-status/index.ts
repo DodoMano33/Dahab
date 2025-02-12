@@ -20,27 +20,24 @@ function isMarketHours(date: Date): boolean {
 }
 
 serve(async (req) => {
-  // Log request details for debugging
+  // تسجيل تفاصيل الطلب للتصحيح
   console.log('Request received:', {
     method: req.method,
     url: req.url,
     headers: Object.fromEntries(req.headers.entries())
   });
 
-  // Handle CORS preflight requests
+  // معالجة طلبات CORS preflight
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS request');
     return new Response(null, {
       status: 204,
-      headers: {
-        ...corsHeaders,
-        'Content-Length': '0',
-      }
+      headers: corsHeaders
     });
   }
 
   try {
-    // Allow both GET and POST methods
+    // السماح بكل من طرق GET و POST
     if (req.method !== 'POST' && req.method !== 'GET') {
       throw new Error(`Method ${req.method} not allowed`);
     }
