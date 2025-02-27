@@ -1,174 +1,165 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.27.0";
 
-async function fetchPrice(symbol: string): Promise<number | null> {
+// دالة للحصول على السعر الحالي لرمز معين
+async function getCurrentPrice(symbol: string): Promise<number | null> {
   try {
-    const apiKey = Deno.env.get('ALPHA_VANTAGE_API_KEY');
-    if (!apiKey) {
-      console.error('ALPHA_VANTAGE_API_KEY not found');
-      return null;
-    }
+    console.log(`Getting current price for ${symbol}`);
 
-    console.log(`Fetching price for symbol: ${symbol}`);
-    const response = await fetch(
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`
-    );
+    // تعديل الرمز لتناسب واجهة Alpha Vantage
+    const apiSymbol = symbol.replace("XAUUSD", "GOLD");
+    
+    // استخدام واجهة برمجة مجانية للحصول على السعر
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${Deno.env.get("ALPHA_VANTAGE_API_KEY")}`;
+    
+    const response = await fetch(url);
     const data = await response.json();
-
-    if (data['Global Quote'] && data['Global Quote']['05. price']) {
-      const price = parseFloat(data['Global Quote']['05. price']);
-      console.log(`Received price for ${symbol}: ${price}`);
+    
+    if (data["Global Quote"] && data["Global Quote"]["05. price"]) {
+      const price = parseFloat(data["Global Quote"]["05. price"]);
+      console.log(`Current price for ${symbol}: ${price}`);
       return price;
     }
     
-    console.error('Invalid price data received:', data);
+    // إذا فشل Alpha Vantage، حاول مصدرًا آخر (Finnhub)
+    const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${apiSymbol}&token=${Deno.env.get("FINNHUB_API_KEY")}`;
+    const finnhubResponse = await fetch(finnhubUrl);
+    const finnhubData = await finnhubResponse.json();
+    
+    if (finnhubData && finnhubData.c) {
+      console.log(`Fallback price for ${symbol} from Finnhub: ${finnhubData.c}`);
+      return finnhubData.c;
+    }
+    
+    console.log(`Failed to get price for ${symbol}`);
     return null;
   } catch (error) {
-    console.error(`Error fetching price for ${symbol}:`, error);
+    console.error(`Error getting price for ${symbol}:`, error);
     return null;
   }
 }
 
+// معالج الطلب الرئيسي
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
   try {
-    console.log('Starting analysis check...');
-    
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase credentials');
-    }
-
+    // تهيئة عميل Supabase
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // حذف التحليلات المنتهية
-    const { error: deleteError } = await supabase.rpc('delete_expired_analyses');
-    if (deleteError) {
-      console.error('Error deleting expired analyses:', deleteError);
+    console.log("Starting analysis check");
+    
+    // جلب جميع التحليلات النشطة
+    const { data: activeAnalyses, error } = await supabase
+      .from("search_history")
+      .select("id, symbol, current_price, analysis, analysis_type, timeframe, target_hit")
+      .is("result_timestamp", null);
+
+    if (error) {
+      console.error("Error fetching active analyses:", error);
+      throw error;
     }
 
-    // جلب التحليلات النشطة التي لم يتم فحصها من قبل
-    const { data: activeAnalyses, error: fetchError } = await supabase
-      .from('search_history')
-      .select('*')
-      .is('target_hit', false)
-      .is('stop_loss_hit', false)
-      .is('result_timestamp', null)
-      .is('is_success', null)
-      .not('analysis_expiry_date', 'is', null);
-
-    if (fetchError) {
-      throw fetchError;
+    console.log(`Found ${activeAnalyses.length} active analyses to check`);
+    
+    if (activeAnalyses.length === 0) {
+      return new Response(JSON.stringify({ 
+        message: "No active analyses to check" 
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
-    console.log(`Found ${activeAnalyses?.length || 0} active analyses to check`);
-
-    if (!activeAnalyses || activeAnalyses.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No active analyses to check' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // تجميع التحليلات حسب الرمز لتقليل عدد طلبات API
-    const analysesBySymbol: { [key: string]: typeof activeAnalyses } = {};
-    activeAnalyses.forEach(analysis => {
-      if (!analysesBySymbol[analysis.symbol]) {
-        analysesBySymbol[analysis.symbol] = [];
-      }
-      analysesBySymbol[analysis.symbol].push(analysis);
+    // جمع الرموز الفريدة للحصول على الأسعار
+    const uniqueSymbols = [...new Set(activeAnalyses.map(a => a.symbol))];
+    console.log(`Unique symbols to check: ${uniqueSymbols.join(", ")}`);
+    
+    // الحصول على الأسعار الحالية للرموز
+    const pricePromises = uniqueSymbols.map(async (symbol) => {
+      const price = await getCurrentPrice(symbol);
+      return { symbol, price };
     });
-
-    // معالجة كل مجموعة رموز
-    for (const [symbol, analyses] of Object.entries(analysesBySymbol)) {
-      console.log(`Processing symbol: ${symbol} with ${analyses.length} analyses`);
-      const currentPrice = await fetchPrice(symbol);
-
-      if (currentPrice === null) {
-        console.log(`Skipping ${symbol} - unable to fetch price`);
-        continue;
+    
+    const prices = await Promise.all(pricePromises);
+    const priceMap = new Map(prices.filter(p => p.price !== null).map(p => [p.symbol, p.price]));
+    
+    console.log(`Retrieved prices for ${priceMap.size} symbols`);
+    
+    // تحديث حالة كل تحليل
+    const updatePromises = activeAnalyses.map(async (analysis) => {
+      const currentPrice = priceMap.get(analysis.symbol);
+      
+      if (!currentPrice) {
+        console.log(`No price available for ${analysis.symbol}, skipping analysis ${analysis.id}`);
+        return null;
       }
-
-      console.log(`Current price for ${symbol}: ${currentPrice}`);
-
-      // تحديث كل تحليل لهذا الرمز
-      for (const analysis of analyses) {
-        console.log(`\nProcessing analysis ID: ${analysis.id}`);
-        console.log(`Analysis type: ${analysis.analysis_type}`);
-        console.log(`Direction: ${analysis.analysis.direction}`);
-        console.log(`Initial price: ${analysis.current_price}`);
-        console.log(`Current market price: ${currentPrice}`);
-        console.log(`First target: ${analysis.analysis.targets?.[0]?.price}`);
-        console.log(`Stop loss: ${analysis.analysis.stopLoss}`);
+      
+      try {
+        console.log(`Checking analysis ${analysis.id} for ${analysis.symbol}: entry price=${analysis.current_price}, current=${currentPrice}`);
         
-        if (analysis.analysis?.bestEntryPoint?.price) {
-          console.log(`Best entry point: ${analysis.analysis.bestEntryPoint.price}`);
-          console.log(`Entry point hit: ${analysis.target_hit}`);
-        }
-
-        // التحقق من صحة البيانات
-        if (!analysis.analysis.targets?.[0]?.price || !analysis.analysis.stopLoss) {
-          console.log(`Skipping analysis ${analysis.id} - missing targets or stop loss`);
-          continue;
-        }
-
-        try {
-          // تحديث حالة التحليل باستخدام الدالة المناسبة
-          if (analysis.analysis?.bestEntryPoint?.price) {
-            console.log('Using update_analysis_status_with_entry_point function');
-            const { error: updateError } = await supabase.rpc('update_analysis_status_with_entry_point', {
-              p_id: analysis.id,
-              p_current_price: currentPrice
-            });
-            
-            if (updateError) {
-              console.error(`Error updating analysis with entry point ${analysis.id}:`, updateError);
-            } else {
-              console.log(`Successfully updated analysis ${analysis.id} with entry point`);
+        // التحقق من وجود bestEntryPoint
+        const hasBestEntryPoint = analysis.analysis && 
+                                 analysis.analysis.bestEntryPoint && 
+                                 analysis.analysis.bestEntryPoint.price;
+        
+        if (hasBestEntryPoint) {
+          // إذا كان لديه نقطة دخول مثالية، استخدم وظيفة التحقق المخصصة
+          const { data, error: rpcError } = await supabase.rpc(
+            "update_analysis_status_with_entry_point",
+            { 
+              p_id: analysis.id, 
+              p_current_price: currentPrice 
             }
+          );
+          
+          if (rpcError) {
+            console.error(`Error updating entry point analysis ${analysis.id}:`, rpcError);
           } else {
-            console.log('Using update_analysis_status function');
-            const { error: updateError } = await supabase.rpc('update_analysis_status', {
-              p_id: analysis.id,
-              p_current_price: currentPrice
-            });
-            
-            if (updateError) {
-              console.error(`Error updating analysis ${analysis.id}:`, updateError);
-            } else {
-              console.log(`Successfully updated analysis ${analysis.id}`);
-            }
+            console.log(`Successfully updated entry point analysis ${analysis.id}`);
           }
-        } catch (error) {
-          console.error(`Error processing analysis ${analysis.id}:`, error);
+        } else {
+          // إذا لم يكن لديه نقطة دخول مثالية، استخدم وظيفة التحقق العادية
+          const { data, error: rpcError } = await supabase.rpc(
+            "update_analysis_status",
+            { 
+              p_id: analysis.id, 
+              p_current_price: currentPrice 
+            }
+          );
+          
+          if (rpcError) {
+            console.error(`Error updating analysis ${analysis.id}:`, rpcError);
+          } else {
+            console.log(`Successfully updated analysis ${analysis.id}`);
+          }
         }
+        
+        return analysis.id;
+      } catch (updateError) {
+        console.error(`Error processing analysis ${analysis.id}:`, updateError);
+        return null;
       }
-    }
-
-    return new Response(
-      JSON.stringify({ message: 'Analysis check completed successfully' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-
+    });
+    
+    const results = await Promise.all(updatePromises);
+    const successfulUpdates = results.filter(Boolean).length;
+    
+    console.log(`Completed checking ${activeAnalyses.length} analyses, ${successfulUpdates} were updated`);
+    
+    return new Response(JSON.stringify({ 
+      message: `Checked ${activeAnalyses.length} analyses, updated ${successfulUpdates}`,
+      updated: successfulUpdates
+    }), {
+      headers: { "Content-Type": "application/json" }
+    });
+    
   } catch (error) {
-    console.error('Error in check-analysis-targets:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Error in check-analysis-targets:", error);
+    return new Response(JSON.stringify({ 
+      error: error.message 
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 });

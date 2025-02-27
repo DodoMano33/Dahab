@@ -1,6 +1,4 @@
 
 project_id = "nhvkviofvefwbvditgxo"
-[check-market-status]
-verify_jwt = false
-[check-market-status.cors]
-allowed_origins = ["*"]
+[check_analysis_targets]
+entrypoint = "index.ts"
