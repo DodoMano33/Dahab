@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { AnalysisCountBadge } from "../analysis/components/AnalysisCountBadge";
 
 interface SearchHistoryHeaderProps {
   initialCount?: number;
@@ -16,6 +17,8 @@ export const SearchHistoryHeader = ({ initialCount = 0 }: SearchHistoryHeaderPro
   useEffect(() => {
     setTotalCount(initialCount);
 
+    if (!user) return;
+
     const channel = supabase
       .channel('search_history_changes')
       .on(
@@ -24,14 +27,14 @@ export const SearchHistoryHeader = ({ initialCount = 0 }: SearchHistoryHeaderPro
           event: '*',
           schema: 'public',
           table: 'search_history',
-          filter: user ? `user_id=eq.${user.id}` : undefined
+          filter: `user_id=eq.${user.id}`
         },
         async () => {
           // تحديث العدد عند أي تغيير
           const { count } = await supabase
             .from('search_history')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id);
+            .eq('user_id', user.id);
           
           setTotalCount(count || 0);
         }

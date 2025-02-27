@@ -63,6 +63,60 @@ export type Database = {
         }
         Relationships: []
       }
+      best_entry_point_results: {
+        Row: {
+          analysis_type: string
+          created_at: string
+          direction: string
+          entry_point_price: number
+          exit_price: number
+          id: string
+          is_success: boolean
+          original_analysis: Json
+          profit_loss: number | null
+          result_timestamp: string
+          stop_loss: number | null
+          symbol: string
+          target_price: number | null
+          timeframe: string
+          user_id: string
+        }
+        Insert: {
+          analysis_type: string
+          created_at?: string
+          direction: string
+          entry_point_price: number
+          exit_price: number
+          id?: string
+          is_success: boolean
+          original_analysis: Json
+          profit_loss?: number | null
+          result_timestamp?: string
+          stop_loss?: number | null
+          symbol: string
+          target_price?: number | null
+          timeframe: string
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string
+          created_at?: string
+          direction?: string
+          entry_point_price?: number
+          exit_price?: number
+          id?: string
+          is_success?: boolean
+          original_analysis?: Json
+          profit_loss?: number | null
+          result_timestamp?: string
+          stop_loss?: number | null
+          symbol?: string
+          target_price?: number | null
+          timeframe?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       search_history: {
         Row: {
           analysis: Json

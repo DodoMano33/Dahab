@@ -1,60 +1,45 @@
-import { useState, useEffect } from 'react';
-import { differenceInHours, differenceInMinutes, differenceInSeconds, addHours } from 'date-fns';
-import { supabase } from '@/lib/supabase';
 
-export const useExpiryTimer = (
-  date: Date,
-  id: string,
-  analysis_expiry_date?: Date
-) => {
+import { useState, useEffect } from "react";
+import { addHours, differenceInMinutes, differenceInHours, differenceInSeconds } from "date-fns";
+
+interface UseExpiryTimerProps {
+  createdAt: Date;
+  analysisId: string;
+  durationHours?: number;
+}
+
+export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: UseExpiryTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
-  const [isExpired, setIsExpired] = useState(false);
+  const [isExpired, setIsExpired] = useState<boolean>(false);
 
   useEffect(() => {
-    const updateTimer = () => {
-      if (!analysis_expiry_date) {
-        const expiryDate = addHours(new Date(date), 36);
-        analysis_expiry_date = expiryDate;
-      }
-
+    // إضافة ساعات إلى تاريخ الإنشاء لحساب تاريخ الانتهاء
+    const expiryDate = addHours(new Date(createdAt), durationHours);
+    
+    const calculateTimeLeft = () => {
       const now = new Date();
-      const expiryDate = new Date(analysis_expiry_date);
+      const diff = expiryDate.getTime() - now.getTime();
       
-      if (now >= expiryDate) {
+      // إذا كان الوقت قد انتهى
+      if (diff <= 0) {
         setIsExpired(true);
-        const deleteExpiredAnalysis = async () => {
-          try {
-            const { error } = await supabase
-              .from('search_history')
-              .delete()
-              .eq('id', id);
-
-            if (error) {
-              console.error("Error deleting expired analysis:", error);
-            }
-          } catch (error) {
-            console.error("Error in deleteExpiredAnalysis:", error);
-          }
-        };
-        deleteExpiredAnalysis();
+        setTimeLeft("منتهي");
         return;
       }
-
-      const hoursLeft = differenceInHours(expiryDate, now);
-      const minutesLeft = differenceInMinutes(expiryDate, now) % 60;
-      const secondsLeft = differenceInSeconds(expiryDate, now) % 60;
-
-      const formattedHours = String(hoursLeft).padStart(2, '0');
-      const formattedMinutes = String(minutesLeft).padStart(2, '0');
-      const formattedSeconds = String(secondsLeft).padStart(2, '0');
-      setTimeLeft(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
+      
+      const hours = differenceInHours(expiryDate, now);
+      const minutes = differenceInMinutes(expiryDate, now) % 60;
+      const seconds = differenceInSeconds(expiryDate, now) % 60;
+      
+      setTimeLeft(`${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
     };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-
-    return () => clearInterval(interval);
-  }, [analysis_expiry_date, date, id]);
-
+    
+    // تحديث الوقت المتبقي كل ثانية
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    
+    return () => clearInterval(timer);
+  }, [createdAt, durationHours]);
+  
   return { timeLeft, isExpired };
 };
