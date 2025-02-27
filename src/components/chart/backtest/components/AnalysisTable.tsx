@@ -1,3 +1,4 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -15,6 +16,13 @@ export const AnalysisTable = ({
   onSelectAll,
   onSelect,
 }: AnalysisTableProps) => {
+  // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
+  const formatNumber = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    const num = typeof value === "string" ? parseFloat(value) : value;
+    return Number(num).toFixed(3);
+  };
+
   return (
     <div className="border rounded-lg bg-white shadow-sm">
       <div className="grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
@@ -48,10 +56,10 @@ export const AnalysisTable = ({
                 onCheckedChange={() => onSelect(analysis.id)}
               />
             </div>
-            <div>{analysis.stop_loss}</div>
-            <div>{analysis.target_price}</div>
-            <div>{analysis.entry_price}</div>
-            <div>{analysis.entry_price}</div>
+            <div>{formatNumber(analysis.stop_loss)}</div>
+            <div>{formatNumber(analysis.target_price)}</div>
+            <div>{formatNumber(analysis.entry_price)}</div>
+            <div>{formatNumber(analysis.best_entry_price || analysis.entry_price)}</div>
             <div className={`font-medium ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
               {analysis.is_success ? 'ناجح' : 'فاشل'}
             </div>
