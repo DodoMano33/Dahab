@@ -1,3 +1,4 @@
+
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 interface HistoryTableHeaderProps {
@@ -13,7 +14,7 @@ export const HistoryTableHeader = ({
         <TableHead>التاريخ</TableHead>
         <TableHead>الإطار الزمني</TableHead>
         <TableHead>نوع التحليل</TableHead>
-        <TableHead className="">السعر الحالي</TableHead>
+        <TableHead className="">سعر الدخول</TableHead>
         <TableHead>الاتجاه</TableHead>
         <TableHead>وقف الخسارة</TableHead>
         <TableHead>الأهداف</TableHead>
