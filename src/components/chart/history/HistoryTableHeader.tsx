@@ -13,7 +13,7 @@ export const HistoryTableHeader = ({
         <TableHead>التاريخ</TableHead>
         <TableHead>الإطار الزمني</TableHead>
         <TableHead>نوع التحليل</TableHead>
-        <TableHead className="\u0633\u0639\u0631 \u0627\u0644\u062F\u062E\u0648\u0644">السعر الحالي</TableHead>
+        <TableHead className="">السعر الحالي</TableHead>
         <TableHead>الاتجاه</TableHead>
         <TableHead>وقف الخسارة</TableHead>
         <TableHead>الأهداف</TableHead>
