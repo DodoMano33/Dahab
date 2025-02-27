@@ -7,10 +7,11 @@ async function getCurrentPrice(symbol: string): Promise<number | null> {
     console.log(`Getting current price for ${symbol}`);
 
     // تعديل الرمز لتناسب واجهة Alpha Vantage
-    const apiSymbol = symbol.replace("XAUUSD", "GOLD");
+    const apiSymbol = symbol.includes("USD") ? symbol.replace("USD", "") : symbol;
     
-    // استخدام واجهة برمجة مجانية للحصول على السعر
-    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${Deno.env.get("ALPHA_VANTAGE_API_KEY")}`;
+    // استخدام واجهة برمجة Alpha Vantage للحصول على السعر
+    const ALPHA_VANTAGE_API_KEY = "74DI7LHBTQPLCOGR";
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${ALPHA_VANTAGE_API_KEY}`;
     
     const response = await fetch(url);
     const data = await response.json();
@@ -21,17 +22,36 @@ async function getCurrentPrice(symbol: string): Promise<number | null> {
       return price;
     }
     
-    // إذا فشل Alpha Vantage، حاول مصدرًا آخر (Finnhub)
-    const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${apiSymbol}&token=${Deno.env.get("FINNHUB_API_KEY")}`;
-    const finnhubResponse = await fetch(finnhubUrl);
-    const finnhubData = await finnhubResponse.json();
+    // في حالة الفشل، نحاول استخدام واجهة برمجة بديلة
+    console.log(`Failed to get price for ${symbol} via Alpha Vantage, trying alternative API`);
     
-    if (finnhubData && finnhubData.c) {
-      console.log(`Fallback price for ${symbol} from Finnhub: ${finnhubData.c}`);
-      return finnhubData.c;
+    if (symbol === "XAUUSD" || symbol === "GOLD") {
+      // استخدام API مخصص لأسعار الذهب
+      const goldUrl = "https://api.metals.live/v1/spot/gold";
+      const goldResponse = await fetch(goldUrl);
+      const goldData = await goldResponse.json();
+      
+      if (goldData && goldData.length > 0 && goldData[0].price) {
+        console.log(`Gold price from alternative API: ${goldData[0].price}`);
+        return goldData[0].price;
+      }
     }
     
-    console.log(`Failed to get price for ${symbol}`);
+    // محاولة أخرى للأسهم
+    const yahooUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${apiSymbol}`;
+    const yahooResponse = await fetch(yahooUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    const yahooData = await yahooResponse.json();
+    
+    if (yahooData && yahooData.quoteResponse && yahooData.quoteResponse.result && 
+        yahooData.quoteResponse.result.length > 0 && yahooData.quoteResponse.result[0].regularMarketPrice) {
+      const price = yahooData.quoteResponse.result[0].regularMarketPrice;
+      console.log(`Price from Yahoo Finance: ${price}`);
+      return price;
+    }
+    
+    console.log(`Failed to get price for ${symbol} from all sources`);
     return null;
   } catch (error) {
     console.error(`Error getting price for ${symbol}:`, error);
@@ -41,6 +61,17 @@ async function getCurrentPrice(symbol: string): Promise<number | null> {
 
 // معالج الطلب الرئيسي
 Deno.serve(async (req) => {
+  // إعداد CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+
+  // التعامل مع طلبات OPTIONS (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     // تهيئة عميل Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
@@ -64,9 +95,11 @@ Deno.serve(async (req) => {
     
     if (activeAnalyses.length === 0) {
       return new Response(JSON.stringify({ 
-        message: "No active analyses to check" 
+        message: "No active analyses to check",
+        checked: 0,
+        updated: 0 
       }), {
-        headers: { "Content-Type": "application/json" }
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -114,8 +147,10 @@ Deno.serve(async (req) => {
           
           if (rpcError) {
             console.error(`Error updating entry point analysis ${analysis.id}:`, rpcError);
+            return null;
           } else {
             console.log(`Successfully updated entry point analysis ${analysis.id}`);
+            return analysis.id;
           }
         } else {
           // إذا لم يكن لديه نقطة دخول مثالية، استخدم وظيفة التحقق العادية
@@ -129,12 +164,12 @@ Deno.serve(async (req) => {
           
           if (rpcError) {
             console.error(`Error updating analysis ${analysis.id}:`, rpcError);
+            return null;
           } else {
             console.log(`Successfully updated analysis ${analysis.id}`);
+            return analysis.id;
           }
         }
-        
-        return analysis.id;
       } catch (updateError) {
         console.error(`Error processing analysis ${analysis.id}:`, updateError);
         return null;
@@ -148,9 +183,10 @@ Deno.serve(async (req) => {
     
     return new Response(JSON.stringify({ 
       message: `Checked ${activeAnalyses.length} analyses, updated ${successfulUpdates}`,
+      checked: activeAnalyses.length,
       updated: successfulUpdates
     }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
     
   } catch (error) {
@@ -159,7 +195,7 @@ Deno.serve(async (req) => {
       error: error.message 
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }
 });

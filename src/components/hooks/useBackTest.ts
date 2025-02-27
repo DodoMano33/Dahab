@@ -82,7 +82,9 @@ export const useBackTest = () => {
       const { data, error } = await supabase.functions.invoke('check-analysis-targets');
       
       if (error) {
-        throw error;
+        console.error('Error checking analyses:', error);
+        toast.error("حدث خطأ أثناء فحص التحليلات");
+        return;
       }
       
       console.log('Check analysis response:', data);
