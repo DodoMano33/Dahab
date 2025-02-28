@@ -1,7 +1,5 @@
-
 import React from 'react';
 import TradingViewWidget from './TradingViewWidget';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -14,8 +12,6 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
-  const isMobile = useIsMobile();
-  
   return (
     <div className="w-full h-full">
       <TradingViewWidget 

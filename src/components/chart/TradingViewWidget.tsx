@@ -1,6 +1,4 @@
-
 import React, { useEffect, useRef } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -14,7 +12,6 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -36,12 +33,7 @@ function TradingViewWidget({
       save_image: false,
       calendar: false,
       hide_volume: true,
-      support_host: "https://www.tradingview.com",
-      // تكوينات إضافية للهواتف المحمولة
-      toolbar_bg: "#f1f3f6",
-      hide_side_toolbar: isMobile,
-      hide_top_toolbar: false,
-      withdateranges: !isMobile
+      support_host: "https://www.tradingview.com"
     };
 
     // Set the script content
@@ -97,10 +89,10 @@ function TradingViewWidget({
         container.current.innerHTML = '';
       }
     };
-  }, [symbol, onSymbolChange, onPriceUpdate, isMobile]);
+  }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return (
-    <div className={`relative w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
