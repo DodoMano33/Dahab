@@ -6,6 +6,8 @@ import { HistoryActions } from "./HistoryActions";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -23,9 +25,18 @@ interface HistoryDialogProps {
     analysis_duration_hours?: number;
   }>;
   onDelete: (id: string) => void;
+  onRefresh?: () => Promise<void>;
+  isRefreshing?: boolean;
 }
 
-export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDialogProps) => {
+export const HistoryDialog = ({ 
+  isOpen, 
+  onClose, 
+  history, 
+  onDelete, 
+  onRefresh,
+  isRefreshing = false
+}: HistoryDialogProps) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const validHistory = history.filter(item => 
@@ -71,7 +82,18 @@ export const HistoryDialog = ({ isOpen, onClose, history, onDelete }: HistoryDia
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
         <SearchHistoryHeader initialCount={validHistory.length} />
-        <div className="flex justify-end p-2">
+        <div className="flex justify-between p-2">
+          {onRefresh && (
+            <Button 
+              onClick={onRefresh} 
+              variant="outline" 
+              className="flex items-center gap-2"
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              تحديث
+            </Button>
+          )}
           <HistoryActions
             selectedItems={selectedItems}
             onDelete={handleDeleteSelected}
