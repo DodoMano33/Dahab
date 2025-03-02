@@ -78,6 +78,13 @@ export const HistoryDialog = ({
     }
   };
 
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      console.log("Refresh button clicked, calling onRefresh");
+      await onRefresh();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
@@ -85,7 +92,7 @@ export const HistoryDialog = ({
         <div className="flex justify-between p-2">
           {onRefresh && (
             <Button 
-              onClick={onRefresh} 
+              onClick={handleRefresh} 
               variant="outline" 
               className="flex items-center gap-2"
               disabled={isRefreshing}

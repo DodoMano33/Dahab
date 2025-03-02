@@ -109,21 +109,22 @@ export const useSearchHistory = () => {
   const refreshHistory = async () => {
     try {
       setIsRefreshing(true);
+      console.log("Starting refresh history process");
       
       // 1. استدعاء وظيفة Edge Function لحذف التحليلات المنتهية
-      const { error: functionError } = await supabase.functions.invoke('delete-expired-analyses');
+      const { error: functionError, data } = await supabase.functions.invoke('delete-expired-analyses');
       
       if (functionError) {
         console.error("Error calling delete-expired-analyses function:", functionError);
         toast.error("حدث خطأ أثناء فحص التحليلات المنتهية");
       } else {
-        console.log("Successfully checked for expired analyses");
+        console.log("Successfully checked for expired analyses, response:", data);
+        toast.success("تم فحص التحليلات المنتهية بنجاح");
       }
       
       // 2. إعادة تحميل البيانات
       await fetchSearchHistory();
       
-      toast.success("تم تحديث سجل البحث بنجاح");
     } catch (error) {
       console.error("Error in refreshHistory:", error);
       toast.error("حدث خطأ أثناء تحديث سجل البحث");
