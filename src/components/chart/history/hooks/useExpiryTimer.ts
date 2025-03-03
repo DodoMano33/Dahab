@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { addHours, differenceInMinutes, differenceInHours, differenceInSeconds } from "date-fns";
+import { supabase } from "@/lib/supabase";
 
 interface UseExpiryTimerProps {
   createdAt: Date;
@@ -24,6 +25,22 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
       if (diff <= 0) {
         setIsExpired(true);
         setTimeLeft("منتهي");
+        
+        // عندما ينتهي التحليل، نقوم بحذفه تلقائيًا
+        if (analysisId) {
+          console.log(`التحليل ${analysisId} منتهي، جاري الحذف...`);
+          supabase
+            .from('search_history')
+            .delete()
+            .eq('id', analysisId)
+            .then(({ error }) => {
+              if (error) {
+                console.error("خطأ في حذف التحليل المنتهي:", error);
+              } else {
+                console.log(`تم حذف التحليل المنتهي ${analysisId} بنجاح`);
+              }
+            });
+        }
         return;
       }
       
@@ -39,7 +56,7 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
     const timer = setInterval(calculateTimeLeft, 1000);
     
     return () => clearInterval(timer);
-  }, [createdAt, durationHours]);
+  }, [createdAt, durationHours, analysisId]);
   
   return { timeLeft, isExpired };
 };

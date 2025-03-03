@@ -27,7 +27,7 @@ export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Expiry
   return (
     <div className="flex items-center gap-1 text-sm">
       <Clock className="h-3.5 w-3.5" />
-      <span>{timeLeft}</span>
+      <span dir="ltr">{timeLeft}</span>
     </div>
   );
 };
