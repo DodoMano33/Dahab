@@ -1,4 +1,10 @@
 
 project_id = "nhvkviofvefwbvditgxo"
-[check_analysis_targets]
-entrypoint = "index.ts"
+[check-market-status]
+verify_jwt = false
+[get-secret]
+verify_jwt = false
+[check-analysis-targets]
+verify_jwt = false
+[delete-expired-analyses]
+verify_jwt = false
