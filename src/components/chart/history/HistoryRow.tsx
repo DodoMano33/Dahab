@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -82,6 +83,7 @@ export const HistoryRow = ({
           createdAt={date} 
           analysisId={id} 
           durationHours={analysis_duration_hours}
+          symbol={symbol}
         />
       </TableCell>
     </TableRow>
