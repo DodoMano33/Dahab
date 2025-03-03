@@ -28,11 +28,15 @@ Deno.serve(async (req) => {
 
     console.log('Checking and deleting expired analyses...');
     
-    // Call the PostgreSQL function to delete expired analyses
-    const { data, error } = await supabaseAdmin.rpc('delete_expired_analyses');
+    // Delete expired analyses directly from the table
+    const { data, error } = await supabaseAdmin
+      .from('search_history')
+      .delete()
+      .lt('analysis_expiry_date', new Date().toISOString())
+      .select('id');
     
     if (error) {
-      console.error('Error calling delete_expired_analyses:', error);
+      console.error('Error deleting expired analyses:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to delete expired analyses' }),
         { 
@@ -42,13 +46,14 @@ Deno.serve(async (req) => {
       );
     }
     
-    console.log('Successfully deleted expired analyses');
+    console.log('Successfully deleted expired analyses:', data);
     
     // Return success response
     return new Response(
       JSON.stringify({ 
         message: 'Expired analyses have been checked and deleted',
-        result: data 
+        deletedCount: data?.length || 0,
+        deletedItems: data 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

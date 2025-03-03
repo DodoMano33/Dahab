@@ -31,9 +31,15 @@ export const useSearchHistory = () => {
           }
         )
         .subscribe();
-
+      
+      // جدولة فحص وحذف التحليلات المنتهية كل دقيقة
+      const checkExpiredInterval = setInterval(() => {
+        checkAndDeleteExpiredAnalyses();
+      }, 60000); // كل دقيقة
+      
       return () => {
         supabase.removeChannel(channel);
+        clearInterval(checkExpiredInterval);
       };
     } else {
       setSearchHistory([]);
@@ -72,6 +78,24 @@ export const useSearchHistory = () => {
     } catch (error) {
       console.error("Error fetching search history:", error);
       toast.error("حدث خطأ أثناء جلب سجل البحث");
+    }
+  };
+
+  const checkAndDeleteExpiredAnalyses = async () => {
+    if (!user) return;
+    
+    try {
+      // استدعاء وظيفة Edge Function لحذف التحليلات المنتهية
+      await supabase.functions.invoke('delete-expired-analyses', {
+        method: 'POST'
+      });
+      
+      // تحديث قائمة سجل البحث
+      await fetchSearchHistory();
+      
+      console.log('Checked and deleted expired analyses');
+    } catch (error) {
+      console.error('Error checking expired analyses:', error);
     }
   };
 
@@ -147,6 +171,7 @@ export const useSearchHistory = () => {
     handleDeleteHistoryItem,
     addToSearchHistory,
     refreshHistory,
-    isRefreshing
+    isRefreshing,
+    checkAndDeleteExpiredAnalyses
   };
 };
