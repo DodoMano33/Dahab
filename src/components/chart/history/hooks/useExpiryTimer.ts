@@ -67,19 +67,19 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8, symbo
       setTimeLeft(`${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
     };
     
-    // تحديث الوقت المتبقي كل ثانية فقط إذا كان السوق مفتوحاً
+    // تحديث الوقت المتبقي كل ثانية فقط إذا لم ينته التحليل بعد
     calculateTimeLeft();
     
     let timer: NodeJS.Timeout | null = null;
     
-    if (!isMarketClosed) {
+    if (!isExpired && !isMarketClosed) {
       timer = setInterval(calculateTimeLeft, 1000);
     }
     
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [createdAt, durationHours, isMarketClosed]);
+  }, [createdAt, durationHours, isMarketClosed, isExpired]);
   
   return { timeLeft, isExpired, isMarketClosed };
 };

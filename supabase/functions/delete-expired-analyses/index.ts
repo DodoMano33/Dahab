@@ -28,12 +28,15 @@ Deno.serve(async (req) => {
 
     console.log('Checking and deleting expired analyses...');
     
+    const currentTime = new Date().toISOString();
+    console.log(`Current time: ${currentTime}`);
+    
     // Delete expired analyses directly from the table
     const { data, error } = await supabaseAdmin
       .from('search_history')
       .delete()
-      .lt('analysis_expiry_date', new Date().toISOString())
-      .select('id');
+      .lt('analysis_expiry_date', currentTime)
+      .select('id, analysis_expiry_date');
     
     if (error) {
       console.error('Error deleting expired analyses:', error);
@@ -46,7 +49,7 @@ Deno.serve(async (req) => {
       );
     }
     
-    console.log('Successfully deleted expired analyses:', data);
+    console.log(`Successfully deleted ${data?.length || 0} expired analyses:`, data);
     
     // Return success response
     return new Response(

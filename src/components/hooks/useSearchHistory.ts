@@ -10,9 +10,12 @@ export const useSearchHistory = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastDeletedCount, setLastDeletedCount] = useState(0);
 
+  // تطبيق استدعاء دوري للتحقق من التحليلات المنتهية
   useEffect(() => {
     if (user) {
+      // استدعاء الفحص مرة عند التحميل
       fetchSearchHistory();
       
       // إعداد قناة الاستماع للتغييرات في الوقت الفعلي
@@ -34,7 +37,8 @@ export const useSearchHistory = () => {
       
       // جدولة فحص وحذف التحليلات المنتهية كل دقيقة
       const checkExpiredInterval = setInterval(() => {
-        checkAndDeleteExpiredAnalyses();
+        console.log("Auto checking for expired analyses...");
+        checkAndDeleteExpiredAnalyses(true);
       }, 60000); // كل دقيقة
       
       return () => {
@@ -71,7 +75,8 @@ export const useSearchHistory = () => {
         timeframe: item.timeframe || '1d',
         targetHit: item.target_hit || false,
         stopLossHit: item.stop_loss_hit || false,
-        analysis_duration_hours: item.analysis_duration_hours || 8
+        analysis_duration_hours: item.analysis_duration_hours || 8,
+        analysis_expiry_date: item.analysis_expiry_date
       }));
 
       setSearchHistory(formattedHistory);
@@ -81,21 +86,39 @@ export const useSearchHistory = () => {
     }
   };
 
-  const checkAndDeleteExpiredAnalyses = async () => {
+  const checkAndDeleteExpiredAnalyses = async (silent = false) => {
     if (!user) return;
     
     try {
+      if (!silent) {
+        console.log("Manually checking for expired analyses...");
+      }
+      
       // استدعاء وظيفة Edge Function لحذف التحليلات المنتهية
-      await supabase.functions.invoke('delete-expired-analyses', {
+      const { data, error } = await supabase.functions.invoke('delete-expired-analyses', {
         method: 'POST'
       });
+      
+      if (error) {
+        throw error;
+      }
+      
+      console.log('Response from delete-expired-analyses:', data);
+      setLastDeletedCount(data?.deletedCount || 0);
       
       // تحديث قائمة سجل البحث
       await fetchSearchHistory();
       
-      console.log('Checked and deleted expired analyses');
+      if (!silent && data?.deletedCount > 0) {
+        toast.success(`تم حذف ${data.deletedCount} من التحليلات المنتهية`);
+      } else if (!silent) {
+        toast.info("لا توجد تحليلات منتهية للحذف");
+      }
     } catch (error) {
       console.error('Error checking expired analyses:', error);
+      if (!silent) {
+        toast.error("حدث خطأ أثناء فحص التحليلات المنتهية");
+      }
     }
   };
 
@@ -133,24 +156,14 @@ export const useSearchHistory = () => {
       
       console.log("Refreshing history and checking expired analyses...");
       
-      // استدعاء دالة Edge Function لفحص وحذف التحليلات المنتهية
-      const { data, error } = await supabase.functions.invoke('delete-expired-analyses', {
-        method: 'POST'
-      });
+      // استدعاء دالة فحص وحذف التحليلات المنتهية
+      await checkAndDeleteExpiredAnalyses();
       
-      if (error) {
-        console.error("Error invoking delete-expired-analyses function:", error);
-        toast.error("حدث خطأ أثناء فحص التحليلات المنتهية");
-        setIsRefreshing(false);
-        return;
+      if (lastDeletedCount > 0) {
+        toast.success(`تم تحديث سجل البحث وحذف ${lastDeletedCount} من التحليلات المنتهية`);
+      } else {
+        toast.success("تم تحديث سجل البحث، لا توجد تحليلات منتهية");
       }
-      
-      console.log("Expired analyses check result:", data);
-      
-      // تحديث سجل البحث بعد حذف التحليلات المنتهية
-      await fetchSearchHistory();
-      
-      toast.success("تم تحديث سجل البحث وحذف التحليلات المنتهية");
     } catch (error) {
       console.error("Error in refreshHistory:", error);
       toast.error("حدث خطأ أثناء تحديث سجل البحث");
