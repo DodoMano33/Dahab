@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SearchHistoryItem } from "@/types/analysis";
 import { supabase } from "@/lib/supabase";
@@ -9,7 +8,6 @@ export const useSearchHistory = () => {
   const { user } = useAuth();
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -106,40 +104,11 @@ export const useSearchHistory = () => {
     setSearchHistory(prev => [item, ...prev]);
   };
 
-  const refreshHistory = async () => {
-    try {
-      setIsRefreshing(true);
-      console.log("Starting refresh history process");
-      
-      // 1. استدعاء وظيفة Edge Function لحذف التحليلات المنتهية
-      const { error: functionError, data } = await supabase.functions.invoke('delete-expired-analyses');
-      
-      if (functionError) {
-        console.error("Error calling delete-expired-analyses function:", functionError);
-        toast.error("حدث خطأ أثناء فحص التحليلات المنتهية");
-      } else {
-        console.log("Successfully checked for expired analyses, response:", data);
-        toast.success("تم فحص التحليلات المنتهية بنجاح");
-      }
-      
-      // 2. إعادة تحميل البيانات
-      await fetchSearchHistory();
-      
-    } catch (error) {
-      console.error("Error in refreshHistory:", error);
-      toast.error("حدث خطأ أثناء تحديث سجل البحث");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   return {
     searchHistory,
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
-    addToSearchHistory,
-    refreshHistory,
-    isRefreshing
+    addToSearchHistory
   };
 };

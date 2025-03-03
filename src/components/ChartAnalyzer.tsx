@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
@@ -25,9 +24,7 @@ export const ChartAnalyzer = () => {
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
-    addToSearchHistory,
-    refreshHistory,
-    isRefreshing
+    addToSearchHistory
   } = useSearchHistory();
 
   useBackTest();
@@ -120,8 +117,6 @@ export const ChartAnalyzer = () => {
           onClose={() => setIsHistoryOpen(false)}
           history={searchHistory}
           onDelete={handleDeleteHistoryItem}
-          onRefresh={refreshHistory}
-          isRefreshing={isRefreshing}
         />
       )}
     </div>
