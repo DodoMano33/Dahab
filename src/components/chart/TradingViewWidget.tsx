@@ -1,6 +1,4 @@
-
 import React, { useEffect, useRef } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -14,7 +12,6 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -95,7 +92,7 @@ function TradingViewWidget({
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return (
-    <div className={`relative w-full ${isMobile ? 'h-[500px] -mx-4 px-0 w-screen' : 'h-[600px]'} bg-white dark:bg-gray-800 rounded-lg shadow-lg`}>
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}

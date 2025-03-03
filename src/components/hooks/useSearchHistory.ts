@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SearchHistoryItem } from "@/types/analysis";
 import { supabase } from "@/lib/supabase";
@@ -9,13 +8,9 @@ export const useSearchHistory = () => {
   const { user } = useAuth();
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastDeletedCount, setLastDeletedCount] = useState(0);
 
-  // تطبيق استدعاء دوري للتحقق من التحليلات المنتهية
   useEffect(() => {
     if (user) {
-      // استدعاء الفحص مرة عند التحميل
       fetchSearchHistory();
       
       // إعداد قناة الاستماع للتغييرات في الوقت الفعلي
@@ -34,16 +29,9 @@ export const useSearchHistory = () => {
           }
         )
         .subscribe();
-      
-      // جدولة فحص وحذف التحليلات المنتهية كل دقيقة
-      const checkExpiredInterval = setInterval(() => {
-        console.log("Auto checking for expired analyses...");
-        checkAndDeleteExpiredAnalyses(true);
-      }, 60000); // كل دقيقة
-      
+
       return () => {
         supabase.removeChannel(channel);
-        clearInterval(checkExpiredInterval);
       };
     } else {
       setSearchHistory([]);
@@ -75,50 +63,13 @@ export const useSearchHistory = () => {
         timeframe: item.timeframe || '1d',
         targetHit: item.target_hit || false,
         stopLossHit: item.stop_loss_hit || false,
-        analysis_duration_hours: item.analysis_duration_hours || 8,
-        analysis_expiry_date: item.analysis_expiry_date
+        analysis_duration_hours: item.analysis_duration_hours || 8
       }));
 
       setSearchHistory(formattedHistory);
     } catch (error) {
       console.error("Error fetching search history:", error);
       toast.error("حدث خطأ أثناء جلب سجل البحث");
-    }
-  };
-
-  const checkAndDeleteExpiredAnalyses = async (silent = false) => {
-    if (!user) return;
-    
-    try {
-      if (!silent) {
-        console.log("Manually checking for expired analyses...");
-      }
-      
-      // استدعاء وظيفة Edge Function لحذف التحليلات المنتهية
-      const { data, error } = await supabase.functions.invoke('delete-expired-analyses', {
-        method: 'POST'
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      console.log('Response from delete-expired-analyses:', data);
-      setLastDeletedCount(data?.deletedCount || 0);
-      
-      // تحديث قائمة سجل البحث
-      await fetchSearchHistory();
-      
-      if (!silent && data?.deletedCount > 0) {
-        toast.success(`تم حذف ${data.deletedCount} من التحليلات المنتهية`);
-      } else if (!silent) {
-        toast.info("لا توجد تحليلات منتهية للحذف");
-      }
-    } catch (error) {
-      console.error('Error checking expired analyses:', error);
-      if (!silent) {
-        toast.error("حدث خطأ أثناء فحص التحليلات المنتهية");
-      }
     }
   };
 
@@ -148,30 +99,6 @@ export const useSearchHistory = () => {
     }
   };
 
-  const refreshHistory = async () => {
-    try {
-      if (!user) return;
-      
-      setIsRefreshing(true);
-      
-      console.log("Refreshing history and checking expired analyses...");
-      
-      // استدعاء دالة فحص وحذف التحليلات المنتهية
-      await checkAndDeleteExpiredAnalyses();
-      
-      if (lastDeletedCount > 0) {
-        toast.success(`تم تحديث سجل البحث وحذف ${lastDeletedCount} من التحليلات المنتهية`);
-      } else {
-        toast.success("تم تحديث سجل البحث، لا توجد تحليلات منتهية");
-      }
-    } catch (error) {
-      console.error("Error in refreshHistory:", error);
-      toast.error("حدث خطأ أثناء تحديث سجل البحث");
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const addToSearchHistory = (item: SearchHistoryItem) => {
     console.log("Adding new item to search history:", item);
     setSearchHistory(prev => [item, ...prev]);
@@ -182,9 +109,6 @@ export const useSearchHistory = () => {
     isHistoryOpen,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
-    addToSearchHistory,
-    refreshHistory,
-    isRefreshing,
-    checkAndDeleteExpiredAnalyses
+    addToSearchHistory
   };
 };

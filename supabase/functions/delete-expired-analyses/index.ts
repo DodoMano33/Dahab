@@ -1,76 +1,50 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.47.0';
-
-// Define CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Create Supabase client with admin privileges
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
-    console.log('Checking and deleting expired analyses...');
+    console.log('Starting expired analyses cleanup...')
     
-    const currentTime = new Date().toISOString();
-    console.log(`Current time: ${currentTime}`);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
-    // Delete expired analyses directly from the table
-    const { data, error } = await supabaseAdmin
-      .from('search_history')
-      .delete()
-      .lt('analysis_expiry_date', currentTime)
-      .select('id, analysis_expiry_date');
-    
-    if (error) {
-      console.error('Error deleting expired analyses:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to delete expired analyses' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500 
-        }
-      );
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase credentials')
     }
-    
-    console.log(`Successfully deleted ${data?.length || 0} expired analyses:`, data);
-    
-    // Return success response
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // حذف التحليلات المنتهية (بعد 8 ساعات)
+    const { error: deleteError } = await supabase.rpc('delete_expired_analyses')
+
+    if (deleteError) {
+      console.error('Error deleting expired analyses:', deleteError)
+      throw deleteError
+    }
+
+    console.log('Successfully cleaned up expired analyses')
+
     return new Response(
-      JSON.stringify({ 
-        message: 'Expired analyses have been checked and deleted',
-        deletedCount: data?.length || 0,
-        deletedItems: data 
-      }),
-      { 
+      JSON.stringify({ message: 'Expired analyses cleanup completed successfully' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
       }
-    );
-  } catch (err) {
-    console.error('Error in delete-expired-analyses function:', err);
+    )
+
+  } catch (error) {
+    console.error('Error in delete-expired-analyses:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: err.message }),
-      { 
+      JSON.stringify({ error: error.message }), {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
       }
-    );
+    )
   }
-});
+})
