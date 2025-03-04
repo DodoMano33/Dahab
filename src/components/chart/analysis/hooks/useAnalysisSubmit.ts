@@ -34,6 +34,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
   ) => {
     // Create a unique toast ID that we can use to dismiss it later
     const analysisToastId = "analysis-submit-" + Date.now();
+    let messageToastId: string | undefined;
     
     try {
       if (!user) {
@@ -54,7 +55,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
       }
 
       // Show the initial analysis message and get the toast ID
-      const messageToastId = showAnalysisMessage(
+      messageToastId = showAnalysisMessage(
         isPatternAnalysis,
         isWaves,
         isGann,
@@ -92,6 +93,10 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
           console.error("Invalid analysis result:", analysisResult);
           toast.error("نتائج التحليل غير صالحة");
+          
+          // Make sure to dismiss any lingering toasts
+          if (messageToastId) toast.dismiss(messageToastId);
+          toast.dismiss(analysisToastId);
           return;
         }
 
@@ -140,13 +145,19 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         } catch (saveError) {
           console.error("Error saving analysis:", saveError);
           toast.error("حدث خطأ أثناء حفظ التحليل");
+          
+          // Make sure to dismiss any lingering toasts
+          if (messageToastId) toast.dismiss(messageToastId);
+          toast.dismiss(analysisToastId);
         }
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
       toast.error("حدث خطأ أثناء التحليل");
+      
       // Dismiss any loading toasts
       toast.dismiss(analysisToastId);
+      if (messageToastId) toast.dismiss(messageToastId);
     }
   };
 
