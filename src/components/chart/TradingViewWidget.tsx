@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
@@ -13,46 +12,34 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
-  const scriptRef = useRef<HTMLScriptElement | null>(null);
-  const previousSymbolRef = useRef<string>(symbol);
 
   useEffect(() => {
-    // Cleanup function - will be called when component unmounts or before re-rendering
-    return () => {
-      if (scriptRef.current && container.current?.contains(scriptRef.current)) {
-        container.current.removeChild(scriptRef.current);
-      }
+    const script = document.createElement('script');
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.type = 'text/javascript';
+    script.async = true;
+
+    // Create the configuration object
+    const config = {
+      autosize: true,
+      symbol: symbol,
+      interval: "1",
+      timezone: "Asia/Jerusalem",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      hide_legend: true,
+      allow_symbol_change: true,
+      save_image: false,
+      calendar: false,
+      hide_volume: true,
+      support_host: "https://www.tradingview.com"
     };
-  }, []);
 
-  useEffect(() => {
-    console.log(`Initializing TradingView widget with symbol: ${symbol}`);
-    
-    // Clean up any previous widget before creating a new one
-    if (container.current) {
-      container.current.innerHTML = '';
-    }
-    
-    // Format symbol if needed (ensure proper format for TradingView)
-    let formattedSymbol = symbol;
-    if (!symbol.includes(':') && !symbol.startsWith('CAPITALCOM:')) {
-      // Add default exchange prefix for common symbols
-      if (/^[A-Z]{6}$/.test(symbol) && (symbol.includes('USD') || symbol.includes('EUR'))) {
-        // Likely forex pair
-        formattedSymbol = `FX:${symbol}`;
-      } else if (/^BTC|^ETH|^BNB|^XRP|^ADA/.test(symbol)) {
-        // Likely crypto
-        formattedSymbol = `BINANCE:${symbol}USD`;
-      } else {
-        // Default to CAPITALCOM for other symbols
-        formattedSymbol = `CAPITALCOM:${symbol}`;
-      }
-    }
+    // Set the script content
+    script.innerHTML = JSON.stringify(config);
 
-    previousSymbolRef.current = formattedSymbol;
-    console.log(`Creating TradingView chart with symbol: ${formattedSymbol}`);
-
-    // Create the widget container structure
+    // Create widget container structure
     const widgetContainer = document.createElement('div');
     widgetContainer.className = 'tradingview-widget-container';
     widgetContainer.style.height = '100%';
@@ -70,81 +57,45 @@ function TradingViewWidget({
     // Append elements in the correct order
     widgetContainer.appendChild(widgetDiv);
     widgetContainer.appendChild(copyright);
+    widgetContainer.appendChild(script);
 
+    // Clear existing content and append new widget
     if (container.current) {
+      container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
     }
 
-    // Create the script element
-    const script = document.createElement('script');
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-    script.type = 'text/javascript';
-    script.async = true;
-    scriptRef.current = script;
-
-    // Create the configuration object
-    const config = {
-      autosize: true,
-      symbol: formattedSymbol,
-      interval: "1",
-      timezone: "Asia/Jerusalem",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      hide_legend: true,
-      allow_symbol_change: true,
-      save_image: false,
-      calendar: false,
-      hide_volume: true,
-      support_host: "https://www.tradingview.com"
-    };
-
-    // Set the script content
-    script.innerHTML = JSON.stringify(config);
-    
-    // Add the script to the container
-    widgetContainer.appendChild(script);
-
-    // Custom event handling for TradingView chart
-    const handleCustomEvent = (event: any) => {
-      // This handles communication with the TradingView iframe
-      if (event.source !== window) {
-        try {
-          // Extract symbol changes when available
-          if (event.data && event.data.name === 'symbolChange') {
-            const newSymbol = event.data.data[0].value;
-            console.log('TradingView symbol changed to:', newSymbol);
-            onSymbolChange?.(newSymbol);
-          }
-          
-          // Extract price updates when available
-          if (event.data && event.data.name === 'quoteUpdate') {
-            const lastPrice = event.data.data[0]?.last;
-            if (lastPrice && !isNaN(Number(lastPrice))) {
-              console.log('TradingView price updated to:', lastPrice);
-              onPriceUpdate?.(Number(lastPrice));
-            }
-          }
-        } catch (error) {
-          console.error('Error handling TradingView message:', error);
+    // Add event listeners for symbol and price updates
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        if (event.data.name === 'symbol-change') {
+          console.log('Symbol changed to:', event.data.symbol);
+          onSymbolChange?.(event.data.symbol);
         }
+        if (event.data.name === 'price-update') {
+          console.log('Price updated to:', event.data.price);
+          onPriceUpdate?.(event.data.price);
+        }
+      } catch (error) {
+        console.error('Error handling TradingView message:', error);
       }
     };
 
-    // Listen for all messages from the iframe
-    window.addEventListener('message', handleCustomEvent);
+    window.addEventListener('message', handleMessage);
 
     return () => {
-      window.removeEventListener('message', handleCustomEvent);
+      window.removeEventListener('message', handleMessage);
+      if (container.current) {
+        container.current.innerHTML = '';
+      }
     };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return (
-    <div className="relative w-full h-full bg-white dark:bg-gray-800 rounded-lg">
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
-        className="tradingview-container"
       />
     </div>
   );
