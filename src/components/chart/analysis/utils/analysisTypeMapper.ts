@@ -64,7 +64,7 @@ export const mapToAnalysisType = (analysisType: string): string => {
 // Add the missing function for AnalysisPerformer
 export const mapAnalysisTypeToConfig = (analysisType: string) => {
   return {
-    isScalping: analysisType === "Scalping" || analysisType === "مضاربة",
+    isScalping: analysisType === "Scalping" || analysisType === "مضاربة" || analysisType === "سكالبينج",
     isSMC: analysisType === "SMC" || analysisType === "نظرية هيكل السوق",
     isICT: analysisType === "ICT" || analysisType === "نظرية السوق",
     isTurtleSoup: analysisType === "Turtle Soup" || analysisType === "الحساء السلحفائي",

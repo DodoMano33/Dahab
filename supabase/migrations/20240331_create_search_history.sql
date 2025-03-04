@@ -1,3 +1,4 @@
+
 -- Drop existing table if it exists
 DROP TABLE IF EXISTS public.search_history;
 
@@ -9,7 +10,12 @@ CREATE TABLE public.search_history (
   symbol text NOT NULL,
   current_price numeric NOT NULL,
   analysis jsonb NOT NULL,
-  analysis_type text NOT NULL check (analysis_type in ('عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup', 'Gann'))
+  analysis_type text NOT NULL check (analysis_type in (
+    'عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup', 'Gann', 'Waves', 'Patterns', 
+    'Price Action', 'شبكات عصبية', 'شبكات عصبية متكررة', 'تصفيق زمني', 'تباين متعدد العوامل',
+    'شمعات مركبة', 'تحليل سلوكي', 'نمطي', 'تقلبات', 'جان', 'الحساء السلحفائي',
+    'نظرية السوق', 'نظرية هيكل السوق', 'يومي', 'مضاربة', 'حركة السعر'
+  ))
 );
 
 -- Set up Row Level Security (RLS)

@@ -17,15 +17,26 @@ export const AnalysisTypeCell = ({
   // تحديد لون الخلفية بناءً على نوع التحليل
   const getBgColor = () => {
     const type = analysisType.toLowerCase();
-    if (type.includes('smc')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
-    if (type.includes('ict')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
-    if (type.includes('turtle')) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
-    if (type.includes('gann')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
-    if (type.includes('waves')) return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300';
-    if (type.includes('pattern')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
-    if (type.includes('price action')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
-    if (type.includes('ذكي')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300';
-    if (type.includes('scalping')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
+    
+    // Old analysis types
+    if (type.includes('smc') || type.includes('نظرية هيكل السوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
+    if (type.includes('ict') || type.includes('نظرية السوق')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
+    if (type.includes('turtle') || type.includes('الحساء السلحفائي')) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+    if (type.includes('gann') || type.includes('جان')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+    if (type.includes('waves') || type.includes('تقلبات')) return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300';
+    if (type.includes('pattern') || type.includes('نمطي')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
+    if (type.includes('price action') || type.includes('حركة السعر')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+    if (type.includes('ذكي') || type.includes('smart')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300';
+    if (type.includes('scalping') || type.includes('مضاربة') || type.includes('سكالبينج')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
+    
+    // New analysis types
+    if (type.includes('شبكات عصبية متكررة') || type.includes('rnn')) return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300';
+    if (type.includes('شبكات عصبية') || type.includes('neural')) return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+    if (type.includes('تصفيق زمني') || type.includes('time clustering')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
+    if (type.includes('تباين متعدد العوامل') || type.includes('multi variance')) return 'bg-lime-100 text-lime-800 dark:bg-lime-900/20 dark:text-lime-300';
+    if (type.includes('شمعات مركبة') || type.includes('composite')) return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-300';
+    if (type.includes('تحليل سلوكي') || type.includes('behavioral')) return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/20 dark:text-fuchsia-300';
+    
     return 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300';
   };
 
