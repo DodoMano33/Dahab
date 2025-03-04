@@ -24,22 +24,76 @@ export const SymbolInput = ({
 }: SymbolInputProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [debouncedValue, setDebouncedValue] = useState(value || defaultValue || "");
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // استخدام قيمة مؤجلة للرمز لتجنب طلبات API متعددة وتحديث الشارت
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value || defaultValue || "");
+  // Handle user input with debounce
+  const handleInputChange = (newValue: string) => {
+    // Update the input field immediately for UI responsiveness
+    onChange(newValue);
+    
+    // Clear any existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    // Set a new timeout for chart update
+    const timeout = setTimeout(() => {
+      console.log(`Input debounce complete. Updating chart with: ${newValue}`);
+      setDebouncedValue(newValue);
       
       // If updateChart flag is true and we have a value and onUpdateChart function
-      if (updateChart && onUpdateChart && (value || defaultValue)) {
-        const symbolToUpdate = value || defaultValue || "";
+      if (updateChart && onUpdateChart && newValue) {
+        const symbolToUpdate = formatSymbolForTradingView(newValue);
         console.log(`Updating chart with symbol: ${symbolToUpdate}`);
         onUpdateChart(symbolToUpdate);
       }
-    }, 500); // Slightly longer debounce for chart updates
+    }, 500);
+    
+    setTypingTimeout(timeout);
+  };
 
-    return () => clearTimeout(timer);
-  }, [value, defaultValue, updateChart, onUpdateChart]);
+  // Format symbol for TradingView chart (add exchange prefix if needed)
+  const formatSymbolForTradingView = (symbol: string): string => {
+    if (!symbol) return "";
+    
+    // If already contains exchange prefix, leave as is
+    if (symbol.includes(':')) return symbol;
+    
+    const upperSymbol = symbol.toUpperCase();
+    
+    // Common patterns for different types of symbols
+    if (upperSymbol.includes('USD') && !upperSymbol.includes('USDT')) {
+      // Forex pairs
+      if (upperSymbol === 'XAUUSD' || upperSymbol === 'GOLD') {
+        return `CAPITALCOM:GOLD`;
+      } else if (upperSymbol === 'XAGUSD' || upperSymbol === 'SILVER') {
+        return `CAPITALCOM:SILVER`;
+      } else {
+        return `FX:${upperSymbol}`;
+      }
+    } else if (
+      upperSymbol.endsWith('USDT') || 
+      upperSymbol.endsWith('BTC') || 
+      upperSymbol.includes('BTC') || 
+      upperSymbol.includes('ETH')
+    ) {
+      // Crypto pairs
+      return `BINANCE:${upperSymbol}`;
+    } else {
+      // Stocks and others - default to NASDAQ
+      return `NASDAQ:${upperSymbol}`;
+    }
+  };
+
+  // استخدام قيمة مؤجلة للرمز لتجنب طلبات API متعددة وتحديث الشارت
+  useEffect(() => {
+    // If the component receives a new defaultValue and input is empty, update it
+    if (defaultValue && !value && defaultValue !== debouncedValue) {
+      console.log(`Updating input value from chart: ${defaultValue}`);
+      onChange(defaultValue);
+      setDebouncedValue(defaultValue);
+    }
+  }, [defaultValue, value, onChange]);
 
   // استدعاء API للحصول على السعر عند تغيير الرمز - فقط إذا لم يتم تحديث السعر من الشارت
   useEffect(() => {
@@ -86,7 +140,7 @@ export const SymbolInput = ({
           id="symbol"
           placeholder={defaultValue || "مثال: XAUUSD"}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
           className="w-full"
           dir="ltr"
         />

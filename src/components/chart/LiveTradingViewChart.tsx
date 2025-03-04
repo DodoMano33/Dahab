@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
 interface LiveTradingViewChartProps {
@@ -15,6 +15,16 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onPriceUpdate,
   setSymbol
 }) => {
+  const previousSymbolRef = useRef<string>(symbol);
+  
+  // Log symbol changes for debugging
+  useEffect(() => {
+    if (symbol !== previousSymbolRef.current) {
+      console.log(`LiveTradingViewChart: Symbol changed from ${previousSymbolRef.current} to ${symbol}`);
+      previousSymbolRef.current = symbol;
+    }
+  }, [symbol]);
+
   return (
     <div className="w-full h-full">
       <TradingViewWidget 

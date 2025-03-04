@@ -16,15 +16,19 @@ function TradingViewWidget({
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
+  const symbolRef = useRef<string>(symbol);
 
   // Update chart when symbol prop changes from outside
   useEffect(() => {
-    if (widgetRef.current && symbol) {
+    if (symbol && symbol !== symbolRef.current) {
+      symbolRef.current = symbol;
       try {
         console.log("Setting TradingView symbol to:", symbol);
         const tvWidget = (window as any).tvWidget;
         if (tvWidget && tvWidget.chart && tvWidget.chart()) {
           tvWidget.chart().setSymbol(symbol);
+        } else {
+          console.warn("TradingView widget not ready yet, symbol will be set on init:", symbol);
         }
       } catch (error) {
         console.error("Error updating TradingView symbol:", error);
@@ -41,7 +45,7 @@ function TradingViewWidget({
     // Create the configuration object
     const config = {
       autosize: true,
-      symbol: symbol,
+      symbol: symbolRef.current,
       interval: "1",
       timezone: "Asia/Jerusalem",
       theme: "dark",
@@ -170,13 +174,29 @@ function TradingViewWidget({
             // Silent error - widget might not be ready
           }
         }, 2000);
+
+        // Add global method to set the symbol
+        window.setTradingViewSymbol = function(symbol) {
+          try {
+            if (window.tvWidget && window.tvWidget.chart && window.tvWidget.chart()) {
+              console.log("Setting TradingView symbol via global method:", symbol);
+              window.tvWidget.chart().setSymbol(symbol);
+              return true;
+            }
+          } catch (err) {
+            console.error("Error in setTradingViewSymbol:", err);
+          }
+          return false;
+        };
       });
     `;
     document.head.appendChild(customScript);
 
     return () => {
       window.removeEventListener('message', handleMessage);
-      document.head.removeChild(customScript);
+      if (document.head.contains(customScript)) {
+        document.head.removeChild(customScript);
+      }
       if (container.current) {
         container.current.innerHTML = '';
       }

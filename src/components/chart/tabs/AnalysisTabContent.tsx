@@ -1,5 +1,5 @@
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useCallback } from "react";
 import { AnalysisInfoCard } from "../info/AnalysisInfoCard";
 import { LiveTradingViewChart } from "../LiveTradingViewChart";
 import { AnalysisForm } from "../analysis/AnalysisForm";
@@ -46,22 +46,16 @@ export const AnalysisTabContent = ({
   isCheckLoading,
   lastCheckTime
 }: AnalysisTabContentProps) => {
-  const [chartRef, setChartRef] = useState<any>(null);
-
-  // Function to update the TradingView chart symbol
-  const updateChartSymbol = (symbol: string) => {
-    // Prepare symbol for TradingView format (add exchange if needed)
-    const formattedSymbol = symbol.includes(':') 
-      ? symbol 
-      : determineExchangePrefix(symbol);
-    
-    console.log(`Updating TradingView chart to symbol: ${formattedSymbol}`);
-    onSymbolChange(symbol); // This will update the parent state
-  };
-
+  const [chartSymbol, setChartSymbol] = useState<string>(autoSymbol);
+  
   // Helper function to determine the appropriate exchange prefix
-  const determineExchangePrefix = (symbol: string): string => {
+  const determineExchangePrefix = useCallback((symbol: string): string => {
+    if (!symbol) return "CAPITALCOM:GOLD"; // Default
+    
     const upperSymbol = symbol.toUpperCase();
+    
+    // If already contains exchange prefix, return as is
+    if (symbol.includes(':')) return symbol;
     
     // Common patterns for different types of symbols
     if (upperSymbol.includes('USD') && !upperSymbol.includes('USDT')) {
@@ -85,7 +79,26 @@ export const AnalysisTabContent = ({
       // Stocks and others - default to NASDAQ
       return `NASDAQ:${upperSymbol}`;
     }
-  };
+  }, []);
+
+  // Function to update the TradingView chart symbol
+  const updateChartSymbol = useCallback((symbol: string) => {
+    // Ignore empty symbols
+    if (!symbol) return;
+
+    // Prepare symbol for TradingView format (add exchange if needed)
+    const formattedSymbol = determineExchangePrefix(symbol);
+    
+    console.log(`Updating TradingView chart to symbol: ${formattedSymbol}`);
+    setChartSymbol(formattedSymbol);
+    onSymbolChange(symbol); // This will update the parent state
+  }, [onSymbolChange, determineExchangePrefix]);
+
+  // Handle symbol changes from the chart
+  const handleSymbolChangeFromChart = useCallback((newSymbol: string) => {
+    console.log(`Chart symbol changed to: ${newSymbol}`);
+    onSymbolChange(newSymbol);
+  }, [onSymbolChange]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -99,10 +112,9 @@ export const AnalysisTabContent = ({
 
       {/* TradingView Chart */}
       <LiveTradingViewChart
-        symbol={autoSymbol.includes(':') ? autoSymbol : determineExchangePrefix(autoSymbol)}
-        onSymbolChange={onSymbolChange}
+        symbol={chartSymbol || determineExchangePrefix(autoSymbol)}
+        onSymbolChange={handleSymbolChangeFromChart}
         onPriceUpdate={onPriceUpdate}
-        setSymbol={setChartRef}
       />
 
       {/* Symbol, Price, and Timeframe Form */}
