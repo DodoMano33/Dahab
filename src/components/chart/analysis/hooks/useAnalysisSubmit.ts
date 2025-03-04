@@ -128,7 +128,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
             symbol: upperSymbol,
             currentPrice,
             analysisResult,
-            analysisType: mappedAnalysisType, // Use the mapped value
+            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
             timeframe,
             durationHours
           });
@@ -142,7 +142,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
               analysis: analysisResult,
               targetHit: false,
               stopLossHit: false,
-              analysisType: mappedAnalysisType, // Use the mapped value
+              analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
               timeframe,
               analysis_duration_hours: durationHours
             };

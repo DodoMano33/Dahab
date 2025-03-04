@@ -1,7 +1,8 @@
+
 import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
-import { SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -33,7 +34,7 @@ export const useSaveAnalysis = () => {
         symbol,
         currentPrice,
         analysisResult: result.analysisResult,
-        analysisType: mappedAnalysisType,
+        analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
         timeframe,
         durationHours: duration
       });
@@ -47,7 +48,7 @@ export const useSaveAnalysis = () => {
           analysis: result.analysisResult,
           targetHit: false,
           stopLossHit: false,
-          analysisType: mappedAnalysisType,
+          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
           timeframe,
           analysis_duration_hours: duration
         };

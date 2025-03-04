@@ -60,3 +60,23 @@ export const mapToAnalysisType = (analysisType: string): string => {
       return "يومي"; // Default to daily analysis if type is unknown
   }
 };
+
+// Add the missing function for AnalysisPerformer
+export const mapAnalysisTypeToConfig = (analysisType: string) => {
+  return {
+    isScalping: analysisType === "Scalping" || analysisType === "مضاربة",
+    isSMC: analysisType === "SMC" || analysisType === "نظرية هيكل السوق",
+    isICT: analysisType === "ICT" || analysisType === "نظرية السوق",
+    isTurtleSoup: analysisType === "Turtle Soup" || analysisType === "الحساء السلحفائي",
+    isGann: analysisType === "Gann" || analysisType === "جان",
+    isWaves: analysisType === "Waves" || analysisType === "تقلبات",
+    isPatternAnalysis: analysisType === "Patterns" || analysisType === "نمطي",
+    isPriceAction: analysisType === "Price Action" || analysisType === "حركة السعر",
+    isNeuralNetwork: analysisType === "Neural Networks" || analysisType === "شبكات عصبية",
+    isRNN: analysisType === "RNN" || analysisType === "شبكات عصبية متكررة",
+    isTimeClustering: analysisType === "Time Clustering" || analysisType === "تصفيق زمني",
+    isMultiVariance: analysisType === "Multi Variance" || analysisType === "تباين متعدد العوامل",
+    isCompositeCandlestick: analysisType === "Composite Candlestick" || analysisType === "شمعات مركبة",
+    isBehavioral: analysisType === "Behavioral" || analysisType === "تحليل سلوكي"
+  };
+};
