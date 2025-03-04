@@ -1,11 +1,10 @@
 
 import { useState } from "react";
 import { AnalysisData } from "@/types/analysis";
-import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { detectAnalysisType } from "./utils/analysisTypeDetector";
-import { executeAnalysis } from "./utils/analysisExecutor";
-import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";
-import { toast } from "sonner";
+import { validateAnalysisInputs } from "./utils/inputValidation";
+import { buildAnalysisConfig } from "./utils/analysisConfigBuilder";
+import { processChartAnalysis } from "./utils/chartAnalysisProcessor";
+import { showErrorToast } from "./utils/toastUtils";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -29,9 +28,6 @@ export const useAnalysisHandler = () => {
     isPriceAction: boolean = false,
     isNeuralNetwork: boolean = false
   ) => {
-    let messageToastId: string | undefined;
-    let loadingToastId: string | undefined;
-    
     try {
       console.log("Starting analysis with parameters:", {
         symbol,
@@ -49,154 +45,52 @@ export const useAnalysisHandler = () => {
         isNeuralNetwork
       });
 
-      if (!symbol || !timeframe) {
-        throw new Error("جميع الحقول مطلوبة");
-      }
-
-      if (!providedPrice) {
-        throw new Error("يجب إدخال السعر الحالي للتحليل");
+      // Validate inputs
+      if (!validateAnalysisInputs(symbol, timeframe, providedPrice)) {
+        return;
       }
 
       setIsAnalyzing(true);
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
       
-      const selectedTypes = [];
-      if (isScalping) selectedTypes.push("scalping");
-      if (isSMC) selectedTypes.push("smc");
-      if (isICT) selectedTypes.push("ict");
-      if (isTurtleSoup) selectedTypes.push("turtleSoup");
-      if (isGann) selectedTypes.push("gann");
-      if (isWaves) selectedTypes.push("waves");
-      if (isPatternAnalysis) selectedTypes.push("patterns");
-      if (isPriceAction) selectedTypes.push("priceAction");
-      if (isNeuralNetwork) selectedTypes.push("neuralNetworks");
-      
-      const analysisType = isAI ? "ذكي" : detectAnalysisType(
-        isPatternAnalysis,
-        isWaves,
-        isGann,
-        isTurtleSoup,
-        isICT,
-        isSMC,
-        isAI,
+      // Build configuration
+      const { selectedTypes, analysisType, options } = buildAnalysisConfig(
         isScalping,
+        isAI,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
         isPriceAction,
         isNeuralNetwork
       );
       
       setCurrentAnalysis(analysisType);
       
-      // Use a unique ID for the loading toast
-      loadingToastId = "analysis-loading-" + Date.now();
-      
-      toast.loading(`جاري تحليل ${analysisType} للرمز ${upperSymbol} على الإطار الزمني ${timeframe}...`, {
-        id: loadingToastId,
-        duration: Infinity,
-      });
-      
-      // Show the specialized analysis message toast - using async/await properly
-      try {
-        const messagesModule = await import("./utils/analysisMessages");
-        messageToastId = messagesModule.showAnalysisMessage(
-          isPatternAnalysis,
-          isWaves,
-          isGann,
-          isTurtleSoup,
-          isICT,
-          isSMC,
-          isAI,
-          isNeuralNetwork
-        );
-      } catch (messageError) {
-        console.error("Error showing analysis message:", messageError);
-      }
-      
-      console.log("Getting TradingView chart image for:", { 
-        symbol: upperSymbol, 
-        timeframe, 
-        providedPrice,
+      // Process the chart analysis
+      const result = await processChartAnalysis({
+        symbol: upperSymbol,
+        timeframe,
+        providedPrice: providedPrice as number,
         analysisType,
-        selectedTypes
+        selectedTypes,
+        isAI,
+        options
       });
-
-      try {
-        const chartImage = await getTradingViewChartImage(upperSymbol, timeframe, providedPrice);
-        console.log("Chart image received successfully");
-        setImage(chartImage);
-
-        let analysisResult;
-        if (isAI && selectedTypes.length > 0) {
-          console.log("Starting AI combined analysis");
-          analysisResult = await combinedAnalysis(
-            chartImage,
-            providedPrice,
-            timeframe,
-            selectedTypes
-          );
-        } else {
-          console.log("Starting regular analysis");
-          analysisResult = await executeAnalysis(
-            chartImage,
-            providedPrice,
-            timeframe,
-            {
-              isPatternAnalysis,
-              isWaves,
-              isGann,
-              isTurtleSoup,
-              isICT,
-              isSMC,
-              isScalping,
-              isPriceAction,
-              isNeuralNetwork
-            }
-          );
-        }
-
-        if (!analysisResult) {
-          // Make sure to dismiss all toasts on error
-          if (loadingToastId) toast.dismiss(loadingToastId);
-          if (messageToastId) toast.dismiss(messageToastId);
-          throw new Error("لم يتم العثور على نتائج التحليل");
-        }
-
-        console.log("Analysis completed successfully:", analysisResult);
-        setAnalysis(analysisResult);
-        setIsAnalyzing(false);
-        
-        // Always dismiss all toasts when analysis is completed
-        if (loadingToastId) toast.dismiss(loadingToastId);
-        if (messageToastId) toast.dismiss(messageToastId);
-        
-        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`, {
-          description: `${upperSymbol} | السعر: ${providedPrice}`,
-          duration: 5000,
-        });
-        
-        return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
-        
-      } catch (chartError) {
-        console.error("Error getting chart image or performing analysis:", chartError);
-        // Make sure to dismiss all toasts on error
-        if (loadingToastId) toast.dismiss(loadingToastId);
-        if (messageToastId) toast.dismiss(messageToastId);
-        throw new Error("فشل في الحصول على صورة الشارت أو إجراء التحليل");
-      }
       
+      // Store the image and analysis result
+      setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, providedPrice as number) : null);
+      setAnalysis(result ? result.analysisResult : null);
+      setIsAnalyzing(false);
+      
+      return result;
     } catch (error) {
       console.error("Error in TradingView analysis:", error);
       setIsAnalyzing(false);
-      
-      // Make sure to dismiss any loading toasts
-      if (loadingToastId) toast.dismiss(loadingToastId);
-      if (messageToastId) toast.dismiss(messageToastId);
-      
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("حدث خطأ أثناء التحليل");
-      }
+      showErrorToast(error);
       throw error;
     }
   };
@@ -213,3 +107,6 @@ export const useAnalysisHandler = () => {
     setIsAnalyzing
   };
 };
+
+// Add this import at the top, it was missing in the updated code
+import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
