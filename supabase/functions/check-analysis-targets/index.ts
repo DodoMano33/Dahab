@@ -195,8 +195,8 @@ Deno.serve(async (req) => {
         
         // التحقق من وجود نقطة دخول مثالية
         const hasBestEntryPoint = analysis.analysis && 
-                                  analysis.analysis.bestEntryPoint && 
-                                  analysis.analysis.bestEntryPoint.price;
+                                analysis.analysis.bestEntryPoint && 
+                                analysis.analysis.bestEntryPoint.price;
         
         // إذا كان هناك نقطة دخول مثالية، وهي تختلف عن سعر الدخول، وتحليل نقطة الدخول لم يكتمل
         if (hasBestEntryPoint) {
@@ -236,7 +236,8 @@ Deno.serve(async (req) => {
               // إذا وصل السعر إلى وقف الخسارة قبل الوصول إلى نقطة الدخول
               console.log(`⛔ Stop loss hit before entry for ${analysis.id}: current=${currentPrice}, stopLoss=${stopLoss}`);
               
-              await supabase.rpc(
+              // إضافة سجل إلى backtest_results وإزالته من search_history
+              const { data, error: rpcError } = await supabase.rpc(
                 "move_to_backtest_results",
                 { 
                   p_search_history_id: analysis.id, 
@@ -245,6 +246,11 @@ Deno.serve(async (req) => {
                   p_is_entry_point_analysis: true
                 }
               );
+              
+              if (rpcError) {
+                console.error(`Error updating analysis ${analysis.id}:`, rpcError);
+                return null;
+              }
               
               return {
                 id: analysis.id,
@@ -258,7 +264,8 @@ Deno.serve(async (req) => {
                 (direction === "هابط" && currentPrice <= firstTarget)) {
               console.log(`🎯 Target hit after entry for ${analysis.id}: current=${currentPrice}, target=${firstTarget}`);
               
-              await supabase.rpc(
+              // إضافة سجل إلى backtest_results وتحديث search_history
+              const { data, error: rpcError } = await supabase.rpc(
                 "move_to_backtest_results",
                 { 
                   p_search_history_id: analysis.id, 
@@ -267,6 +274,11 @@ Deno.serve(async (req) => {
                   p_is_entry_point_analysis: true
                 }
               );
+              
+              if (rpcError) {
+                console.error(`Error updating analysis ${analysis.id}:`, rpcError);
+                return null;
+              }
               
               return {
                 id: analysis.id,
@@ -277,7 +289,8 @@ Deno.serve(async (req) => {
                       (direction === "هابط" && currentPrice >= stopLoss)) {
               console.log(`⛔ Stop loss hit after entry for ${analysis.id}: current=${currentPrice}, stopLoss=${stopLoss}`);
               
-              await supabase.rpc(
+              // إضافة سجل إلى backtest_results وإزالته من search_history
+              const { data, error: rpcError } = await supabase.rpc(
                 "move_to_backtest_results",
                 { 
                   p_search_history_id: analysis.id, 
@@ -286,6 +299,11 @@ Deno.serve(async (req) => {
                   p_is_entry_point_analysis: true
                 }
               );
+              
+              if (rpcError) {
+                console.error(`Error updating analysis ${analysis.id}:`, rpcError);
+                return null;
+              }
               
               return {
                 id: analysis.id,
@@ -322,6 +340,7 @@ Deno.serve(async (req) => {
           if (isSuccess || isFailure) {
             console.log(`Updating analysis ${analysis.id} with success=${isSuccess}`);
             
+            // نقل التحليل إلى جدول backtest_results وتحديث حالته أو إزالته من search_history
             const { data, error: rpcError } = await supabase.rpc(
               "move_to_backtest_results",
               { 

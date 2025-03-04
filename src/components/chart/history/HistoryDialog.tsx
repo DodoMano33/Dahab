@@ -5,7 +5,7 @@ import { SearchHistoryHeader } from "./SearchHistoryHeader";
 import { HistoryActions } from "./HistoryActions";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AnalysisData, AnalysisType, SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem } from "@/types/analysis";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, RefreshCw, Target } from "lucide-react";
 import { ExportAnalysis } from "./ExportAnalysis";
@@ -88,7 +88,7 @@ export const HistoryDialog = ({
                   size="sm" 
                   onClick={refreshHistory}
                   disabled={isRefreshing}
-                  className="mr-2"
+                  className="bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300 mr-2"
                   title="فحص تحقق الأهداف"
                 >
                   <Target className="h-4 w-4 mr-1" />
