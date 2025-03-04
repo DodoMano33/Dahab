@@ -57,11 +57,14 @@ export const AnalysisTabContent = ({
       />
 
       {/* TradingView Chart */}
-      <LiveTradingViewChart
-        symbol={autoSymbol}
-        onSymbolChange={onSymbolChange}
-        onPriceUpdate={onPriceUpdate}
-      />
+      <div className="w-full">
+        <h2 className="text-lg font-medium mb-3">رسم بياني مباشر</h2>
+        <LiveTradingViewChart
+          symbol={autoSymbol}
+          onSymbolChange={onSymbolChange}
+          onPriceUpdate={onPriceUpdate}
+        />
+      </div>
 
       {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm

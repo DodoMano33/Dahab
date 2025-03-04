@@ -125,10 +125,11 @@ function TradingViewWidget({
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return (
-    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div className="relative w-full h-full bg-white dark:bg-gray-800 rounded-lg">
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
+        className="tradingview-container"
       />
     </div>
   );

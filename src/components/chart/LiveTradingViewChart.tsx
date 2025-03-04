@@ -36,7 +36,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-[600px] mb-6 rounded-lg shadow-md overflow-hidden">
       <TradingViewWidget 
         symbol={symbol}
         onSymbolChange={handleSymbolChange}
