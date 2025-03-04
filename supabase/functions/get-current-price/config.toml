@@ -1,0 +1,7 @@
+
+name = "get-current-price"
+region = "eu-west-1"
+verify_jwt = false
+
+# متغير الوقت
+privileged_token_time_to_live_seconds = 30

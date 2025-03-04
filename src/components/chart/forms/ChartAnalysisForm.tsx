@@ -62,6 +62,12 @@ export const ChartAnalysisForm = ({
     onSubmit
   });
 
+  const handlePriceUpdate = (newPrice: number | null) => {
+    if (newPrice) {
+      setPrice(newPrice.toString());
+    }
+  };
+
   const handleSubmit = (
     e: React.MouseEvent,
     isScalping: boolean = false,
@@ -129,6 +135,7 @@ export const ChartAnalysisForm = ({
         value={symbol} 
         onChange={setSymbol} 
         defaultValue={defaultSymbol}
+        onPriceUpdate={handlePriceUpdate}
       />
       <PriceInput 
         value={price} 
