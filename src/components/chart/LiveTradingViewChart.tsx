@@ -1,3 +1,4 @@
+
 import React from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
@@ -12,12 +13,22 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  const handleSymbolChange = (newSymbol: string) => {
+    console.log('LiveTradingViewChart received symbol change:', newSymbol);
+    onSymbolChange?.(newSymbol);
+  };
+
+  const handlePriceUpdate = (newPrice: number) => {
+    console.log('LiveTradingViewChart received price update:', newPrice);
+    onPriceUpdate?.(newPrice);
+  };
+
   return (
     <div className="w-full h-full">
       <TradingViewWidget 
         symbol={symbol}
-        onSymbolChange={onSymbolChange}
-        onPriceUpdate={onPriceUpdate}
+        onSymbolChange={handleSymbolChange}
+        onPriceUpdate={handlePriceUpdate}
       />
     </div>
   );

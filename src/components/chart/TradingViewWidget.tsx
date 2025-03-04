@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
@@ -65,26 +66,37 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
-    // Add event listeners for symbol and price updates
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed to:', event.data.symbol);
-          onSymbolChange?.(event.data.symbol);
+    // Custom event handling for TradingView chart
+    const handleCustomEvent = (event: any) => {
+      // This handles communication with the TradingView iframe
+      if (event.source !== window) {
+        try {
+          // Extract symbol changes when available
+          if (event.data && event.data.name === 'symbolChange') {
+            const newSymbol = event.data.data[0].value;
+            console.log('TradingView symbol changed to:', newSymbol);
+            onSymbolChange?.(newSymbol);
+          }
+          
+          // Extract price updates when available
+          if (event.data && event.data.name === 'quoteUpdate') {
+            const lastPrice = event.data.data[0]?.last;
+            if (lastPrice && !isNaN(Number(lastPrice))) {
+              console.log('TradingView price updated to:', lastPrice);
+              onPriceUpdate?.(Number(lastPrice));
+            }
+          }
+        } catch (error) {
+          console.error('Error handling TradingView message:', error);
         }
-        if (event.data.name === 'price-update') {
-          console.log('Price updated to:', event.data.price);
-          onPriceUpdate?.(event.data.price);
-        }
-      } catch (error) {
-        console.error('Error handling TradingView message:', error);
       }
     };
 
-    window.addEventListener('message', handleMessage);
+    // Listen for all messages from the iframe
+    window.addEventListener('message', handleCustomEvent);
 
     return () => {
-      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('message', handleCustomEvent);
       if (container.current) {
         container.current.innerHTML = '';
       }

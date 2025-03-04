@@ -1,4 +1,6 @@
+
 import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 
 interface PriceInputProps {
   value: string;
@@ -7,6 +9,24 @@ interface PriceInputProps {
 }
 
 export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) => {
+  const [inputValue, setInputValue] = useState(value || defaultValue || "");
+  
+  // Update input when external price changes (from TradingView)
+  useEffect(() => {
+    if ((defaultValue && !value) || (defaultValue && defaultValue !== value && !inputValue)) {
+      setInputValue(defaultValue);
+    }
+    if (value && value !== inputValue) {
+      setInputValue(value);
+    }
+  }, [value, defaultValue, inputValue]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange(newValue);
+  };
+
   return (
     <div>
       <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
@@ -16,9 +36,9 @@ export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) =
         id="price"
         type="number"
         step="any"
-        placeholder={defaultValue || "أدخل السعر (إجباري)"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        placeholder="أدخل السعر (إجباري)"
+        value={inputValue}
+        onChange={handleInputChange}
         className="w-full"
         dir="ltr"
       />
