@@ -1,262 +1,339 @@
 
-import { useState, useEffect } from "react";
-import { Bell, Check, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetClose
-} from "@/components/ui/sheet";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
-export interface Notification {
+interface Notification {
   id: string;
   title: string;
   message: string;
   read: boolean;
-  created_at: string;
-  type: 'success' | 'error' | 'info' | 'warning';
+  created_at: Date;
+  type: "success" | "error" | "info" | "warning";
   link?: string;
 }
 
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
-    return localStorage.getItem("notifications-enabled") === "true";
-  });
-  const { user, isLoggedIn } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoggedIn || !user) {
-      return;
+    if (user) {
+      fetchNotifications();
+      setupRealtimeSubscription();
     }
+  }, [user]);
 
-    // جلب الإشعارات عند التحميل
-    fetchNotifications();
+  useEffect(() => {
+    // تحديث عدد الإشعارات غير المقروءة
+    setUnreadCount(notifications.filter(n => !n.read).length);
+  }, [notifications]);
 
-    // الاشتراك للإشعارات الجديدة
-    const notificationsChannel = supabase
-      .channel('notifications_changes')
+  const fetchNotifications = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+        return;
+      }
+
+      setNotifications(data as Notification[]);
+    } catch (error) {
+      console.error("Error in fetchNotifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("notifications_changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
         },
-        () => {
-          fetchNotifications();
+        (payload) => {
+          console.log("Notification change:", payload);
+          
+          if (payload.eventType === "INSERT") {
+            // إضافة إشعار جديد
+            setNotifications(prev => [payload.new as Notification, ...prev]);
+            toast(payload.new.title, {
+              description: payload.new.message,
+              action: {
+                label: "عرض",
+                onClick: () => handleNotificationClick(payload.new as Notification),
+              },
+            });
+          } else if (payload.eventType === "UPDATE") {
+            // تحديث إشعار
+            setNotifications(prev => 
+              prev.map(n => n.id === payload.new.id ? payload.new as Notification : n)
+            );
+          } else if (payload.eventType === "DELETE") {
+            // حذف إشعار
+            setNotifications(prev => 
+              prev.filter(n => n.id !== payload.old.id)
+            );
+          }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(notificationsChannel);
+      supabase.removeChannel(channel);
     };
-  }, [isLoggedIn, user]);
-
-  const fetchNotifications = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) {
-        throw error;
-      }
-
-      if (data) {
-        setNotifications(data as Notification[]);
-        setUnreadCount(data.filter(n => !n.read).length);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
   };
 
   const markAsRead = async (id: string) => {
     try {
-      await supabase
-        .from('notifications')
+      const { error } = await supabase
+        .from("notifications")
         .update({ read: true })
-        .eq('id', id);
+        .eq("id", id);
 
-      setNotifications(notifications.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      ));
-      
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      if (error) {
+        console.error("Error marking notification as read:", error);
+        return;
+      }
+
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error in markAsRead:", error);
     }
   };
 
   const markAllAsRead = async () => {
     try {
-      if (!user) return;
-
-      await supabase
-        .from('notifications')
+      const { error } = await supabase
+        .from("notifications")
         .update({ read: true })
-        .eq('user_id', user.id)
-        .eq('read', false);
+        .eq("user_id", user?.id);
 
-      setNotifications(notifications.map(notification => ({ ...notification, read: true })));
-      setUnreadCount(0);
-      toast.success('تم تحديد جميع الإشعارات كمقروءة');
+      if (error) {
+        console.error("Error marking all notifications as read:", error);
+        return;
+      }
+
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, read: true }))
+      );
     } catch (error) {
-      console.error('Error marking all as read:', error);
-      toast.error('حدث خطأ أثناء تحديث الإشعارات');
+      console.error("Error in markAllAsRead:", error);
     }
   };
 
-  const clearAllNotifications = async () => {
+  const deleteNotification = async (id: string) => {
     try {
-      if (!user) return;
-
-      await supabase
-        .from('notifications')
+      const { error } = await supabase
+        .from("notifications")
         .delete()
-        .eq('user_id', user.id);
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error deleting notification:", error);
+        return;
+      }
+
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (error) {
+      console.error("Error in deleteNotification:", error);
+    }
+  };
+
+  const deleteAllNotifications = async () => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("user_id", user?.id);
+
+      if (error) {
+        console.error("Error deleting all notifications:", error);
+        return;
+      }
 
       setNotifications([]);
-      setUnreadCount(0);
-      toast.success('تم حذف جميع الإشعارات');
     } catch (error) {
-      console.error('Error clearing notifications:', error);
-      toast.error('حدث خطأ أثناء حذف الإشعارات');
+      console.error("Error in deleteAllNotifications:", error);
     }
   };
 
-  const toggleNotifications = (enabled: boolean) => {
-    setNotificationsEnabled(enabled);
-    localStorage.setItem("notifications-enabled", enabled.toString());
-    toast(
-      enabled ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات',
-      { description: enabled ? 'ستتلقى إشعارات عند تحقق الأهداف ووقف الخسائر' : 'لن تتلقى إشعارات جديدة' }
-    );
+  const handleNotificationClick = (notification: Notification) => {
+    markAsRead(notification.id);
+    
+    if (notification.link) {
+      navigate(notification.link);
+    }
+    
+    setOpen(false);
   };
 
-  // إذا لم يكن المستخدم مسجلاً، لا تعرض زر الإشعارات
-  if (!isLoggedIn) {
-    return null;
-  }
+  const getNotificationTypeColor = (type: string) => {
+    switch (type) {
+      case "success":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+      case "error":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      case "warning":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "info":
+      default:
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+    }
+  };
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-4 w-4" />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs" variant="destructive">
+            <Badge className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px]">
               {unreadCount}
             </Badge>
           )}
         </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-full sm:max-w-sm">
-        <SheetHeader>
-          <SheetTitle>الإشعارات</SheetTitle>
-          <SheetDescription>
-            آخر التحديثات والتنبيهات الخاصة بتحليلاتك
-          </SheetDescription>
-        </SheetHeader>
-        
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <Switch 
-              id="notifications" 
-              checked={notificationsEnabled}
-              onCheckedChange={toggleNotifications}
-            />
-            <label htmlFor="notifications" className="text-sm">
-              تفعيل الإشعارات
-            </label>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[350px] p-0" dir="rtl">
+        <div className="p-4 border-b flex items-center justify-between">
+          <h3 className="font-medium">الإشعارات</h3>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={markAllAsRead}
+              disabled={unreadCount === 0}
+              className="text-xs h-8"
+            >
+              تعليم الكل كمقروء
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={deleteAllNotifications}
+              disabled={notifications.length === 0}
+              className="text-xs h-8"
+            >
+              حذف الكل
+            </Button>
           </div>
-          
-          {notifications.length > 0 && (
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                تحديد الكل كمقروء
-              </Button>
-              <Button variant="ghost" size="sm" onClick={clearAllNotifications}>
-                حذف الكل
-              </Button>
-            </div>
-          )}
         </div>
-        
-        <div className="space-y-4 mt-2 max-h-[calc(80vh-10rem)] overflow-y-auto pb-6">
-          {notifications.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              لا توجد إشعارات
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <div 
-                key={notification.id}
-                className={`
-                  border rounded-lg p-3 relative 
-                  ${notification.read ? 'bg-background' : 'bg-muted/50 border-primary/20'}
-                `}
-              >
-                <div className="flex justify-between">
-                  <h4 className="text-sm font-medium">
-                    {notification.title}
-                  </h4>
-                  <div className="flex gap-1">
-                    {!notification.read && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6" 
-                        onClick={() => markAsRead(notification.id)}
+        {isLoading ? (
+          <div className="p-4 text-center">جاري التحميل...</div>
+        ) : notifications.length === 0 ? (
+          <div className="p-4 text-center text-muted-foreground">
+            لا توجد إشعارات
+          </div>
+        ) : (
+          <ScrollArea className="h-[400px]">
+            <div className="divide-y">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-4 hover:bg-muted/50 cursor-pointer transition ${
+                    !notification.read ? "bg-muted/20" : ""
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="font-medium flex items-center gap-2">
+                      <span
+                        className={`inline-block h-2 w-2 rounded-full ${
+                          !notification.read ? "bg-primary" : "bg-transparent"
+                        }`}
+                      ></span>
+                      {notification.title}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
                       >
-                        <Check className="h-3 w-3" />
+                        <span className="sr-only">حذف</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M18 6 6 18"></path>
+                          <path d="m6 6 12 12"></path>
+                        </svg>
                       </Button>
-                    )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {notification.message}
+                  </p>
+                  <div className="flex justify-between items-center mt-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getNotificationTypeColor(
+                        notification.type
+                      )}`}
+                    >
+                      {notification.type === "success" && "نجاح"}
+                      {notification.type === "error" && "خطأ"}
+                      {notification.type === "warning" && "تحذير"}
+                      {notification.type === "info" && "معلومات"}
+                    </span>
+                    <time className="text-xs text-muted-foreground">
+                      {format(new Date(notification.created_at), "PPp", {
+                        locale: ar,
+                      })}
+                    </time>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {notification.message}
-                </p>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(notification.created_at).toLocaleString('ar-SA')}
-                  </span>
-                  {notification.link && (
-                    <Button variant="link" size="sm" className="h-auto p-0" asChild>
-                      <a href={notification.link}>عرض التفاصيل</a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        
-        <SheetFooter className="mt-4">
-          <SheetClose asChild>
-            <Button variant="outline" className="w-full">إغلاق</Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }

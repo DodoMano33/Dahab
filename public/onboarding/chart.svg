@@ -1,0 +1,18 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  <rect x="100" y="100" width="600" height="400" rx="8" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <polyline points="150,350 250,250 350,300 450,200 550,150" fill="none" stroke="#20c997" stroke-width="3"/>
+  <polyline points="150,250 250,350 350,300 450,400 550,350" fill="none" stroke="#ff6b6b" stroke-width="3"/>
+  <text x="400" y="70" text-anchor="middle" font-family="Arial" font-size="24" fill="#212529" font-weight="bold">تحليل الرسوم البيانية</text>
+  <line x1="150" y1="100" x2="150" y2="500" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="250" y1="100" x2="250" y2="500" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="350" y1="100" x2="350" y2="500" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="450" y1="100" x2="450" y2="500" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="550" y1="100" x2="550" y2="500" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="100" y1="150" x2="700" y2="150" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="100" y1="250" x2="700" y2="250" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="100" y1="350" x2="700" y2="350" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="100" y1="450" x2="700" y2="450" stroke="#adb5bd" stroke-width="1" stroke-dasharray="5,5"/>
+  <text x="400" y="530" text-anchor="middle" font-family="Arial" font-size="18" fill="#212529">استخدم أدوات التحليل المتقدمة لتحليل حركة الأسعار</text>
+</svg>

@@ -1,0 +1,23 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  <rect x="100" y="150" width="600" height="350" rx="8" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <rect x="120" y="180" width="560" height="60" rx="4" fill="#ffffff" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="120" y="250" width="560" height="60" rx="4" fill="#ffffff" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="120" y="320" width="560" height="60" rx="4" fill="#ffffff" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="120" y="390" width="560" height="60" rx="4" fill="#ffffff" stroke="#adb5bd" stroke-width="1"/>
+  <circle cx="150" cy="210" r="10" fill="#20c997"/>
+  <circle cx="150" cy="280" r="10" fill="#20c997"/>
+  <circle cx="150" cy="350" r="10" fill="#ff6b6b"/>
+  <circle cx="150" cy="420" r="10" fill="#20c997"/>
+  <text x="400" y="100" text-anchor="middle" font-family="Arial" font-size="24" fill="#212529" font-weight="bold">متابعة التحليلات</text>
+  <text x="250" y="215" font-family="Arial" font-size="16" fill="#212529">EURUSD - تحليل نمط السوق</text>
+  <text x="250" y="285" font-family="Arial" font-size="16" fill="#212529">GBPUSD - سكالبينج</text>
+  <text x="250" y="355" font-family="Arial" font-size="16" fill="#212529">XAUUSD - تحليل SMC</text>
+  <text x="250" y="425" font-family="Arial" font-size="16" fill="#212529">USDJPY - نمط الموجات</text>
+  <text x="600" y="215" font-family="Arial" font-size="16" fill="#20c997">ناجح</text>
+  <text x="600" y="285" font-family="Arial" font-size="16" fill="#20c997">ناجح</text>
+  <text x="600" y="355" font-family="Arial" font-size="16" fill="#ff6b6b">فاشل</text>
+  <text x="600" y="425" font-family="Arial" font-size="16" fill="#20c997">ناجح</text>
+  <text x="400" y="530" text-anchor="middle" font-family="Arial" font-size="18" fill="#212529">راقب تحليلاتك السابقة وتتبع أدائها مع مرور الوقت</text>
+</svg>

@@ -1,0 +1,21 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  <rect x="100" y="150" width="280" height="180" rx="8" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <rect x="420" y="150" width="280" height="180" rx="8" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <rect x="100" y="360" width="600" height="180" rx="8" fill="#e9ecef" stroke="#adb5bd" stroke-width="2"/>
+  <circle cx="240" cy="240" r="60" fill="#ffffff" stroke="#adb5bd" stroke-width="2"/>
+  <path d="M240 240 L240 180" stroke="#ff6b6b" stroke-width="3"/>
+  <path d="M240 240 L290 210" stroke="#20c997" stroke-width="3"/>
+  <rect x="440" y="180" width="30" height="120" fill="#20c997" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="480" y="210" width="30" height="90" fill="#20c997" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="520" y="190" width="30" height="110" fill="#ff6b6b" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="560" y="230" width="30" height="70" fill="#20c997" stroke="#adb5bd" stroke-width="1"/>
+  <rect x="600" y="250" width="30" height="50" fill="#ff6b6b" stroke="#adb5bd" stroke-width="1"/>
+  <path d="M150,470 Q250,400 350,450 Q450,500 550,420 Q650,350 700,400" fill="none" stroke="#20c997" stroke-width="3"/>
+  <text x="400" y="100" text-anchor="middle" font-family="Arial" font-size="24" fill="#212529" font-weight="bold">لوحة الإحصائيات</text>
+  <text x="240" cy="330" text-anchor="middle" font-family="Arial" font-size="16" fill="#212529">نسبة النجاح</text>
+  <text x="560" cy="330" text-anchor="middle" font-family="Arial" font-size="16" fill="#212529">أداء أنواع التحليل</text>
+  <text x="400" cy="540" text-anchor="middle" font-family="Arial" font-size="16" fill="#212529">معدل النجاح مع مرور الوقت</text>
+  <text x="400" y="560" text-anchor="middle" font-family="Arial" font-size="18" fill="#212529">احصل على نظرة عامة حول أداء تحليلاتك ونسب النجاح</text>
+</svg>

@@ -1,3 +1,4 @@
+
 export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action" | "عادي";
 
 export interface ImageData {
@@ -42,6 +43,8 @@ export interface SearchHistoryItem {
   analysis_duration_hours?: number;
   last_checked_price?: number;
   last_checked_at?: Date;
+  result_timestamp?: Date; // إضافة حقل result_timestamp
+  is_success?: boolean;    // إضافة حقل is_success
 }
 
 export interface CombinedAnalysisProps {

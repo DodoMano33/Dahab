@@ -1,5 +1,5 @@
 
-import { useState, useCallback, memo, useEffect } from "react";
+import { useState, useCallback, memo, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
@@ -10,7 +10,7 @@ import { useBackTest } from "./hooks/useBackTest";
 import { LiveTradingViewChart } from "./chart/LiveTradingViewChart";
 import { AnalyticsDashboard } from "./chart/dashboard/AnalyticsDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { analysisTypeTooltips, timeframeTooltips, AnalysisTooltip } from "@/components/ui/tooltips/AnalysisTooltips";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
@@ -94,23 +94,30 @@ export const ChartAnalyzer = () => {
   const [activeTab, setActiveTab] = useState("analysis");
   const queryClient = useQueryClient();
 
-  const handleTimeframesChange = (timeframes: string[]) => {
+  // استخدام useMemo لحساب إحصائيات التحليلات بكفاءة
+  const analysisStats = useMemo(() => {
+    const activeAnalyses = searchHistory.filter(item => !item?.result_timestamp);
+    const completedAnalyses = searchHistory.filter(item => item?.result_timestamp);
+    return { total: searchHistory.length, active: activeAnalyses.length, completed: completedAnalyses.length };
+  }, [searchHistory]);
+
+  const handleTimeframesChange = useCallback((timeframes: string[]) => {
     if (!timeframes) {
       console.log("No timeframes provided");
       return;
     }
     setSelectedTimeframes(timeframes);
     console.log("Selected timeframes:", timeframes);
-  };
+  }, []);
 
-  const handleIntervalChange = (interval: string) => {
+  const handleIntervalChange = useCallback((interval: string) => {
     if (!interval) {
       console.log("No interval provided");
       return;
     }
     setSelectedInterval(interval);
     console.log("Selected interval:", interval);
-  };
+  }, []);
 
   const handleSymbolChange = useCallback((symbol: string) => {
     console.log("Chart symbol changed to:", symbol);
@@ -122,15 +129,15 @@ export const ChartAnalyzer = () => {
     setAutoPrice(price);
   }, []);
 
-  const handleAnalysisComplete = (newItem: any) => {
+  const handleAnalysisComplete = useCallback((newItem: any) => {
     console.log("New analysis completed, adding to history:", newItem);
     addToSearchHistory(newItem);
     setIsHistoryOpen(true);
-  };
+  }, [addToSearchHistory, setIsHistoryOpen]);
 
-  const handleManualCheck = () => {
+  const handleManualCheck = useCallback(() => {
     triggerManualCheck();
-  };
+  }, [triggerManualCheck]);
 
   // استخدام useEffect لتحديث البيانات بشكل دوري
   useEffect(() => {
@@ -143,7 +150,7 @@ export const ChartAnalyzer = () => {
   }, [queryClient]);
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col space-y-6 animate-fade-in">
       <Tabs defaultValue="analysis" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 w-full mb-4">
           <TabsTrigger value="analysis">التحليل</TabsTrigger>
@@ -188,9 +195,9 @@ export const ChartAnalyzer = () => {
                   </div>
                 ) : (
                   <ul className="space-y-1 text-sm">
-                    <li>عدد التحليلات: {searchHistory.length}</li>
-                    <li>التحليلات النشطة: {searchHistory.filter(item => !item.result_timestamp).length}</li>
-                    <li>التحليلات المكتملة: {searchHistory.filter(item => item.result_timestamp).length}</li>
+                    <li>عدد التحليلات: {analysisStats.total}</li>
+                    <li>التحليلات النشطة: {analysisStats.active}</li>
+                    <li>التحليلات المكتملة: {analysisStats.completed}</li>
                   </ul>
                 )}
               </div>
@@ -266,4 +273,4 @@ export const ChartAnalyzer = () => {
 };
 
 // استخدام default export للتوافق مع التحميل البطيء
-export default { ChartAnalyzer };
+export default ChartAnalyzer;
