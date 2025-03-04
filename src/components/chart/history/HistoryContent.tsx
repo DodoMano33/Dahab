@@ -1,3 +1,4 @@
+
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
@@ -32,9 +33,9 @@ export const HistoryContent = ({
   return (
     <div className="relative rounded-md border bg-background h-full overflow-y-auto">
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="relative">
           <HistoryTableHeader showCheckbox={true} />
-          <TableBody>
+          <TableBody className="relative">
             {history.map((item) => (
               <HistoryRow
                 key={item.id}

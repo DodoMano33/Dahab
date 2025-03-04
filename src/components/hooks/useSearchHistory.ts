@@ -99,6 +99,21 @@ export const useSearchHistory = () => {
     }
   };
 
+  // فحص تحقق الأهداف ووقف الخسارة
+  const checkTargetsAndStopLoss = async () => {
+    try {
+      console.log("فحص تحقق الأهداف ووقف الخسارة...");
+      
+      // هنا ستضاف وظيفة التحقق من الأهداف ووقف الخسارة
+      // هذه وظيفة مستقبلية ولكن نضيف البنية الأساسية لها
+      toast.info("جاري فحص تحقق الأهداف ووقف الخسارة...");
+      
+      // سيتم إضافة منطق التحقق هنا في المستقبل
+    } catch (error) {
+      console.error("خطأ في فحص تحقق الأهداف ووقف الخسارة:", error);
+    }
+  };
+
   const fetchSearchHistory = async () => {
     try {
       setIsRefreshing(true);
@@ -132,6 +147,9 @@ export const useSearchHistory = () => {
       
       // فحص وحذف التحليلات المنتهية بعد جلب البيانات
       await checkAndDeleteExpiredAnalyses();
+      
+      // فحص تحقق الأهداف ووقف الخسارة
+      await checkTargetsAndStopLoss();
     } catch (error) {
       console.error("خطأ في جلب سجل البحث:", error);
       toast.error("حدث خطأ أثناء جلب سجل البحث");
