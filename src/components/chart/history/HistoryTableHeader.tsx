@@ -1,13 +1,16 @@
 
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+
 interface HistoryTableHeaderProps {
   showCheckbox?: boolean;
 }
+
 export const HistoryTableHeader = ({
   showCheckbox
 }: HistoryTableHeaderProps) => {
-  return <TableHeader className="sticky top-0 bg-background z-10">
+  return (
+    <TableHeader className="sticky top-0 bg-background z-10">
       <TableRow>
         {showCheckbox && <TableHead className="w-12"></TableHead>}
         <TableHead>الرمز</TableHead>
@@ -21,5 +24,6 @@ export const HistoryTableHeader = ({
         <TableHead>أفضل نقطة دخول</TableHead>
         <TableHead>الوقت المتبقي</TableHead>
       </TableRow>
-    </TableHeader>;
+    </TableHeader>
+  );
 };
