@@ -1,6 +1,6 @@
 
-// @ts-ignore
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Follow Deno's latest conventions for importing std library
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
