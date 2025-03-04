@@ -37,7 +37,7 @@ export const useBackTest = () => {
     const backtestChannel = supabase
       .channel('backtest_changes')
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',
@@ -68,7 +68,7 @@ export const useBackTest = () => {
     const entryPointChannel = supabase
       .channel('entry_point_changes')
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',
