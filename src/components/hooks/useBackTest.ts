@@ -4,6 +4,27 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+// Define types for the Supabase realtime payloads
+interface BacktestPayload {
+  new: {
+    direction: string;
+    symbol: string;
+    is_success: boolean;
+    [key: string]: any;
+  };
+  old?: Record<string, any>;
+  [key: string]: any;
+}
+
+interface EntryPointPayload {
+  new: {
+    symbol: string;
+    [key: string]: any;
+  };
+  old?: Record<string, any>;
+  [key: string]: any;
+}
+
 export const useBackTest = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +43,7 @@ export const useBackTest = () => {
           table: 'backtest_results',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        (payload: BacktestPayload) => {
           console.log('Realtime change detected in backtest_results:', payload);
           const direction = payload.new.direction;
           const symbol = payload.new.symbol;
@@ -53,7 +74,7 @@ export const useBackTest = () => {
           table: 'best_entry_point_results',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        (payload: EntryPointPayload) => {
           console.log('Realtime change detected in best_entry_point_results:', payload);
           const symbol = payload.new.symbol;
           
