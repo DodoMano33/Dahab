@@ -32,6 +32,9 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isNeuralNetwork: boolean = false,
     duration?: string
   ) => {
+    // Create a unique toast ID that we can use to dismiss it later
+    const analysisToastId = "analysis-submit-" + Date.now();
+    
     try {
       if (!user) {
         toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
@@ -50,7 +53,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         return;
       }
 
-      showAnalysisMessage(
+      // Show the initial analysis message and get the toast ID
+      const messageToastId = showAnalysisMessage(
         isPatternAnalysis,
         isWaves,
         isGann,
@@ -76,6 +80,11 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isPriceAction,
         isNeuralNetwork
       );
+      
+      // Dismiss the message toast if it was returned
+      if (messageToastId) {
+        toast.dismiss(messageToastId);
+      }
       
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
@@ -136,6 +145,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     } catch (error) {
       console.error("خطأ في التحليل:", error);
       toast.error("حدث خطأ أثناء التحليل");
+      // Dismiss any loading toasts
+      toast.dismiss(analysisToastId);
     }
   };
 

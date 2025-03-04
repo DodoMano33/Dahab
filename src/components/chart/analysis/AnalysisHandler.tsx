@@ -84,8 +84,11 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
+      // Use a unique ID for the toast to be able to dismiss it later
+      const toastId = "analysis-loading-" + Date.now();
+      
       toast.loading(`جاري تحليل ${analysisType} للرمز ${upperSymbol} على الإطار الزمني ${timeframe}...`, {
-        id: "analysis-loading",
+        id: toastId,
         duration: Infinity,
       });
       
@@ -132,6 +135,8 @@ export const useAnalysisHandler = () => {
         }
 
         if (!analysisResult) {
+          // Make sure to dismiss the toast on error
+          toast.dismiss(toastId);
           throw new Error("لم يتم العثور على نتائج التحليل");
         }
 
@@ -139,7 +144,9 @@ export const useAnalysisHandler = () => {
         setAnalysis(analysisResult);
         setIsAnalyzing(false);
         
-        toast.dismiss("analysis-loading");
+        // Always dismiss the toast when analysis is completed
+        toast.dismiss(toastId);
+        
         toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`, {
           description: `${upperSymbol} | السعر: ${providedPrice}`,
           duration: 5000,
@@ -149,13 +156,15 @@ export const useAnalysisHandler = () => {
         
       } catch (chartError) {
         console.error("Error getting chart image or performing analysis:", chartError);
-        toast.dismiss("analysis-loading");
+        // Make sure to dismiss the toast on error
+        toast.dismiss(toastId);
         throw new Error("فشل في الحصول على صورة الشارت أو إجراء التحليل");
       }
       
     } catch (error) {
       console.error("Error in TradingView analysis:", error);
       setIsAnalyzing(false);
+      // Make sure to dismiss any loading toasts
       toast.dismiss("analysis-loading");
       if (error instanceof Error) {
         toast.error(error.message);
