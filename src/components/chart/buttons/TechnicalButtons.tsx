@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Building2, Turtle, Activity, Tooltip } from "lucide-react";
+import { TrendingUp, Building2, Turtle, Activity } from "lucide-react";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TechnicalButtonsProps {
