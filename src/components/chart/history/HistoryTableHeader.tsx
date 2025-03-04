@@ -23,6 +23,7 @@ export const HistoryTableHeader = ({
         <TableHead>أفضل نقطة دخول</TableHead>
         <TableHead>الوقت المتبقي</TableHead>
         <TableHead>آخر فحص</TableHead>
+        <TableHead>حالة السوق</TableHead>
       </TableRow>
     </TableHeader>
   );

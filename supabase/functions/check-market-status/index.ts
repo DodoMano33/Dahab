@@ -15,21 +15,13 @@ function isWeekend(date: Date): boolean {
 
 function isMarketHours(date: Date): boolean {
   const hours = date.getUTCHours();
-  // السوق مفتوح من 22:00 UTC (الأحد) إلى 21:00 UTC (الجمعة)
+  // The market is open from 22:00 UTC (Sunday) to 21:00 UTC (Friday)
   return hours >= 22 || hours < 21;
 }
 
 serve(async (req) => {
-  // تسجيل تفاصيل الطلب للتصحيح
-  console.log('Request received:', {
-    method: req.method,
-    url: req.url,
-    headers: Object.fromEntries(req.headers.entries())
-  });
-
-  // معالجة طلبات CORS preflight
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS request');
     return new Response(null, {
       status: 204,
       headers: corsHeaders
@@ -37,7 +29,7 @@ serve(async (req) => {
   }
 
   try {
-    // السماح بكل من طرق GET و POST
+    // Allow both GET and POST methods
     if (req.method !== 'POST' && req.method !== 'GET') {
       throw new Error(`Method ${req.method} not allowed`);
     }
@@ -51,6 +43,7 @@ serve(async (req) => {
     const response = {
       isOpen,
       timestamp: now.toISOString(),
+      serverTime: now.toISOString(),
     };
 
     return new Response(
@@ -69,11 +62,11 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({
-        error: error.message || 'Internal server error',
+        error: error instanceof Error ? error.message : 'Internal server error',
         timestamp: new Date().toISOString(),
       }),
       {
-        status: error.message?.includes('not allowed') ? 405 : 500,
+        status: error instanceof Error && error.message?.includes('not allowed') ? 405 : 500,
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
