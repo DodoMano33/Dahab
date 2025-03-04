@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 // Define types for the Supabase realtime payloads
 interface BacktestPayload {
