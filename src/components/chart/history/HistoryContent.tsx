@@ -3,6 +3,7 @@ import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HistoryContentProps {
   history: Array<{
@@ -31,10 +32,10 @@ export const HistoryContent = ({
   console.log("HistoryContent history:", history); // للتأكد من البيانات
 
   return (
-    <div className="relative rounded-md border bg-background h-full overflow-y-auto">
-      <div className="overflow-x-auto">
-        <Table className="relative">
-          <HistoryTableHeader showCheckbox={true} />
+    <div className="relative rounded-md border bg-background h-full">
+      <Table className="relative">
+        <HistoryTableHeader showCheckbox={true} />
+        <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 300px)" }}>
           <TableBody className="relative">
             {history.map((item) => (
               <HistoryRow
@@ -46,8 +47,8 @@ export const HistoryContent = ({
               />
             ))}
           </TableBody>
-        </Table>
-      </div>
+        </div>
+      </Table>
     </div>
   );
 };
