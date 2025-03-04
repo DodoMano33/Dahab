@@ -1,4 +1,21 @@
-export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action" | "شبكات عصبية" | "عادي";
+
+export type AnalysisType = 
+  | "سكالبينج" 
+  | "ذكي" 
+  | "SMC" 
+  | "ICT" 
+  | "Turtle Soup" 
+  | "Gann" 
+  | "Waves" 
+  | "Patterns" 
+  | "Price Action" 
+  | "شبكات عصبية" 
+  | "شبكات عصبية متكررة" 
+  | "تصفيق زمني" 
+  | "تباين متعدد العوامل" 
+  | "شمعات مركبة" 
+  | "تحليل سلوكي" 
+  | "عادي";
 
 export interface ImageData {
   height: number;

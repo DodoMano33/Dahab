@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -7,6 +8,12 @@ import { analyzeGannChart } from "@/components/chart/analysis/gannAnalysis";
 import { analyzeWavesChart } from "@/components/chart/analysis/wavesAnalysis";
 import { analyzePattern } from "@/utils/patternAnalysis";
 import { analyzePriceAction } from "@/components/chart/analysis/priceActionAnalysis";
+import { analyzeNeuralNetworkChart } from "@/components/chart/analysis/neuralNetworkAnalysis";
+import { analyzeRNN } from "@/components/chart/analysis/rnnAnalysis";
+import { analyzeTimeClustering } from "@/components/chart/analysis/timeClusteringAnalysis";
+import { analyzeMultiVariance } from "@/components/chart/analysis/multiVarianceAnalysis";
+import { analyzeCompositeCandlestick } from "@/components/chart/analysis/compositeCandlestickAnalysis";
+import { analyzeBehavioral } from "@/components/chart/analysis/behavioralAnalysis";
 
 const getStrategyName = (type: string): string => {
   switch (type) {
@@ -18,6 +25,12 @@ const getStrategyName = (type: string): string => {
     case "waves": return "Waves";
     case "patterns": return "Patterns";
     case "priceAction": return "Price Action";
+    case "neuralNetworks": return "Neural Networks";
+    case "rnn": return "RNN";
+    case "timeClustering": return "Time Clustering";
+    case "multiVariance": return "Multi Variance";
+    case "compositeCandlestick": return "Composite Candlestick";
+    case "behavioral": return "Behavioral";
     default: return type;
   }
 };
@@ -61,6 +74,24 @@ export const combinedAnalysis = async (
           break;
         case "priceAction":
           result = await analyzePriceAction(chartImage, currentPrice, timeframe);
+          break;
+        case "neuralNetworks":
+          result = await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
+          break;
+        case "rnn":
+          result = await analyzeRNN(chartImage, currentPrice, timeframe);
+          break;
+        case "timeClustering":
+          result = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
+          break;
+        case "multiVariance":
+          result = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
+          break;
+        case "compositeCandlestick":
+          result = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
+          break;
+        case "behavioral":
+          result = await analyzeBehavioral(chartImage, currentPrice, timeframe);
           break;
       }
       if (result) analysisResults.push(result);

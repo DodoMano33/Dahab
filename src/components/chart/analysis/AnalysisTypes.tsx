@@ -3,7 +3,22 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
-export type AnalysisTypeValue = "normal" | "scalping" | "ict" | "smc" | "turtle_soup" | "gann" | "waves" | "patterns" | "price_action" | "neural_networks";
+export type AnalysisTypeValue = 
+  | "normal" 
+  | "scalping" 
+  | "ict" 
+  | "smc" 
+  | "turtle_soup" 
+  | "gann" 
+  | "waves" 
+  | "patterns" 
+  | "price_action" 
+  | "neural_networks"
+  | "rnn"
+  | "time_clustering"
+  | "multi_variance"
+  | "composite_candlestick"
+  | "behavioral";
 
 interface AnalysisType {
   value: AnalysisTypeValue;
@@ -21,6 +36,11 @@ const analysisTypes: AnalysisType[] = [
   { value: "waves", label: "Waves" },
   { value: "price_action", label: "Price Action" },
   { value: "neural_networks", label: "شبكات عصبية" },
+  { value: "rnn", label: "شبكات عصبية متكررة" },
+  { value: "time_clustering", label: "تصفيق زمني" },
+  { value: "multi_variance", label: "تباين متعدد العوامل" },
+  { value: "composite_candlestick", label: "شمعات مركبة" },
+  { value: "behavioral", label: "تحليل سلوكي" },
 ];
 
 interface AnalysisTypesProps {

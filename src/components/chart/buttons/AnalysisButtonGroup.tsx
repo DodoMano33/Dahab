@@ -1,5 +1,5 @@
 
-import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network } from "lucide-react";
+import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network, BarChart3, Clock, Calculator, LineChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";

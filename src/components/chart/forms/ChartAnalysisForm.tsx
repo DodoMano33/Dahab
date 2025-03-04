@@ -24,6 +24,11 @@ interface ChartAnalysisFormProps {
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean,
     isNeuralNetwork?: boolean,
+    isRNN?: boolean,
+    isTimeClustering?: boolean,
+    isMultiVariance?: boolean,
+    isCompositeCandlestick?: boolean,
+    isBehavioral?: boolean,
     duration?: string
   ) => void;
   isAnalyzing: boolean;
@@ -68,7 +73,12 @@ export const ChartAnalysisForm = ({
     isWaves: boolean = false,
     isPatternAnalysis: boolean = false,
     isPriceAction: boolean = false,
-    isNeuralNetwork: boolean = false
+    isNeuralNetwork: boolean = false,
+    isRNN: boolean = false,
+    isTimeClustering: boolean = false,
+    isMultiVariance: boolean = false,
+    isCompositeCandlestick: boolean = false,
+    isBehavioral: boolean = false
   ) => {
     e.preventDefault();
     
@@ -104,6 +114,11 @@ export const ChartAnalysisForm = ({
       isPatternAnalysis,
       isPriceAction,
       isNeuralNetwork,
+      isRNN,
+      isTimeClustering,
+      isMultiVariance,
+      isCompositeCandlestick,
+      isBehavioral,
       duration
     );
   };

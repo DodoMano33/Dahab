@@ -17,6 +17,11 @@ interface ChartInputProps {
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean,
     isNeuralNetwork?: boolean,
+    isRNN?: boolean,
+    isTimeClustering?: boolean,
+    isMultiVariance?: boolean,
+    isCompositeCandlestick?: boolean,
+    isBehavioral?: boolean,
     duration?: string
   ) => void;
   onHistoryClick?: () => void;  // Made optional with ?
@@ -32,7 +37,7 @@ export const ChartInput = ({
     <ChartAnalysisForm
       onSubmit={onTradingViewConfig}
       isAnalyzing={isAnalyzing}
-      onHistoryClick={onHistoryClick}
+      onHistoryClick={onHistoryClick || (() => {})}
     />
   );
 };

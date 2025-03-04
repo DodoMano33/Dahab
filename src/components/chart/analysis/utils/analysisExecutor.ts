@@ -10,6 +10,11 @@ import { analyzeDailyChart } from "../dailyAnalysis";
 import { analyzeScalpingChart } from "../scalpingAnalysis";
 import { analyzePriceAction } from "../priceActionAnalysis";
 import { analyzeNeuralNetworkChart } from "../neuralNetworkAnalysis";
+import { analyzeRNN } from "../rnnAnalysis";
+import { analyzeTimeClustering } from "../timeClusteringAnalysis";
+import { analyzeMultiVariance } from "../multiVarianceAnalysis";
+import { analyzeCompositeCandlestick } from "../compositeCandlestickAnalysis";
+import { analyzeBehavioral } from "../behavioralAnalysis";
 
 interface AnalysisOptions {
   isPatternAnalysis: boolean;
@@ -21,6 +26,11 @@ interface AnalysisOptions {
   isScalping: boolean;
   isPriceAction: boolean;
   isNeuralNetwork: boolean;
+  isRNN?: boolean;
+  isTimeClustering?: boolean;
+  isMultiVariance?: boolean;
+  isCompositeCandlestick?: boolean;
+  isBehavioral?: boolean;
 }
 
 export const executeAnalysis = async (
@@ -38,7 +48,12 @@ export const executeAnalysis = async (
     isSMC,
     isScalping,
     isPriceAction,
-    isNeuralNetwork
+    isNeuralNetwork,
+    isRNN = false,
+    isTimeClustering = false,
+    isMultiVariance = false,
+    isCompositeCandlestick = false,
+    isBehavioral = false
   } = options;
 
   let selectedStrategies = [];
@@ -51,6 +66,11 @@ export const executeAnalysis = async (
   if (isScalping) selectedStrategies.push("Scalping");
   if (isPriceAction) selectedStrategies.push("Price Action");
   if (isNeuralNetwork) selectedStrategies.push("Neural Networks");
+  if (isRNN) selectedStrategies.push("RNN");
+  if (isTimeClustering) selectedStrategies.push("Time Clustering");
+  if (isMultiVariance) selectedStrategies.push("Multi Variance");
+  if (isCompositeCandlestick) selectedStrategies.push("Composite Candlestick");
+  if (isBehavioral) selectedStrategies.push("Behavioral");
 
   let analysis: AnalysisData;
 
@@ -66,6 +86,11 @@ export const executeAnalysis = async (
         case "Scalping": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
         case "Price Action": return analyzePriceAction(chartImage, currentPrice, timeframe);
         case "Neural Networks": return analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
+        case "RNN": return analyzeRNN(chartImage, currentPrice, timeframe);
+        case "Time Clustering": return analyzeTimeClustering(chartImage, currentPrice, timeframe);
+        case "Multi Variance": return analyzeMultiVariance(chartImage, currentPrice, timeframe);
+        case "Composite Candlestick": return analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
+        case "Behavioral": return analyzeBehavioral(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
@@ -108,6 +133,21 @@ export const executeAnalysis = async (
         break;
       case "Neural Networks":
         analysis = await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
+        break;
+      case "RNN":
+        analysis = await analyzeRNN(chartImage, currentPrice, timeframe);
+        break;
+      case "Time Clustering":
+        analysis = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
+        break;
+      case "Multi Variance":
+        analysis = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
+        break;
+      case "Composite Candlestick":
+        analysis = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
+        break;
+      case "Behavioral":
+        analysis = await analyzeBehavioral(chartImage, currentPrice, timeframe);
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);

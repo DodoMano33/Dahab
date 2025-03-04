@@ -14,7 +14,12 @@ export const detectAnalysisType = (
   isAI: boolean,
   isScalping: boolean,
   isPriceAction: boolean,
-  isNeuralNetwork: boolean
+  isNeuralNetwork: boolean,
+  isRNN: boolean = false,
+  isTimeClustering: boolean = false,
+  isMultiVariance: boolean = false,
+  isCompositeCandlestick: boolean = false,
+  isBehavioral: boolean = false
 ): AnalysisType => {
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
@@ -26,6 +31,11 @@ export const detectAnalysisType = (
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
   if (isNeuralNetwork) return "شبكات عصبية";
+  if (isRNN) return "شبكات عصبية متكررة";
+  if (isTimeClustering) return "تصفيق زمني";
+  if (isMultiVariance) return "تباين متعدد العوامل";
+  if (isCompositeCandlestick) return "شمعات مركبة";
+  if (isBehavioral) return "تحليل سلوكي";
   return "عادي";
 };
 
@@ -42,7 +52,12 @@ export const buildAnalysisConfig = (
   isWaves: boolean,
   isPatternAnalysis: boolean,
   isPriceAction: boolean,
-  isNeuralNetwork: boolean
+  isNeuralNetwork: boolean,
+  isRNN: boolean = false,
+  isTimeClustering: boolean = false,
+  isMultiVariance: boolean = false,
+  isCompositeCandlestick: boolean = false,
+  isBehavioral: boolean = false
 ) => {
   const selectedTypes: string[] = [];
   
@@ -55,6 +70,11 @@ export const buildAnalysisConfig = (
   if (isPatternAnalysis) selectedTypes.push("patterns");
   if (isPriceAction) selectedTypes.push("priceAction");
   if (isNeuralNetwork) selectedTypes.push("neuralNetworks");
+  if (isRNN) selectedTypes.push("rnn");
+  if (isTimeClustering) selectedTypes.push("timeClustering");
+  if (isMultiVariance) selectedTypes.push("multiVariance");
+  if (isCompositeCandlestick) selectedTypes.push("compositeCandlestick");
+  if (isBehavioral) selectedTypes.push("behavioral");
   
   const analysisType: AnalysisType = isAI ? "ذكي" : detectAnalysisType(
     isPatternAnalysis,
@@ -66,7 +86,12 @@ export const buildAnalysisConfig = (
     isAI,
     isScalping,
     isPriceAction,
-    isNeuralNetwork
+    isNeuralNetwork,
+    isRNN,
+    isTimeClustering,
+    isMultiVariance,
+    isCompositeCandlestick,
+    isBehavioral
   );
 
   return { 
@@ -81,7 +106,12 @@ export const buildAnalysisConfig = (
       isSMC,
       isScalping,
       isPriceAction,
-      isNeuralNetwork
+      isNeuralNetwork,
+      isRNN,
+      isTimeClustering,
+      isMultiVariance,
+      isCompositeCandlestick,
+      isBehavioral
     }
   };
 };
