@@ -7,6 +7,8 @@ import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
 import { useSearchHistory } from "./hooks/useSearchHistory";
 import { useBackTest } from "./hooks/useBackTest";
 import { LiveTradingViewChart } from "./chart/LiveTradingViewChart";
+import { AnalyticsDashboard } from "./chart/dashboard/AnalyticsDashboard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const ChartAnalyzer = () => {
   const {
@@ -39,6 +41,8 @@ export const ChartAnalyzer = () => {
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [autoSymbol, setAutoSymbol] = useState<string>("XAUUSD");
   const [autoPrice, setAutoPrice] = useState<number | null>(null);
+
+  const [activeTab, setActiveTab] = useState("analysis");
 
   const handleTimeframesChange = (timeframes: string[]) => {
     if (!timeframes) {
@@ -76,62 +80,75 @@ export const ChartAnalyzer = () => {
 
   return (
     <div className="flex flex-col space-y-6 p-6">
-      {/* TradingView Chart */}
-      <LiveTradingViewChart
-        symbol={autoSymbol}
-        onSymbolChange={handleSymbolChange}
-        onPriceUpdate={handlePriceUpdate}
-      />
+      <Tabs defaultValue="analysis" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 w-full mb-4">
+          <TabsTrigger value="analysis">التحليل</TabsTrigger>
+          <TabsTrigger value="dashboard">الإحصائيات</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="analysis" className="space-y-6">
+          {/* TradingView Chart */}
+          <LiveTradingViewChart
+            symbol={autoSymbol}
+            onSymbolChange={handleSymbolChange}
+            onPriceUpdate={handlePriceUpdate}
+          />
 
-      {/* Symbol, Price, and Timeframe Form */}
-      <AnalysisForm
-        onAnalysis={addToSearchHistory}
-        isAnalyzing={isAnalyzing}
-        currentAnalysis={currentAnalysis || ""}
-        defaultSymbol={autoSymbol}
-        defaultPrice={autoPrice}
-      />
+          {/* Symbol, Price, and Timeframe Form */}
+          <AnalysisForm
+            onAnalysis={addToSearchHistory}
+            isAnalyzing={isAnalyzing}
+            currentAnalysis={currentAnalysis || ""}
+            defaultSymbol={autoSymbol}
+            defaultPrice={autoPrice}
+          />
 
-      {/* Auto Analysis Settings */}
-      <AnalysisSettings
-        onTimeframesChange={handleTimeframesChange}
-        onIntervalChange={handleIntervalChange}
-        setIsHistoryOpen={setIsHistoryOpen}
-        onAnalysisComplete={handleAnalysisComplete}
-        defaultSymbol={autoSymbol}
-        defaultPrice={autoPrice}
-      />
-      
-      {/* Manual Analysis Display */}
-      {(image || analysis || isAnalyzing) && (
-        <ChartDisplay
-          image={image}
-          analysis={analysis}
-          isAnalyzing={isAnalyzing}
-          onClose={() => {
-            setImage(null);
-            setAnalysis(null);
-          }}
-          symbol={currentSymbol}
-          currentAnalysis={currentAnalysis}
-        />
-      )}
-      
-      {/* Backtest Check Button */}
-      <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg border">
-        <div className="flex flex-col">
-          <h3 className="text-lg font-medium">فحص التحليلات</h3>
-          <p className="text-muted-foreground text-sm">فحص التحليلات الحالية ومقارنتها بالأسعار الحالية</p>
-          {lastCheckTime && <p className="text-sm text-muted-foreground mt-1">آخر فحص: {lastCheckTime.toLocaleTimeString()}</p>}
-        </div>
-        <button
-          onClick={triggerManualCheck}
-          disabled={isLoading}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
-        >
-          {isLoading ? 'جاري الفحص...' : 'فحص الآن'}
-        </button>
-      </div>
+          {/* Auto Analysis Settings */}
+          <AnalysisSettings
+            onTimeframesChange={handleTimeframesChange}
+            onIntervalChange={handleIntervalChange}
+            setIsHistoryOpen={setIsHistoryOpen}
+            onAnalysisComplete={handleAnalysisComplete}
+            defaultSymbol={autoSymbol}
+            defaultPrice={autoPrice}
+          />
+          
+          {/* Manual Analysis Display */}
+          {(image || analysis || isAnalyzing) && (
+            <ChartDisplay
+              image={image}
+              analysis={analysis}
+              isAnalyzing={isAnalyzing}
+              onClose={() => {
+                setImage(null);
+                setAnalysis(null);
+              }}
+              symbol={currentSymbol}
+              currentAnalysis={currentAnalysis}
+            />
+          )}
+          
+          {/* Backtest Check Button */}
+          <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg border">
+            <div className="flex flex-col">
+              <h3 className="text-lg font-medium">فحص التحليلات</h3>
+              <p className="text-muted-foreground text-sm">فحص التحليلات الحالية ومقارنتها بالأسعار الحالية</p>
+              {lastCheckTime && <p className="text-sm text-muted-foreground mt-1">آخر فحص: {lastCheckTime.toLocaleTimeString()}</p>}
+            </div>
+            <button
+              onClick={triggerManualCheck}
+              disabled={isLoading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
+            >
+              {isLoading ? 'جاري الفحص...' : 'فحص الآن'}
+            </button>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="dashboard">
+          <AnalyticsDashboard />
+        </TabsContent>
+      </Tabs>
       
       {isHistoryOpen && (
         <HistoryDialog

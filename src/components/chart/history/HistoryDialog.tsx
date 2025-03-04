@@ -5,25 +5,15 @@ import { SearchHistoryHeader } from "./SearchHistoryHeader";
 import { HistoryActions } from "./HistoryActions";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { AnalysisData, AnalysisType, SearchHistoryItem } from "@/types/analysis";
 import { Button } from "@/components/ui/button";
-import { Copy, RefreshCw, Target } from "lucide-react";
+import { Copy, Download, RefreshCw, Target } from "lucide-react";
+import { ExportAnalysis } from "./ExportAnalysis";
 
 interface HistoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  history: Array<{
-    id: string;
-    date: Date;
-    symbol: string;
-    currentPrice: number;
-    analysis: AnalysisData;
-    analysisType: AnalysisType;
-    timeframe: string;
-    targetHit?: boolean;
-    stopLossHit?: boolean;
-    analysis_duration_hours?: number;
-  }>;
+  history: Array<SearchHistoryItem>;
   onDelete: (id: string) => void;
   refreshHistory?: () => void;
   isRefreshing?: boolean;
@@ -71,63 +61,42 @@ export const HistoryDialog = ({
     }
   };
   
-  const handleCopyAll = async () => {
-    try {
-      const selectedIds = Array.from(selectedItems);
-      if (selectedIds.length === 0) {
-        toast.error("الرجاء تحديد عناصر للنسخ");
-        return;
-      }
-      const selectedHistoryItems = validHistory.filter(item => selectedItems.has(item.id));
-      const textToCopy = selectedHistoryItems.map(item => `${item.symbol} - ${item.timeframe} - ${item.analysisType}`).join('\n');
-      await navigator.clipboard.writeText(textToCopy);
-      toast.success("تم نسخ العناصر المحددة بنجاح");
-    } catch (error) {
-      console.error("خطأ في نسخ العناصر:", error);
-      toast.error("حدث خطأ أثناء نسخ العناصر");
-    }
-  };
+  const selectedHistoryItems = validHistory.filter(item => selectedItems.has(item.id));
   
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
         <div className="flex items-center justify-between">
           <SearchHistoryHeader initialCount={validHistory.length} />
-          {refreshHistory && (
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleCopyAll}
-                disabled={selectedItems.size === 0}
-                className="mr-2"
-              >
-                <Copy className="h-4 w-4 mr-1" />
-                نسخ
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={refreshHistory}
-                disabled={isRefreshing}
-                className="mr-2"
-              >
-                <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                تحديث
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={refreshHistory}
-                disabled={isRefreshing}
-                className="mr-2"
-                title="فحص تحقق الأهداف"
-              >
-                <Target className="h-4 w-4 mr-1" />
-                فحص التحليلات
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <ExportAnalysis selectedItems={selectedHistoryItems} />
+            
+            {refreshHistory && (
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshHistory}
+                  disabled={isRefreshing}
+                  className="mr-2"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  تحديث
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshHistory}
+                  disabled={isRefreshing}
+                  className="mr-2"
+                  title="فحص تحقق الأهداف"
+                >
+                  <Target className="h-4 w-4 mr-1" />
+                  فحص التحليلات
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex justify-end p-2">
           <HistoryActions 

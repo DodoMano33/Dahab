@@ -1,8 +1,11 @@
+
 import { Button } from "@/components/ui/button";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, Split } from "lucide-react";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
 import { generateShareText } from "./ShareText";
+import { useState } from "react";
+import { CompareAnalysis } from "./CompareAnalysis";
 
 interface HistoryActionsProps {
   selectedItems: Set<string>;
@@ -11,6 +14,8 @@ interface HistoryActionsProps {
 }
 
 export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActionsProps) => {
+  const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false);
+  
   const handleCopy = async () => {
     try {
       const selectedHistory = history.filter(item => selectedItems.has(item.id));
@@ -28,22 +33,54 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
       toast.error("حدث خطأ أثناء نسخ المحتوى");
     }
   };
+  
+  const handleCompare = () => {
+    const selectedHistoryItems = history.filter(item => selectedItems.has(item.id));
+    
+    if (selectedHistoryItems.length !== 2) {
+      toast.error("الرجاء تحديد تحليلين فقط للمقارنة");
+      return;
+    }
+    
+    setIsCompareDialogOpen(true);
+  };
+
+  const selectedHistoryItems = history.filter(item => selectedItems.has(item.id));
 
   return (
     <div className="flex gap-2">
-      <Button onClick={handleCopy} variant="outline" size="icon">
+      <Button onClick={handleCopy} variant="outline" size="icon" title="نسخ المحدد">
         <Copy className="h-4 w-4" />
       </Button>
+      
+      <Button 
+        onClick={handleCompare} 
+        variant="outline" 
+        size="icon" 
+        title="مقارنة التحليلات"
+        disabled={selectedItems.size !== 2}
+      >
+        <Split className="h-4 w-4" />
+      </Button>
+      
       {selectedItems.size > 0 && (
         <Button 
           onClick={onDelete} 
           variant="destructive" 
           size="icon"
           className="transition-all duration-200 ease-in-out hover:bg-red-600"
+          title="حذف المحدد"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       )}
+      
+      {/* نافذة مقارنة التحليلات */}
+      <CompareAnalysis
+        isOpen={isCompareDialogOpen}
+        onClose={() => setIsCompareDialogOpen(false)}
+        items={selectedHistoryItems}
+      />
     </div>
   );
 };
