@@ -1,24 +1,27 @@
+
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { AnalysisTooltip, analysisTypeTooltips } from "@/components/ui/tooltips/AnalysisTooltips";
 
 export type AnalysisTypeValue = "normal" | "scalping" | "ict" | "smc" | "turtle_soup" | "gann" | "waves" | "patterns" | "price_action";
 
 interface AnalysisType {
   value: AnalysisTypeValue;
   label: string;
+  arabicLabel: string;  // Add Arabic label for tooltip
 }
 
 const analysisTypes: AnalysisType[] = [
-  { value: "normal", label: "تحديد الكل" },
-  { value: "scalping", label: "Scalping" },
-  { value: "ict", label: "ICT" },
-  { value: "gann", label: "Gann" },
-  { value: "patterns", label: "Patterns" },
-  { value: "smc", label: "SMC" },
-  { value: "turtle_soup", label: "Turtle Soup" },
-  { value: "waves", label: "Waves" },
-  { value: "price_action", label: "Price Action" },
+  { value: "normal", label: "تحديد الكل", arabicLabel: "عادي" },
+  { value: "scalping", label: "Scalping", arabicLabel: "سكالبينج" },
+  { value: "ict", label: "ICT", arabicLabel: "ICT" },
+  { value: "gann", label: "Gann", arabicLabel: "Gann" },
+  { value: "patterns", label: "Patterns", arabicLabel: "Patterns" },
+  { value: "smc", label: "SMC", arabicLabel: "SMC" },
+  { value: "turtle_soup", label: "Turtle Soup", arabicLabel: "Turtle Soup" },
+  { value: "waves", label: "Waves", arabicLabel: "Waves" },
+  { value: "price_action", label: "Price Action", arabicLabel: "Price Action" },
 ];
 
 interface AnalysisTypesProps {
@@ -78,7 +81,13 @@ export const AnalysisTypes = ({
                 checked={selectedTypes.includes(type.value)}
                 onCheckedChange={() => handleTypeChange(type.value)}
               />
-              <Label htmlFor={`type-${type.value}`}>{type.label}</Label>
+              {type.value === "normal" ? (
+                <Label htmlFor={`type-${type.value}`}>{type.label}</Label>
+              ) : (
+                <AnalysisTooltip content={analysisTypeTooltips[type.arabicLabel] || ''}>
+                  <Label htmlFor={`type-${type.value}`} className="cursor-help">{type.label}</Label>
+                </AnalysisTooltip>
+              )}
             </div>
           ))}
         </div>
