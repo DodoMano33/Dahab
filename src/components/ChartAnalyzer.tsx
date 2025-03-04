@@ -1,11 +1,10 @@
-
 import { useState, useCallback, memo, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
 import { ChartDisplay } from "./ChartDisplay";
 import { AnalysisSettings } from "./chart/analysis/AnalysisSettings";
-import { useSearchHistory } from "./hooks/useSearchHistory";
+import { useSearchHistory } from "./hooks/search-history";
 import { useBackTest } from "./hooks/useBackTest";
 import { LiveTradingViewChart } from "./chart/LiveTradingViewChart";
 import { AnalyticsDashboard } from "./chart/dashboard/AnalyticsDashboard";
