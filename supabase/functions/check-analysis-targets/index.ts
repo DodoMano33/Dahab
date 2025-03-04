@@ -10,7 +10,7 @@ async function getCurrentPrice(symbol: string): Promise<number | null> {
     const apiSymbol = symbol.includes("USD") ? symbol.replace("USD", "") : symbol;
     
     // استخدام واجهة برمجة Alpha Vantage للحصول على السعر
-    const ALPHA_VANTAGE_API_KEY = "74DI7LHBTQPLCOGR";
+    const ALPHA_VANTAGE_API_KEY = Deno.env.get("ALPHA_VANTAGE_API_KEY") || "74DI7LHBTQPLCOGR";
     const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${ALPHA_VANTAGE_API_KEY}`;
     
     const response = await fetch(url);
@@ -89,11 +89,15 @@ Deno.serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   };
 
   // التعامل مع طلبات OPTIONS (CORS preflight)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      status: 204,
+      headers: corsHeaders 
+    });
   }
 
   try {
@@ -120,9 +124,9 @@ Deno.serve(async (req) => {
       throw error;
     }
 
-    console.log(`Found ${activeAnalyses.length} active analyses to check`);
+    console.log(`Found ${activeAnalyses?.length || 0} active analyses to check`);
     
-    if (activeAnalyses.length === 0) {
+    if (!activeAnalyses || activeAnalyses.length === 0) {
       return new Response(JSON.stringify({ 
         message: "No active analyses to check",
         checked: 0,
@@ -343,7 +347,7 @@ Deno.serve(async (req) => {
         }
         
         // تحديث last_checked_price وlast_checked_at إذا لم يتم تحقيق الهدف أو ضرب وقف الخسارة
-        const { data, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from("search_history")
           .update({ 
             last_checked_price: currentPrice,
@@ -380,10 +384,12 @@ Deno.serve(async (req) => {
     
   } catch (error) {
     console.error("Error in check-analysis-targets:", error);
+    
     return new Response(JSON.stringify({ 
-      error: error.message 
+      error: error instanceof Error ? error.message : "Internal server error",
+      timestamp: new Date().toISOString(),
     }), {
-      status: 500,
+      status: error instanceof Error && error.message?.includes("not allowed") ? 405 : 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   }

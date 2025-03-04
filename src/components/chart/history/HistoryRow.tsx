@@ -12,6 +12,8 @@ import { ExpiryTimer } from "./ExpiryTimer";
 import { AnalysisData } from "@/types/analysis";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface HistoryRowProps {
   id: string;
@@ -42,6 +44,29 @@ export const HistoryRow = ({
   last_checked_price,
   last_checked_at,
 }: HistoryRowProps) => {
+  const [marketStatus, setMarketStatus] = useState<{isOpen: boolean, serverTime?: string}>({ isOpen: false });
+  
+  useEffect(() => {
+    const checkMarketStatus = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('check-market-status');
+        if (error) {
+          console.error("Error checking market status:", error);
+          return;
+        }
+        setMarketStatus(data);
+      } catch (err) {
+        console.error("Failed to check market status:", err);
+      }
+    };
+    
+    checkMarketStatus();
+    
+    // Check market status every 5 minutes
+    const interval = setInterval(checkMarketStatus, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <TableRow>
       {onSelect && (
@@ -105,6 +130,11 @@ export const HistoryRow = ({
         ) : (
           <span className="text-muted-foreground text-xs">لم يتم الفحص</span>
         )}
+      </TableCell>
+      <TableCell>
+        <div className={`px-2 py-1 rounded-full text-xs inline-flex items-center ${marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
+        </div>
       </TableCell>
     </TableRow>
   );

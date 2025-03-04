@@ -128,6 +128,7 @@ export type Database = {
           entry_point_analysis_completed: boolean | null
           id: string
           is_success: boolean | null
+          last_checked_at: string | null
           last_checked_price: number | null
           original_analysis_completed: boolean | null
           result_timestamp: string | null
@@ -147,6 +148,7 @@ export type Database = {
           entry_point_analysis_completed?: boolean | null
           id?: string
           is_success?: boolean | null
+          last_checked_at?: string | null
           last_checked_price?: number | null
           original_analysis_completed?: boolean | null
           result_timestamp?: string | null
@@ -166,6 +168,7 @@ export type Database = {
           entry_point_analysis_completed?: boolean | null
           id?: string
           is_success?: boolean | null
+          last_checked_at?: string | null
           last_checked_price?: number | null
           original_analysis_completed?: boolean | null
           result_timestamp?: string | null
