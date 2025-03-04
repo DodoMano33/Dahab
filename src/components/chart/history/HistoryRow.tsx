@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -9,6 +10,8 @@ import { TargetsList } from "./TargetsList";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { ExpiryTimer } from "./ExpiryTimer";
 import { AnalysisData } from "@/types/analysis";
+import { formatDistanceToNow } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface HistoryRowProps {
   id: string;
@@ -21,6 +24,8 @@ interface HistoryRowProps {
   isSelected?: boolean;
   onSelect?: () => void;
   analysis_duration_hours?: number;
+  last_checked_price?: number;
+  last_checked_at?: Date;
 }
 
 export const HistoryRow = ({
@@ -34,9 +39,9 @@ export const HistoryRow = ({
   isSelected,
   onSelect,
   analysis_duration_hours,
+  last_checked_price,
+  last_checked_at,
 }: HistoryRowProps) => {
-  console.log("HistoryRow analysis_duration_hours:", analysis_duration_hours); // للتأكد من وصول القيمة
-
   return (
     <TableRow>
       {onSelect && (
@@ -83,6 +88,23 @@ export const HistoryRow = ({
           analysisId={id} 
           durationHours={analysis_duration_hours}
         />
+      </TableCell>
+      <TableCell>
+        {last_checked_price ? (
+          <div className="text-xs">
+            <div>{last_checked_price}</div>
+            {last_checked_at && (
+              <div className="text-muted-foreground">
+                {formatDistanceToNow(new Date(last_checked_at), { 
+                  addSuffix: true,
+                  locale: ar
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">لم يتم الفحص</span>
+        )}
       </TableCell>
     </TableRow>
   );

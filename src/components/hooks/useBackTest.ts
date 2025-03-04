@@ -26,9 +26,26 @@ interface EntryPointPayload {
   [key: string]: any;
 }
 
+interface SearchHistoryPayload {
+  new: {
+    symbol: string;
+    target_hit?: boolean;
+    stop_loss_hit?: boolean;
+    [key: string]: any;
+  };
+  old?: {
+    target_hit?: boolean;
+    stop_loss_hit?: boolean;
+    [key: string]: any;
+  };
+  eventType: string;
+  [key: string]: any;
+}
+
 export const useBackTest = () => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -63,7 +80,9 @@ export const useBackTest = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Backtest channel status:', status);
+      });
 
     const entryPointChannel = supabase
       .channel('entry_point_changes')
@@ -85,34 +104,51 @@ export const useBackTest = () => {
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Entry point channel status:', status);
+      });
 
     // إعداد قناة لمراقبة التغييرات في سجل البحث (الحذف/الإضافة/التحديث)
     const searchHistoryChannel = supabase
       .channel('search_history_changes')
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',
           table: 'search_history',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
+        (payload: SearchHistoryPayload) => {
           console.log('Realtime change detected in search_history:', payload);
           
-          // معالجة تحديثات معينة مثل تحقيق الهدف
-          if (payload.eventType === 'UPDATE' && payload.new.target_hit && !payload.old.target_hit) {
-            toast.success(`تم تحقيق هدف التحليل على ${payload.new.symbol}`, {
-              position: "top-center",
-              duration: 5000
-            });
+          // معالجة تحديثات معينة مثل تحقيق الهدف أو وقف الخسارة
+          if (payload.eventType === 'UPDATE') {
+            const isTargetHit = payload.new.target_hit && !payload.old?.target_hit;
+            const isStopLossHit = payload.new.stop_loss_hit && !payload.old?.stop_loss_hit;
+            
+            if (isTargetHit) {
+              toast.success(`تم تحقيق هدف التحليل على ${payload.new.symbol}`, {
+                position: "top-center",
+                duration: 5000
+              });
+            }
+            
+            if (isStopLossHit) {
+              toast.error(`تم ضرب وقف الخسارة للتحليل على ${payload.new.symbol}`, {
+                position: "top-center",
+                duration: 5000
+              });
+            }
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Search history channel status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up Supabase channels');
       supabase.removeChannel(backtestChannel);
       supabase.removeChannel(entryPointChannel);
       supabase.removeChannel(searchHistoryChannel);
@@ -132,15 +168,19 @@ export const useBackTest = () => {
         duration: 3000
       });
       
-      const { data, error } = await supabase.functions.invoke('check-analysis-targets');
+      console.log('Triggering manual check for analyses...');
+      const { data, error } = await supabase.functions.invoke('check-analysis-targets', {
+        body: { forceCheck: true }
+      });
       
       if (error) {
         console.error('Error checking analyses:', error);
-        toast.error("حدث خطأ أثناء فحص التحليلات");
+        toast.error(`حدث خطأ أثناء فحص التحليلات: ${error.message}`);
         return;
       }
       
       console.log('Check analysis response:', data);
+      setLastCheckTime(new Date());
       
       const { checked, updated, updates } = data;
       
@@ -153,11 +193,21 @@ export const useBackTest = () => {
           toast.success(`تم تحقيق الأهداف لـ ${successfulAnalyses.length} تحليل`, {
             duration: 5000
           });
+          
+          // عرض تفاصيل التحليلات الناجحة
+          successfulAnalyses.forEach(analysis => {
+            console.log(`تحليل ناجح: ${analysis.symbol} (${analysis.id})`);
+          });
         }
         
         if (failedAnalyses.length > 0) {
           toast.error(`تم ضرب وقف الخسارة لـ ${failedAnalyses.length} تحليل`, {
             duration: 5000
+          });
+          
+          // عرض تفاصيل التحليلات الفاشلة
+          failedAnalyses.forEach(analysis => {
+            console.log(`تحليل فاشل: ${analysis.symbol} (${analysis.id})`);
           });
         }
       } else {
@@ -165,7 +215,7 @@ export const useBackTest = () => {
       }
     } catch (error) {
       console.error('Error checking analyses:', error);
-      toast.error("حدث خطأ أثناء فحص التحليلات");
+      toast.error(`حدث خطأ أثناء فحص التحليلات: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
     } finally {
       setIsLoading(false);
     }
@@ -173,6 +223,7 @@ export const useBackTest = () => {
 
   return {
     triggerManualCheck,
-    isLoading
+    isLoading,
+    lastCheckTime
   };
 };

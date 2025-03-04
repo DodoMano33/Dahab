@@ -40,6 +40,8 @@ export interface SearchHistoryItem {
   analysisType: AnalysisType;
   timeframe: string;
   analysis_duration_hours?: number;
+  last_checked_price?: number;
+  last_checked_at?: Date;
 }
 
 export interface CombinedAnalysisProps {

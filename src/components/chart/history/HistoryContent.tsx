@@ -16,6 +16,8 @@ interface HistoryContentProps {
     analysisType: AnalysisType;
     timeframe: string;
     analysis_duration_hours?: number;
+    last_checked_price?: number;
+    last_checked_at?: Date;
   }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
@@ -41,6 +43,8 @@ export const HistoryContent = ({
                 key={item.id}
                 {...item}
                 analysis_duration_hours={item.analysis_duration_hours}
+                last_checked_price={item.last_checked_price}
+                last_checked_at={item.last_checked_at}
                 isSelected={selectedItems.has(item.id)}
                 onSelect={() => onSelect(item.id)}
               />

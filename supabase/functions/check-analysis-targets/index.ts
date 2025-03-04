@@ -97,17 +97,21 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // تحليل محتوى الطلب
+    const requestData = await req.json().catch(() => ({}));
+    const forceCheck = requestData.forceCheck === true;
+    
     // تهيئة عميل Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log("Starting analysis check");
+    console.log(`Starting analysis check (force mode: ${forceCheck})`);
     
     // جلب جميع التحليلات النشطة التي لم تنته صلاحيتها بعد
     const { data: activeAnalyses, error } = await supabase
       .from("search_history")
-      .select("id, symbol, current_price, analysis, analysis_type, timeframe, target_hit, result_timestamp, analysis_expiry_date")
+      .select("id, symbol, current_price, analysis, analysis_type, timeframe, target_hit, stop_loss_hit, result_timestamp, analysis_expiry_date, last_checked_price, last_checked_at")
       .is("result_timestamp", null)
       .gt("analysis_expiry_date", new Date().toISOString());
 
@@ -128,9 +132,31 @@ Deno.serve(async (req) => {
       });
     }
 
+    // إذا كانت هناك تحليلات تم فحصها مؤخرًا وليس في وضع الفحص الإجباري، نتخطاها
+    const currentTime = new Date();
+    const analysesToCheck = forceCheck ? activeAnalyses : activeAnalyses.filter(a => {
+      // فحص التحليلات التي لم يتم فحصها من قبل، أو التي مر على فحصها أكثر من 30 دقيقة
+      if (!a.last_checked_at) return true;
+      const lastChecked = new Date(a.last_checked_at);
+      const minutesSinceLastCheck = (currentTime.getTime() - lastChecked.getTime()) / (1000 * 60);
+      return minutesSinceLastCheck > 30;
+    });
+    
+    console.log(`${analysesToCheck.length} analyses will be checked (out of ${activeAnalyses.length})`);
+
     // جمع الرموز الفريدة للحصول على الأسعار
-    const uniqueSymbols = [...new Set(activeAnalyses.map(a => a.symbol))];
+    const uniqueSymbols = [...new Set(analysesToCheck.map(a => a.symbol))];
     console.log(`Unique symbols to check: ${uniqueSymbols.join(", ")}`);
+    
+    if (uniqueSymbols.length === 0) {
+      return new Response(JSON.stringify({ 
+        message: "No analyses need checking at this time",
+        checked: 0,
+        updated: 0 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
     
     // الحصول على الأسعار الحالية للرموز
     const pricePromises = uniqueSymbols.map(async (symbol) => {
@@ -144,7 +170,7 @@ Deno.serve(async (req) => {
     console.log(`Retrieved prices for ${priceMap.size} symbols`);
     
     // تحديث حالة كل تحليل
-    const updatePromises = activeAnalyses.map(async (analysis) => {
+    const updatePromises = analysesToCheck.map(async (analysis) => {
       const currentPrice = priceMap.get(analysis.symbol);
       
       if (!currentPrice) {
@@ -163,61 +189,135 @@ Deno.serve(async (req) => {
         
         console.log(`Analysis details: direction=${direction}, stopLoss=${stopLoss}, firstTarget=${firstTarget}, current=${currentPrice}`);
         
-        // التحقق من تحقيق الهدف أو ضرب وقف الخسارة مباشرة بناءً على الاتجاه والسعر الحالي
-        let isSuccess = false;
-        let isFailure = false;
+        // التحقق من وجود نقطة دخول مثالية
+        const hasBestEntryPoint = analysis.analysis && 
+                                  analysis.analysis.bestEntryPoint && 
+                                  analysis.analysis.bestEntryPoint.price;
         
-        if (direction === "صاعد") {
-          if (currentPrice >= firstTarget) {
-            console.log(`🎯 Target hit for bullish analysis ${analysis.id}: ${currentPrice} >= ${firstTarget}`);
-            isSuccess = true;
-          } else if (currentPrice <= stopLoss) {
-            console.log(`⛔ Stop loss hit for bullish analysis ${analysis.id}: ${currentPrice} <= ${stopLoss}`);
-            isFailure = true;
-          }
-        } else if (direction === "هابط") {
-          if (currentPrice <= firstTarget) {
-            console.log(`🎯 Target hit for bearish analysis ${analysis.id}: ${currentPrice} <= ${firstTarget}`);
-            isSuccess = true;
-          } else if (currentPrice >= stopLoss) {
-            console.log(`⛔ Stop loss hit for bearish analysis ${analysis.id}: ${currentPrice} >= ${stopLoss}`);
-            isFailure = true;
-          }
-        }
-        
-        // إذا تم تحقيق الهدف أو ضرب وقف الخسارة، نحدّث السجل
-        if (isSuccess || isFailure) {
-          console.log(`Updating analysis ${analysis.id} with success=${isSuccess}`);
+        // إذا كان هناك نقطة دخول مثالية، وهي تختلف عن سعر الدخول، وتحليل نقطة الدخول لم يكتمل
+        if (hasBestEntryPoint) {
+          const bestEntryPrice = parseFloat(analysis.analysis.bestEntryPoint.price);
+          console.log(`Analysis has best entry point: ${bestEntryPrice}`);
           
-          // التحقق من وجود bestEntryPoint
-          const hasBestEntryPoint = analysis.analysis && 
-                                    analysis.analysis.bestEntryPoint && 
-                                    analysis.analysis.bestEntryPoint.price;
-          
-          // استدعاء الإجراء المخزن المناسب بناءً على نوع التحليل
-          if (hasBestEntryPoint) {
-            const { data, error: rpcError } = await supabase.rpc(
-              "move_to_backtest_results",
-              { 
-                p_search_history_id: analysis.id, 
-                p_exit_price: currentPrice,
-                p_is_success: isSuccess,
-                p_is_entry_point_analysis: true
+          // التحقق من تفعيل نقطة الدخول أولاً إذا لم تكن مفعّلة
+          if (!analysis.target_hit) {
+            // التحقق من الوصول إلى نقطة الدخول المثالية أو وقف الخسارة مباشرة
+            if ((direction === "صاعد" && currentPrice <= bestEntryPrice) || 
+                (direction === "هابط" && currentPrice >= bestEntryPrice)) {
+                
+              console.log(`✅ Best entry point hit for ${analysis.id}: ${currentPrice} hits ${bestEntryPrice}`);
+              
+              // تحديث الحالة في قاعدة البيانات لتسجيل أن نقطة الدخول قد تم الوصول إليها
+              const { error: updateError } = await supabase
+                .from("search_history")
+                .update({ 
+                  target_hit: true,
+                  last_checked_price: currentPrice,
+                  last_checked_at: currentTime.toISOString()
+                })
+                .eq("id", analysis.id);
+              
+              if (updateError) {
+                console.error(`Error updating target_hit for analysis ${analysis.id}:`, updateError);
+                return null;
               }
-            );
-            
-            if (rpcError) {
-              console.error(`Error updating entry point analysis ${analysis.id}:`, rpcError);
-              return null;
-            } else {
-              console.log(`Successfully updated entry point analysis ${analysis.id}`);
+              
               return {
                 id: analysis.id,
                 symbol: analysis.symbol,
-                status: isSuccess ? "success" : "failure"
+                status: "entry_hit"
+              };
+            } else if ((direction === "صاعد" && currentPrice <= stopLoss) || 
+                      (direction === "هابط" && currentPrice >= stopLoss)) {
+              // إذا وصل السعر إلى وقف الخسارة قبل الوصول إلى نقطة الدخول
+              console.log(`⛔ Stop loss hit before entry for ${analysis.id}: current=${currentPrice}, stopLoss=${stopLoss}`);
+              
+              await supabase.rpc(
+                "move_to_backtest_results",
+                { 
+                  p_search_history_id: analysis.id, 
+                  p_exit_price: currentPrice,
+                  p_is_success: false,
+                  p_is_entry_point_analysis: true
+                }
+              );
+              
+              return {
+                id: analysis.id,
+                symbol: analysis.symbol,
+                status: "failure"
               };
             }
           } else {
+            // إذا تم تفعيل نقطة الدخول بالفعل، نتحقق من تحقيق الهدف أو وقف الخسارة
+            if ((direction === "صاعد" && currentPrice >= firstTarget) || 
+                (direction === "هابط" && currentPrice <= firstTarget)) {
+              console.log(`🎯 Target hit after entry for ${analysis.id}: current=${currentPrice}, target=${firstTarget}`);
+              
+              await supabase.rpc(
+                "move_to_backtest_results",
+                { 
+                  p_search_history_id: analysis.id, 
+                  p_exit_price: currentPrice,
+                  p_is_success: true,
+                  p_is_entry_point_analysis: true
+                }
+              );
+              
+              return {
+                id: analysis.id,
+                symbol: analysis.symbol,
+                status: "success"
+              };
+            } else if ((direction === "صاعد" && currentPrice <= stopLoss) || 
+                      (direction === "هابط" && currentPrice >= stopLoss)) {
+              console.log(`⛔ Stop loss hit after entry for ${analysis.id}: current=${currentPrice}, stopLoss=${stopLoss}`);
+              
+              await supabase.rpc(
+                "move_to_backtest_results",
+                { 
+                  p_search_history_id: analysis.id, 
+                  p_exit_price: currentPrice,
+                  p_is_success: false,
+                  p_is_entry_point_analysis: true
+                }
+              );
+              
+              return {
+                id: analysis.id,
+                symbol: analysis.symbol,
+                status: "failure"
+              };
+            }
+          }
+        } else {
+          // التحليل العادي بدون نقطة دخول مثالية
+          // التحقق من تحقيق الهدف أو ضرب وقف الخسارة مباشرة بناءً على الاتجاه والسعر الحالي
+          let isSuccess = false;
+          let isFailure = false;
+          
+          if (direction === "صاعد") {
+            if (currentPrice >= firstTarget) {
+              console.log(`🎯 Target hit for bullish analysis ${analysis.id}: ${currentPrice} >= ${firstTarget}`);
+              isSuccess = true;
+            } else if (currentPrice <= stopLoss) {
+              console.log(`⛔ Stop loss hit for bullish analysis ${analysis.id}: ${currentPrice} <= ${stopLoss}`);
+              isFailure = true;
+            }
+          } else if (direction === "هابط") {
+            if (currentPrice <= firstTarget) {
+              console.log(`🎯 Target hit for bearish analysis ${analysis.id}: ${currentPrice} <= ${firstTarget}`);
+              isSuccess = true;
+            } else if (currentPrice >= stopLoss) {
+              console.log(`⛔ Stop loss hit for bearish analysis ${analysis.id}: ${currentPrice} >= ${stopLoss}`);
+              isFailure = true;
+            }
+          }
+          
+          // إذا تم تحقيق الهدف أو ضرب وقف الخسارة، نحدّث السجل
+          if (isSuccess || isFailure) {
+            console.log(`Updating analysis ${analysis.id} with success=${isSuccess}`);
+            
             const { data, error: rpcError } = await supabase.rpc(
               "move_to_backtest_results",
               { 
@@ -240,21 +340,24 @@ Deno.serve(async (req) => {
               };
             }
           }
-        } else {
-          // تحديث last_checked_price فقط إذا لم يتم تحقيق الهدف أو ضرب وقف الخسارة
-          const { data, error: updateError } = await supabase
-            .from("search_history")
-            .update({ last_checked_price: currentPrice })
-            .eq("id", analysis.id);
-          
-          if (updateError) {
-            console.error(`Error updating last_checked_price for analysis ${analysis.id}:`, updateError);
-          } else {
-            console.log(`Updated last_checked_price for analysis ${analysis.id} to ${currentPrice}`);
-          }
-          
-          return null;
         }
+        
+        // تحديث last_checked_price وlast_checked_at إذا لم يتم تحقيق الهدف أو ضرب وقف الخسارة
+        const { data, error: updateError } = await supabase
+          .from("search_history")
+          .update({ 
+            last_checked_price: currentPrice,
+            last_checked_at: currentTime.toISOString()
+          })
+          .eq("id", analysis.id);
+        
+        if (updateError) {
+          console.error(`Error updating last_checked_price for analysis ${analysis.id}:`, updateError);
+        } else {
+          console.log(`Updated last_checked_price for analysis ${analysis.id} to ${currentPrice}`);
+        }
+        
+        return null;
       } catch (updateError) {
         console.error(`Error processing analysis ${analysis.id}:`, updateError);
         return null;
@@ -264,11 +367,11 @@ Deno.serve(async (req) => {
     const results = await Promise.all(updatePromises);
     const successfulUpdates = results.filter(Boolean);
     
-    console.log(`Completed checking ${activeAnalyses.length} analyses, ${successfulUpdates.length} were updated`);
+    console.log(`Completed checking ${analysesToCheck.length} analyses, ${successfulUpdates.length} were updated`);
     
     return new Response(JSON.stringify({ 
-      message: `Checked ${activeAnalyses.length} analyses, updated ${successfulUpdates.length}`,
-      checked: activeAnalyses.length,
+      message: `Checked ${analysesToCheck.length} analyses, updated ${successfulUpdates.length}`,
+      checked: analysesToCheck.length,
       updated: successfulUpdates.length,
       updates: successfulUpdates
     }), {
