@@ -95,9 +95,10 @@ export const useAnalysisHandler = () => {
         duration: Infinity,
       });
       
-      // Show the specialized analysis message toast
-      messageToastId = import("./utils/analysisMessages").then(module => {
-        return module.showAnalysisMessage(
+      // Show the specialized analysis message toast - using async/await properly
+      try {
+        const messagesModule = await import("./utils/analysisMessages");
+        messageToastId = messagesModule.showAnalysisMessage(
           isPatternAnalysis,
           isWaves,
           isGann,
@@ -107,7 +108,9 @@ export const useAnalysisHandler = () => {
           isAI,
           isNeuralNetwork
         );
-      });
+      } catch (messageError) {
+        console.error("Error showing analysis message:", messageError);
+      }
       
       console.log("Getting TradingView chart image for:", { 
         symbol: upperSymbol, 
@@ -154,10 +157,7 @@ export const useAnalysisHandler = () => {
         if (!analysisResult) {
           // Make sure to dismiss all toasts on error
           if (loadingToastId) toast.dismiss(loadingToastId);
-          if (messageToastId) {
-            const id = await messageToastId;
-            if (id) toast.dismiss(id);
-          }
+          if (messageToastId) toast.dismiss(messageToastId);
           throw new Error("لم يتم العثور على نتائج التحليل");
         }
 
@@ -167,10 +167,7 @@ export const useAnalysisHandler = () => {
         
         // Always dismiss all toasts when analysis is completed
         if (loadingToastId) toast.dismiss(loadingToastId);
-        if (messageToastId) {
-          const id = await messageToastId;
-          if (id) toast.dismiss(id);
-        }
+        if (messageToastId) toast.dismiss(messageToastId);
         
         toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`, {
           description: `${upperSymbol} | السعر: ${providedPrice}`,
@@ -183,10 +180,7 @@ export const useAnalysisHandler = () => {
         console.error("Error getting chart image or performing analysis:", chartError);
         // Make sure to dismiss all toasts on error
         if (loadingToastId) toast.dismiss(loadingToastId);
-        if (messageToastId) {
-          const id = await messageToastId;
-          if (id) toast.dismiss(id);
-        }
+        if (messageToastId) toast.dismiss(messageToastId);
         throw new Error("فشل في الحصول على صورة الشارت أو إجراء التحليل");
       }
       
@@ -196,11 +190,7 @@ export const useAnalysisHandler = () => {
       
       // Make sure to dismiss any loading toasts
       if (loadingToastId) toast.dismiss(loadingToastId);
-      if (messageToastId) {
-        messageToastId.then(id => {
-          if (id) toast.dismiss(id);
-        }).catch(err => console.error("Error dismissing message toast:", err));
-      }
+      if (messageToastId) toast.dismiss(messageToastId);
       
       if (error instanceof Error) {
         toast.error(error.message);
