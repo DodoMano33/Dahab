@@ -28,11 +28,11 @@ export const HistoryContent = ({
   onSelect,
   onDelete,
 }: HistoryContentProps) => {
-  console.log("HistoryContent history:", history); // للتأكد من البيانات
+  console.log("HistoryContent history:", history);
 
   return (
-    <div className="relative rounded-md border bg-background h-full overflow-y-auto">
-      <div className="overflow-x-auto">
+    <div className="relative rounded-md border bg-background h-full">
+      <div className="overflow-x-auto h-full overflow-y-auto">
         <Table className="relative">
           <HistoryTableHeader showCheckbox={true} />
           <TableBody className="relative">

@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { HistoryContent } from "./HistoryContent";
 import { SearchHistoryHeader } from "./SearchHistoryHeader";
@@ -6,7 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { Button } from "@/components/ui/button";
-import { Copy, RefreshCw } from "lucide-react";
+import { Copy, RefreshCw, Target } from "lucide-react";
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -113,6 +114,17 @@ export const HistoryDialog = ({
               >
                 <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
                 تحديث
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshHistory}
+                disabled={isRefreshing}
+                className="mr-2"
+                title="فحص تحقق الأهداف"
+              >
+                <Target className="h-4 w-4 mr-1" />
+                فحص التحليلات
               </Button>
             </div>
           )}

@@ -104,13 +104,38 @@ export const useSearchHistory = () => {
     try {
       console.log("فحص تحقق الأهداف ووقف الخسارة...");
       
-      // هنا ستضاف وظيفة التحقق من الأهداف ووقف الخسارة
-      // هذه وظيفة مستقبلية ولكن نضيف البنية الأساسية لها
+      if (!user) {
+        toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة");
+        return;
+      }
+      
       toast.info("جاري فحص تحقق الأهداف ووقف الخسارة...");
       
-      // سيتم إضافة منطق التحقق هنا في المستقبل
+      // استدعاء وظيفة Edge Function لفحص التحليلات
+      const { data, error } = await supabase.functions.invoke('check-analysis-targets');
+      
+      if (error) {
+        console.error("خطأ في استدعاء وظيفة فحص التحليلات:", error);
+        toast.error("حدث خطأ أثناء فحص تحقق الأهداف");
+        return;
+      }
+      
+      console.log("نتيجة فحص التحليلات:", data);
+      
+      // تحديث القائمة بعد الفحص
+      fetchSearchHistory();
+      
+      // عرض نتائج الفحص
+      const { checked, updated } = data;
+      
+      if (updated > 0) {
+        toast.success(`تم تحديث ${updated} تحليل من إجمالي ${checked} تم فحصها`);
+      } else {
+        toast.info(`تم فحص ${checked} تحليل، لا توجد تحديثات`);
+      }
     } catch (error) {
       console.error("خطأ في فحص تحقق الأهداف ووقف الخسارة:", error);
+      toast.error("حدث خطأ أثناء الفحص");
     }
   };
 
@@ -147,9 +172,6 @@ export const useSearchHistory = () => {
       
       // فحص وحذف التحليلات المنتهية بعد جلب البيانات
       await checkAndDeleteExpiredAnalyses();
-      
-      // فحص تحقق الأهداف ووقف الخسارة
-      await checkTargetsAndStopLoss();
     } catch (error) {
       console.error("خطأ في جلب سجل البحث:", error);
       toast.error("حدث خطأ أثناء جلب سجل البحث");
@@ -189,8 +211,9 @@ export const useSearchHistory = () => {
     setSearchHistory(prev => [item, ...prev]);
   };
 
-  const refreshSearchHistory = () => {
-    fetchSearchHistory();
+  const refreshSearchHistory = async () => {
+    await fetchSearchHistory();
+    await checkTargetsAndStopLoss();
   };
 
   return {
