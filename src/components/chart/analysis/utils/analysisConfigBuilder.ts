@@ -1,4 +1,7 @@
 
+import { AnalysisType } from "@/types/analysis";
+import { detectAnalysisType } from "./analysisTypeDetector";
+
 /**
  * Builds a configuration object for analysis types
  */
@@ -26,7 +29,7 @@ export const buildAnalysisConfig = (
   if (isPriceAction) selectedTypes.push("priceAction");
   if (isNeuralNetwork) selectedTypes.push("neuralNetworks");
   
-  const analysisType = isAI ? "ذكي" : detectAnalysisType(
+  const analysisType: AnalysisType = isAI ? "ذكي" : detectAnalysisType(
     isPatternAnalysis,
     isWaves,
     isGann,
@@ -67,7 +70,7 @@ export const detectAnalysisType = (
   isScalping: boolean,
   isPriceAction: boolean,
   isNeuralNetwork: boolean
-): string => {
+): AnalysisType => {
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
   if (isSMC) return "SMC";

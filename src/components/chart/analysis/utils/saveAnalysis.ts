@@ -1,7 +1,7 @@
+
 import { supabase } from "@/lib/supabase";
-import { AnalysisType } from "./analysisTypes";
+import { AnalysisType, AnalysisData } from "@/types/analysis";
 import { toast } from "sonner";
-import { AnalysisData } from "@/types/analysis";
 
 interface SaveAnalysisParams {
   userId: string;

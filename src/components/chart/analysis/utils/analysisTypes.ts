@@ -1,5 +1,5 @@
 
-export type AnalysisType = "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns" | "Price Action" | "شبكات عصبية" | "عادي";
+import { AnalysisType } from "@/types/analysis";
 
 export const getAnalysisType = (
   isPatternAnalysis: boolean,

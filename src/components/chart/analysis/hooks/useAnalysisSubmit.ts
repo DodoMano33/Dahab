@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { SearchHistoryItem } from "@/types/analysis";
+import { AnalysisType, SearchHistoryItem } from "@/types/analysis";
 import { buildAnalysisConfig } from "../utils/analysisConfigBuilder";
 import { validateAnalysisInputs } from "../utils/inputValidation";
 import { dismissToasts, showErrorToast, showLoadingToast } from "../utils/toastUtils";
