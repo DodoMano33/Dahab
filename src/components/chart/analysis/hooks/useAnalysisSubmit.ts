@@ -30,6 +30,11 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isPatternAnalysis: boolean = false,
     isPriceAction: boolean = false,
     isNeuralNetwork: boolean = false,
+    isRNN: boolean = false,
+    isTimeClustering: boolean = false,
+    isMultiVariance: boolean = false,
+    isCompositeCandlestick: boolean = false,
+    isBehavioral: boolean = false,
     duration?: string
   ) => {
     // Create toast IDs for tracking
@@ -69,7 +74,12 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isWaves,
         isPatternAnalysis,
         isPriceAction,
-        isNeuralNetwork
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral
       );
 
       const result = await handleTradingViewConfig(
@@ -85,7 +95,12 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isWaves,
         isPatternAnalysis,
         isPriceAction,
-        isNeuralNetwork
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral
       );
       
       // Dismiss the loading toast

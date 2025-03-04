@@ -26,7 +26,12 @@ export const useAnalysisHandler = () => {
     isWaves: boolean = false,
     isPatternAnalysis: boolean = false,
     isPriceAction: boolean = false,
-    isNeuralNetwork: boolean = false
+    isNeuralNetwork: boolean = false,
+    isRNN: boolean = false,
+    isTimeClustering: boolean = false,
+    isMultiVariance: boolean = false,
+    isCompositeCandlestick: boolean = false,
+    isBehavioral: boolean = false
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -42,7 +47,12 @@ export const useAnalysisHandler = () => {
         isWaves,
         isPatternAnalysis,
         isPriceAction,
-        isNeuralNetwork
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral
       });
 
       // Validate inputs
@@ -65,7 +75,12 @@ export const useAnalysisHandler = () => {
         isWaves,
         isPatternAnalysis,
         isPriceAction,
-        isNeuralNetwork
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral
       );
       
       setCurrentAnalysis(analysisType);

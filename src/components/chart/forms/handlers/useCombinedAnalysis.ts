@@ -22,6 +22,11 @@ interface CombinedAnalysisProps {
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean,
     isNeuralNetwork?: boolean,
+    isRNN?: boolean,
+    isTimeClustering?: boolean,
+    isMultiVariance?: boolean,
+    isCompositeCandlestick?: boolean,
+    isBehavioral?: boolean,
     duration?: string
   ) => void;
 }
@@ -52,7 +57,12 @@ export const useCombinedAnalysis = ({
       isWaves: selectedTypes.includes("waves"),
       isPatternAnalysis: selectedTypes.includes("patterns"),
       isPriceAction: selectedTypes.includes("priceAction"),
-      isNeuralNetwork: selectedTypes.includes("neural_networks")
+      isNeuralNetwork: selectedTypes.includes("neural_networks"),
+      isRNN: selectedTypes.includes("rnn"),
+      isTimeClustering: selectedTypes.includes("time_clustering"),
+      isMultiVariance: selectedTypes.includes("multi_variance"),
+      isCompositeCandlestick: selectedTypes.includes("composite_candlestick"),
+      isBehavioral: selectedTypes.includes("behavioral")
     };
 
     onSubmit(
@@ -69,6 +79,11 @@ export const useCombinedAnalysis = ({
       analysisFlags.isPatternAnalysis,
       analysisFlags.isPriceAction,
       analysisFlags.isNeuralNetwork,
+      analysisFlags.isRNN,
+      analysisFlags.isTimeClustering,
+      analysisFlags.isMultiVariance,
+      analysisFlags.isCompositeCandlestick,
+      analysisFlags.isBehavioral,
       duration
     );
   };
