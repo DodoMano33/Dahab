@@ -7,6 +7,7 @@ import { validateAnalysisInputs } from "../utils/inputValidation";
 import { dismissToasts, showErrorToast, showLoadingToast } from "../utils/toastUtils";
 import { useAnalysisHandler } from "../AnalysisHandler";
 import { saveAnalysis } from "../utils/saveAnalysis";
+import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 
 interface UseAnalysisSubmitProps {
   onAnalysis: (item: SearchHistoryItem) => void;
@@ -117,12 +118,17 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
 
         try {
           console.log("Saving analysis with duration:", durationHours);
+          
+          // Map the analysis type to a valid database enum value
+          const mappedAnalysisType = mapToAnalysisType(analysisType);
+          console.log("Mapped analysis type:", mappedAnalysisType);
+          
           const savedData = await saveAnalysis({
             userId: user.id,
             symbol: upperSymbol,
             currentPrice,
             analysisResult,
-            analysisType,
+            analysisType: mappedAnalysisType, // Use the mapped value
             timeframe,
             durationHours
           });
@@ -136,7 +142,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
               analysis: analysisResult,
               targetHit: false,
               stopLossHit: false,
-              analysisType,
+              analysisType: mappedAnalysisType, // Use the mapped value
               timeframe,
               analysis_duration_hours: durationHours
             };

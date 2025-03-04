@@ -1,110 +1,62 @@
 
-import { AnalysisType } from "@/types/analysis";
-
-interface AnalysisConfig {
-  isScalping: boolean;
-  isSMC: boolean;
-  isICT: boolean;
-  isTurtleSoup: boolean;
-  isGann: boolean;
-  isWaves: boolean;
-  isPatternAnalysis: boolean;
-  isPriceAction: boolean;
-  isNeuralNetwork: boolean;
-  isRNN: boolean;
-  isTimeClustering: boolean;
-  isMultiVariance: boolean;
-  isCompositeCandlestick: boolean;
-  isBehavioral: boolean;
-}
-
-export const mapAnalysisTypeToConfig = (type: string): AnalysisConfig => {
-  const defaultConfig: AnalysisConfig = {
-    isScalping: false,
-    isSMC: false,
-    isICT: false,
-    isTurtleSoup: false,
-    isGann: false,
-    isWaves: false,
-    isPatternAnalysis: false,
-    isPriceAction: false,
-    isNeuralNetwork: false,
-    isRNN: false,
-    isTimeClustering: false,
-    isMultiVariance: false,
-    isCompositeCandlestick: false,
-    isBehavioral: false
-  };
-
-  switch (type.toLowerCase()) {
-    case 'scalping':
-      return { ...defaultConfig, isScalping: true };
-    case 'smc':
-      return { ...defaultConfig, isSMC: true };
-    case 'ict':
-      return { ...defaultConfig, isICT: true };
-    case 'turtle_soup':
-      return { ...defaultConfig, isTurtleSoup: true };
-    case 'gann':
-      return { ...defaultConfig, isGann: true };
-    case 'waves':
-      return { ...defaultConfig, isWaves: true };
-    case 'patterns':
-      return { ...defaultConfig, isPatternAnalysis: true };
-    case 'price_action':
-      return { ...defaultConfig, isPriceAction: true };
-    case 'neural_networks':
-      return { ...defaultConfig, isNeuralNetwork: true };
-    case 'rnn':
-      return { ...defaultConfig, isRNN: true };
-    case 'time_clustering':
-      return { ...defaultConfig, isTimeClustering: true };
-    case 'multi_variance':
-      return { ...defaultConfig, isMultiVariance: true };
-    case 'composite_candlestick':
-      return { ...defaultConfig, isCompositeCandlestick: true };
-    case 'behavioral':
-      return { ...defaultConfig, isBehavioral: true };
-    default:
-      return defaultConfig;
-  }
-};
-
-export const mapToAnalysisType = (type: string): AnalysisType => {
-  switch (type.toLowerCase()) {
-    case 'scalping':
-      return "سكالبينج";
-    case 'smart':
-      return "ذكي";
-    case 'smc':
-      return "SMC";
-    case 'ict':
-      return "ICT";
-    case 'turtle_soup':
-      return "Turtle Soup";
-    case 'gann':
-      return "Gann";
-    case 'waves':
-      return "Waves";
-    case 'patterns':
-      return "Patterns";
-    case 'price_action':
-      return "Price Action";
-    case 'neural_networks':
+/**
+ * Maps the analysis type to the corresponding Supabase enum value
+ * This is necessary because the Supabase enum has specific values that must match
+ */
+export const mapToAnalysisType = (analysisType: string): string => {
+  // Make sure to match exactly what's expected in the database
+  switch (analysisType) {
+    case "نمطي":
+    case "Patterns":
+      return "نمطي";
+    case "تقلبات":
+    case "Waves":
+      return "تقلبات";
+    case "جان":
+    case "Gann":
+      return "جان";
+    case "الحساء السلحفائي":
+    case "Turtle Soup":
+      return "الحساء السلحفائي";
+    case "نظرية السوق":
+    case "ICT":
+      return "نظرية السوق";
+    case "نظرية هيكل السوق":
+    case "SMC":
+      return "نظرية هيكل السوق";
+    case "يومي":
+    case "Daily":
+      return "يومي";
+    case "مضاربة":
+    case "Scalping":
+      return "مضاربة";
+    case "حركة السعر":
+    case "Price Action":
+      return "حركة السعر";
+    case "شبكات عصبية":
+    case "Neural Networks":
       return "شبكات عصبية";
-    case 'rnn':
-      return "شبكات عصبية متكررة";
-    case 'time_clustering':
-      return "تصفيق زمني";
-    case 'multi_variance':
-      return "تباين متعدد العوامل";
-    case 'composite_candlestick':
-      return "شمعات مركبة";
-    case 'behavioral':
-      return "تحليل سلوكي";
-    case 'normal':
-      return "عادي"; 
+    case "ذكي":
+    case "Smart":
+      return "ذكي";
+    // Add new analysis types mappings
+    case "شبكات عصبية متكررة":
+    case "RNN":
+      return "شبكات عصبية"; // Map to an existing allowed value
+    case "تصفيق زمني":
+    case "Time Clustering":
+      return "تقلبات"; // Map to an existing allowed value
+    case "تباين متعدد العوامل":
+    case "Multi Variance":
+      return "تقلبات"; // Map to an existing allowed value
+    case "شمعات مركبة":
+    case "Composite Candlestick":
+      return "نمطي"; // Map to an existing allowed value
+    case "تحليل سلوكي":
+    case "Behavioral":
+      return "حركة السعر"; // Map to an existing allowed value
     default:
-      return "عادي";
+      console.log(`Unknown analysis type: ${analysisType}, defaulting to "يومي"`);
+      return "يومي"; // Default to daily analysis if type is unknown
   }
 };

@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzeSMCChart } from "../smcAnalysis";
 import { analyzeICTChart } from "../ictAnalysis";
@@ -15,6 +14,7 @@ import { analyzeTimeClustering } from "../timeClusteringAnalysis";
 import { analyzeMultiVariance } from "../multiVarianceAnalysis";
 import { analyzeCompositeCandlestick } from "../compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "../behavioralAnalysis";
+import { mapToAnalysisType } from "./analysisTypeMapper";
 
 interface AnalysisOptions {
   isPatternAnalysis: boolean;
@@ -136,18 +136,33 @@ export const executeAnalysis = async (
         break;
       case "RNN":
         analysis = await analyzeRNN(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "شبكات عصبية";
+        }
         break;
       case "Time Clustering":
         analysis = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "تقلبات";
+        }
         break;
       case "Multi Variance":
         analysis = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "تقلبات";
+        }
         break;
       case "Composite Candlestick":
         analysis = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "نمطي";
+        }
         break;
       case "Behavioral":
         analysis = await analyzeBehavioral(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "حركة السعر";
+        }
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
