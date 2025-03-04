@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -12,6 +13,7 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -59,32 +61,87 @@ function TradingViewWidget({
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
 
+    // Custom script to communicate with TradingView
+    const customScript = document.createElement('script');
+    customScript.type = 'text/javascript';
+    customScript.innerHTML = `
+      document.addEventListener('DOMContentLoaded', function() {
+        const handleSymbolChange = function(e) {
+          if (e.data && e.data.name === 'tv-symbol-change') {
+            window.dispatchEvent(new CustomEvent('tvSymbolChange', { detail: e.data.symbol }));
+          }
+        };
+        
+        const handlePriceUpdate = function(e) {
+          if (e.data && e.data.name === 'tv-price-update') {
+            window.dispatchEvent(new CustomEvent('tvPriceUpdate', { detail: e.data.price }));
+          }
+        };
+        
+        window.addEventListener('message', handleSymbolChange);
+        window.addEventListener('message', handlePriceUpdate);
+      });
+    `;
+    
+    document.head.appendChild(customScript);
+
     // Clear existing content and append new widget
     if (container.current) {
       container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
+      setIsLoading(false);
     }
 
     // Add event listeners for symbol and price updates
-    const handleMessage = (event: MessageEvent) => {
+    const handleTVSymbolChange = (event: CustomEvent) => {
+      const newSymbol = event.detail;
+      console.log('Symbol changed to:', newSymbol);
+      if (onSymbolChange && typeof newSymbol === 'string') {
+        onSymbolChange(newSymbol);
+      }
+    };
+    
+    const handleTVPriceUpdate = (event: CustomEvent) => {
+      const price = event.detail;
+      console.log('Price updated to:', price);
+      if (onPriceUpdate && typeof price === 'number') {
+        onPriceUpdate(price);
+      }
+    };
+
+    // Use window level events to handle widget communication
+    window.addEventListener('tvSymbolChange', handleTVSymbolChange as EventListener);
+    window.addEventListener('tvPriceUpdate', handleTVPriceUpdate as EventListener);
+
+    // Also track direct messages from TradingView iframe
+    const handleDirectMessage = (event: MessageEvent) => {
       try {
-        if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed to:', event.data.symbol);
-          onSymbolChange?.(event.data.symbol);
-        }
-        if (event.data.name === 'price-update') {
-          console.log('Price updated to:', event.data.price);
-          onPriceUpdate?.(event.data.price);
+        if (event.data && typeof event.data === 'object') {
+          if (event.data.name === 'symbol-change' || event.data.name === 'tv-symbol-change') {
+            console.log('Symbol changed via direct message:', event.data.symbol);
+            onSymbolChange?.(event.data.symbol);
+          }
+          if (event.data.name === 'price-update' || event.data.name === 'tv-price-update') {
+            console.log('Price updated via direct message:', event.data.price);
+            onPriceUpdate?.(parseFloat(event.data.price));
+          }
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
       }
     };
 
-    window.addEventListener('message', handleMessage);
+    window.addEventListener('message', handleDirectMessage);
 
     return () => {
-      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('tvSymbolChange', handleTVSymbolChange as EventListener);
+      window.removeEventListener('tvPriceUpdate', handleTVPriceUpdate as EventListener);
+      window.removeEventListener('message', handleDirectMessage);
+      
+      if (document.head.contains(customScript)) {
+        document.head.removeChild(customScript);
+      }
+      
       if (container.current) {
         container.current.innerHTML = '';
       }
@@ -97,6 +154,11 @@ function TradingViewWidget({
         ref={container}
         style={{ height: "100%", width: "100%" }}
       />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50">
+          <div className="text-white text-lg">جاري تحميل الرسم البياني...</div>
+        </div>
+      )}
     </div>
   );
 }

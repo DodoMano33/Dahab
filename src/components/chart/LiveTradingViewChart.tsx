@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
 interface LiveTradingViewChartProps {
@@ -12,12 +13,34 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleSymbolChange = (newSymbol: string) => {
+    console.log("LiveTradingViewChart: Symbol changed to", newSymbol);
+    if (onSymbolChange) {
+      // Format symbol if needed
+      let formattedSymbol = newSymbol;
+      // If it includes a colon, extract the right part
+      if (newSymbol.includes(':')) {
+        formattedSymbol = newSymbol.split(':')[1];
+      }
+      onSymbolChange(formattedSymbol);
+    }
+  };
+
+  const handlePriceUpdate = (price: number) => {
+    console.log("LiveTradingViewChart: Price updated to", price);
+    if (onPriceUpdate && !isNaN(price)) {
+      onPriceUpdate(price);
+    }
+  };
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       <TradingViewWidget 
         symbol={symbol}
-        onSymbolChange={onSymbolChange}
-        onPriceUpdate={onPriceUpdate}
+        onSymbolChange={handleSymbolChange}
+        onPriceUpdate={handlePriceUpdate}
       />
     </div>
   );

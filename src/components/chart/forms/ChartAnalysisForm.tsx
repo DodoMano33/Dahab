@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
@@ -46,10 +46,23 @@ export const ChartAnalysisForm = ({
   defaultSymbol,
   defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState(defaultSymbol || "");
-  const [price, setPrice] = useState(defaultPrice?.toString() || "");
+  const [symbol, setSymbol] = useState("");
+  const [price, setPrice] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
+
+  // Update the form fields when default values change from TradingView
+  useEffect(() => {
+    if (defaultSymbol) {
+      console.log("Using default symbol from TradingView:", defaultSymbol);
+    }
+  }, [defaultSymbol]);
+
+  useEffect(() => {
+    if (defaultPrice) {
+      console.log("Using default price from TradingView:", defaultPrice);
+    }
+  }, [defaultPrice]);
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
@@ -98,6 +111,7 @@ export const ChartAnalysisForm = ({
     }
     
     console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
+    console.log(`السعر المستخدم: ${price || (defaultPrice ? defaultPrice.toString() : "غير محدد")}`);
     
     const providedPrice = price ? Number(price) : defaultPrice;
     onSubmit(
