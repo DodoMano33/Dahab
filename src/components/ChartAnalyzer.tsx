@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { AnalysisForm } from "./chart/analysis/AnalysisForm";
@@ -78,6 +79,11 @@ export const ChartAnalyzer = () => {
     setIsHistoryOpen(true);
   };
 
+  // تعديل الدالة لتتوافق مع نوع onClick في الزر
+  const handleManualCheck = () => {
+    triggerManualCheck();
+  };
+
   return (
     <div className="flex flex-col space-y-6 p-6">
       <Tabs defaultValue="analysis" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -136,7 +142,7 @@ export const ChartAnalyzer = () => {
               {lastCheckTime && <p className="text-sm text-muted-foreground mt-1">آخر فحص: {lastCheckTime.toLocaleTimeString()}</p>}
             </div>
             <button
-              onClick={triggerManualCheck}
+              onClick={handleManualCheck}
               disabled={isLoading}
               className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
             >

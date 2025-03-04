@@ -14,7 +14,7 @@ function App() {
           <Toaster 
             position="top-center" 
             dir="rtl" 
-            theme="auto"
+            theme="system"
             closeButton
             richColors
           />
@@ -26,3 +26,4 @@ function App() {
 }
 
 export default App;
+
