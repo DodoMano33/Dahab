@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -85,9 +84,9 @@ export function UserProfileMenu() {
           autoCheckInterval: data.auto_check_interval || 30,
         });
 
-        // تحديث السمة إذا كانت مختلفة
+        // Updating the theme if it's different
         if (data.theme !== theme) {
-          setTheme(data.theme);
+          setTheme(data.theme as 'light' | 'dark' | 'system');
         }
       }
     } catch (error) {
@@ -131,7 +130,7 @@ export function UserProfileMenu() {
         })
         .eq('id', user.id);
       
-      // تحديث السمة
+      // Updating the theme
       setTheme(userProfile.theme);
       
       toast.success("تم تحديث البيانات الشخصية بنجاح");
@@ -157,7 +156,7 @@ export function UserProfileMenu() {
       setShowProfileDialog(false);
       toast.success("تم إعادة تعيين جولة التعريف بنجاح");
       
-      // إعادة تحميل الصفحة لبدء جولة التعريف
+      // Re-loading the page to start the onboarding process
       window.location.reload();
     } catch (error) {
       console.error("Error resetting onboarding:", error);
@@ -218,7 +217,7 @@ export function UserProfileMenu() {
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
                   <DropdownMenuItem onClick={() => {
-                    setTheme("light");
+                    setTheme("light" as Theme);
                     setUserProfile({ ...userProfile, theme: "light" });
                     updateProfile();
                   }}>
@@ -226,7 +225,7 @@ export function UserProfileMenu() {
                     <span>فاتح</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => {
-                    setTheme("dark");
+                    setTheme("dark" as Theme);
                     setUserProfile({ ...userProfile, theme: "dark" });
                     updateProfile();
                   }}>
@@ -234,7 +233,7 @@ export function UserProfileMenu() {
                     <span>داكن</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => {
-                    setTheme("system");
+                    setTheme("system" as Theme);
                     setUserProfile({ ...userProfile, theme: "system" });
                     updateProfile();
                   }}>
@@ -380,7 +379,7 @@ export function UserProfileMenu() {
         </DialogContent>
       </Dialog>
       
-      {/* حوار المساعدة */}
+      {/* ��وار المساعدة */}
       <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
