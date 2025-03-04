@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
 interface LiveTradingViewChartProps {
@@ -13,9 +13,18 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Log initial symbol for debugging
   useEffect(() => {
     console.log('LiveTradingViewChart initialized with symbol:', symbol);
+    
+    // Mark as loaded after a short delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSymbolChange = (newSymbol: string) => {
@@ -37,11 +46,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 
   return (
     <div className="w-full h-[600px] mb-6 rounded-lg shadow-md overflow-hidden">
-      <TradingViewWidget 
-        symbol={symbol}
-        onSymbolChange={handleSymbolChange}
-        onPriceUpdate={handlePriceUpdate}
-      />
+      {isLoaded && (
+        <TradingViewWidget 
+          symbol={symbol}
+          onSymbolChange={handleSymbolChange}
+          onPriceUpdate={handlePriceUpdate}
+        />
+      )}
     </div>
   );
 };
