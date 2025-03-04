@@ -14,7 +14,10 @@ serve(async (req) => {
     const url = new URL(req.url);
     const symbol = url.searchParams.get("symbol");
 
+    console.log(`Processing request for symbol: ${symbol}`);
+
     if (!symbol) {
+      console.error("Missing symbol parameter");
       return new Response(
         JSON.stringify({ error: "يجب توفير رمز العملة" }),
         {
@@ -25,9 +28,12 @@ serve(async (req) => {
     }
 
     // استخدام وظيفة الحصول على السعر الموجودة
+    console.log(`Fetching price for symbol: ${symbol}`);
     const price = await getCurrentPrice(symbol);
+    console.log(`Price result for ${symbol}: ${price}`);
 
     if (price === null) {
+      console.error(`Failed to get price for symbol: ${symbol}`);
       return new Response(
         JSON.stringify({ error: "تعذر الحصول على السعر" }),
         {
@@ -38,6 +44,7 @@ serve(async (req) => {
     }
 
     // إرجاع السعر
+    console.log(`Successfully retrieved price for ${symbol}: ${price}`);
     return new Response(
       JSON.stringify({ price }),
       {
@@ -46,6 +53,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error("Error in get-current-price function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

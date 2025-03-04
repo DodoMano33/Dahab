@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { fetchCurrentPrice } from "@/services/priceService";
+import { toast } from "sonner";
 
 interface SymbolInputProps {
   value: string;
@@ -36,9 +37,23 @@ export const SymbolInput = ({
       
       try {
         setIsLoading(true);
+        console.log(`Fetching price for symbol: ${debouncedValue}`);
         const price = await fetchCurrentPrice(debouncedValue);
+        console.log(`Price result for ${debouncedValue}:`, price);
+        
         if (price && onPriceUpdate) {
           onPriceUpdate(price);
+          toast.success(`تم تحديث سعر ${debouncedValue}`, {
+            description: `السعر الحالي: ${price}`,
+            duration: 3000,
+          });
+        } else if (!price) {
+          console.warn(`No price returned for ${debouncedValue}`);
+          // توست تحذيري بدلاً من الخطأ إذا لم يتم العثور على سعر
+          toast.warning(`لم يتم العثور على سعر لـ ${debouncedValue}`, {
+            description: "يرجى التحقق من رمز العملة أو إدخال السعر يدوياً",
+            duration: 5000,
+          });
         }
       } catch (error) {
         console.error("خطأ في الحصول على السعر:", error);
