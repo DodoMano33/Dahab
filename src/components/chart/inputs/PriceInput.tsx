@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface PriceInputProps {
   value: string;
@@ -10,19 +10,33 @@ interface PriceInputProps {
 
 export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) => {
   const [inputValue, setInputValue] = useState(value || defaultValue || "");
+  const [isFocused, setIsFocused] = useState(false);
+  const previousDefaultRef = useRef<string | undefined>(defaultValue);
   
   // Update input when external price changes (from TradingView)
   useEffect(() => {
-    if ((defaultValue && !value) || (defaultValue && defaultValue !== value && !inputValue)) {
+    // If there's a new price from TradingView and the field isn't focused
+    if (defaultValue && defaultValue !== previousDefaultRef.current && !isFocused) {
+      console.log(`Updating price from TradingView: ${defaultValue}`);
       setInputValue(defaultValue);
+      previousDefaultRef.current = defaultValue;
+      
+      // Also inform parent component if we don't have a user-set value
+      if (!value) {
+        onChange(defaultValue);
+      }
     }
-    if (value && value !== inputValue) {
+
+    // If there's a value from parent and it's different from current input
+    if (value && value !== inputValue && !isFocused) {
+      console.log(`Updating price from parent: ${value}`);
       setInputValue(value);
     }
-  }, [value, defaultValue, inputValue]);
+  }, [value, defaultValue, inputValue, isFocused, onChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    console.log(`Price input changed to: ${newValue}`);
     setInputValue(newValue);
     onChange(newValue);
   };
@@ -39,12 +53,14 @@ export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) =
         placeholder="أدخل السعر (إجباري)"
         value={inputValue}
         onChange={handleInputChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         className="w-full"
         dir="ltr"
       />
       {defaultValue && !value && (
         <p className="text-sm text-gray-500 mt-1">
-          سيتم استخدام السعر {defaultValue} من الشارت
+          السعر الحالي {defaultValue} من الشارت
         </p>
       )}
     </div>

@@ -13,57 +13,81 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
+  const previousSymbolRef = useRef<string>(symbol);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-    script.type = 'text/javascript';
-    script.async = true;
+    // Only recreate the widget if the symbol has actually changed
+    if (previousSymbolRef.current !== symbol) {
+      previousSymbolRef.current = symbol;
+      
+      const script = document.createElement('script');
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+      script.type = 'text/javascript';
+      script.async = true;
 
-    // Create the configuration object
-    const config = {
-      autosize: true,
-      symbol: symbol,
-      interval: "1",
-      timezone: "Asia/Jerusalem",
-      theme: "dark",
-      style: "1",
-      locale: "en",
-      hide_legend: true,
-      allow_symbol_change: true,
-      save_image: false,
-      calendar: false,
-      hide_volume: true,
-      support_host: "https://www.tradingview.com"
-    };
+      // Format symbol if needed (ensure proper format for TradingView)
+      let formattedSymbol = symbol;
+      if (!symbol.includes(':') && !symbol.startsWith('CAPITALCOM:')) {
+        // Add default exchange prefix for common symbols
+        if (/^[A-Z]{6}$/.test(symbol) && (symbol.includes('USD') || symbol.includes('EUR'))) {
+          // Likely forex pair
+          formattedSymbol = `FX:${symbol}`;
+        } else if (/^BTC|^ETH|^BNB|^XRP|^ADA/.test(symbol)) {
+          // Likely crypto
+          formattedSymbol = `BINANCE:${symbol}USD`;
+        } else {
+          // Default to CAPITALCOM for other symbols
+          formattedSymbol = `CAPITALCOM:${symbol}`;
+        }
+      }
 
-    // Set the script content
-    script.innerHTML = JSON.stringify(config);
+      console.log(`Updating TradingView chart to symbol: ${formattedSymbol}`);
 
-    // Create widget container structure
-    const widgetContainer = document.createElement('div');
-    widgetContainer.className = 'tradingview-widget-container';
-    widgetContainer.style.height = '100%';
-    widgetContainer.style.width = '100%';
+      // Create the configuration object
+      const config = {
+        autosize: true,
+        symbol: formattedSymbol,
+        interval: "1",
+        timezone: "Asia/Jerusalem",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        hide_legend: true,
+        allow_symbol_change: true,
+        save_image: false,
+        calendar: false,
+        hide_volume: true,
+        support_host: "https://www.tradingview.com"
+      };
 
-    const widgetDiv = document.createElement('div');
-    widgetDiv.className = 'tradingview-widget-container__widget';
-    widgetDiv.style.height = 'calc(100% - 32px)';
-    widgetDiv.style.width = '100%';
+      // Set the script content
+      script.innerHTML = JSON.stringify(config);
 
-    const copyright = document.createElement('div');
-    copyright.className = 'tradingview-widget-copyright';
-    copyright.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
+      // Create widget container structure
+      const widgetContainer = document.createElement('div');
+      widgetContainer.className = 'tradingview-widget-container';
+      widgetContainer.style.height = '100%';
+      widgetContainer.style.width = '100%';
 
-    // Append elements in the correct order
-    widgetContainer.appendChild(widgetDiv);
-    widgetContainer.appendChild(copyright);
-    widgetContainer.appendChild(script);
+      const widgetDiv = document.createElement('div');
+      widgetDiv.className = 'tradingview-widget-container__widget';
+      widgetDiv.style.height = 'calc(100% - 32px)';
+      widgetDiv.style.width = '100%';
 
-    // Clear existing content and append new widget
-    if (container.current) {
-      container.current.innerHTML = '';
-      container.current.appendChild(widgetContainer);
+      const copyright = document.createElement('div');
+      copyright.className = 'tradingview-widget-copyright';
+      copyright.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
+
+      // Append elements in the correct order
+      widgetContainer.appendChild(widgetDiv);
+      widgetContainer.appendChild(copyright);
+      widgetContainer.appendChild(script);
+
+      // Clear existing content and append new widget
+      if (container.current) {
+        container.current.innerHTML = '';
+        container.current.appendChild(widgetContainer);
+      }
     }
 
     // Custom event handling for TradingView chart
@@ -97,9 +121,6 @@ function TradingViewWidget({
 
     return () => {
       window.removeEventListener('message', handleCustomEvent);
-      if (container.current) {
-        container.current.innerHTML = '';
-      }
     };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 

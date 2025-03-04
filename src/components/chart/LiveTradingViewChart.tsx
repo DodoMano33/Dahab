@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
 interface LiveTradingViewChartProps {
@@ -13,9 +13,21 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  // Log initial symbol for debugging
+  useEffect(() => {
+    console.log('LiveTradingViewChart initialized with symbol:', symbol);
+  }, []);
+
   const handleSymbolChange = (newSymbol: string) => {
     console.log('LiveTradingViewChart received symbol change:', newSymbol);
-    onSymbolChange?.(newSymbol);
+    
+    // Extract the base symbol without the exchange prefix
+    let baseSymbol = newSymbol;
+    if (newSymbol.includes(':')) {
+      baseSymbol = newSymbol.split(':')[1];
+    }
+    
+    onSymbolChange?.(baseSymbol);
   };
 
   const handlePriceUpdate = (newPrice: number) => {
