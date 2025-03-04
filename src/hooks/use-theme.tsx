@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+// Export the Theme type so it can be imported elsewhere
+export type Theme = 'light' | 'dark' | 'system';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {

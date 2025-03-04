@@ -35,6 +35,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotificationCenter } from "./notifications/NotificationCenter";
 import { OnboardingDialog } from "./onboarding/OnboardingDialog";
+import type { Theme } from "@/hooks/use-theme";
 
 export function UserProfileMenu() {
   const { user, isLoggedIn } = useAuth();
@@ -84,7 +85,6 @@ export function UserProfileMenu() {
           autoCheckInterval: data.auto_check_interval || 30,
         });
 
-        // Updating the theme if it's different
         if (data.theme !== theme) {
           setTheme(data.theme as 'light' | 'dark' | 'system');
         }
@@ -130,7 +130,6 @@ export function UserProfileMenu() {
         })
         .eq('id', user.id);
       
-      // Updating the theme
       setTheme(userProfile.theme);
       
       toast.success("تم تحديث البيانات الشخصية بنجاح");
@@ -156,7 +155,6 @@ export function UserProfileMenu() {
       setShowProfileDialog(false);
       toast.success("تم إعادة تعيين جولة التعريف بنجاح");
       
-      // Re-loading the page to start the onboarding process
       window.location.reload();
     } catch (error) {
       console.error("Error resetting onboarding:", error);
@@ -256,7 +254,6 @@ export function UserProfileMenu() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* حوار البيانات الشخصية */}
       <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -379,7 +376,6 @@ export function UserProfileMenu() {
         </DialogContent>
       </Dialog>
       
-      {/* ��وار المساعدة */}
       <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
