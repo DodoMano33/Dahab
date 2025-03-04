@@ -1,12 +1,12 @@
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { SearchHistoryItem } from "@/types/analysis";
-import { showAnalysisMessage } from "../utils/analysisMessages";
-import { getAnalysisType } from "../utils/analysisTypes";
-import { saveAnalysis } from "../utils/saveAnalysis";
+import { buildAnalysisConfig } from "../utils/analysisConfigBuilder";
+import { validateAnalysisInputs } from "../utils/inputValidation";
+import { dismissToasts, showErrorToast, showLoadingToast } from "../utils/toastUtils";
 import { useAnalysisHandler } from "../AnalysisHandler";
+import { saveAnalysis } from "../utils/saveAnalysis";
 
 interface UseAnalysisSubmitProps {
   onAnalysis: (item: SearchHistoryItem) => void;
@@ -32,37 +32,43 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isNeuralNetwork: boolean = false,
     duration?: string
   ) => {
-    // Create a unique toast ID that we can use to dismiss it later
-    const analysisToastId = "analysis-submit-" + Date.now();
-    let messageToastId: string | undefined;
+    // Create toast IDs for tracking
+    const loadingToastId = showLoadingToast(
+      `جاري التحليل للرمز ${symbol} على الإطار الزمني ${timeframe}...`
+    );
     
     try {
       if (!user) {
-        toast.error("يرجى تسجيل الدخول لحفظ نتائج التحليل");
+        showErrorToast(new Error("يرجى تسجيل الدخول لحفظ نتائج التحليل"));
+        dismissToasts(loadingToastId);
         return;
       }
 
-      if (!symbol || !timeframe || !providedPrice) {
-        toast.error("جميع الحقول مطلوبة");
+      // Use the validation utility
+      if (!validateAnalysisInputs(symbol, timeframe, providedPrice)) {
+        dismissToasts(loadingToastId);
         return;
       }
 
       // التحقق من صحة مدة التحليل
       const durationHours = duration ? parseInt(duration) : 8;
       if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
-        toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
+        showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
+        dismissToasts(loadingToastId);
         return;
       }
 
-      // Show the initial analysis message and get the toast ID
-      messageToastId = showAnalysisMessage(
-        isPatternAnalysis,
-        isWaves,
-        isGann,
-        isTurtleSoup,
-        isICT,
-        isSMC,
+      // Get the analysis type using the utility function
+      const { analysisType } = buildAnalysisConfig(
+        isScalping,
         isAI,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction,
         isNeuralNetwork
       );
 
@@ -82,36 +88,17 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isNeuralNetwork
       );
       
-      // Dismiss the message toast if it was returned
-      if (messageToastId) {
-        toast.dismiss(messageToastId);
-      }
+      // Dismiss the loading toast
+      dismissToasts(loadingToastId);
       
       if (result && result.analysisResult) {
         const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
         if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
           console.error("Invalid analysis result:", analysisResult);
-          toast.error("نتائج التحليل غير صالحة");
-          
-          // Make sure to dismiss any lingering toasts
-          if (messageToastId) toast.dismiss(messageToastId);
-          toast.dismiss(analysisToastId);
+          showErrorToast(new Error("نتائج التحليل غير صالحة"));
           return;
         }
-
-        const analysisType = getAnalysisType(
-          isPatternAnalysis,
-          isWaves,
-          isGann,
-          isTurtleSoup,
-          isICT,
-          isSMC,
-          isAI,
-          isScalping,
-          isPriceAction,
-          isNeuralNetwork
-        );
 
         try {
           console.log("Saving analysis with duration:", durationHours);
@@ -144,20 +131,15 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
           }
         } catch (saveError) {
           console.error("Error saving analysis:", saveError);
-          toast.error("حدث خطأ أثناء حفظ التحليل");
-          
-          // Make sure to dismiss any lingering toasts
-          if (messageToastId) toast.dismiss(messageToastId);
-          toast.dismiss(analysisToastId);
+          showErrorToast(new Error("حدث خطأ أثناء حفظ التحليل"));
         }
       }
     } catch (error) {
       console.error("خطأ في التحليل:", error);
-      toast.error("حدث خطأ أثناء التحليل");
+      showErrorToast(error);
       
       // Dismiss any loading toasts
-      toast.dismiss(analysisToastId);
-      if (messageToastId) toast.dismiss(messageToastId);
+      dismissToasts(loadingToastId);
     }
   };
 
