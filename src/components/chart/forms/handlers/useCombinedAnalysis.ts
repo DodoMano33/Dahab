@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 interface CombinedAnalysisProps {
@@ -20,6 +21,7 @@ interface CombinedAnalysisProps {
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean,
+    isNeuralNetwork?: boolean,
     duration?: string
   ) => void;
 }
@@ -49,7 +51,8 @@ export const useCombinedAnalysis = ({
       isGann: selectedTypes.includes("gann"),
       isWaves: selectedTypes.includes("waves"),
       isPatternAnalysis: selectedTypes.includes("patterns"),
-      isPriceAction: selectedTypes.includes("priceAction")
+      isPriceAction: selectedTypes.includes("priceAction"),
+      isNeuralNetwork: selectedTypes.includes("neural_networks")
     };
 
     onSubmit(
@@ -65,6 +68,7 @@ export const useCombinedAnalysis = ({
       analysisFlags.isWaves,
       analysisFlags.isPatternAnalysis,
       analysisFlags.isPriceAction,
+      analysisFlags.isNeuralNetwork,
       duration
     );
   };

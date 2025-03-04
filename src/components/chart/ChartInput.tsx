@@ -1,3 +1,4 @@
+
 import { ChartAnalysisForm } from "./forms/ChartAnalysisForm";
 
 interface ChartInputProps {
@@ -14,7 +15,9 @@ interface ChartInputProps {
     isGann?: boolean,
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
-    isPriceAction?: boolean
+    isPriceAction?: boolean,
+    isNeuralNetwork?: boolean,
+    duration?: string
   ) => void;
   onHistoryClick?: () => void;  // Made optional with ?
   isAnalyzing: boolean;

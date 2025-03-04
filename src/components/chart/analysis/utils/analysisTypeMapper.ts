@@ -73,8 +73,8 @@ export const mapToAnalysisType = (type: string): AnalysisType => {
     case 'neural_networks':
       return "شبكات عصبية";
     case 'normal':
-      return "عادي" as AnalysisType; // Type assertion to include "عادي"
+      return "عادي"; 
     default:
-      return "عادي" as AnalysisType; // Type assertion for the default case
+      return "عادي";
   }
 };

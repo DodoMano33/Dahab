@@ -57,7 +57,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isTurtleSoup,
         isICT,
         isSMC,
-        isAI
+        isAI,
+        isNeuralNetwork
       );
 
       const result = await handleTradingViewConfig(
@@ -85,7 +86,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
           return;
         }
 
-        const analysisType = isAI ? "ذكي" : getAnalysisType(
+        const analysisType = getAnalysisType(
           isPatternAnalysis,
           isWaves,
           isGann,

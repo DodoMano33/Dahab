@@ -1,3 +1,4 @@
+
 import { ChartInput } from "../ChartInput";
 import { useAnalysisSubmit } from "./hooks/useAnalysisSubmit";
 import { SearchHistoryItem } from "@/types/analysis";
