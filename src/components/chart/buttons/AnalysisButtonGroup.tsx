@@ -1,11 +1,9 @@
-
 import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AnalysisTooltip, analysisTypeTooltips } from "@/components/ui/tooltips/AnalysisTooltips";
 
 interface AnalysisButtonGroupProps {
   isAnalyzing: boolean;
@@ -41,17 +39,15 @@ export const AnalysisButtonGroup = ({
           onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, true)}
         />
 
-        <AnalysisTooltip content={analysisTypeTooltips["سكالبينج"]}>
-          <Button
-            type="button"
-            disabled={isAnalyzing}
-            onClick={(e) => onSubmit(e, true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white h-12 sm:h-10 text-sm px-3 sm:px-4 flex items-center justify-center gap-2"
-          >
-            <Activity className="w-4 h-4" />
-            <span className="whitespace-nowrap">Scalping</span>
-          </Button>
-        </AnalysisTooltip>
+        <Button
+          type="button"
+          disabled={isAnalyzing}
+          onClick={(e) => onSubmit(e, true)}
+          className="bg-purple-600 hover:bg-purple-700 text-white h-12 sm:h-10 text-sm px-3 sm:px-4 flex items-center justify-center gap-2"
+        >
+          <Activity className="w-4 h-4" />
+          <span className="whitespace-nowrap">Scalping</span>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -64,29 +60,25 @@ export const AnalysisButtonGroup = ({
         />
         
         <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <AnalysisTooltip content={analysisTypeTooltips["Waves"]}>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
-            >
-              <Waves className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل Waves</span>
-            </Button>
-          </AnalysisTooltip>
+          <Button
+            type="button"
+            disabled={isAnalyzing}
+            onClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
+          >
+            <Waves className="w-4 h-4" />
+            <span className="whitespace-nowrap">تحليل Waves</span>
+          </Button>
 
-          <AnalysisTooltip content={analysisTypeTooltips["Price Action"]}>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
-            >
-              <CandlestickChart className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل Price Action</span>
-            </Button>
-          </AnalysisTooltip>
+          <Button
+            type="button"
+            disabled={isAnalyzing}
+            onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
+          >
+            <CandlestickChart className="w-4 h-4" />
+            <span className="whitespace-nowrap">تحليل Price Action</span>
+          </Button>
         </div>
       </div>
 
@@ -96,17 +88,15 @@ export const AnalysisButtonGroup = ({
         </Badge>
       )}
 
-      <AnalysisTooltip content={analysisTypeTooltips["ذكي"]}>
-        <Button
-          type="button"
-          disabled={isAnalyzing}
-          onClick={(e) => onSubmit(e, false, true)}
-          className="w-full bg-green-600 hover:bg-green-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2"
-        >
-          <Brain className="w-6 h-6" />
-          <span className="whitespace-nowrap">تحليل ذكي</span>
-        </Button>
-      </AnalysisTooltip>
+      <Button
+        type="button"
+        disabled={isAnalyzing}
+        onClick={(e) => onSubmit(e, false, true)}
+        className="w-full bg-green-600 hover:bg-green-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2"
+      >
+        <Brain className="w-6 h-6" />
+        <span className="whitespace-nowrap">تحليل ذكي</span>
+      </Button>
     </div>
   );
 };
