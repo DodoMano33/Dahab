@@ -27,13 +27,21 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
+      // Map the analysis type to a valid database enum value
       const mappedAnalysisType = mapToAnalysisType(analysisType);
+      console.log("Mapped analysis type:", mappedAnalysisType);
+      
+      // Update the analysis result's analysisType to the mapped value
+      const analysisResultWithMappedType = {
+        ...result.analysisResult,
+        analysisType: mappedAnalysisType
+      };
       
       const savedData = await saveAnalysis({
         userId,
         symbol,
         currentPrice,
-        analysisResult: result.analysisResult,
+        analysisResult: analysisResultWithMappedType,
         analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
         timeframe,
         durationHours: duration
@@ -45,7 +53,7 @@ export const useSaveAnalysis = () => {
           date: new Date(),
           symbol,
           currentPrice,
-          analysis: result.analysisResult,
+          analysis: analysisResultWithMappedType,
           targetHit: false,
           stopLossHit: false,
           analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
