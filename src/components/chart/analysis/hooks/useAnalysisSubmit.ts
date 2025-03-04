@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isWaves: boolean = false,
     isPatternAnalysis: boolean = false,
     isPriceAction: boolean = false,
+    isNeuralNetwork: boolean = false,
     duration?: string
   ) => {
     try {
@@ -70,7 +72,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isGann,
         isWaves,
         isPatternAnalysis,
-        isPriceAction
+        isPriceAction,
+        isNeuralNetwork
       );
       
       if (result && result.analysisResult) {
@@ -91,7 +94,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
           isSMC,
           isAI,
           isScalping,
-          isPriceAction
+          isPriceAction,
+          isNeuralNetwork
         );
 
         try {

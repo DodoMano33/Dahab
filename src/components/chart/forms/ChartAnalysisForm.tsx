@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
@@ -22,6 +23,7 @@ interface ChartAnalysisFormProps {
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean,
+    isNeuralNetwork?: boolean,
     duration?: string
   ) => void;
   isAnalyzing: boolean;
@@ -65,7 +67,8 @@ export const ChartAnalysisForm = ({
     isGann: boolean = false,
     isWaves: boolean = false,
     isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false
+    isPriceAction: boolean = false,
+    isNeuralNetwork: boolean = false
   ) => {
     e.preventDefault();
     
@@ -100,6 +103,7 @@ export const ChartAnalysisForm = ({
       isWaves,
       isPatternAnalysis,
       isPriceAction,
+      isNeuralNetwork,
       duration
     );
   };

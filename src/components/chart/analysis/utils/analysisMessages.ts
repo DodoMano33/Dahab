@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 export const showAnalysisMessage = (
@@ -7,7 +8,8 @@ export const showAnalysisMessage = (
   isTurtleSoup: boolean,
   isICT: boolean,
   isSMC: boolean,
-  isAI: boolean
+  isAI: boolean,
+  isNeuralNetwork: boolean = false
 ) => {
   if (isPatternAnalysis) {
     toast.info("جاري تحليل البيانات باستخدام تحليل الأنماط...");
@@ -21,6 +23,8 @@ export const showAnalysisMessage = (
     toast.info("جاري تحليل البيانات باستخدام نموذج ICT...");
   } else if (isSMC) {
     toast.info("جاري تحليل البيانات باستخدام نموذج SMC...");
+  } else if (isNeuralNetwork) {
+    toast.info("جاري تحليل البيانات باستخدام الشبكات العصبية...");
   } else if (isAI) {
     toast.info("جاري تحليل البيانات باستخدام الذكاء الاصطناعي...");
   }

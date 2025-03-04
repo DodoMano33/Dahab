@@ -26,7 +26,8 @@ export const useAnalysisHandler = () => {
     isGann: boolean = false,
     isWaves: boolean = false,
     isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false
+    isPriceAction: boolean = false,
+    isNeuralNetwork: boolean = false
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -41,7 +42,8 @@ export const useAnalysisHandler = () => {
         isGann,
         isWaves,
         isPatternAnalysis,
-        isPriceAction
+        isPriceAction,
+        isNeuralNetwork
       });
 
       if (!symbol || !timeframe) {
@@ -65,6 +67,7 @@ export const useAnalysisHandler = () => {
       if (isWaves) selectedTypes.push("waves");
       if (isPatternAnalysis) selectedTypes.push("patterns");
       if (isPriceAction) selectedTypes.push("priceAction");
+      if (isNeuralNetwork) selectedTypes.push("neuralNetworks");
       
       const analysisType = isAI ? "ذكي" : detectAnalysisType(
         isPatternAnalysis,
@@ -75,7 +78,8 @@ export const useAnalysisHandler = () => {
         isSMC,
         isAI,
         isScalping,
-        isPriceAction
+        isPriceAction,
+        isNeuralNetwork
       );
       
       setCurrentAnalysis(analysisType);
@@ -121,7 +125,8 @@ export const useAnalysisHandler = () => {
               isICT,
               isSMC,
               isScalping,
-              isPriceAction
+              isPriceAction,
+              isNeuralNetwork
             }
           );
         }

@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { analyzeSMCChart } from "../smcAnalysis";
 import { analyzeICTChart } from "../ictAnalysis";
@@ -8,6 +9,7 @@ import { analyzePattern } from "../patternAnalysis";
 import { analyzeDailyChart } from "../dailyAnalysis";
 import { analyzeScalpingChart } from "../scalpingAnalysis";
 import { analyzePriceAction } from "../priceActionAnalysis";
+import { analyzeNeuralNetworkChart } from "../neuralNetworkAnalysis";
 
 interface AnalysisOptions {
   isPatternAnalysis: boolean;
@@ -18,6 +20,7 @@ interface AnalysisOptions {
   isSMC: boolean;
   isScalping: boolean;
   isPriceAction: boolean;
+  isNeuralNetwork: boolean;
 }
 
 export const executeAnalysis = async (
@@ -34,7 +37,8 @@ export const executeAnalysis = async (
     isICT,
     isSMC,
     isScalping,
-    isPriceAction
+    isPriceAction,
+    isNeuralNetwork
   } = options;
 
   let selectedStrategies = [];
@@ -46,6 +50,7 @@ export const executeAnalysis = async (
   if (isSMC) selectedStrategies.push("SMC");
   if (isScalping) selectedStrategies.push("Scalping");
   if (isPriceAction) selectedStrategies.push("Price Action");
+  if (isNeuralNetwork) selectedStrategies.push("Neural Networks");
 
   let analysis: AnalysisData;
 
@@ -60,6 +65,7 @@ export const executeAnalysis = async (
         case "SMC": return analyzeSMCChart(chartImage, currentPrice, timeframe);
         case "Scalping": return analyzeScalpingChart(chartImage, currentPrice, timeframe);
         case "Price Action": return analyzePriceAction(chartImage, currentPrice, timeframe);
+        case "Neural Networks": return analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
@@ -99,6 +105,9 @@ export const executeAnalysis = async (
         break;
       case "Price Action":
         analysis = await analyzePriceAction(chartImage, currentPrice, timeframe);
+        break;
+      case "Neural Networks":
+        analysis = await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);

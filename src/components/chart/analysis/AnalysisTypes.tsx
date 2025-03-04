@@ -1,8 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
-export type AnalysisTypeValue = "normal" | "scalping" | "ict" | "smc" | "turtle_soup" | "gann" | "waves" | "patterns" | "price_action";
+export type AnalysisTypeValue = "normal" | "scalping" | "ict" | "smc" | "turtle_soup" | "gann" | "waves" | "patterns" | "price_action" | "neural_networks";
 
 interface AnalysisType {
   value: AnalysisTypeValue;
@@ -19,6 +20,7 @@ const analysisTypes: AnalysisType[] = [
   { value: "turtle_soup", label: "Turtle Soup" },
   { value: "waves", label: "Waves" },
   { value: "price_action", label: "Price Action" },
+  { value: "neural_networks", label: "شبكات عصبية" },
 ];
 
 interface AnalysisTypesProps {

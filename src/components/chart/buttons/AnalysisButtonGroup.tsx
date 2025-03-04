@@ -1,5 +1,5 @@
 
-import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart } from "lucide-react";
+import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
@@ -19,7 +19,8 @@ interface AnalysisButtonGroupProps {
     isGann?: boolean,
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
-    isPriceAction?: boolean
+    isPriceAction?: boolean,
+    isNeuralNetwork?: boolean
   ) => void;
   onHistoryClick: () => void;
   currentAnalysis?: string;
@@ -110,6 +111,26 @@ export const AnalysisButtonGroup = ({
           </TooltipProvider>
         </div>
       </div>
+
+      {/* زر تحليل الشبكات العصبية */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              disabled={isAnalyzing}
+              onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, true)}
+              className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Network className="w-6 h-6" />
+              <span className="whitespace-nowrap text-base font-medium">تحليل الشبكات العصبية</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-sm">
+            <p>تحليل متقدم باستخدام الشبكات العصبية للتنبؤ بحركة الأسعار المستقبلية</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {currentAnalysis && (
         <Badge variant="secondary" className="text-sm bg-opacity-80 backdrop-blur-sm bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 shadow-sm py-1.5">

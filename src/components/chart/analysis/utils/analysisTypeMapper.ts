@@ -1,3 +1,4 @@
+
 import { AnalysisType } from "@/types/analysis";
 
 interface AnalysisConfig {
@@ -9,6 +10,7 @@ interface AnalysisConfig {
   isWaves: boolean;
   isPatternAnalysis: boolean;
   isPriceAction: boolean;
+  isNeuralNetwork: boolean;
 }
 
 export const mapAnalysisTypeToConfig = (type: string): AnalysisConfig => {
@@ -20,7 +22,8 @@ export const mapAnalysisTypeToConfig = (type: string): AnalysisConfig => {
     isGann: false,
     isWaves: false,
     isPatternAnalysis: false,
-    isPriceAction: false
+    isPriceAction: false,
+    isNeuralNetwork: false
   };
 
   switch (type.toLowerCase()) {
@@ -40,6 +43,8 @@ export const mapAnalysisTypeToConfig = (type: string): AnalysisConfig => {
       return { ...defaultConfig, isPatternAnalysis: true };
     case 'price_action':
       return { ...defaultConfig, isPriceAction: true };
+    case 'neural_networks':
+      return { ...defaultConfig, isNeuralNetwork: true };
     default:
       return defaultConfig;
   }
@@ -65,6 +70,8 @@ export const mapToAnalysisType = (type: string): AnalysisType => {
       return "Patterns";
     case 'price_action':
       return "Price Action";
+    case 'neural_networks':
+      return "شبكات عصبية";
     case 'normal':
       return "عادي" as AnalysisType; // Type assertion to include "عادي"
     default:
