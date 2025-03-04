@@ -15,8 +15,6 @@ interface ChartAnalyzerTabsProps {
   onAddToSearchHistory: (item: SearchHistoryItem) => void;
   isAnalyzing: boolean;
   currentAnalysis: string;
-  selectedTimeframes: string[];
-  selectedInterval: string;
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
