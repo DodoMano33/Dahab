@@ -10,27 +10,38 @@ interface SymbolInputProps {
   onChange: (value: string) => void;
   defaultValue?: string;
   onPriceUpdate?: (price: number | null) => void;
+  updateChart?: boolean; // Flag to determine if we should update the chart
+  onUpdateChart?: (symbol: string) => void; // Function to update the chart
 }
 
 export const SymbolInput = ({ 
   value, 
   onChange, 
   defaultValue,
-  onPriceUpdate 
+  onPriceUpdate,
+  updateChart = true,
+  onUpdateChart
 }: SymbolInputProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [debouncedValue, setDebouncedValue] = useState(value || defaultValue || "");
 
-  // استخدام قيمة مؤجلة للرمز لتجنب طلبات API متعددة
+  // استخدام قيمة مؤجلة للرمز لتجنب طلبات API متعددة وتحديث الشارت
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedValue(value || defaultValue || "");
-    }, 300);
+      
+      // If updateChart flag is true and we have a value and onUpdateChart function
+      if (updateChart && onUpdateChart && (value || defaultValue)) {
+        const symbolToUpdate = value || defaultValue || "";
+        console.log(`Updating chart with symbol: ${symbolToUpdate}`);
+        onUpdateChart(symbolToUpdate);
+      }
+    }, 500); // Slightly longer debounce for chart updates
 
     return () => clearTimeout(timer);
-  }, [value, defaultValue]);
+  }, [value, defaultValue, updateChart, onUpdateChart]);
 
-  // استدعاء API للحصول على السعر عند تغيير الرمز
+  // استدعاء API للحصول على السعر عند تغيير الرمز - فقط إذا لم يتم تحديث السعر من الشارت
   useEffect(() => {
     const fetchPrice = async () => {
       if (!debouncedValue) return;
@@ -51,8 +62,8 @@ export const SymbolInput = ({
           console.warn(`No price returned for ${debouncedValue}`);
           // توست تحذيري بدلاً من الخطأ إذا لم يتم العثور على سعر
           toast.warning(`لم يتم العثور على سعر لـ ${debouncedValue}`, {
-            description: "يرجى التحقق من رمز العملة أو إدخال السعر يدوياً",
-            duration: 5000,
+            description: "سيتم محاولة الحصول على السعر من الشارت",
+            duration: 3000,
           });
         }
       } catch (error) {

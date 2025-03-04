@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
@@ -36,6 +36,7 @@ interface ChartAnalysisFormProps {
   currentAnalysis?: string;
   defaultSymbol?: string;
   defaultPrice?: number | null;
+  onUpdateChartSymbol?: (symbol: string) => void;
 }
 
 export const ChartAnalysisForm = ({
@@ -44,12 +45,14 @@ export const ChartAnalysisForm = ({
   onHistoryClick,
   currentAnalysis,
   defaultSymbol,
-  defaultPrice
+  defaultPrice,
+  onUpdateChartSymbol
 }: ChartAnalysisFormProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
+  const [isChartSynced, setIsChartSynced] = useState(false);
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
@@ -62,9 +65,41 @@ export const ChartAnalysisForm = ({
     onSubmit
   });
 
+  // Sync with TradingView symbol changes
+  useEffect(() => {
+    if (defaultSymbol && defaultSymbol !== symbol) {
+      console.log(`Updating symbol input from chart: ${defaultSymbol}`);
+      setSymbol(defaultSymbol);
+      setIsChartSynced(true);
+      
+      // Reset flag after a moment
+      const timer = setTimeout(() => {
+        setIsChartSynced(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [defaultSymbol]);
+
+  // Sync with TradingView price changes
+  useEffect(() => {
+    if (defaultPrice && (!price || isChartSynced)) {
+      console.log(`Updating price input from chart: ${defaultPrice}`);
+      setPrice(defaultPrice.toString());
+    }
+  }, [defaultPrice, isChartSynced]);
+
   const handlePriceUpdate = (newPrice: number | null) => {
     if (newPrice) {
       setPrice(newPrice.toString());
+    }
+  };
+
+  const handleSymbolChange = (newSymbol: string) => {
+    setSymbol(newSymbol);
+    // Update TradingView chart if handler provided
+    if (onUpdateChartSymbol) {
+      onUpdateChartSymbol(newSymbol);
     }
   };
 
@@ -133,14 +168,17 @@ export const ChartAnalysisForm = ({
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
       <SymbolInput 
         value={symbol} 
-        onChange={setSymbol} 
+        onChange={handleSymbolChange} 
         defaultValue={defaultSymbol}
         onPriceUpdate={handlePriceUpdate}
+        updateChart={true}
+        onUpdateChart={onUpdateChartSymbol}
       />
       <PriceInput 
         value={price} 
         onChange={setPrice}
         defaultValue={defaultPrice?.toString()}
+        isAutoPriceEnabled={true}
       />
       <AnalysisDurationInput
         value={duration}

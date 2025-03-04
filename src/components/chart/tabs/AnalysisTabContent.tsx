@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { AnalysisInfoCard } from "../info/AnalysisInfoCard";
 import { LiveTradingViewChart } from "../LiveTradingViewChart";
 import { AnalysisForm } from "../analysis/AnalysisForm";
@@ -46,6 +46,47 @@ export const AnalysisTabContent = ({
   isCheckLoading,
   lastCheckTime
 }: AnalysisTabContentProps) => {
+  const [chartRef, setChartRef] = useState<any>(null);
+
+  // Function to update the TradingView chart symbol
+  const updateChartSymbol = (symbol: string) => {
+    // Prepare symbol for TradingView format (add exchange if needed)
+    const formattedSymbol = symbol.includes(':') 
+      ? symbol 
+      : determineExchangePrefix(symbol);
+    
+    console.log(`Updating TradingView chart to symbol: ${formattedSymbol}`);
+    onSymbolChange(symbol); // This will update the parent state
+  };
+
+  // Helper function to determine the appropriate exchange prefix
+  const determineExchangePrefix = (symbol: string): string => {
+    const upperSymbol = symbol.toUpperCase();
+    
+    // Common patterns for different types of symbols
+    if (upperSymbol.includes('USD') && !upperSymbol.includes('USDT')) {
+      // Forex pairs
+      if (upperSymbol === 'XAUUSD' || upperSymbol === 'GOLD') {
+        return `CAPITALCOM:GOLD`;
+      } else if (upperSymbol === 'XAGUSD' || upperSymbol === 'SILVER') {
+        return `CAPITALCOM:SILVER`;
+      } else {
+        return `FX:${upperSymbol}`;
+      }
+    } else if (
+      upperSymbol.endsWith('USDT') || 
+      upperSymbol.endsWith('BTC') || 
+      upperSymbol.includes('BTC') || 
+      upperSymbol.includes('ETH')
+    ) {
+      // Crypto pairs
+      return `BINANCE:${upperSymbol}`;
+    } else {
+      // Stocks and others - default to NASDAQ
+      return `NASDAQ:${upperSymbol}`;
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* معلومات سريعة */}
@@ -58,9 +99,10 @@ export const AnalysisTabContent = ({
 
       {/* TradingView Chart */}
       <LiveTradingViewChart
-        symbol={autoSymbol}
+        symbol={autoSymbol.includes(':') ? autoSymbol : determineExchangePrefix(autoSymbol)}
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
+        setSymbol={setChartRef}
       />
 
       {/* Symbol, Price, and Timeframe Form */}
@@ -70,6 +112,7 @@ export const AnalysisTabContent = ({
         currentAnalysis={currentAnalysis || ""}
         defaultSymbol={autoSymbol}
         defaultPrice={autoPrice}
+        onUpdateChartSymbol={updateChartSymbol}
       />
 
       {/* Auto Analysis Settings */}

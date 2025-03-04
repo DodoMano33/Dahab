@@ -24,20 +24,29 @@ interface ChartInputProps {
     isBehavioral?: boolean,
     duration?: string
   ) => void;
-  onHistoryClick?: () => void;  // Made optional with ?
+  onHistoryClick?: () => void;
   isAnalyzing: boolean;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
+  onUpdateChartSymbol?: (symbol: string) => void;
 }
 
 export const ChartInput = ({
   onTradingViewConfig,
   onHistoryClick,
-  isAnalyzing
+  isAnalyzing,
+  defaultSymbol,
+  defaultPrice,
+  onUpdateChartSymbol
 }: ChartInputProps) => {
   return (
     <ChartAnalysisForm
       onSubmit={onTradingViewConfig}
       isAnalyzing={isAnalyzing}
       onHistoryClick={onHistoryClick || (() => {})}
+      defaultSymbol={defaultSymbol}
+      defaultPrice={defaultPrice}
+      onUpdateChartSymbol={onUpdateChartSymbol}
     />
   );
 };
