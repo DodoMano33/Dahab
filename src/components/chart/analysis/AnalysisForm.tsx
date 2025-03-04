@@ -10,7 +10,6 @@ interface AnalysisFormProps {
   onHistoryClick?: () => void;
   defaultSymbol?: string;
   defaultPrice?: number | null;
-  onUpdateChartSymbol?: (symbol: string) => void;
 }
 
 export const AnalysisForm = ({ 
@@ -19,8 +18,7 @@ export const AnalysisForm = ({
   currentAnalysis,
   onHistoryClick,
   defaultSymbol,
-  defaultPrice,
-  onUpdateChartSymbol
+  defaultPrice
 }: AnalysisFormProps) => {
   const { handleAnalysis } = useAnalysisSubmit({ onAnalysis });
 
@@ -70,9 +68,6 @@ export const AnalysisForm = ({
       )}
       onHistoryClick={onHistoryClick}
       isAnalyzing={isAnalyzing}
-      defaultSymbol={defaultSymbol}
-      defaultPrice={defaultPrice}
-      onUpdateChartSymbol={onUpdateChartSymbol}
     />
   );
 };

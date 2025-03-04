@@ -8,8 +8,6 @@ import { useBackTest } from "./hooks/useBackTest";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
-import { updateTradingViewPriceCache } from "@/services/priceService";
-import { toast } from "sonner";
 
 export const ChartAnalyzer = () => {
   const {
@@ -73,20 +71,12 @@ export const ChartAnalyzer = () => {
   const handleSymbolChange = useCallback((symbol: string) => {
     console.log("Chart symbol changed to:", symbol);
     setAutoSymbol(symbol);
-    toast.info(`تم تغيير الرمز إلى ${symbol}`);
   }, []);
 
   const handlePriceUpdate = useCallback((price: number) => {
     console.log("Chart price updated to:", price);
     setAutoPrice(price);
-    
-    // Update price cache
-    if (autoSymbol && price) {
-      updateTradingViewPriceCache(autoSymbol, price);
-    }
-    
-    // Don't show toast for every price update to avoid overwhelming the user
-  }, [autoSymbol]);
+  }, []);
 
   const handleAnalysisComplete = useCallback((newItem: SearchHistoryItem) => {
     console.log("New analysis completed, adding to history:", newItem);
