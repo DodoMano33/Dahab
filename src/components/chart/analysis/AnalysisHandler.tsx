@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { AnalysisData } from "@/types/analysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
@@ -79,6 +80,11 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
+      toast.loading(`جاري تحليل ${analysisType} للرمز ${upperSymbol} على الإطار الزمني ${timeframe}...`, {
+        id: "analysis-loading",
+        duration: Infinity,
+      });
+      
       console.log("Getting TradingView chart image for:", { 
         symbol: upperSymbol, 
         timeframe, 
@@ -128,17 +134,24 @@ export const useAnalysisHandler = () => {
         setAnalysis(analysisResult);
         setIsAnalyzing(false);
         
-        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`);
+        toast.dismiss("analysis-loading");
+        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`, {
+          description: `${upperSymbol} | السعر: ${providedPrice}`,
+          duration: 5000,
+        });
+        
         return { analysisResult, currentPrice: providedPrice, symbol: upperSymbol };
         
       } catch (chartError) {
         console.error("Error getting chart image or performing analysis:", chartError);
+        toast.dismiss("analysis-loading");
         throw new Error("فشل في الحصول على صورة الشارت أو إجراء التحليل");
       }
       
     } catch (error) {
       console.error("Error in TradingView analysis:", error);
       setIsAnalyzing(false);
+      toast.dismiss("analysis-loading");
       if (error instanceof Error) {
         toast.error(error.message);
       } else {

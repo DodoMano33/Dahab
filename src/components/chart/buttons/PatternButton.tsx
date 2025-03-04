@@ -1,5 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Triangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PatternButtonProps {
   isAnalyzing: boolean;
@@ -8,14 +10,23 @@ interface PatternButtonProps {
 
 export const PatternButton = ({ isAnalyzing, onClick }: PatternButtonProps) => {
   return (
-    <Button
-      type="button"
-      disabled={isAnalyzing}
-      onClick={onClick}
-      className="bg-indigo-600 hover:bg-indigo-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4"
-    >
-      <Triangle className="w-4 h-4" />
-      <span className="whitespace-nowrap">تحليل Patterns</span>
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            disabled={isAnalyzing}
+            onClick={onClick}
+            className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Triangle className="w-4 h-4" />
+            <span className="whitespace-nowrap">تحليل Patterns</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-sm">
+          <p>تحليل الأنماط الفنية المتكررة في الرسم البياني للتنبؤ بالحركات السعرية المستقبلية</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
