@@ -67,8 +67,8 @@ export interface SearchHistoryItem {
   analysis_duration_hours?: number;
   last_checked_price?: number;
   last_checked_at?: Date;
-  result_timestamp?: Date; // إضافة حقل result_timestamp
-  is_success?: boolean;    // إضافة حقل is_success
+  result_timestamp?: Date;
+  is_success?: boolean;
 }
 
 export interface CombinedAnalysisProps {

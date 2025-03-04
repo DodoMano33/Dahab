@@ -39,22 +39,22 @@ export const mapToAnalysisType = (analysisType: string): string => {
     case "ذكي":
     case "Smart":
       return "ذكي";
-    // Add new analysis types mappings
+    // Now return the new analysis types directly
     case "شبكات عصبية متكررة":
     case "RNN":
-      return "شبكات عصبية"; // Map to an existing allowed value
+      return "شبكات عصبية متكررة"; 
     case "تصفيق زمني":
     case "Time Clustering":
-      return "تقلبات"; // Map to an existing allowed value
+      return "تصفيق زمني"; 
     case "تباين متعدد العوامل":
     case "Multi Variance":
-      return "تقلبات"; // Map to an existing allowed value
+      return "تباين متعدد العوامل"; 
     case "شمعات مركبة":
     case "Composite Candlestick":
-      return "نمطي"; // Map to an existing allowed value
+      return "شمعات مركبة"; 
     case "تحليل سلوكي":
     case "Behavioral":
-      return "حركة السعر"; // Map to an existing allowed value
+      return "تحليل سلوكي"; 
     default:
       console.log(`Unknown analysis type: ${analysisType}, defaulting to "يومي"`);
       return "يومي"; // Default to daily analysis if type is unknown
