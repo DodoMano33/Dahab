@@ -10,7 +10,7 @@ export const HistoryTableHeader = ({
   showCheckbox
 }: HistoryTableHeaderProps) => {
   return (
-    <TableHeader className="sticky top-0 bg-background z-10 border-b">
+    <TableHeader className="sticky top-0 bg-background z-10">
       <TableRow>
         {showCheckbox && <TableHead className="w-12"></TableHead>}
         <TableHead>الرمز</TableHead>
