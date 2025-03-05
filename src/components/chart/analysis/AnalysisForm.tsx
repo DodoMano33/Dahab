@@ -46,28 +46,31 @@ export const AnalysisForm = ({
         isBehavioral?: boolean,
         isFibonacci?: boolean,
         duration?: string
-      ) => handleAnalysis(
-        symbol, 
-        timeframe, 
-        providedPrice, 
-        isScalping, 
-        isAI, 
-        isSMC, 
-        isICT, 
-        isTurtleSoup, 
-        isGann, 
-        isWaves, 
-        isPatternAnalysis, 
-        isPriceAction, 
-        isNeuralNetwork,
-        isRNN, 
-        isTimeClustering, 
-        isMultiVariance, 
-        isCompositeCandlestick, 
-        isBehavioral,
-        isFibonacci,
-        duration
-      )}
+      ) => {
+        // Make sure to pass all parameters in the correct order to handleAnalysis
+        return handleAnalysis(
+          symbol, 
+          timeframe, 
+          providedPrice, 
+          isScalping, 
+          isAI, 
+          isSMC, 
+          isICT, 
+          isTurtleSoup, 
+          isGann, 
+          isWaves, 
+          isPatternAnalysis, 
+          isPriceAction, 
+          isNeuralNetwork,
+          isRNN, 
+          isTimeClustering, 
+          isMultiVariance, 
+          isCompositeCandlestick, 
+          isBehavioral,
+          isFibonacci,
+          duration
+        );
+      }}
       onHistoryClick={onHistoryClick}
       isAnalyzing={isAnalyzing}
     />
