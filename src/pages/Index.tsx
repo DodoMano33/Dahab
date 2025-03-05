@@ -1,4 +1,3 @@
-
 import { useState, useEffect, lazy, Suspense, memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -7,7 +6,6 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, HelpCircle } from "lucide-react";
 import { useBackTest } from "@/components/hooks/useBackTest";
-import { NotificationCenter } from "@/components/ui/notifications/NotificationCenter";
 import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
@@ -50,13 +48,12 @@ const Header = memo(({
         )}
         <HelpButton />
         <ModeToggle />
-        {isLoggedIn && <NotificationCenter />}
-        {!isLoggedIn ? (
+        {isLoggedIn ? (
+          <UserProfileMenu />
+        ) : (
           <Button onClick={onLoginClick} size="sm">
             تسجيل الدخول
           </Button>
-        ) : (
-          <UserProfileMenu />
         )}
       </div>
     </div>
