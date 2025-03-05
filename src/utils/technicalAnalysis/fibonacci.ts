@@ -18,10 +18,16 @@ export const calculateFibonacciLevels = (high: number, low: number) => {
     { level: 2.618, price: Number((high + difference * 1.618).toFixed(2)), type: "extension" }
   ];
   
+  // Convert to simple level/price format for compatibility
+  const allLevels = [...retracementLevels, ...extensionLevels].map(level => ({
+    level: level.level,
+    price: level.price
+  }));
+  
   return {
     retracementLevels,
     extensionLevels,
-    allLevels: [...retracementLevels, ...extensionLevels]
+    allLevels
   };
 };
 

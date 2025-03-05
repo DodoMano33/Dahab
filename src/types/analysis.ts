@@ -93,6 +93,13 @@ export interface CombinedAnalysisProps {
     isWaves?: boolean,
     isPatternAnalysis?: boolean,
     isPriceAction?: boolean,
+    isNeuralNetwork?: boolean,
+    isRNN?: boolean,
+    isTimeClustering?: boolean,
+    isMultiVariance?: boolean,
+    isCompositeCandlestick?: boolean,
+    isBehavioral?: boolean,
+    isFibonacci?: boolean,
     duration?: string
   ) => void;
 }

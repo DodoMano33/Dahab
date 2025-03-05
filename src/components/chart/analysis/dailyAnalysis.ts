@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import {
   calculateFibonacciLevels,
@@ -39,7 +40,12 @@ export const analyzeDailyChart = async (
       const direction = detectTrend(prices) as "صاعد" | "هابط";
       const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
       const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
-      const fibLevels = calculateFibonacciLevels(resistance, support);
+      const fibLevelsObj = calculateFibonacciLevels(resistance, support);
+      const fibLevels = fibLevelsObj.allLevels ? fibLevelsObj.allLevels : 
+                         fibLevelsObj.retracementLevels.map(level => ({ 
+                           level: level.level, 
+                           price: level.price 
+                         }));
       const targetPrices = calculateTargets(currentPrice, direction, support, resistance, timeframe);
 
       const bestEntryPoint = calculateBestEntryPoint(

@@ -44,6 +44,7 @@ export const AnalysisForm = ({
         isMultiVariance?: boolean,
         isCompositeCandlestick?: boolean,
         isBehavioral?: boolean,
+        isFibonacci?: boolean,
         duration?: string
       ) => handleAnalysis(
         symbol, 
@@ -64,6 +65,7 @@ export const AnalysisForm = ({
         isMultiVariance, 
         isCompositeCandlestick, 
         isBehavioral,
+        isFibonacci,
         duration
       )}
       onHistoryClick={onHistoryClick}
