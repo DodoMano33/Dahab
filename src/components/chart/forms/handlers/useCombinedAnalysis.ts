@@ -28,6 +28,7 @@ interface CombinedAnalysisProps {
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
     isFibonacci?: boolean,
+    isFibonacciAdvanced?: boolean,
     duration?: string
   ) => void;
 }
@@ -64,7 +65,8 @@ export const useCombinedAnalysis = ({
       isMultiVariance: selectedTypes.includes("multi_variance"),
       isCompositeCandlestick: selectedTypes.includes("composite_candlestick"),
       isBehavioral: selectedTypes.includes("behavioral"),
-      isFibonacci: selectedTypes.includes("fibonacci")
+      isFibonacci: selectedTypes.includes("fibonacci"),
+      isFibonacciAdvanced: selectedTypes.includes("fibonacci_advanced")
     };
 
     onSubmit(
@@ -87,6 +89,7 @@ export const useCombinedAnalysis = ({
       analysisFlags.isCompositeCandlestick,
       analysisFlags.isBehavioral,
       analysisFlags.isFibonacci,
+      analysisFlags.isFibonacciAdvanced,
       duration
     );
   };

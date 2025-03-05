@@ -39,6 +39,12 @@ export const mapToAnalysisType = (analysisType: string): string => {
     case "ذكي":
     case "Smart":
       return "ذكي";
+    case "فيبوناتشي":
+    case "Fibonacci":
+      return "فيبوناتشي";
+    case "تحليل فيبوناتشي متقدم":
+    case "Fibonacci Advanced":
+      return "تحليل فيبوناتشي متقدم";  
     // Now return the new analysis types directly
     case "شبكات عصبية متكررة":
     case "RNN":
@@ -77,6 +83,8 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
     isTimeClustering: analysisType === "Time Clustering" || analysisType === "تصفيق زمني",
     isMultiVariance: analysisType === "Multi Variance" || analysisType === "تباين متعدد العوامل",
     isCompositeCandlestick: analysisType === "Composite Candlestick" || analysisType === "شمعات مركبة",
-    isBehavioral: analysisType === "Behavioral" || analysisType === "تحليل سلوكي"
+    isBehavioral: analysisType === "Behavioral" || analysisType === "تحليل سلوكي",
+    isFibonacci: analysisType === "Fibonacci" || analysisType === "فيبوناتشي",
+    isFibonacciAdvanced: analysisType === "Fibonacci Advanced" || analysisType === "تحليل فيبوناتشي متقدم"
   };
 };

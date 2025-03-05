@@ -32,7 +32,8 @@ export const useAnalysisHandler = () => {
     isMultiVariance: boolean = false,
     isCompositeCandlestick: boolean = false,
     isBehavioral: boolean = false,
-    isFibonacci: boolean = false
+    isFibonacci: boolean = false,
+    isFibonacciAdvanced: boolean = false
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -54,7 +55,8 @@ export const useAnalysisHandler = () => {
         isMultiVariance,
         isCompositeCandlestick,
         isBehavioral,
-        isFibonacci
+        isFibonacci,
+        isFibonacciAdvanced
       });
 
       // Validate inputs
@@ -83,7 +85,8 @@ export const useAnalysisHandler = () => {
         isMultiVariance,
         isCompositeCandlestick,
         isBehavioral,
-        isFibonacci
+        isFibonacci,
+        isFibonacciAdvanced
       );
       
       setCurrentAnalysis(analysisType);

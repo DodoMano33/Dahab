@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -14,6 +15,7 @@ import { analyzeMultiVariance } from "@/components/chart/analysis/multiVarianceA
 import { analyzeCompositeCandlestick } from "@/components/chart/analysis/compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "@/components/chart/analysis/behavioralAnalysis";
 import { analyzeFibonacciChart } from "@/components/chart/analysis/fibonacciAnalysis";
+import { analyzeFibonacciAdvancedChart } from "@/components/chart/analysis/fibonacciAdvancedAnalysis";
 
 const getStrategyName = (type: string): string => {
   switch (type) {
@@ -32,6 +34,7 @@ const getStrategyName = (type: string): string => {
     case "compositeCandlestick": return "Composite Candlestick";
     case "behavioral": return "Behavioral";
     case "fibonacci": return "Fibonacci";
+    case "fibonacciAdvanced": return "Fibonacci Advanced";
     default: return type;
   }
 };
@@ -96,6 +99,9 @@ export const combinedAnalysis = async (
           break;
         case "fibonacci":
           result = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
+          break;
+        case "fibonacciAdvanced":
+          result = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
           break;
       }
       if (result) analysisResults.push(result);

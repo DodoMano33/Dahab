@@ -19,7 +19,8 @@ export type AnalysisTypeValue =
   | "multi_variance"
   | "composite_candlestick"
   | "behavioral"
-  | "fibonacci";
+  | "fibonacci"
+  | "fibonacci_advanced";
 
 interface AnalysisType {
   value: AnalysisTypeValue;
@@ -37,6 +38,7 @@ const analysisTypes: AnalysisType[] = [
   { value: "waves", label: "Waves" },
   { value: "price_action", label: "Price Action" },
   { value: "fibonacci", label: "Fibonacci" },
+  { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
   { value: "neural_networks", label: "شبكات عصبية" },
   { value: "rnn", label: "شبكات عصبية متكررة" },
   { value: "time_clustering", label: "تصفيق زمني" },

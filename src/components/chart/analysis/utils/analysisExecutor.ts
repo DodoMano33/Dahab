@@ -16,6 +16,7 @@ import { analyzeMultiVariance } from "../multiVarianceAnalysis";
 import { analyzeCompositeCandlestick } from "../compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "../behavioralAnalysis";
 import { analyzeFibonacciChart } from "../fibonacciAnalysis";
+import { analyzeFibonacciAdvancedChart } from "../fibonacciAdvancedAnalysis";
 import { mapToAnalysisType } from "./analysisTypeMapper";
 
 interface AnalysisOptions {
@@ -34,6 +35,7 @@ interface AnalysisOptions {
   isCompositeCandlestick?: boolean;
   isBehavioral?: boolean;
   isFibonacci?: boolean;
+  isFibonacciAdvanced?: boolean;
 }
 
 export const executeAnalysis = async (
@@ -57,7 +59,8 @@ export const executeAnalysis = async (
     isMultiVariance = false,
     isCompositeCandlestick = false,
     isBehavioral = false,
-    isFibonacci = false
+    isFibonacci = false,
+    isFibonacciAdvanced = false
   } = options;
 
   let selectedStrategies = [];
@@ -76,6 +79,7 @@ export const executeAnalysis = async (
   if (isCompositeCandlestick) selectedStrategies.push("Composite Candlestick");
   if (isBehavioral) selectedStrategies.push("Behavioral");
   if (isFibonacci) selectedStrategies.push("Fibonacci");
+  if (isFibonacciAdvanced) selectedStrategies.push("Fibonacci Advanced");
 
   let analysis: AnalysisData;
 
@@ -97,6 +101,7 @@ export const executeAnalysis = async (
         case "Composite Candlestick": return analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
         case "Behavioral": return analyzeBehavioral(chartImage, currentPrice, timeframe);
         case "Fibonacci": return analyzeFibonacciChart(chartImage, currentPrice, timeframe);
+        case "Fibonacci Advanced": return analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
@@ -172,6 +177,9 @@ export const executeAnalysis = async (
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
+        break;
+      case "Fibonacci Advanced":
+        analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);

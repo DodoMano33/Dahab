@@ -1,5 +1,4 @@
-
-import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network, BarChart3, Clock, Calculator, LineChart, Divide } from "lucide-react";
+import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network, BarChart3, Clock, Calculator, LineChart, Divide, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
@@ -26,7 +25,8 @@ interface AnalysisButtonGroupProps {
     isMultiVariance?: boolean,
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
-    isFibonacci?: boolean
+    isFibonacci?: boolean,
+    isFibonacciAdvanced?: boolean
   ) => void;
   onHistoryClick: () => void;
   currentAnalysis?: string;
@@ -119,8 +119,8 @@ export const AnalysisButtonGroup = ({
         </div>
       </div>
 
-      {/* Fibonacci Analysis Button */}
-      <div className="grid grid-cols-1 gap-2">
+      {/* Fibonacci Analysis Buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -136,6 +136,25 @@ export const AnalysisButtonGroup = ({
             </TooltipTrigger>
             <TooltipContent className="max-w-sm">
               <p>استراتيجية تعتمد على مستويات فيبوناتشي ريتريسمينت وإكستينشين لتحديد نقاط الدخول والخروج</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Target className="w-4 h-4" />
+                <span className="whitespace-nowrap">تحليل فيبوناتشي متقدم</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>استراتيجية تداول متقدمة تدمج فيبوناتشي مع السيولة المؤسساتية والفوليوم بروفايل وتحليل البنية السوقية</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

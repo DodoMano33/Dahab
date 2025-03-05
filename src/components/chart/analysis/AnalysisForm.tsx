@@ -45,6 +45,7 @@ export const AnalysisForm = ({
         isCompositeCandlestick?: boolean,
         isBehavioral?: boolean,
         isFibonacci?: boolean,
+        isFibonacciAdvanced?: boolean,
         duration?: string
       ) => {
         return handleAnalysis(
@@ -67,6 +68,7 @@ export const AnalysisForm = ({
           isCompositeCandlestick, 
           isBehavioral,
           isFibonacci,
+          isFibonacciAdvanced,
           duration
         );
       }}

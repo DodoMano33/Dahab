@@ -30,6 +30,7 @@ interface ChartAnalysisFormProps {
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
     isFibonacci?: boolean,
+    isFibonacciAdvanced?: boolean,
     duration?: string
   ) => void;
   isAnalyzing: boolean;
@@ -80,7 +81,8 @@ export const ChartAnalysisForm = ({
     isMultiVariance: boolean = false,
     isCompositeCandlestick: boolean = false,
     isBehavioral: boolean = false,
-    isFibonacci: boolean = false
+    isFibonacci: boolean = false,
+    isFibonacciAdvanced: boolean = false
   ) => {
     e.preventDefault();
     
@@ -122,6 +124,7 @@ export const ChartAnalysisForm = ({
       isCompositeCandlestick,
       isBehavioral,
       isFibonacci,
+      isFibonacciAdvanced,
       duration
     );
   };

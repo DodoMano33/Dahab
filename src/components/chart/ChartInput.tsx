@@ -23,6 +23,7 @@ interface ChartInputProps {
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
     isFibonacci?: boolean,
+    isFibonacciAdvanced?: boolean,
     duration?: string
   ) => void;
   onHistoryClick?: () => void;
