@@ -31,13 +31,13 @@ export const detectAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
+  if (isFibonacci) return "فيبوناتشي";
   if (isNeuralNetwork) return "شبكات عصبية";
   if (isRNN) return "شبكات عصبية متكررة";
   if (isTimeClustering) return "تصفيق زمني";
   if (isMultiVariance) return "تباين متعدد العوامل";
   if (isCompositeCandlestick) return "شمعات مركبة";
   if (isBehavioral) return "تحليل سلوكي";
-  if (isFibonacci) return "فيبوناتشي";
   return "عادي";
 };
 

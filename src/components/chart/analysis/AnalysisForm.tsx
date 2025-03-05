@@ -47,7 +47,6 @@ export const AnalysisForm = ({
         isFibonacci?: boolean,
         duration?: string
       ) => {
-        // Make sure to pass all parameters in the correct order to handleAnalysis
         return handleAnalysis(
           symbol, 
           timeframe, 

@@ -31,7 +31,8 @@ export const useAnalysisHandler = () => {
     isTimeClustering: boolean = false,
     isMultiVariance: boolean = false,
     isCompositeCandlestick: boolean = false,
-    isBehavioral: boolean = false
+    isBehavioral: boolean = false,
+    isFibonacci: boolean = false
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -52,7 +53,8 @@ export const useAnalysisHandler = () => {
         isTimeClustering,
         isMultiVariance,
         isCompositeCandlestick,
-        isBehavioral
+        isBehavioral,
+        isFibonacci
       });
 
       // Validate inputs
@@ -80,7 +82,8 @@ export const useAnalysisHandler = () => {
         isTimeClustering,
         isMultiVariance,
         isCompositeCandlestick,
-        isBehavioral
+        isBehavioral,
+        isFibonacci
       );
       
       setCurrentAnalysis(analysisType);

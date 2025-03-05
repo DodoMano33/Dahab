@@ -36,6 +36,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isMultiVariance: boolean = false,
     isCompositeCandlestick: boolean = false,
     isBehavioral: boolean = false,
+    isFibonacci: boolean = false,
     duration?: string
   ) => {
     // Create toast IDs for tracking
@@ -80,7 +81,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isTimeClustering,
         isMultiVariance,
         isCompositeCandlestick,
-        isBehavioral
+        isBehavioral,
+        isFibonacci
       );
 
       const result = await handleTradingViewConfig(
@@ -101,7 +103,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isTimeClustering,
         isMultiVariance,
         isCompositeCandlestick,
-        isBehavioral
+        isBehavioral,
+        isFibonacci
       );
       
       // Dismiss the loading toast
