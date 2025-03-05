@@ -27,7 +27,8 @@ interface AnalysisButtonGroupProps {
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
     isFibonacci?: boolean,
-    isFibonacciAdvanced?: boolean
+    isFibonacciAdvanced?: boolean,
+    selectedTypes?: string[]
   ) => void;
   onHistoryClick: () => void;
   currentAnalysis?: string;
@@ -48,7 +49,8 @@ export const AnalysisButtonGroup = ({
   const handleCombinedAnalysis = (selectedTypes: string[]) => {
     // Handle the combined analysis with selected types
     const event = {} as React.MouseEvent;
-    onSubmit(event, false, true);
+    // Pass selectedTypes to onSubmit
+    onSubmit(event, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, selectedTypes);
   };
 
   return (

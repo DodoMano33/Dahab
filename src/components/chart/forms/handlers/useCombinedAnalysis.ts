@@ -29,7 +29,8 @@ interface CombinedAnalysisProps {
     isBehavioral?: boolean,
     isFibonacci?: boolean,
     isFibonacciAdvanced?: boolean,
-    duration?: string
+    duration?: string,
+    selectedTypes?: string[]
   ) => void;
 }
 
@@ -49,48 +50,30 @@ export const useCombinedAnalysis = ({
     
     console.log("Starting combined analysis with types:", selectedTypes);
     
-    const analysisFlags = {
-      isScalping: selectedTypes.includes("scalping"),
-      isAI: true,
-      isSMC: selectedTypes.includes("smc"),
-      isICT: selectedTypes.includes("ict"),
-      isTurtleSoup: selectedTypes.includes("turtleSoup"),
-      isGann: selectedTypes.includes("gann"),
-      isWaves: selectedTypes.includes("waves"),
-      isPatternAnalysis: selectedTypes.includes("patterns"),
-      isPriceAction: selectedTypes.includes("priceAction"),
-      isNeuralNetwork: selectedTypes.includes("neural_networks"),
-      isRNN: selectedTypes.includes("rnn"),
-      isTimeClustering: selectedTypes.includes("time_clustering"),
-      isMultiVariance: selectedTypes.includes("multi_variance"),
-      isCompositeCandlestick: selectedTypes.includes("composite_candlestick"),
-      isBehavioral: selectedTypes.includes("behavioral"),
-      isFibonacci: selectedTypes.includes("fibonacci"),
-      isFibonacciAdvanced: selectedTypes.includes("fibonacci_advanced")
-    };
-
+    // Only pass selected types, not all boolean flags
     onSubmit(
       symbol || defaultSymbol || "",
       timeframe,
       providedPrice,
-      analysisFlags.isScalping,
-      analysisFlags.isAI,
-      analysisFlags.isSMC,
-      analysisFlags.isICT,
-      analysisFlags.isTurtleSoup,
-      analysisFlags.isGann,
-      analysisFlags.isWaves,
-      analysisFlags.isPatternAnalysis,
-      analysisFlags.isPriceAction,
-      analysisFlags.isNeuralNetwork,
-      analysisFlags.isRNN,
-      analysisFlags.isTimeClustering,
-      analysisFlags.isMultiVariance,
-      analysisFlags.isCompositeCandlestick,
-      analysisFlags.isBehavioral,
-      analysisFlags.isFibonacci,
-      analysisFlags.isFibonacciAdvanced,
-      duration
+      false, // isScalping
+      true,  // isAI
+      false, // isSMC
+      false, // isICT
+      false, // isTurtleSoup
+      false, // isGann
+      false, // isWaves
+      false, // isPatternAnalysis
+      false, // isPriceAction
+      false, // isNeuralNetwork
+      false, // isRNN
+      false, // isTimeClustering
+      false, // isMultiVariance
+      false, // isCompositeCandlestick
+      false, // isBehavioral
+      false, // isFibonacci
+      false, // isFibonacciAdvanced
+      duration,
+      selectedTypes
     );
   };
 

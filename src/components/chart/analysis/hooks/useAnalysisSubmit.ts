@@ -38,7 +38,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     isBehavioral: boolean = false,
     isFibonacci: boolean = false,
     isFibonacciAdvanced: boolean = false,
-    duration?: string
+    duration?: string,
+    selectedTypes?: string[]
   ) => {
     // Create toast IDs for tracking
     const loadingToastId = showLoadingToast(
@@ -107,7 +108,9 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isCompositeCandlestick,
         isBehavioral,
         isFibonacci,
-        isFibonacciAdvanced
+        isFibonacciAdvanced,
+        duration,
+        selectedTypes
       );
       
       // Dismiss the loading toast

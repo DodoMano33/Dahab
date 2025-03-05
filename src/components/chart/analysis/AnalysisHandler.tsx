@@ -34,7 +34,8 @@ export const useAnalysisHandler = () => {
     isBehavioral: boolean = false,
     isFibonacci: boolean = false,
     isFibonacciAdvanced: boolean = false,
-    duration?: string
+    duration?: string,
+    selectedTypes?: string[]
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -58,7 +59,8 @@ export const useAnalysisHandler = () => {
         isBehavioral,
         isFibonacci,
         isFibonacciAdvanced,
-        duration
+        duration,
+        selectedTypes
       });
 
       // Validate inputs
@@ -71,7 +73,7 @@ export const useAnalysisHandler = () => {
       setCurrentSymbol(upperSymbol);
       
       // Build configuration
-      const { selectedTypes, analysisType, options } = buildAnalysisConfig(
+      const { analysisType, options } = buildAnalysisConfig(
         isScalping,
         isAI,
         isSMC,
@@ -99,7 +101,8 @@ export const useAnalysisHandler = () => {
         timeframe,
         providedPrice: providedPrice as number,
         analysisType,
-        selectedTypes,
+        // Use the provided selectedTypes if available, otherwise build them from the flags
+        selectedTypes: selectedTypes || [],
         isAI,
         options,
         duration

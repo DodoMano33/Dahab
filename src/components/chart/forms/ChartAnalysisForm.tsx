@@ -31,7 +31,8 @@ interface ChartAnalysisFormProps {
     isBehavioral?: boolean,
     isFibonacci?: boolean,
     isFibonacciAdvanced?: boolean,
-    duration?: string
+    duration?: string,
+    selectedTypes?: string[]
   ) => void;
   isAnalyzing: boolean;
   onHistoryClick: () => void;
@@ -82,7 +83,8 @@ export const ChartAnalysisForm = ({
     isCompositeCandlestick: boolean = false,
     isBehavioral: boolean = false,
     isFibonacci: boolean = false,
-    isFibonacciAdvanced: boolean = false
+    isFibonacciAdvanced: boolean = false,
+    selectedTypes: string[] = []
   ) => {
     e.preventDefault();
     
@@ -96,6 +98,38 @@ export const ChartAnalysisForm = ({
 
     if (!isValid) return;
 
+    // If this is an AI analysis but no dialog should be shown (because selectedTypes were provided)
+    if (isAI && selectedTypes.length > 0) {
+      console.log("Smart Analysis with pre-selected types:", selectedTypes);
+      const providedPrice = price ? Number(price) : defaultPrice;
+      onSubmit(
+        symbol || defaultSymbol || "",
+        timeframe,
+        providedPrice,
+        isScalping,
+        isAI,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction,
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral,
+        isFibonacci,
+        isFibonacciAdvanced,
+        duration,
+        selectedTypes
+      );
+      return;
+    }
+    
+    // If this is an AI analysis but without pre-selected types, show the dialog
     if (isAI) {
       setIsAIDialogOpen(true);
       return;

@@ -80,7 +80,7 @@ export const processChartAnalysis = async ({
     // Perform the analysis
     let analysisResult: AnalysisData;
     if (isAI && selectedTypes.length > 0) {
-      console.log("Starting AI combined analysis");
+      console.log("Starting AI combined analysis with selected types:", selectedTypes);
       analysisResult = await combinedAnalysis(
         chartImage,
         providedPrice,
