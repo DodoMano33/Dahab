@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { calculateFibonacciLevels, findOptimalFibonacciEntry, calculateFibonacciTargets } from "@/utils/technicalAnalysis/fibonacci";
 import { calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis/calculations";
@@ -140,13 +139,6 @@ export const analyzeFibonacciAdvancedChart = async (
       reason: bestEntryPoint.reason + ` (${wyckoffAnalysis.phase})`
     },
     analysisType: "تحليل فيبوناتشي متقدم",
-    additionalInfo: {
-      wyckoffPhase: wyckoffAnalysis.phase,
-      wyckoffConfidence: wyckoffAnalysis.confidence,
-      institutionalLiquidity: liquidityZones.slice(0, 3).map(z => z.price),
-      fibonacciRetracement: fibLevels.retracementLevels.map(l => `${l.level * 100}%: ${l.price}`),
-      fibonacciExtension: fibLevels.extensionLevels.map(l => `${l.level * 100}%: ${l.price}`)
-    },
     activation_type: "يدوي"
   };
   
