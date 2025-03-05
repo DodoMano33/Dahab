@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
@@ -46,29 +46,10 @@ export const ChartAnalysisForm = ({
   defaultSymbol,
   defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState("");
-  const [price, setPrice] = useState("");
+  const [symbol, setSymbol] = useState(defaultSymbol || "");
+  const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
-
-  // Update the form fields when default values change from TradingView
-  useEffect(() => {
-    if (defaultSymbol) {
-      console.log("Using default symbol from TradingView:", defaultSymbol);
-      if (!symbol || symbol === "") {
-        setSymbol(defaultSymbol);
-      }
-    }
-  }, [defaultSymbol, symbol]);
-
-  useEffect(() => {
-    if (defaultPrice) {
-      console.log("Using default price from TradingView:", defaultPrice);
-      if (!price || price === "") {
-        setPrice(defaultPrice.toString());
-      }
-    }
-  }, [defaultPrice, price]);
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
@@ -101,14 +82,10 @@ export const ChartAnalysisForm = ({
   ) => {
     e.preventDefault();
     
-    // Get the final values for validation
-    const finalSymbol = symbol || defaultSymbol || "";
-    const finalPrice = price || (defaultPrice ? defaultPrice.toString() : "");
-    
     const isValid = validateInputs({
-      symbol: finalSymbol,
+      symbol,
       defaultSymbol,
-      price: finalPrice,
+      price,
       defaultPrice,
       duration
     });
@@ -120,12 +97,11 @@ export const ChartAnalysisForm = ({
       return;
     }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${finalSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
-    console.log(`السعر المستخدم: ${finalPrice}`);
+    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
     
-    const providedPrice = finalPrice ? Number(finalPrice) : defaultPrice;
+    const providedPrice = price ? Number(price) : defaultPrice;
     onSubmit(
-      finalSymbol,
+      symbol || defaultSymbol || "",
       timeframe,
       providedPrice,
       isScalping,
