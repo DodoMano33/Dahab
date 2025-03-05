@@ -47,10 +47,34 @@ export const AnalysisButtonGroup = ({
   };
 
   const handleCombinedAnalysis = (selectedTypes: string[]) => {
-    // Handle the combined analysis with selected types
-    const event = {} as React.MouseEvent;
+    // Create a synthetic mouse event to pass to onSubmit
+    const syntheticEvent = {
+      preventDefault: () => {},
+      stopPropagation: () => {}
+    } as React.MouseEvent;
+    
     // Pass selectedTypes to onSubmit
-    onSubmit(event, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, selectedTypes);
+    onSubmit(
+      syntheticEvent, 
+      false, // isScalping
+      true,  // isAI
+      false, // isSMC
+      false, // isICT
+      false, // isTurtleSoup
+      false, // isGann
+      false, // isWaves
+      false, // isPatternAnalysis
+      false, // isPriceAction
+      false, // isNeuralNetwork
+      false, // isRNN
+      false, // isTimeClustering
+      false, // isMultiVariance
+      false, // isCompositeCandlestick
+      false, // isBehavioral
+      false, // isFibonacci
+      false, // isFibonacciAdvanced
+      selectedTypes
+    );
   };
 
   return (

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface CombinedAnalysisProps {
   symbol: string;
@@ -46,9 +47,24 @@ export const useCombinedAnalysis = ({
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
 
   const handleCombinedAnalysis = (selectedTypes: string[]) => {
+    if (!selectedTypes || selectedTypes.length === 0) {
+      toast.error("يرجى اختيار نوع واحد على الأقل من أنواع التحليل");
+      return;
+    }
+    
     const providedPrice = price ? Number(price) : defaultPrice;
+    if (!providedPrice || isNaN(providedPrice)) {
+      toast.error("يرجى إدخال سعر صحيح");
+      return;
+    }
+    
+    if (!symbol && !defaultSymbol) {
+      toast.error("يرجى إدخال رمز العملة أو السهم");
+      return;
+    }
     
     console.log("Starting combined analysis with types:", selectedTypes);
+    console.log("Symbol:", symbol || defaultSymbol, "Price:", providedPrice, "Timeframe:", timeframe);
     
     // Only pass selected types, not all boolean flags
     onSubmit(

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Brain, Loader2 } from "lucide-react";
 
 interface CombinedAnalysisDialogProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const CombinedAnalysisDialog = ({
   onAnalyze,
 }: CombinedAnalysisDialogProps) => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const analysisTypes = [
     { id: "scalping", label: "Scalping" },
@@ -56,19 +58,32 @@ export const CombinedAnalysisDialog = ({
     if (selectedTypes.length === 0) {
       return;
     }
-    onAnalyze(selectedTypes);
-    onClose();
-    setSelectedTypes([]);
+    setIsSubmitting(true);
+    
+    // Small delay to give visual feedback
+    setTimeout(() => {
+      onAnalyze(selectedTypes);
+      onClose();
+      setIsSubmitting(false);
+      setSelectedTypes([]);
+    }, 300);
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onClose();
+      setSelectedTypes([]);
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {
-      onClose();
-      setSelectedTypes([]);
-    }}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-right">اختر أنواع التحليل</DialogTitle>
+          <DialogTitle className="text-right flex items-center justify-between">
+            <Brain className="w-5 h-5 text-green-600" />
+            <span>اختر أنواع التحليل</span>
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-4">
           <div className="flex items-center space-x-2 space-x-reverse">
@@ -105,10 +120,17 @@ export const CombinedAnalysisDialog = ({
         <div className="mt-4 flex justify-end">
           <Button
             onClick={handleAnalyze}
-            disabled={selectedTypes.length === 0}
+            disabled={selectedTypes.length === 0 || isSubmitting}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            تحليل
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                جاري التحليل...
+              </>
+            ) : (
+              'تحليل'
+            )}
           </Button>
         </div>
       </DialogContent>
