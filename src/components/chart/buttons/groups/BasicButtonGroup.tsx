@@ -22,6 +22,27 @@ export const BasicButtonGroup = ({
 }: BasicButtonGroupProps) => {
   return (
     <>
+      {/* Smart Analysis Button - Now positioned at the top */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              disabled={isAnalyzing}
+              onClick={onSmartAnalysisClick}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Brain className="w-6 h-6" />
+              <span className="whitespace-nowrap text-base font-medium">تحليل ذكي</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-sm">
+            <p>تحليل متقدم يستخدم الذكاء الاصطناعي لدمج مجموعة من أساليب التحليل الفني لتقديم رؤية شاملة</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      
+      {/* Pattern and Scalping buttons moved below */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <PatternButton 
           isAnalyzing={isAnalyzing}
@@ -53,25 +74,6 @@ export const BasicButtonGroup = ({
           نوع التحليل: {currentAnalysis}
         </Badge>
       )}
-
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onSmartAnalysisClick}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Brain className="w-6 h-6" />
-              <span className="whitespace-nowrap text-base font-medium">تحليل ذكي</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>تحليل متقدم يستخدم الذكاء الاصطناعي لدمج مجموعة من أساليب التحليل الفني لتقديم رؤية شاملة</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
     </>
   );
 };
