@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -27,14 +26,14 @@ const getStrategyName = (type: string): string => {
     case "waves": return "Waves";
     case "patterns": return "Patterns";
     case "priceAction": return "Price Action";
-    case "neuralNetworks": return "Neural Networks";
-    case "rnn": return "RNN";
-    case "timeClustering": return "Time Clustering";
-    case "multiVariance": return "Multi Variance";
-    case "compositeCandlestick": return "Composite Candlestick";
-    case "behavioral": return "Behavioral";
-    case "fibonacci": return "Fibonacci";
-    case "fibonacciAdvanced": return "Fibonacci Advanced";
+    case "neural_networks": return "شبكات عصبية";
+    case "rnn": return "شبكات عصبية متكررة";
+    case "time_clustering": return "تصفيق زمني";
+    case "multi_variance": return "تباين متعدد العوامل";
+    case "composite_candlestick": return "شمعات مركبة";
+    case "behavioral": return "تحليل سلوكي";
+    case "fibonacci": return "فيبوناتشي";
+    case "fibonacci_advanced": return "تحليل فيبوناتشي متقدم";
     default: return type;
   }
 };
@@ -79,19 +78,19 @@ export const combinedAnalysis = async (
         case "priceAction":
           result = await analyzePriceAction(chartImage, currentPrice, timeframe);
           break;
-        case "neuralNetworks":
+        case "neural_networks":
           result = await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
           break;
         case "rnn":
           result = await analyzeRNN(chartImage, currentPrice, timeframe);
           break;
-        case "timeClustering":
+        case "time_clustering":
           result = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
           break;
-        case "multiVariance":
+        case "multi_variance":
           result = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
           break;
-        case "compositeCandlestick":
+        case "composite_candlestick":
           result = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
           break;
         case "behavioral":
@@ -100,7 +99,7 @@ export const combinedAnalysis = async (
         case "fibonacci":
           result = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
           break;
-        case "fibonacciAdvanced":
+        case "fibonacci_advanced":
           result = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
           break;
       }

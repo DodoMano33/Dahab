@@ -1,8 +1,8 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckSquare, Square } from "lucide-react";
 
 interface CombinedAnalysisDialogProps {
   isOpen: boolean;
@@ -25,7 +25,15 @@ export const CombinedAnalysisDialog = ({
     { id: "gann", label: "Gann" },
     { id: "waves", label: "Waves" },
     { id: "patterns", label: "Patterns" },
-    { id: "priceAction", label: "Price Action" }
+    { id: "priceAction", label: "Price Action" },
+    { id: "neural_networks", label: "شبكات عصبية" },
+    { id: "rnn", label: "شبكات عصبية متكررة" },
+    { id: "time_clustering", label: "تصفيق زمني" },
+    { id: "multi_variance", label: "تباين متعدد العوامل" },
+    { id: "composite_candlestick", label: "شمعات مركبة" },
+    { id: "behavioral", label: "تحليل سلوكي" },
+    { id: "fibonacci", label: "فيبوناتشي" },
+    { id: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" }
   ];
 
   const handleSelectAll = () => {
@@ -76,7 +84,7 @@ export const CombinedAnalysisDialog = ({
               تحديد الكل
             </label>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-2">
             {analysisTypes.map(type => (
               <div key={type.id} className="flex items-center space-x-2 space-x-reverse">
                 <Checkbox

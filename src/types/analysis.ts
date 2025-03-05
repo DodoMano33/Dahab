@@ -16,7 +16,7 @@ export type AnalysisType =
   | "شمعات مركبة" 
   | "تحليل سلوكي" 
   | "فيبوناتشي"
-  | "تحليل فيبوناتشي متقدم"  // Added the new type here
+  | "تحليل فيبوناتشي متقدم"
   | "عادي"
   | "نمطي"
   | "تقلبات"
@@ -101,6 +101,7 @@ export interface CombinedAnalysisProps {
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
     isFibonacci?: boolean,
+    isFibonacciAdvanced?: boolean,
     duration?: string
   ) => void;
 }
