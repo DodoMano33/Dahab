@@ -1,69 +1,81 @@
-
 /**
  * Maps the analysis type to the corresponding Supabase enum value
  * This is necessary because the Supabase enum has specific values that must match
  */
 export const mapToAnalysisType = (analysisType: string): string => {
+  // اطبع نوع التحليل المرسل للتشخيص
+  console.log("Analysis type before mapping:", analysisType);
+  
   // Make sure to match exactly what's expected in the database
-  switch (analysisType) {
+  switch (analysisType.toLowerCase()) {
     case "نمطي":
-    case "Patterns":
+    case "patterns":
       return "نمطي";
     case "تقلبات":
-    case "Waves":
+    case "waves":
       return "تقلبات";
     case "جان":
-    case "Gann":
+    case "gann":
       return "جان";
     case "الحساء السلحفائي":
-    case "Turtle Soup":
+    case "turtle_soup":
+    case "turtle soup":
       return "الحساء السلحفائي";
     case "نظرية السوق":
-    case "ICT":
+    case "ict":
       return "نظرية السوق";
     case "نظرية هيكل السوق":
-    case "SMC":
+    case "smc":
       return "نظرية هيكل السوق";
-    case "يومي":
-    case "Daily":
-      return "يومي";
     case "مضاربة":
-    case "Scalping":
+    case "scalping":
+    case "سكالبينج":
       return "مضاربة";
     case "حركة السعر":
-    case "Price Action":
+    case "price_action":
+    case "price action":
       return "حركة السعر";
     case "شبكات عصبية":
-    case "Neural Networks":
+    case "neural_networks":
+    case "neural networks":
       return "شبكات عصبية";
     case "ذكي":
-    case "Smart":
+    case "smart":
       return "ذكي";
     case "فيبوناتشي":
-    case "Fibonacci":
+    case "fibonacci":
       return "فيبوناتشي";
     case "تحليل فيبوناتشي متقدم":
-    case "Fibonacci Advanced":
+    case "fibonacci_advanced":
+    case "fibonacci advanced":
       return "تحليل فيبوناتشي متقدم";  
-    // Now return the new analysis types directly
     case "شبكات عصبية متكررة":
-    case "RNN":
+    case "rnn":
       return "شبكات عصبية متكررة"; 
     case "تصفيق زمني":
-    case "Time Clustering":
+    case "time_clustering":
+    case "time clustering":
+    case "time cluster pattern":
       return "تصفيق زمني"; 
     case "تباين متعدد العوامل":
-    case "Multi Variance":
+    case "multi_variance":
+    case "multi variance":
       return "تباين متعدد العوامل"; 
     case "شمعات مركبة":
-    case "Composite Candlestick":
+    case "composite_candlestick":
+    case "composite candlestick":
       return "شمعات مركبة"; 
     case "تحليل سلوكي":
-    case "Behavioral":
+    case "behavioral":
       return "تحليل سلوكي"; 
+    case "يومي":
+    case "daily":
+      return "يومي";
     default:
-      console.log(`Unknown analysis type: ${analysisType}, defaulting to "يومي"`);
-      return "يومي"; // Default to daily analysis if type is unknown
+      // أطبع النوع غير المعروف للتشخيص
+      console.log(`Unknown analysis type: "${analysisType}", original type: ${typeof analysisType}`);
+      // إذا كان النوع غير معروف، نستخدم النوع الأصلي بدلاً من الإرجاع الافتراضي
+      return analysisType || "غير محدد";
   }
 };
 

@@ -14,9 +14,12 @@ export const AnalysisTypeCell = ({
   pattern, 
   activation_type = 'يدوي' 
 }: AnalysisTypeCellProps) => {
+  // تسجيل نوع التحليل للتشخيص
+  console.log(`AnalysisTypeCell: type=${analysisType}, pattern=${pattern}, activation=${activation_type}`);
+  
   // تحديد لون الخلفية بناءً على نوع التحليل
   const getBgColor = () => {
-    const type = analysisType.toLowerCase();
+    const type = analysisType?.toLowerCase() || '';
     
     // Old analysis types
     if (type.includes('smc') || type.includes('نظرية هيكل السوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
@@ -34,7 +37,7 @@ export const AnalysisTypeCell = ({
     // New analysis types
     if (type.includes('شبكات عصبية متكررة') || type.includes('rnn')) return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300';
     if (type.includes('شبكات عصبية') || type.includes('neural')) return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
-    if (type.includes('تصفيق زمني') || type.includes('time clustering')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
+    if (type.includes('تصفيق زمني') || type.includes('time clustering') || type.includes('time cluster')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
     if (type.includes('تباين متعدد العوامل') || type.includes('multi variance')) return 'bg-lime-100 text-lime-800 dark:bg-lime-900/20 dark:text-lime-300';
     if (type.includes('شمعات مركبة') || type.includes('composite')) return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-300';
     if (type.includes('تحليل سلوكي') || type.includes('behavioral')) return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/20 dark:text-fuchsia-300';
@@ -50,7 +53,7 @@ export const AnalysisTypeCell = ({
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={`px-2 py-1 ${getBgColor()} border-0 shadow-sm`}>
-                  {analysisType}
+                  {analysisType || 'غير محدد'}
                 </Badge>
                 {pattern && <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">{pattern}</Badge>}
               </div>

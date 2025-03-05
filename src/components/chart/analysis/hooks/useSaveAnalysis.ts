@@ -27,15 +27,25 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
+      // طباعة نوع التحليل قبل المعالجة
+      console.log("Original analysis type before mapping:", analysisType);
+      
       // Map the analysis type to a valid database enum value
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
+      
+      // تأكد من أن نوع التحليل موجود في النتيجة
+      if (!result.analysisResult.analysisType) {
+        result.analysisResult.analysisType = mappedAnalysisType;
+      }
       
       // Update the analysis result's analysisType to the mapped value
       const analysisResultWithMappedType = {
         ...result.analysisResult,
         analysisType: mappedAnalysisType
       };
+      
+      console.log("Final analysis result with type:", analysisResultWithMappedType);
       
       const savedData = await saveAnalysis({
         userId,

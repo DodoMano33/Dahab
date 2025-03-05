@@ -46,6 +46,9 @@ export const HistoryRow = ({
 }: HistoryRowProps) => {
   const [marketStatus, setMarketStatus] = useState<{isOpen: boolean, serverTime?: string}>({ isOpen: false });
   
+  // طباعة نوع التحليل للتشخيص
+  console.log(`HistoryRow for ${id}: analysisType=${analysisType}, pattern=${analysis.pattern}, activation_type=${analysis.activation_type}`);
+  
   useEffect(() => {
     const checkMarketStatus = async () => {
       try {
