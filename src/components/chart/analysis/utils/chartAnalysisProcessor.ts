@@ -23,6 +23,7 @@ interface ChartAnalysisParams {
     isPriceAction: boolean;
     isNeuralNetwork: boolean;
   };
+  duration?: string;
 }
 
 export const processChartAnalysis = async ({
@@ -32,7 +33,8 @@ export const processChartAnalysis = async ({
   analysisType,
   selectedTypes,
   isAI,
-  options
+  options,
+  duration
 }: ChartAnalysisParams): Promise<{
   analysisResult: AnalysisData;
   currentPrice: number;
@@ -68,7 +70,8 @@ export const processChartAnalysis = async ({
       timeframe, 
       providedPrice,
       analysisType,
-      selectedTypes
+      selectedTypes,
+      duration
     });
 
     const chartImage = await getTradingViewChartImage(symbol, timeframe, providedPrice);

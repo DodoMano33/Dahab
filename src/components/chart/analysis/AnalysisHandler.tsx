@@ -33,7 +33,8 @@ export const useAnalysisHandler = () => {
     isCompositeCandlestick: boolean = false,
     isBehavioral: boolean = false,
     isFibonacci: boolean = false,
-    isFibonacciAdvanced: boolean = false
+    isFibonacciAdvanced: boolean = false,
+    duration?: string
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -56,7 +57,8 @@ export const useAnalysisHandler = () => {
         isCompositeCandlestick,
         isBehavioral,
         isFibonacci,
-        isFibonacciAdvanced
+        isFibonacciAdvanced,
+        duration
       });
 
       // Validate inputs
@@ -99,7 +101,8 @@ export const useAnalysisHandler = () => {
         analysisType,
         selectedTypes,
         isAI,
-        options
+        options,
+        duration
       });
       
       // Store the image and analysis result

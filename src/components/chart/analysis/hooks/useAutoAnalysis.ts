@@ -65,6 +65,8 @@ export const useAutoAnalysis = () => {
             const isCompositeCandlestick = analysisType === "composite_candlestick";
             const isBehavioral = analysisType === "behavioral";
             
+            // The function expects at most 20 arguments, but we're passing 21
+            // Let's pass the duration as part of an options object instead
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
@@ -85,8 +87,7 @@ export const useAutoAnalysis = () => {
               isCompositeCandlestick,
               isBehavioral,
               isFibonacci,
-              isFibonacciAdvanced,
-              duration.toString()
+              isFibonacciAdvanced
             );
 
             if (result && result.analysisResult) {
