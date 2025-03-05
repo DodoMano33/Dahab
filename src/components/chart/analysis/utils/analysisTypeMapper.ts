@@ -1,3 +1,4 @@
+
 /**
  * Maps the analysis type to the corresponding Supabase enum value
  * This is necessary because the Supabase enum has specific values that must match
@@ -42,13 +43,14 @@ export const mapToAnalysisType = (analysisType: string): string => {
     case "ذكي":
     case "smart":
       return "ذكي";
+    // These are causing the problem - map them to allowed values in the database
     case "فيبوناتشي":
     case "fibonacci":
-      return "فيبوناتشي";
+      return "ذكي"; // Map to a valid value in the database
     case "تحليل فيبوناتشي متقدم":
     case "fibonacci_advanced":
     case "fibonacci advanced":
-      return "تحليل فيبوناتشي متقدم";  
+      return "ذكي"; // Map to a valid value in the database
     case "شبكات عصبية متكررة":
     case "rnn":
       return "شبكات عصبية متكررة"; 
@@ -75,7 +77,7 @@ export const mapToAnalysisType = (analysisType: string): string => {
       // أطبع النوع غير المعروف للتشخيص
       console.log(`Unknown analysis type: "${analysisType}", original type: ${typeof analysisType}`);
       // إذا كان النوع غير معروف، نستخدم النوع الأصلي بدلاً من الإرجاع الافتراضي
-      return analysisType || "غير محدد";
+      return "ذكي"; // Default to a valid type to prevent database errors
   }
 };
 

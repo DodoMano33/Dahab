@@ -34,9 +34,16 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
+  // Ensure analysisType is a valid value for the database
+  console.log("Final analysis type being saved to database:", analysisType);
+
   // Set automatic activation type for Fibonacci Advanced Analysis
-  if (analysisType === "تحليل فيبوناتشي متقدم" && !analysisResult.activation_type) {
-    analysisResult.activation_type = "تلقائي";
+  if (!analysisResult.activation_type) {
+    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
+      analysisResult.activation_type = "يدوي";
+    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
+      analysisResult.activation_type = "تلقائي";
+    }
   }
 
   console.log("Inserting analysis data with duration:", durationHours, {

@@ -47,32 +47,45 @@ export const useSaveAnalysis = () => {
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
       
-      const savedData = await saveAnalysis({
-        userId,
-        symbol,
-        currentPrice,
-        analysisResult: analysisResultWithMappedType,
-        analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
-        timeframe,
-        durationHours: duration
-      });
-
-      if (savedData && onAnalysisComplete) {
-        const newHistoryEntry: SearchHistoryItem = {
-          id: savedData.id,
-          date: new Date(),
+      // Add proper error handling for debugging
+      try {
+        const savedData = await saveAnalysis({
+          userId,
           symbol,
           currentPrice,
-          analysis: analysisResultWithMappedType,
-          targetHit: false,
-          stopLossHit: false,
+          analysisResult: analysisResultWithMappedType,
           analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
           timeframe,
-          analysis_duration_hours: duration
-        };
+          durationHours: duration
+        });
+
+        if (savedData && onAnalysisComplete) {
+          const newHistoryEntry: SearchHistoryItem = {
+            id: savedData.id,
+            date: new Date(),
+            symbol,
+            currentPrice,
+            analysis: analysisResultWithMappedType,
+            targetHit: false,
+            stopLossHit: false,
+            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            timeframe,
+            analysis_duration_hours: duration
+          };
+          
+          console.log("Adding new analysis to history:", newHistoryEntry);
+          onAnalysisComplete(newHistoryEntry);
+        }
         
-        console.log("Adding new analysis to history:", newHistoryEntry);
-        onAnalysisComplete(newHistoryEntry);
+        // Show success toast with proper analysis type display
+        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+          duration: 5000,
+        });
+        
+      } catch (dbError) {
+        console.error("Database error saving analysis:", dbError);
+        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
+        throw dbError;
       }
     } catch (error) {
       console.error("Error saving analysis:", error);

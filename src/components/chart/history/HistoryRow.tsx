@@ -1,4 +1,3 @@
-
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -49,6 +48,14 @@ export const HistoryRow = ({
   // طباعة نوع التحليل للتشخيص
   console.log(`HistoryRow for ${id}: analysisType=${analysisType}, pattern=${analysis.pattern}, activation_type=${analysis.activation_type}`);
   
+  // Use the pattern from the analysis data to display the real analysis type
+  // This helps when the database type is mapped but we want to show the original
+  const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
+    ? "فيبوناتشي" 
+    : analysis.pattern === "تحليل فيبوناتشي متقدم" 
+      ? "تحليل فيبوناتشي متقدم" 
+      : analysisType;
+  
   useEffect(() => {
     const checkMarketStatus = async () => {
       try {
@@ -86,7 +93,7 @@ export const HistoryRow = ({
       <TableCell><TimeframeCell timeframe={timeframe} /></TableCell>
       <TableCell>
         <AnalysisTypeCell 
-          analysisType={analysisType} 
+          analysisType={displayAnalysisType} 
           pattern={analysis.pattern}
           activation_type={analysis.activation_type}
         />
