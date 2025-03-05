@@ -49,27 +49,42 @@ export const useAutoAnalysis = () => {
             
             // Map analysis type to boolean flags
             const isFibonacciAdvanced = analysisType === "fibonacci_advanced" || analysisType === "تحليل فيبوناتشي متقدم";
+            const isFibonacci = analysisType === "fibonacci";
+            const isScalping = analysisType === "scalping";
+            const isSMC = analysisType === "smc";
+            const isICT = analysisType === "ict";
+            const isTurtleSoup = analysisType === "turtle_soup";
+            const isGann = analysisType === "gann";
+            const isWaves = analysisType === "waves";
+            const isPatternAnalysis = analysisType === "patterns";
+            const isPriceAction = analysisType === "price_action";
+            const isNeuralNetwork = analysisType === "neural_network";
+            const isRNN = analysisType === "rnn";
+            const isTimeClustering = analysisType === "time_clustering";
+            const isMultiVariance = analysisType === "multi_variance";
+            const isCompositeCandlestick = analysisType === "composite_candlestick";
+            const isBehavioral = analysisType === "behavioral";
             
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
               currentPrice,
-              analysisType === "scalping",
-              false,
-              analysisType === "smc",
-              analysisType === "ict",
-              analysisType === "turtle_soup",
-              analysisType === "gann",
-              analysisType === "waves",
-              analysisType === "patterns",
-              analysisType === "price_action",
-              analysisType === "neural_network",
-              analysisType === "rnn",
-              analysisType === "time_clustering",
-              analysisType === "multi_variance",
-              analysisType === "composite_candlestick",
-              analysisType === "behavioral",
-              analysisType === "fibonacci",
+              isScalping,
+              false, // isAI
+              isSMC,
+              isICT,
+              isTurtleSoup,
+              isGann,
+              isWaves,
+              isPatternAnalysis,
+              isPriceAction,
+              isNeuralNetwork,
+              isRNN,
+              isTimeClustering,
+              isMultiVariance,
+              isCompositeCandlestick,
+              isBehavioral,
+              isFibonacci,
               isFibonacciAdvanced,
               duration.toString()
             );
