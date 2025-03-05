@@ -27,7 +27,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Debounce symbol changes to avoid too many updates
+  // Handle symbol changes to avoid too many updates
   const handleSymbolChange = (newSymbol: string) => {
     console.log("LiveTradingViewChart: Symbol changed to", newSymbol);
     if (newSymbol !== lastSymbol) {
@@ -45,7 +45,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     }
   };
 
-  // Debounce price updates to avoid too many updates
+  // Handle price updates to avoid too many updates
   const handlePriceUpdate = (price: number) => {
     console.log("LiveTradingViewChart: Price updated to", price);
     

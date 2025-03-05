@@ -1,6 +1,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+// Extend the Window interface to include our custom property
+declare global {
+  interface Window {
+    _tvCommunicationSetup?: boolean;
+  }
+}
+
 interface TradingViewWidgetProps {
   symbol?: string;
   onSymbolChange?: (symbol: string) => void;
@@ -108,10 +115,14 @@ function TradingViewWidget({
         try {
           const tradingViewFrame = document.querySelector('iframe[src*="tradingview.com"]');
           if (tradingViewFrame) {
-            // Try to access the current symbol and price
-            tradingViewFrame.contentWindow?.postMessage({
-              name: 'get-current-symbol-and-price'
-            }, '*');
+            // Fix the contentWindow type error by checking if it's an HTMLIFrameElement
+            const frameElement = tradingViewFrame as HTMLIFrameElement;
+            if (frameElement && frameElement.contentWindow) {
+              // Try to access the current symbol and price
+              frameElement.contentWindow.postMessage({
+                name: 'get-current-symbol-and-price'
+              }, '*');
+            }
           }
         } catch (error) {
           console.error('Error extracting data from TradingView:', error);
@@ -146,7 +157,7 @@ function TradingViewWidget({
     }
 
     // Set up event listeners and communication
-    let extractInterval: number | null = null;
+    let extractInterval: ReturnType<typeof setInterval> | null = null;
     const readyHandler = () => {
       extractInterval = setupTradingViewCommunication();
     };
