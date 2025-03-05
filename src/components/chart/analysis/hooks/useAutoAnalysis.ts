@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -46,6 +47,9 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
+            // Map analysis type to boolean flags
+            const isFibonacciAdvanced = analysisType === "fibonacci_advanced" || analysisType === "تحليل فيبوناتشي متقدم";
+            
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
@@ -58,7 +62,16 @@ export const useAutoAnalysis = () => {
               analysisType === "gann",
               analysisType === "waves",
               analysisType === "patterns",
-              analysisType === "price_action"
+              analysisType === "price_action",
+              analysisType === "neural_network",
+              analysisType === "rnn",
+              analysisType === "time_clustering",
+              analysisType === "multi_variance",
+              analysisType === "composite_candlestick",
+              analysisType === "behavioral",
+              analysisType === "fibonacci",
+              isFibonacciAdvanced,
+              duration.toString()
             );
 
             if (result && result.analysisResult) {

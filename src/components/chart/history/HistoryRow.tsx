@@ -85,6 +85,7 @@ export const HistoryRow = ({
         <AnalysisTypeCell 
           analysisType={analysisType} 
           pattern={analysis.pattern}
+          activation_type={analysis.activation_type}
         />
       </TableCell>
       <TableCell>{currentPrice}</TableCell>

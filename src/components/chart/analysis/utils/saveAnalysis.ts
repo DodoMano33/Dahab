@@ -34,6 +34,11 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
+  // Set automatic activation type for Fibonacci Advanced Analysis
+  if (analysisType === "تحليل فيبوناتشي متقدم" && !analysisResult.activation_type) {
+    analysisResult.activation_type = "تلقائي";
+  }
+
   console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,
