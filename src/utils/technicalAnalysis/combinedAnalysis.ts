@@ -13,6 +13,7 @@ import { analyzeTimeClustering } from "@/components/chart/analysis/timeClusterin
 import { analyzeMultiVariance } from "@/components/chart/analysis/multiVarianceAnalysis";
 import { analyzeCompositeCandlestick } from "@/components/chart/analysis/compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "@/components/chart/analysis/behavioralAnalysis";
+import { analyzeFibonacciChart } from "@/components/chart/analysis/fibonacciAnalysis";
 
 const getStrategyName = (type: string): string => {
   switch (type) {
@@ -30,6 +31,7 @@ const getStrategyName = (type: string): string => {
     case "multiVariance": return "Multi Variance";
     case "compositeCandlestick": return "Composite Candlestick";
     case "behavioral": return "Behavioral";
+    case "fibonacci": return "Fibonacci";
     default: return type;
   }
 };
@@ -91,6 +93,9 @@ export const combinedAnalysis = async (
           break;
         case "behavioral":
           result = await analyzeBehavioral(chartImage, currentPrice, timeframe);
+          break;
+        case "fibonacci":
+          result = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
           break;
       }
       if (result) analysisResults.push(result);

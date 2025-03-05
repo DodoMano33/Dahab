@@ -22,9 +22,10 @@ interface ChartInputProps {
     isMultiVariance?: boolean,
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
+    isFibonacci?: boolean,
     duration?: string
   ) => void;
-  onHistoryClick?: () => void;  // Made optional with ?
+  onHistoryClick?: () => void;
   isAnalyzing: boolean;
 }
 

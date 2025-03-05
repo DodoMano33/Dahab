@@ -18,7 +18,8 @@ export type AnalysisTypeValue =
   | "time_clustering"
   | "multi_variance"
   | "composite_candlestick"
-  | "behavioral";
+  | "behavioral"
+  | "fibonacci";
 
 interface AnalysisType {
   value: AnalysisTypeValue;
@@ -35,6 +36,7 @@ const analysisTypes: AnalysisType[] = [
   { value: "turtle_soup", label: "Turtle Soup" },
   { value: "waves", label: "Waves" },
   { value: "price_action", label: "Price Action" },
+  { value: "fibonacci", label: "Fibonacci" },
   { value: "neural_networks", label: "شبكات عصبية" },
   { value: "rnn", label: "شبكات عصبية متكررة" },
   { value: "time_clustering", label: "تصفيق زمني" },

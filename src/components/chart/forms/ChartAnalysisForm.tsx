@@ -29,6 +29,7 @@ interface ChartAnalysisFormProps {
     isMultiVariance?: boolean,
     isCompositeCandlestick?: boolean,
     isBehavioral?: boolean,
+    isFibonacci?: boolean,
     duration?: string
   ) => void;
   isAnalyzing: boolean;
@@ -78,7 +79,8 @@ export const ChartAnalysisForm = ({
     isTimeClustering: boolean = false,
     isMultiVariance: boolean = false,
     isCompositeCandlestick: boolean = false,
-    isBehavioral: boolean = false
+    isBehavioral: boolean = false,
+    isFibonacci: boolean = false
   ) => {
     e.preventDefault();
     
@@ -119,6 +121,7 @@ export const ChartAnalysisForm = ({
       isMultiVariance,
       isCompositeCandlestick,
       isBehavioral,
+      isFibonacci,
       duration
     );
   };

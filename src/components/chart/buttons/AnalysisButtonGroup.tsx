@@ -1,5 +1,4 @@
-
-import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network, BarChart3, Clock, Calculator, LineChart } from "lucide-react";
+import { Brain, ChartLine, TrendingUp, Building2, Turtle, Activity, Waves, CandlestickChart, Network, BarChart3, Clock, Calculator, LineChart, Divide } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternButton } from "./PatternButton";
 import { TechnicalButtons } from "./TechnicalButtons";
@@ -25,7 +24,8 @@ interface AnalysisButtonGroupProps {
     isTimeClustering?: boolean,
     isMultiVariance?: boolean,
     isCompositeCandlestick?: boolean,
-    isBehavioral?: boolean
+    isBehavioral?: boolean,
+    isFibonacci?: boolean
   ) => void;
   onHistoryClick: () => void;
   currentAnalysis?: string;
@@ -117,6 +117,28 @@ export const AnalysisButtonGroup = ({
         </div>
       </div>
 
+      {/* Fibonacci Analysis Button */}
+      <div className="grid grid-cols-1 gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+                className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Divide className="w-4 h-4" />
+                <span className="whitespace-nowrap">تحليل فيبوناتشي</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>استراتيجية تعتمد على مستويات فيبوناتشي ريتريسمينت وإكستينشين لتحديد نقاط الدخول والخروج</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
       {/* Advanced Analysis Buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <TooltipProvider>
@@ -165,7 +187,7 @@ export const AnalysisButtonGroup = ({
               <Button
                 type="button"
                 disabled={isAnalyzing}
-                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, true)}
+                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
                 className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Clock className="w-4 h-4" />
@@ -184,7 +206,7 @@ export const AnalysisButtonGroup = ({
               <Button
                 type="button"
                 disabled={isAnalyzing}
-                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Calculator className="w-4 h-4" />
@@ -205,7 +227,7 @@ export const AnalysisButtonGroup = ({
               <Button
                 type="button"
                 disabled={isAnalyzing}
-                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
                 className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <CandlestickChart className="w-4 h-4" />
@@ -224,7 +246,7 @@ export const AnalysisButtonGroup = ({
               <Button
                 type="button"
                 disabled={isAnalyzing}
-                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+                onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
                 className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <BarChart3 className="w-4 h-4" />

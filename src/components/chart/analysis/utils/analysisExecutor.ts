@@ -15,6 +15,7 @@ import { analyzeTimeClustering } from "../timeClusteringAnalysis";
 import { analyzeMultiVariance } from "../multiVarianceAnalysis";
 import { analyzeCompositeCandlestick } from "../compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "../behavioralAnalysis";
+import { analyzeFibonacciChart } from "../fibonacciAnalysis";
 import { mapToAnalysisType } from "./analysisTypeMapper";
 
 interface AnalysisOptions {
@@ -32,6 +33,7 @@ interface AnalysisOptions {
   isMultiVariance?: boolean;
   isCompositeCandlestick?: boolean;
   isBehavioral?: boolean;
+  isFibonacci?: boolean;
 }
 
 export const executeAnalysis = async (
@@ -54,7 +56,8 @@ export const executeAnalysis = async (
     isTimeClustering = false,
     isMultiVariance = false,
     isCompositeCandlestick = false,
-    isBehavioral = false
+    isBehavioral = false,
+    isFibonacci = false
   } = options;
 
   let selectedStrategies = [];
@@ -72,6 +75,7 @@ export const executeAnalysis = async (
   if (isMultiVariance) selectedStrategies.push("Multi Variance");
   if (isCompositeCandlestick) selectedStrategies.push("Composite Candlestick");
   if (isBehavioral) selectedStrategies.push("Behavioral");
+  if (isFibonacci) selectedStrategies.push("Fibonacci");
 
   let analysis: AnalysisData;
 
@@ -92,6 +96,7 @@ export const executeAnalysis = async (
         case "Multi Variance": return analyzeMultiVariance(chartImage, currentPrice, timeframe);
         case "Composite Candlestick": return analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
         case "Behavioral": return analyzeBehavioral(chartImage, currentPrice, timeframe);
+        case "Fibonacci": return analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
@@ -164,6 +169,9 @@ export const executeAnalysis = async (
         if (analysis) {
           analysis.analysisType = "حركة السعر" as AnalysisType;
         }
+        break;
+      case "Fibonacci":
+        analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);

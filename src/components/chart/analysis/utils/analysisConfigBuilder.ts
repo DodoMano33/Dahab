@@ -19,7 +19,8 @@ export const detectAnalysisType = (
   isTimeClustering: boolean = false,
   isMultiVariance: boolean = false,
   isCompositeCandlestick: boolean = false,
-  isBehavioral: boolean = false
+  isBehavioral: boolean = false,
+  isFibonacci: boolean = false
 ): AnalysisType => {
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
@@ -36,6 +37,7 @@ export const detectAnalysisType = (
   if (isMultiVariance) return "تباين متعدد العوامل";
   if (isCompositeCandlestick) return "شمعات مركبة";
   if (isBehavioral) return "تحليل سلوكي";
+  if (isFibonacci) return "فيبوناتشي";
   return "عادي";
 };
 
@@ -57,7 +59,8 @@ export const buildAnalysisConfig = (
   isTimeClustering: boolean = false,
   isMultiVariance: boolean = false,
   isCompositeCandlestick: boolean = false,
-  isBehavioral: boolean = false
+  isBehavioral: boolean = false,
+  isFibonacci: boolean = false
 ) => {
   const selectedTypes: string[] = [];
   
@@ -75,6 +78,7 @@ export const buildAnalysisConfig = (
   if (isMultiVariance) selectedTypes.push("multiVariance");
   if (isCompositeCandlestick) selectedTypes.push("compositeCandlestick");
   if (isBehavioral) selectedTypes.push("behavioral");
+  if (isFibonacci) selectedTypes.push("fibonacci");
   
   const analysisType: AnalysisType = isAI ? "ذكي" : detectAnalysisType(
     isPatternAnalysis,
@@ -91,7 +95,8 @@ export const buildAnalysisConfig = (
     isTimeClustering,
     isMultiVariance,
     isCompositeCandlestick,
-    isBehavioral
+    isBehavioral,
+    isFibonacci
   );
 
   return { 
@@ -111,7 +116,8 @@ export const buildAnalysisConfig = (
       isTimeClustering,
       isMultiVariance,
       isCompositeCandlestick,
-      isBehavioral
+      isBehavioral,
+      isFibonacci
     }
   };
 };
