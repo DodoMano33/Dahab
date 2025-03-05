@@ -9,18 +9,23 @@ interface PriceInputProps {
 }
 
 export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) => {
-  const [inputValue, setInputValue] = useState(value);
+  const [inputValue, setInputValue] = useState(value || defaultValue || "");
 
   // Update input value when default value changes
   useEffect(() => {
-    if (defaultValue && !value) {
+    if (defaultValue && (!value || value === "")) {
+      console.log("PriceInput: Using default value:", defaultValue);
       setInputValue(defaultValue);
+      onChange(defaultValue); // Update parent component with default value
     }
-  }, [defaultValue, value]);
+  }, [defaultValue, onChange]);
 
   // Update input value when value prop changes
   useEffect(() => {
-    setInputValue(value);
+    if (value && value !== inputValue) {
+      console.log("PriceInput: Value prop changed to:", value);
+      setInputValue(value);
+    }
   }, [value]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +49,7 @@ export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) =
         className="w-full"
         dir="ltr"
       />
-      {defaultValue && !value && (
+      {defaultValue && (!value || value === "") && (
         <p className="text-sm text-gray-500 mt-1">
           سيتم استخدام السعر <span className="font-medium">{defaultValue}</span> من الشارت
         </p>

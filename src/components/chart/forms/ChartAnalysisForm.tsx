@@ -55,14 +55,20 @@ export const ChartAnalysisForm = ({
   useEffect(() => {
     if (defaultSymbol) {
       console.log("Using default symbol from TradingView:", defaultSymbol);
+      if (!symbol || symbol === "") {
+        setSymbol(defaultSymbol);
+      }
     }
-  }, [defaultSymbol]);
+  }, [defaultSymbol, symbol]);
 
   useEffect(() => {
     if (defaultPrice) {
       console.log("Using default price from TradingView:", defaultPrice);
+      if (!price || price === "") {
+        setPrice(defaultPrice.toString());
+      }
     }
-  }, [defaultPrice]);
+  }, [defaultPrice, price]);
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
@@ -95,10 +101,14 @@ export const ChartAnalysisForm = ({
   ) => {
     e.preventDefault();
     
+    // Get the final values for validation
+    const finalSymbol = symbol || defaultSymbol || "";
+    const finalPrice = price || (defaultPrice ? defaultPrice.toString() : "");
+    
     const isValid = validateInputs({
-      symbol,
+      symbol: finalSymbol,
       defaultSymbol,
-      price,
+      price: finalPrice,
       defaultPrice,
       duration
     });
@@ -110,12 +120,12 @@ export const ChartAnalysisForm = ({
       return;
     }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
-    console.log(`السعر المستخدم: ${price || (defaultPrice ? defaultPrice.toString() : "غير محدد")}`);
+    console.log(`تحليل ${currentAnalysis} للرمز ${finalSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
+    console.log(`السعر المستخدم: ${finalPrice}`);
     
-    const providedPrice = price ? Number(price) : defaultPrice;
+    const providedPrice = finalPrice ? Number(finalPrice) : defaultPrice;
     onSubmit(
-      symbol || defaultSymbol || "",
+      finalSymbol,
       timeframe,
       providedPrice,
       isScalping,

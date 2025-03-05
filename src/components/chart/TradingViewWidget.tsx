@@ -16,6 +16,7 @@ function TradingViewWidget({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("TradingViewWidget: Initializing with symbol", symbol);
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
@@ -61,92 +62,166 @@ function TradingViewWidget({
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
 
-    // Custom script to communicate with TradingView
+    // Setup communication with TradingView
+    const setupTradingViewCommunication = () => {
+      // This will run once the TradingView widget is fully loaded
+      window._tvCommunicationSetup = true;
+      
+      // Listen for symbol change events from the widget iframe
+      window.addEventListener('message', (event) => {
+        try {
+          if (typeof event.data === 'string') {
+            try {
+              const data = JSON.parse(event.data);
+              if (data && data.name === 'tv-symbol-change') {
+                console.log('TradingView symbol changed to:', data.symbol);
+                onSymbolChange?.(data.symbol);
+              }
+              if (data && data.name === 'tv-price-update') {
+                console.log('TradingView price updated to:', data.price);
+                if (typeof data.price === 'number' && !isNaN(data.price)) {
+                  onPriceUpdate?.(data.price);
+                }
+              }
+            } catch (err) {
+              // Not JSON data or other parsing error
+            }
+          } else if (event.data && typeof event.data === 'object') {
+            if (event.data.name === 'tv-symbol-change') {
+              console.log('Symbol changed via object message:', event.data.symbol);
+              onSymbolChange?.(event.data.symbol);
+            }
+            if (event.data.name === 'tv-price-update') {
+              console.log('Price updated via object message:', event.data.price);
+              if (typeof event.data.price === 'number' && !isNaN(event.data.price)) {
+                onPriceUpdate?.(event.data.price);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error handling TradingView message:', error);
+        }
+      });
+      
+      // Extract current price and symbol from TradingView periodically
+      const extractInterval = setInterval(() => {
+        try {
+          const tradingViewFrame = document.querySelector('iframe[src*="tradingview.com"]');
+          if (tradingViewFrame) {
+            // Try to access the current symbol and price
+            tradingViewFrame.contentWindow?.postMessage({
+              name: 'get-current-symbol-and-price'
+            }, '*');
+          }
+        } catch (error) {
+          console.error('Error extracting data from TradingView:', error);
+        }
+      }, 1000);
+
+      return extractInterval;
+    };
+
+    // Add the custom script to communicate with TradingView
     const customScript = document.createElement('script');
     customScript.type = 'text/javascript';
     customScript.innerHTML = `
+      window._tvCommunicationSetup = false;
       document.addEventListener('DOMContentLoaded', function() {
-        const handleSymbolChange = function(e) {
-          if (e.data && e.data.name === 'tv-symbol-change') {
-            window.dispatchEvent(new CustomEvent('tvSymbolChange', { detail: e.data.symbol }));
-          }
-        };
-        
-        const handlePriceUpdate = function(e) {
-          if (e.data && e.data.name === 'tv-price-update') {
-            window.dispatchEvent(new CustomEvent('tvPriceUpdate', { detail: e.data.price }));
-          }
-        };
-        
-        window.addEventListener('message', handleSymbolChange);
-        window.addEventListener('message', handlePriceUpdate);
+        if (!window._tvCommunicationSetup) {
+          window.dispatchEvent(new CustomEvent('tradingViewReady'));
+        }
       });
     `;
-    
     document.head.appendChild(customScript);
 
     // Clear existing content and append new widget
     if (container.current) {
       container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
-      setIsLoading(false);
+      
+      // Wait for widget to load
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
     }
 
-    // Add event listeners for symbol and price updates
-    const handleTVSymbolChange = (event: CustomEvent) => {
-      const newSymbol = event.detail;
-      console.log('Symbol changed to:', newSymbol);
-      if (onSymbolChange && typeof newSymbol === 'string') {
-        onSymbolChange(newSymbol);
-      }
+    // Set up event listeners and communication
+    let extractInterval: number | null = null;
+    const readyHandler = () => {
+      extractInterval = setupTradingViewCommunication();
     };
     
-    const handleTVPriceUpdate = (event: CustomEvent) => {
-      const price = event.detail;
-      console.log('Price updated to:', price);
-      if (onPriceUpdate && typeof price === 'number') {
-        onPriceUpdate(price);
-      }
-    };
+    window.addEventListener('tradingViewReady', readyHandler);
+    
+    // Manually trigger ready event if TradingView is already loaded
+    if (document.querySelector('iframe[src*="tradingview.com"]')) {
+      window.dispatchEvent(new CustomEvent('tradingViewReady'));
+    }
 
-    // Use window level events to handle widget communication
-    window.addEventListener('tvSymbolChange', handleTVSymbolChange as EventListener);
-    window.addEventListener('tvPriceUpdate', handleTVPriceUpdate as EventListener);
-
-    // Also track direct messages from TradingView iframe
-    const handleDirectMessage = (event: MessageEvent) => {
-      try {
-        if (event.data && typeof event.data === 'object') {
-          if (event.data.name === 'symbol-change' || event.data.name === 'tv-symbol-change') {
-            console.log('Symbol changed via direct message:', event.data.symbol);
-            onSymbolChange?.(event.data.symbol);
-          }
-          if (event.data.name === 'price-update' || event.data.name === 'tv-price-update') {
-            console.log('Price updated via direct message:', event.data.price);
-            onPriceUpdate?.(parseFloat(event.data.price));
-          }
-        }
-      } catch (error) {
-        console.error('Error handling TradingView message:', error);
-      }
-    };
-
-    window.addEventListener('message', handleDirectMessage);
-
+    // Cleanup function
     return () => {
-      window.removeEventListener('tvSymbolChange', handleTVSymbolChange as EventListener);
-      window.removeEventListener('tvPriceUpdate', handleTVPriceUpdate as EventListener);
-      window.removeEventListener('message', handleDirectMessage);
+      window.removeEventListener('tradingViewReady', readyHandler);
+      if (extractInterval) clearInterval(extractInterval);
       
       if (document.head.contains(customScript)) {
         document.head.removeChild(customScript);
       }
+      
+      // Cleanup any leftover event listeners to prevent memory leaks
+      window.removeEventListener('message', () => {});
       
       if (container.current) {
         container.current.innerHTML = '';
       }
     };
   }, [symbol, onSymbolChange, onPriceUpdate]);
+
+  // Inject a periodic price updater
+  useEffect(() => {
+    // After widget is loaded, periodically get the current price
+    if (!isLoading) {
+      const priceUpdateInterval = setInterval(() => {
+        try {
+          // Find the price display element in the TradingView chart
+          const priceElements = document.querySelectorAll('.chart-markup-table.pane');
+          if (priceElements.length > 0) {
+            const priceText = priceElements[0].textContent;
+            if (priceText) {
+              // Extract numeric price from text
+              const priceMatch = priceText.match(/\d+\.\d+/);
+              if (priceMatch && priceMatch[0]) {
+                const price = parseFloat(priceMatch[0]);
+                if (!isNaN(price) && onPriceUpdate) {
+                  console.log('Extracted current price:', price);
+                  onPriceUpdate(price);
+                }
+              }
+            }
+          }
+          
+          // Alternative method: check the last price from the status line
+          const statusLine = document.querySelector('.status-line');
+          if (statusLine) {
+            const statusText = statusLine.textContent;
+            if (statusText) {
+              const priceMatch = statusText.match(/\d+\.\d+/);
+              if (priceMatch && priceMatch[0]) {
+                const price = parseFloat(priceMatch[0]);
+                if (!isNaN(price) && onPriceUpdate) {
+                  console.log('Extracted price from status:', price);
+                  onPriceUpdate(price);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error in price extraction:', error);
+        }
+      }, 3000);
+      
+      return () => clearInterval(priceUpdateInterval);
+    }
+  }, [isLoading, onPriceUpdate]);
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
