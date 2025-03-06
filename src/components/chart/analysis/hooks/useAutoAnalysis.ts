@@ -2,11 +2,12 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { SearchHistoryItem } from "@/types/analysis";
+import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
 import { useAnalysisHandler } from "../AnalysisHandler";
 import { validateAnalysisInputs } from "../utils/analysisValidation";
 import { getIntervalInMs } from "../utils/intervalUtils";
 import { useSaveAnalysis } from "./useSaveAnalysis";
+import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -47,62 +48,76 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
-            // Map analysis type to boolean flags
+            // Map the analysis type string to boolean flags 
             const isFibonacciAdvanced = analysisType === "fibonacci_advanced" || analysisType === "تحليل فيبوناتشي متقدم";
-            const isFibonacci = analysisType === "fibonacci";
-            const isScalping = analysisType === "scalping";
-            const isSMC = analysisType === "smc";
-            const isICT = analysisType === "ict";
-            const isTurtleSoup = analysisType === "turtle_soup";
-            const isGann = analysisType === "gann";
-            const isWaves = analysisType === "waves";
-            const isPatternAnalysis = analysisType === "patterns";
-            const isPriceAction = analysisType === "price_action";
-            const isNeuralNetwork = analysisType === "neural_network";
-            const isRNN = analysisType === "rnn";
-            const isTimeClustering = analysisType === "time_clustering";
-            const isMultiVariance = analysisType === "multi_variance";
-            const isCompositeCandlestick = analysisType === "composite_candlestick";
-            const isBehavioral = analysisType === "behavioral";
+            const isFibonacci = analysisType === "fibonacci" || analysisType === "فيبوناتشي";
+            const isScalping = analysisType === "scalping" || analysisType === "سكالبينج";
+            const isSMC = analysisType === "smc" || analysisType === "نظرية هيكل السوق";
+            const isICT = analysisType === "ict" || analysisType === "نظرية السوق";
+            const isTurtleSoup = analysisType === "turtle_soup" || analysisType === "الحساء السلحفائي";
+            const isGann = analysisType === "gann" || analysisType === "جان";
+            const isWaves = analysisType === "waves" || analysisType === "تقلبات";
+            const isPatternAnalysis = analysisType === "patterns" || analysisType === "نمطي";
+            const isPriceAction = analysisType === "price_action" || analysisType === "حركة السعر";
+            const isNeuralNetwork = analysisType === "neural_network" || analysisType === "شبكات عصبية";
+            const isRNN = analysisType === "rnn" || analysisType === "شبكات عصبية متكررة";
+            const isTimeClustering = analysisType === "time_clustering" || analysisType === "تصفيق زمني";
+            const isMultiVariance = analysisType === "multi_variance" || analysisType === "تباين متعدد العوامل";
+            const isCompositeCandlestick = analysisType === "composite_candlestick" || analysisType === "شمعات مركبة";
+            const isBehavioral = analysisType === "behavioral" || analysisType === "تحليل سلوكي";
             
-            // The function expects at most 20 arguments, but we're passing 21
-            // Let's pass the duration as part of an options object instead
-            const result = await handleTradingViewConfig(
-              symbol,
-              timeframe,
-              currentPrice,
-              isScalping,
-              false, // isAI
-              isSMC,
-              isICT,
-              isTurtleSoup,
-              isGann,
-              isWaves,
-              isPatternAnalysis,
-              isPriceAction,
-              isNeuralNetwork,
-              isRNN,
-              isTimeClustering,
-              isMultiVariance,
-              isCompositeCandlestick,
-              isBehavioral,
-              isFibonacci,
-              isFibonacciAdvanced
-            );
-
-            if (result && result.analysisResult) {
-              console.log("Analysis completed successfully:", result);
-              
-              await saveAnalysisResult({
-                userId: user.id,
+            console.log("Analysis flags:", {
+              isFibonacciAdvanced, isFibonacci, isScalping, isSMC, isICT, isTurtleSoup, isGann, isWaves,
+              isPatternAnalysis, isPriceAction, isNeuralNetwork, isRNN, isTimeClustering, isMultiVariance,
+              isCompositeCandlestick, isBehavioral
+            });
+            
+            try {
+              const result = await handleTradingViewConfig(
                 symbol,
-                currentPrice,
-                result,
-                analysisType,
                 timeframe,
-                duration,
-                onAnalysisComplete
-              });
+                currentPrice,
+                isScalping,
+                false, // isAI
+                isSMC,
+                isICT,
+                isTurtleSoup,
+                isGann,
+                isWaves,
+                isPatternAnalysis,
+                isPriceAction,
+                isNeuralNetwork,
+                isRNN,
+                isTimeClustering,
+                isMultiVariance,
+                isCompositeCandlestick,
+                isBehavioral,
+                isFibonacci,
+                isFibonacciAdvanced
+              );
+
+              if (result && result.analysisResult) {
+                console.log("Analysis completed successfully:", result);
+                
+                // Map the analysis type to correct DB format
+                const mappedAnalysisType = mapToAnalysisType(analysisType);
+                console.log("Mapped analysis type for saving:", mappedAnalysisType);
+                
+                await saveAnalysisResult({
+                  userId: user.id,
+                  symbol,
+                  currentPrice,
+                  result,
+                  analysisType: mappedAnalysisType,
+                  timeframe,
+                  duration,
+                  onAnalysisComplete
+                });
+              }
+            } catch (analysisError) {
+              console.error(`Error in ${analysisType} analysis:`, analysisError);
+              toast.error(`حدث خطأ أثناء إجراء تحليل ${analysisType}`);
+              // Continue with other analyses even if one fails
             }
           }
         }
@@ -117,6 +132,8 @@ export const useAutoAnalysis = () => {
     if (repetitions > 1) {
       const intervalId = setInterval(runAnalysis, getIntervalInMs(interval));
       setAnalysisInterval(intervalId);
+    } else {
+      setIsAnalyzing(false);
     }
   };
 

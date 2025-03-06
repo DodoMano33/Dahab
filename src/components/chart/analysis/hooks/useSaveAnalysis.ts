@@ -47,7 +47,6 @@ export const useSaveAnalysis = () => {
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
       
-      // Add proper error handling for debugging
       try {
         const savedData = await saveAnalysis({
           userId,

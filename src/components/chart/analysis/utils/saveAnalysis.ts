@@ -37,43 +37,38 @@ export const saveAnalysis = async ({
   // Ensure analysisType is a valid value for the database
   console.log("Final analysis type being saved to database:", analysisType);
 
-  // Set automatic activation type for Fibonacci Advanced Analysis
-  if (!analysisResult.activation_type) {
-    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
-      analysisResult.activation_type = "يدوي";
-    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
-      analysisResult.activation_type = "تلقائي";
-    }
-  }
-
-  console.log("Inserting analysis data with duration:", durationHours, {
+  // Process activation_type
+  const activation_type = analysisResult.activation_type || "تلقائي";
+  
+  // Prepare data for insertion
+  const insertData = {
     user_id: userId,
     symbol,
     current_price: currentPrice,
     analysis: analysisResult,
     analysis_type: analysisType,
     timeframe,
-    analysis_duration_hours: durationHours
-  });
+    analysis_duration_hours: durationHours,
+    activation_type
+  };
+  
+  console.log("Inserting analysis data with duration:", durationHours, insertData);
 
-  const { data, error } = await supabase
-    .from('search_history')
-    .insert({
-      user_id: userId,
-      symbol,
-      current_price: currentPrice,
-      analysis: analysisResult,
-      analysis_type: analysisType,
-      timeframe,
-      analysis_duration_hours: durationHours
-    })
-    .select()
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('search_history')
+      .insert(insertData)
+      .select()
+      .maybeSingle();
 
-  if (error) {
-    console.error("Error saving to Supabase:", error);
+    if (error) {
+      console.error("Error saving to Supabase:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in saveAnalysis function:", error);
     throw error;
   }
-
-  return data;
 };

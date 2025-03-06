@@ -19,7 +19,7 @@ export const mapToAnalysisType = (analysisType: string): string => {
   if (normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtlesoup') || normalizedType.includes('turtle')) return "الحساء السلحفائي";
   if (normalizedType.includes('نظريةالسوق') || normalizedType.includes('ict')) return "نظرية السوق";
   if (normalizedType.includes('نظريةهيكلالسوق') || normalizedType.includes('smc')) return "نظرية هيكل السوق";
-  if (normalizedType.includes('مضاربة') || normalizedType.includes('scalping') || normalizedType.includes('سكالبينج')) return "مضاربة";
+  if (normalizedType.includes('مضاربة') || normalizedType.includes('scalping') || normalizedType.includes('سكالبينج')) return "سكالبينج";
   if (normalizedType.includes('حركةالسعر') || normalizedType.includes('priceaction')) return "حركة السعر";
   if (normalizedType.includes('ذكي') || normalizedType.includes('smart')) return "ذكي";
   
@@ -29,15 +29,16 @@ export const mapToAnalysisType = (analysisType: string): string => {
   if (normalizedType.includes('تصفيقزمني') || normalizedType.includes('timecluster')) return "تصفيق زمني"; 
   if (normalizedType.includes('تباينمتعدد') || normalizedType.includes('multivariance')) return "تباين متعدد العوامل"; 
   if (normalizedType.includes('شمعاتمركبة') || normalizedType.includes('composite')) return "شمعات مركبة"; 
-  if (normalizedType.includes('تحليلسلوكي') || normalizedType.includes('behavioral')) return "تحليل سلوكي";
+  if (normalizedType.includes('تحليلسلوكي') || normalizedType.includes('behavioral') || normalizedType === 'behavioral') return "تحليل سلوكي";
   
   // Fibonacci analysis - check advanced first
   if (normalizedType.includes('فيبوناتشيمتقدم') || normalizedType.includes('تحليلفيبوناتشيمتقدم') || 
-     normalizedType.includes('fibonacciadvanced') || normalizedType.includes('advancedfibonacci')) {
-    return "تحليل فيبوناتشي متقدم";
+     normalizedType.includes('fibonacciadvanced') || normalizedType.includes('advancedfibonacci') ||
+     normalizedType === 'fibonacci_advanced') {
+    return "فيبوناتشي";  // Map to standard fibonacci type in database
   }
   
-  if (normalizedType.includes('فيبوناتشي') || normalizedType.includes('fibonacci')) {
+  if (normalizedType.includes('فيبوناتشي') || normalizedType.includes('fibonacci') || normalizedType === 'fibonacci') {
     return "فيبوناتشي";
   }
   
@@ -53,7 +54,7 @@ export const mapToAnalysisType = (analysisType: string): string => {
   console.log(`Unknown analysis type: "${analysisType}", normalized: "${normalizedType}", original type: ${typeof analysisType}`);
   
   // استخدم النوع الأصلي إذا كان مسموحًا به في قاعدة البيانات
-  return analysisType; 
+  return "عادي"; // Default to normal type if unknown
 };
 
 // Add the missing function for AnalysisPerformer
