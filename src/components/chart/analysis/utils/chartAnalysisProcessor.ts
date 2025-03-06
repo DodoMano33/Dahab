@@ -1,5 +1,5 @@
 
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { executeAnalysis } from "@/utils/technicalAnalysis/analysisExecutor";
 import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";

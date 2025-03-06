@@ -1,84 +1,31 @@
-import { toast } from "sonner";
-import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
-import { mapAnalysisTypeToConfig, mapToAnalysisType } from "../utils/analysisTypeMapper";
-import { SearchHistoryItem } from "@/types/analysis";
+
 import { AnalysisType } from "@/types/analysis";
+import { mapAnalysisTypeToConfig } from "../utils/analysisTypeMapper";
 
-interface AnalysisPerformerProps {
-  symbol: string;
-  price: number;
-  timeframe: string;
-  analysisType: string;
-  user: { id: string } | null;
-  handleTradingViewConfig: any;
-  onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
-}
-
-export const performAnalysis = async ({
-  symbol,
-  price,
-  timeframe,
-  analysisType,
-  user,
-  handleTradingViewConfig,
-  onAnalysisComplete
-}: AnalysisPerformerProps) => {
-  try {
-    console.log(`Starting analysis for ${timeframe} - ${analysisType}`);
-    
-    const config = mapAnalysisTypeToConfig(analysisType);
-    console.log("Analysis configuration:", config);
-    
-    const result = await handleTradingViewConfig(
-      symbol,
-      timeframe,
-      price,
-      config.isScalping,
-      false,
-      config.isSMC,
-      config.isICT,
-      config.isTurtleSoup,
-      config.isGann,
-      config.isWaves,
-      config.isPatternAnalysis,
-      config.isPriceAction
-    );
-
-    if (result && result.analysisResult && user) {
-      console.log("Analysis completed successfully:", result);
-      
-      // Convert string to AnalysisType
-      const mappedAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
-
-      const savedData = await saveAnalysisToHistory(
-        result,
-        symbol,
-        timeframe,
-        mappedAnalysisType,
-        user.id
-      );
-
-      console.log("Analysis saved to history:", savedData);
-
-      if (onAnalysisComplete) {
-        const newHistoryEntry: SearchHistoryItem = {
-          id: savedData.id,
-          date: new Date(),
-          symbol: symbol,
-          currentPrice: price,
-          analysis: result.analysisResult,
-          analysisType: mappedAnalysisType,
-          timeframe: timeframe
-        };
-        
-        console.log("Adding new analysis to history:", newHistoryEntry);
-        onAnalysisComplete(newHistoryEntry);
-      }
-
-      toast.success(`تم إكمال تحليل ${mappedAnalysisType} على الإطار الزمني ${timeframe}`);
-    }
-  } catch (error) {
-    console.error(`Error in ${analysisType} analysis on ${timeframe}:`, error);
-    toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
-  }
+// Use the mapAnalysisTypeToConfig function to get the analysis type configuration
+// and ensure we're passing the correct types to handlers
+export const getAnalysisConfig = (analysisType: AnalysisType) => {
+  // First, map the analysis type to a valid configuration including flags
+  const config = mapAnalysisTypeToConfig(analysisType);
+  
+  // Return the values needed for analysis
+  return {
+    isScalping: config.isScalping || false,
+    isSMC: config.isSMC || false, 
+    isICT: config.isICT || false,
+    isTurtleSoup: config.isTurtleSoup || false,
+    isGann: config.isGann || false,
+    isWaves: config.isWaves || false,
+    isPatternAnalysis: config.isPatternAnalysis || false,
+    isPriceAction: config.isPriceAction || false,
+    isNeuralNetwork: config.isNeuralNetwork || false,
+    isRNN: config.isRNN || false,
+    isTimeClustering: config.isTimeClustering || false,
+    isMultiVariance: config.isMultiVariance || false,
+    isCompositeCandlestick: config.isCompositeCandlestick || false,
+    isBehavioral: config.isBehavioral || false,
+    isFibonacci: config.isFibonacci || false,
+    isFibonacciAdvanced: config.isFibonacciAdvanced || false,
+    displayName: config.name
+  };
 };

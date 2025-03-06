@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { validateAnalysisInputs } from "./utils/inputValidation";
 import { buildAnalysisConfig } from "./utils/analysisConfigBuilder";
 import { processChartAnalysis } from "./utils/chartAnalysisProcessor";

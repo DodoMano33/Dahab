@@ -1,8 +1,7 @@
-
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { supabase } from "@/lib/supabase";
-import { AnalysisType, AnalysisData } from "@/types/analysis";
-import { toast } from "sonner";
 
+// Types for saving analysis
 interface SaveAnalysisParams {
   userId: string;
   symbol: string;
@@ -22,69 +21,64 @@ export const saveAnalysis = async ({
   timeframe,
   durationHours = 8
 }: SaveAnalysisParams) => {
-  // Validate required fields
-  if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
-    console.error("Missing required fields:", { userId, symbol, currentPrice, analysisResult, analysisType, timeframe });
-    throw new Error("جميع الحقول مطلوبة لحفظ التحليل");
-  }
-
-  // Validate analysis result structure
-  if (!analysisResult.pattern || !analysisResult.direction || !analysisResult.stopLoss) {
-    console.error("Invalid analysis result structure:", analysisResult);
-    throw new Error("نتائج التحليل غير صالحة");
-  }
-
-  // Ensure analysisType is a valid value for the database
-  console.log("Final analysis type being saved to database:", analysisType);
-
-  // Make sure the analysisType in analysisResult matches the one we're saving
-  if (analysisResult.analysisType !== analysisType) {
-    console.log(`Correcting analysis type in result from ${analysisResult.analysisType} to ${analysisType}`);
-    analysisResult.analysisType = analysisType;
-  }
-
-  // Set automatic activation type for Fibonacci Advanced Analysis
-  if (!analysisResult.activation_type) {
-    if (analysisType === "fibonacci_advanced" || analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
-      analysisResult.activation_type = "يدوي";
-    } else if (analysisType === "fibonacci" || analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
-      analysisResult.activation_type = "تلقائي";
-    }
-  }
-
-  console.log("Inserting analysis data with duration:", durationHours, {
-    user_id: userId,
+  console.log("Saving analysis to database:", {
+    userId,
     symbol,
-    current_price: currentPrice,
-    analysis: analysisResult,
-    analysis_type: analysisType,
+    currentPrice,
+    analysisType,
     timeframe,
-    analysis_duration_hours: durationHours
+    durationHours
   });
 
-  try {
-    const { data, error } = await supabase
-      .from('search_history')
-      .insert({
-        user_id: userId,
-        symbol,
-        current_price: currentPrice,
-        analysis: analysisResult,
-        analysis_type: analysisType,
-        timeframe,
-        analysis_duration_hours: durationHours
-      })
-      .select()
-      .maybeSingle();
+  // Calculate expiry time from duration in hours
+  const now = new Date();
+  const expiryTime = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
 
-    if (error) {
-      console.error("Error saving to Supabase:", error);
-      throw error;
+  try {
+    // Fix comparisons by directly checking with string literals instead of comparing with AnalysisType
+    let pattern = analysisResult.pattern;
+    let activation_type = analysisResult.activation_type || "تلقائي";
+    
+    // Special handling for fibonacci types
+    if (analysisType === "fibonacci_advanced" as AnalysisType) {
+      pattern = "تحليل فيبوناتشي متقدم";
+    } else if (analysisType === "fibonacci" as AnalysisType) {
+      pattern = "تحليل فيبوناتشي";
     }
 
-    return data;
+    const { data, error } = await supabase
+      .from("search_history")
+      .insert([
+        {
+          user_id: userId,
+          symbol: symbol,
+          date: new Date(),
+          current_price: currentPrice,
+          pattern: pattern,
+          direction: analysisResult.direction,
+          support: analysisResult.support,
+          resistance: analysisResult.resistance,
+          stop_loss: analysisResult.stopLoss,
+          best_entry_point_price: analysisResult.bestEntryPoint?.price,
+          best_entry_point_reason: analysisResult.bestEntryPoint?.reason,
+          targets: analysisResult.targets,
+          activation_type: activation_type,
+          analysis_type: analysisType,
+          timeframe: timeframe,
+          expiry_time: expiryTime,
+        }
+      ])
+      .select()
+
+    if (error) {
+      console.error("Error saving analysis:", error);
+      throw new Error("Failed to save analysis to database");
+    }
+
+    console.log("Analysis saved successfully:", data);
+    return data && data.length > 0 ? data[0] : null;
   } catch (error) {
-    console.error("Database error during save:", error);
-    throw new Error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
+    console.error("Error in saveAnalysis:", error);
+    throw error;
   }
 };

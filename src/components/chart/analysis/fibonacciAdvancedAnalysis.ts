@@ -1,5 +1,4 @@
-
-import { AnalysisData } from "@/types/analysis";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { calculateFibonacciLevels, findOptimalFibonacciEntry, calculateFibonacciTargets } from "@/utils/technicalAnalysis/fibonacci";
 import { calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis/calculations";
 
