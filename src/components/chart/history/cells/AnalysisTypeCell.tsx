@@ -2,6 +2,7 @@
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export interface AnalysisTypeCellProps {
   analysisType: string;
@@ -17,9 +18,12 @@ export const AnalysisTypeCell = ({
   // تسجيل نوع التحليل للتشخيص
   console.log(`AnalysisTypeCell: type=${analysisType}, pattern=${pattern}, activation=${activation_type}`);
   
+  // استخدام دالة التحويل لعرض النوع بالشكل المناسب
+  const displayType = getStrategyName(analysisType);
+  
   // تحديد لون الخلفية بناءً على نوع التحليل
   const getBgColor = () => {
-    const type = analysisType?.toLowerCase() || '';
+    const type = displayType?.toLowerCase() || '';
     
     // Old analysis types
     if (type.includes('smc') || type.includes('نظرية هيكل السوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
@@ -52,7 +56,7 @@ export const AnalysisTypeCell = ({
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
-                {analysisType || 'غير محدد'}
+                {displayType || 'غير محدد'}
               </Badge>
               {pattern && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">

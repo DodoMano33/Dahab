@@ -37,6 +37,7 @@ export const executeSpecificAnalysis = async (
     case "ict":
       return await analyzeICTChart(chartImage, currentPrice, timeframe);
     case "turtleSoup":
+    case "turtle_soup":
       return await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
     case "gann":
       return await analyzeGannChart(chartImage, currentPrice, timeframe);
@@ -45,6 +46,7 @@ export const executeSpecificAnalysis = async (
     case "patterns":
       return await analyzePattern(chartImage, currentPrice, timeframe);
     case "priceAction":
+    case "price_action":
       return await analyzePriceAction(chartImage, currentPrice, timeframe);
     case "neural_networks":
       return await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);

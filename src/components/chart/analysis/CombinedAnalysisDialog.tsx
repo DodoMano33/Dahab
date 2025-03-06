@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Brain, Loader2 } from "lucide-react";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface CombinedAnalysisDialogProps {
   isOpen: boolean;
