@@ -147,33 +147,18 @@ export const executeAnalysis = async (
         break;
       case "RNN":
         analysis = await analyzeRNN(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "شبكات عصبية" as AnalysisType;
-        }
         break;
       case "Time Clustering":
         analysis = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "تقلبات" as AnalysisType;
-        }
         break;
       case "Multi Variance":
         analysis = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "تقلبات" as AnalysisType;
-        }
         break;
       case "Composite Candlestick":
         analysis = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "نمطي" as AnalysisType;
-        }
         break;
       case "Behavioral":
         analysis = await analyzeBehavioral(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "حركة السعر" as AnalysisType;
-        }
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);

@@ -1,3 +1,4 @@
+
 /**
  * Maps analysis type keys to their display names
  */
