@@ -34,10 +34,10 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Ensure analysisType is a valid value for the database
+  // Log the analysis type before saving
   console.log("Final analysis type being saved to database:", analysisType);
 
-  // Process activation_type
+  // Process activation_type (default to تلقائي if not provided)
   const activation_type = analysisResult.activation_type || "تلقائي";
   
   // Prepare data for insertion
