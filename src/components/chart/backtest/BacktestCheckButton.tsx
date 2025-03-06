@@ -38,6 +38,23 @@ export const BacktestCheckButton = memo(() => {
     return () => clearInterval(interval);
   }, [lastCheckTime]);
 
+  // الاستماع إلى حدث تحديث التاريخ
+  useEffect(() => {
+    const handleHistoryUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.timestamp) {
+        console.log("BacktestCheckButton detected history update with timestamp:", customEvent.detail.timestamp);
+      } else {
+        console.log("BacktestCheckButton detected history update event");
+      }
+    };
+    
+    window.addEventListener('historyUpdated', handleHistoryUpdate);
+    return () => {
+      window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
+  }, []);
+
   return (
     <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg border">
       <div className="flex flex-col">

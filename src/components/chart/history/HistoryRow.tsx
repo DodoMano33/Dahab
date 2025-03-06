@@ -10,11 +10,10 @@ import { TargetsList } from "./TargetsList";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { ExpiryTimer } from "./ExpiryTimer";
 import { AnalysisData } from "@/types/analysis";
-import { format, formatDistanceToNow } from "date-fns";
-import { ar } from "date-fns/locale";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { LastCheckedCell } from "./cells/LastCheckedCell";
 
 interface HistoryRowProps {
   id: string;
@@ -46,7 +45,6 @@ export const HistoryRow = ({
   last_checked_at,
 }: HistoryRowProps) => {
   const [marketStatus, setMarketStatus] = useState<{isOpen: boolean, serverTime?: string}>({ isOpen: false });
-  const [formattedTime, setFormattedTime] = useState<string>("");
   
   // طباعة نوع التحليل للتشخيص
   console.log(`HistoryRow for ${id}: analysisType=${analysisType}, pattern=${analysis.pattern}, activation_type=${analysis.activation_type}`);
@@ -83,100 +81,11 @@ export const HistoryRow = ({
     return () => clearInterval(interval);
   }, []);
 
-  // تحويل last_checked_at إلى كائن Date والتأكد من صحته
+  // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {
-    const updateLastCheckedFormat = () => {
-      if (!last_checked_at) {
-        setFormattedTime("");
-        return;
-      }
-      
-      try {
-        let dateToFormat: Date | null = null;
-        
-        // تحويل التاريخ حسب نوعه
-        if (typeof last_checked_at === 'string') {
-          dateToFormat = new Date(last_checked_at);
-          console.log(`[${id}] Converted string date:`, dateToFormat);
-        } else if (last_checked_at instanceof Date) {
-          dateToFormat = last_checked_at;
-          console.log(`[${id}] Using Date object directly:`, dateToFormat);
-        } else {
-          console.error(`[${id}] Unsupported date type:`, typeof last_checked_at);
-          setFormattedTime("");
-          return;
-        }
-        
-        // التحقق من صحة التاريخ
-        if (dateToFormat && !isNaN(dateToFormat.getTime())) {
-          const formatted = formatDistanceToNow(dateToFormat, { 
-            addSuffix: true,
-            locale: ar
-          });
-          console.log(`[${id}] Formatted time:`, formatted);
-          setFormattedTime(formatted);
-        } else {
-          console.error(`[${id}] Invalid date for formatting:`, last_checked_at);
-          setFormattedTime("");
-        }
-      } catch (error) {
-        console.error(`[${id}] Error formatting date:`, error);
-        setFormattedTime("");
-      }
-    };
-    
-    updateLastCheckedFormat();
-    
-    // تحديث التنسيق كل دقيقة
-    const interval = setInterval(updateLastCheckedFormat, 60 * 1000);
-    return () => clearInterval(interval);
-  }, [last_checked_at, id]);
-  
-  // الاستماع لتحديثات البيانات في الوقت الحقيقي
-  useEffect(() => {
-    const handleHistoryUpdate = () => {
-      console.log(`[${id}] History update detected, will refresh row data`);
-      
-      // تحديث البيانات للصف الحالي فقط
-      const fetchUpdatedData = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('search_history')
-            .select('last_checked_at, last_checked_price')
-            .eq('id', id)
-            .single();
-          
-          if (error) {
-            console.error(`[${id}] Error fetching updated data:`, error);
-            return;
-          }
-          
-          if (data) {
-            console.log(`[${id}] Received updated data:`, data);
-            
-            // تحديث البيانات المحلية - في حالة معالجة هذا على مستوى المكون الأب
-            if (data.last_checked_at) {
-              try {
-                const newDate = new Date(data.last_checked_at);
-                if (!isNaN(newDate.getTime())) {
-                  const newFormattedTime = formatDistanceToNow(newDate, { 
-                    addSuffix: true,
-                    locale: ar
-                  });
-                  console.log(`[${id}] Updated formatted time:`, newFormattedTime);
-                  setFormattedTime(newFormattedTime);
-                }
-              } catch (err) {
-                console.error(`[${id}] Error formatting updated date:`, err);
-              }
-            }
-          }
-        } catch (err) {
-          console.error(`[${id}] Error in fetchUpdatedData:`, err);
-        }
-      };
-      
-      fetchUpdatedData();
+    const handleHistoryUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log(`[${id}] HistoryRow detected update event:`, customEvent.detail?.timestamp || "No timestamp");
     };
     
     window.addEventListener('historyUpdated', handleHistoryUpdate);
@@ -212,16 +121,11 @@ export const HistoryRow = ({
         </TooltipProvider>
       </TableCell>
       <TableCell className="w-24 p-2">
-        {last_checked_price && formattedTime ? (
-          <div className="text-xs">
-            <div>{last_checked_price}</div>
-            <div className="text-muted-foreground text-[10px]">
-              {formattedTime}
-            </div>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>
-        )}
+        <LastCheckedCell 
+          price={last_checked_price}
+          timestamp={last_checked_at} 
+          itemId={id}
+        />
       </TableCell>
       <TableCell className="w-20 p-2">
         <ExpiryTimer 

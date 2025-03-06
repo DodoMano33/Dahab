@@ -34,6 +34,10 @@ export const HistoryContent = ({
   onDelete,
 }: HistoryContentProps) => {
   console.log("HistoryContent rendered with history items:", history.length);
+  console.log("Sample first history item last_checked_at:", 
+    history.length > 0 ? 
+    `${history[0].id}: ${history[0].last_checked_at} (${typeof history[0].last_checked_at})` : 
+    "No history items");
   
   // استخدام حالة محلية لتخزين البيانات المحدثة
   const [localHistory, setLocalHistory] = useState(history);
@@ -94,8 +98,13 @@ export const HistoryContent = ({
   
   // الاستماع إلى حدث تحديث البيانات
   useEffect(() => {
-    const handleHistoryUpdate = () => {
-      console.log("History update event detected, refreshing data");
+    const handleHistoryUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.timestamp) {
+        console.log("History update event detected with timestamp:", customEvent.detail.timestamp);
+      } else {
+        console.log("History update event detected, refreshing data");
+      }
       refreshHistoryData();
     };
     
@@ -147,6 +156,15 @@ export const HistoryContent = ({
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // تنفيذ تحديث للبيانات فوراً عند التحميل
+  useEffect(() => {
+    console.log("Initial data refresh");
+    refreshHistoryData();
+    // استدعاء التحديث كل 30 ثانية
+    const interval = setInterval(refreshHistoryData, 30000);
+    return () => clearInterval(interval);
+  }, [refreshHistoryData]);
 
   return (
     <div className="relative w-full h-full">

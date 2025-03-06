@@ -39,7 +39,7 @@ export const useBackTest = () => {
         throw error;
       }
 
-      console.log('Analyses to check:', analyses);
+      console.log('Analyses to check:', analyses.length);
 
       if (analyses.length === 0) {
         toast.info('لا توجد تحليلات نشطة للفحص');
@@ -92,29 +92,19 @@ export const useBackTest = () => {
       setLastCheckTime(new Date(currentTime));
       toast.success('تم فحص جميع التحليلات بنجاح');
       
-      // إعادة تحميل البيانات بعد التحديث
-      await refreshHistory();
+      // إطلاق حدث لتحديث واجهة المستخدم
+      const event = new CustomEvent('historyUpdated', {
+        detail: { timestamp: currentTime }
+      });
+      window.dispatchEvent(event);
+      
+      console.log('Dispatched historyUpdated event with timestamp:', currentTime);
       
     } catch (error) {
       console.error('Error in manual check:', error);
       toast.error('حدث خطأ أثناء فحص التحليلات');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // دالة لتحديث بيانات سجل البحث بعد إجراء الفحص
-  const refreshHistory = async () => {
-    try {
-      console.log('Refreshing history data...');
-      
-      // إرسال حدث مخصص لتحديث واجهة المستخدم
-      const event = new CustomEvent('historyUpdated');
-      window.dispatchEvent(event);
-      
-      console.log('Refreshed search history data and triggered UI update');
-    } catch (error) {
-      console.error('Failed to refresh search history:', error);
     }
   };
 
