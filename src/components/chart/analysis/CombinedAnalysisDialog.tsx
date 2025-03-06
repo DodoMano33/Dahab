@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Brain, Loader2 } from "lucide-react";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface CombinedAnalysisDialogProps {
   isOpen: boolean;
@@ -21,14 +20,14 @@ export const CombinedAnalysisDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const analysisTypes = [
-    { id: "scalping", label: "مضاربة" },
-    { id: "smc", label: "نظرية هيكل السوق" },
-    { id: "ict", label: "نظرية السوق" },
-    { id: "turtleSoup", label: "الحساء السلحفائي" },
-    { id: "gann", label: "جان" },
-    { id: "waves", label: "تقلبات" },
-    { id: "patterns", label: "نمطي" },
-    { id: "priceAction", label: "حركة السعر" },
+    { id: "scalping", label: "Scalping" },
+    { id: "smc", label: "SMC" },
+    { id: "ict", label: "ICT" },
+    { id: "turtleSoup", label: "Turtle Soup" },
+    { id: "gann", label: "Gann" },
+    { id: "waves", label: "Waves" },
+    { id: "patterns", label: "Patterns" },
+    { id: "priceAction", label: "Price Action" },
     { id: "neural_networks", label: "شبكات عصبية" },
     { id: "rnn", label: "شبكات عصبية متكررة" },
     { id: "time_clustering", label: "تصفيق زمني" },

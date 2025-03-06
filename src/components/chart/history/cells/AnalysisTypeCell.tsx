@@ -2,7 +2,6 @@
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export interface AnalysisTypeCellProps {
   analysisType: string;
@@ -18,12 +17,9 @@ export const AnalysisTypeCell = ({
   // تسجيل نوع التحليل للتشخيص
   console.log(`AnalysisTypeCell: type=${analysisType}, pattern=${pattern}, activation=${activation_type}`);
   
-  // استخدام دالة التحويل لعرض النوع بالشكل المناسب
-  const displayType = getStrategyName(analysisType);
-  
   // تحديد لون الخلفية بناءً على نوع التحليل
   const getBgColor = () => {
-    const type = displayType?.toLowerCase() || '';
+    const type = analysisType?.toLowerCase() || '';
     
     // Old analysis types
     if (type.includes('smc') || type.includes('نظرية هيكل السوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
@@ -35,10 +31,10 @@ export const AnalysisTypeCell = ({
     if (type.includes('price action') || type.includes('حركة السعر')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
     if (type.includes('ذكي') || type.includes('smart')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300';
     if (type.includes('scalping') || type.includes('مضاربة') || type.includes('سكالبينج')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
-    
-    // New analysis types - Add distinct colors for each
     if (type.includes('فيبوناتشي متقدم') || type.includes('fibonacci advanced') || type.includes('تحليل فيبوناتشي متقدم')) return 'bg-yellow-200 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200';
     if (type.includes('فيبوناتشي') || type.includes('fibonacci')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
+    
+    // New analysis types
     if (type.includes('شبكات عصبية متكررة') || type.includes('rnn')) return 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-300';
     if (type.includes('شبكات عصبية') || type.includes('neural')) return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
     if (type.includes('تصفيق زمني') || type.includes('time clustering') || type.includes('time cluster')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
@@ -56,7 +52,7 @@ export const AnalysisTypeCell = ({
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
-                {displayType || 'غير محدد'}
+                {analysisType || 'غير محدد'}
               </Badge>
               {pattern && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">

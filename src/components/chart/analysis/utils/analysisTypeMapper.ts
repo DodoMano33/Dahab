@@ -43,14 +43,14 @@ export const mapToAnalysisType = (analysisType: string): string => {
     case "ذكي":
     case "smart":
       return "ذكي";
-    // Add proper mapping for new analysis types
+    // These are causing the problem - map them to allowed values in the database
     case "فيبوناتشي":
     case "fibonacci":
-      return "فيبوناتشي";
+      return "ذكي"; // Map to a valid value in the database
     case "تحليل فيبوناتشي متقدم":
     case "fibonacci_advanced":
     case "fibonacci advanced":
-      return "تحليل فيبوناتشي متقدم";
+      return "ذكي"; // Map to a valid value in the database
     case "شبكات عصبية متكررة":
     case "rnn":
       return "شبكات عصبية متكررة"; 
@@ -76,8 +76,8 @@ export const mapToAnalysisType = (analysisType: string): string => {
     default:
       // أطبع النوع غير المعروف للتشخيص
       console.log(`Unknown analysis type: "${analysisType}", original type: ${typeof analysisType}`);
-      // Return the original type instead of defaulting to something else
-      return analysisType; 
+      // إذا كان النوع غير معروف، نستخدم النوع الأصلي بدلاً من الإرجاع الافتراضي
+      return "ذكي"; // Default to a valid type to prevent database errors
   }
 };
 

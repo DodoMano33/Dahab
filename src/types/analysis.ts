@@ -1,4 +1,3 @@
-
 export type AnalysisType = 
   | "سكالبينج" 
   | "ذكي" 

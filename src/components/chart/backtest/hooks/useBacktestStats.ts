@@ -1,8 +1,6 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { getStrategyName } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 interface AnalysisStats {
   type: string;
@@ -26,14 +24,7 @@ export const useBacktestStats = () => {
       }
 
       console.log('Fetched backtest stats:', results);
-      
-      // Ensure we're using the correct display names for analysis types
-      const formattedStats = results?.map((stat: any) => ({
-        ...stat,
-        type: stat.type // Keep original type key for mapping
-      })) || [];
-      
-      setStats(formattedStats);
+      setStats(results || []);
     } catch (error) {
       console.error('Error in fetchStats:', error);
       toast.error('حدث خطأ أثناء جلب الإحصائيات');
