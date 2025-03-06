@@ -1,11 +1,28 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export const useBackTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
+
+  // جلب آخر وقت فحص عند تحميل المكون
+  useEffect(() => {
+    const fetchLastCheckTime = async () => {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('last_checked_at')
+        .order('last_checked_at', { ascending: false })
+        .limit(1);
+
+      if (!error && data && data.length > 0 && data[0].last_checked_at) {
+        setLastCheckTime(new Date(data[0].last_checked_at));
+      }
+    };
+
+    fetchLastCheckTime();
+  }, []);
 
   const triggerManualCheck = async () => {
     try {
@@ -23,20 +40,22 @@ export const useBackTest = () => {
 
       console.log('Analyses to check:', analyses);
 
+      const currentTime = new Date().toISOString();
+
+      // تحديث وقت آخر فحص لجميع التحليلات دفعة واحدة
+      const { error: batchUpdateError } = await supabase
+        .from('search_history')
+        .update({ last_checked_at: currentTime })
+        .in('id', analyses.map(a => a.id));
+
+      if (batchUpdateError) {
+        console.error('Error updating last_checked_at:', batchUpdateError);
+        throw batchUpdateError;
+      }
+
       // معالجة كل تحليل
       for (const analysis of analyses) {
         try {
-          // تحديث وقت آخر فحص للتحليل
-          const { error: updateError } = await supabase
-            .from('search_history')
-            .update({ last_checked_at: new Date().toISOString() })
-            .eq('id', analysis.id);
-            
-          if (updateError) {
-            console.error(`Error updating last_checked_at for analysis ${analysis.id}:`, updateError);
-            continue; // استمر في المعالجة بالرغم من حدوث خطأ في التحديث
-          }
-
           // تحقق من وجود نقطة دخول مثالية
           const hasBestEntryPoint = analysis.analysis.bestEntryPoint?.price;
           const currentPrice = analysis.last_checked_price || analysis.current_price;
@@ -54,15 +73,14 @@ export const useBackTest = () => {
               p_current_price: currentPrice
             });
           }
-
         } catch (analysisError) {
           console.error(`Error processing analysis ${analysis.id}:`, analysisError);
           toast.error(`حدث خطأ أثناء معالجة التحليل ${analysis.symbol}`);
         }
       }
 
-      // تحديث وقت آخر فحص عام
-      setLastCheckTime(new Date());
+      // تحديث وقت آخر فحص في واجهة المستخدم
+      setLastCheckTime(new Date(currentTime));
       toast.success('تم فحص جميع التحليلات بنجاح');
       
     } catch (error) {
