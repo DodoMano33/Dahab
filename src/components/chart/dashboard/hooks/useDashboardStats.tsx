@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export function useDashboardStats(userId: string | undefined) {
   const [stats, setStats] = useState<any[]>([]);
@@ -13,6 +14,7 @@ export function useDashboardStats(userId: string | undefined) {
     const fetchStats = async () => {
       setIsLoading(true);
       try {
+        console.log("Fetching backtest stats...");
         const { data, error } = await supabase.rpc('get_backtest_stats');
         
         if (error) {
@@ -21,7 +23,15 @@ export function useDashboardStats(userId: string | undefined) {
           return;
         }
         
-        setStats(data || []);
+        console.log("Received backtest stats:", data);
+        
+        // Process stats to ensure analysis_type is properly displayed
+        const processedStats = data ? data.map((stat: any) => ({
+          ...stat,
+          display_name: getStrategyName(stat.type)
+        })) : [];
+        
+        setStats(processedStats || []);
       } catch (error) {
         console.error('Error in fetchStats:', error);
         toast.error('حدث خطأ أثناء جلب البيانات الإحصائية');
@@ -54,7 +64,7 @@ export function useDashboardStats(userId: string | undefined) {
       const currentRate = current.success / currentTotal || 0;
       
       return currentRate > prevRate ? current : prev;
-    }).type : '';
+    }).display_name || '' : '';
     
     return { totalSuccess, totalFail, overallRate, bestType };
   }, [stats]);

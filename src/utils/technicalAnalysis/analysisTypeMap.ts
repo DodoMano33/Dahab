@@ -12,34 +12,61 @@ export const analysisTypeMap: Record<string, string> = {
   "patterns": "Patterns",
   "priceAction": "Price Action",
   "neural_networks": "شبكات عصبية",
+  "neural networks": "شبكات عصبية",
+  "neuralnetworks": "شبكات عصبية",
   "rnn": "شبكات عصبية متكررة",
+  "recurrent neural networks": "شبكات عصبية متكررة",
   "time_clustering": "تصفيق زمني",
+  "time clustering": "تصفيق زمني",
+  "timeclustering": "تصفيق زمني",
   "multi_variance": "تباين متعدد العوامل",
+  "multi variance": "تباين متعدد العوامل",
+  "multivariance": "تباين متعدد العوامل",
   "composite_candlestick": "شمعات مركبة",
+  "composite candlestick": "شمعات مركبة",
+  "compositecandlestick": "شمعات مركبة",
   "behavioral": "تحليل سلوكي",
+  "behavioral analysis": "تحليل سلوكي",
   "fibonacci": "فيبوناتشي",
-  "fibonacci_advanced": "تحليل فيبوناتشي متقدم"
+  "fibonacci_advanced": "تحليل فيبوناتشي متقدم",
+  "fibonacci advanced": "تحليل فيبوناتشي متقدم",
+  "fibonacciadvanced": "تحليل فيبوناتشي متقدم",
+  "شبكات عصبية": "شبكات عصبية",
+  "شبكات عصبية متكررة": "شبكات عصبية متكررة",
+  "تصفيق زمني": "تصفيق زمني",
+  "تباين متعدد العوامل": "تباين متعدد العوامل",
+  "شمعات مركبة": "شمعات مركبة",
+  "تحليل سلوكي": "تحليل سلوكي",
+  "فيبوناتشي": "فيبوناتشي",
+  "تحليل فيبوناتشي متقدم": "تحليل فيبوناتشي متقدم"
 };
 
 /**
  * Get a formatted display name for an analysis type
  */
 export const getStrategyName = (type: string): string => {
+  if (!type) return "غير محدد";
+  
   // Handle different case formats and variations
-  const normalizedType = type.toLowerCase().replace(/_/g, '');
+  const normalizedType = type.toLowerCase().replace(/_/g, '').trim();
   
   for (const key in analysisTypeMap) {
-    if (normalizedType === key.toLowerCase().replace(/_/g, '')) {
+    const normalizedKey = key.toLowerCase().replace(/_/g, '').trim();
+    if (normalizedType === normalizedKey) {
       return analysisTypeMap[key];
     }
   }
   
   // If no direct match, check for partial matches
   for (const key in analysisTypeMap) {
-    if (normalizedType.includes(key.toLowerCase().replace(/_/g, ''))) {
+    const normalizedKey = key.toLowerCase().replace(/_/g, '').trim();
+    if (normalizedType.includes(normalizedKey) || normalizedKey.includes(normalizedType)) {
       return analysisTypeMap[key];
     }
   }
+  
+  // For debugging
+  console.log(`No match found for analysis type: "${type}" (normalized: "${normalizedType}")`);
   
   // If no match at all, return the original type
   return type;

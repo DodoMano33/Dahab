@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackTestHeader } from "./components/BackTestHeader";
@@ -33,6 +33,19 @@ export const BackTestResultsDialog = ({
     loadMore,
     refresh: refreshResults
   } = useBacktestResults();
+
+  // Debug logging for analysis types
+  useEffect(() => {
+    if (completedAnalyses.length > 0) {
+      console.log("BackTestResultsDialog: Loaded analysis types:", 
+        completedAnalyses.map(a => a.analysis_type));
+    }
+    
+    if (stats.length > 0) {
+      console.log("BackTestResultsDialog: Loaded stats types:", 
+        stats.map(s => s.type));
+    }
+  }, [completedAnalyses, stats]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -86,6 +99,7 @@ export const BackTestResultsDialog = ({
 
   // Wrap refresh in an async function to ensure it returns a Promise
   const handleRefresh = async () => {
+    console.log("Refreshing backtest results and stats...");
     await refreshResults();
     await refreshStats();
   };
@@ -106,7 +120,16 @@ export const BackTestResultsDialog = ({
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
             <div className="p-4 space-y-4">
-              {!isLoadingStats && <AnalysisStats stats={stats} />}
+              {!isLoadingStats && (
+                <>
+                  <AnalysisStats stats={stats} />
+                  {stats.length === 0 && !isLoadingStats && (
+                    <div className="text-center p-4 bg-muted rounded-lg">
+                      لا توجد إحصائيات لعرضها. قم بإجراء بعض التحليلات أولاً.
+                    </div>
+                  )}
+                </>
+              )}
               
               <div className="overflow-x-auto">
                 <AnalysisTable
@@ -132,6 +155,12 @@ export const BackTestResultsDialog = ({
                         'تحميل المزيد'
                       )}
                     </Button>
+                  </div>
+                )}
+                
+                {completedAnalyses.length === 0 && !isLoadingResults && (
+                  <div className="text-center p-4 bg-muted rounded-lg mt-4">
+                    لا توجد نتائج باك تست لعرضها.
                   </div>
                 )}
               </div>
