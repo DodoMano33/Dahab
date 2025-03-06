@@ -46,6 +46,7 @@ export const HistoryRow = ({
   last_checked_at,
 }: HistoryRowProps) => {
   const [marketStatus, setMarketStatus] = useState<{isOpen: boolean, serverTime?: string}>({ isOpen: false });
+  const [formattedTime, setFormattedTime] = useState<string>("");
   
   // طباعة نوع التحليل للتشخيص
   console.log(`HistoryRow for ${id}: analysisType=${analysisType}, pattern=${analysis.pattern}, activation_type=${analysis.activation_type}`);
@@ -61,6 +62,7 @@ export const HistoryRow = ({
       ? "تحليل فيبوناتشي متقدم" 
       : analysisType;
   
+  // تحديث حالة السوق كل 5 دقائق
   useEffect(() => {
     const checkMarketStatus = async () => {
       try {
@@ -77,26 +79,48 @@ export const HistoryRow = ({
     
     checkMarketStatus();
     
-    // Check market status every 5 minutes
     const interval = setInterval(checkMarketStatus, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // تحويل last_checked_at إلى كائن Date إذا كان نصا أو null
-  const getLastCheckedDate = () => {
-    if (!last_checked_at) return null;
+  // تحويل last_checked_at إلى كائن Date والتأكد من صحته
+  useEffect(() => {
+    const updateLastCheckedFormat = () => {
+      if (!last_checked_at) {
+        setFormattedTime("");
+        return;
+      }
+      
+      try {
+        const date = typeof last_checked_at === 'string' 
+          ? new Date(last_checked_at) 
+          : last_checked_at instanceof Date 
+            ? last_checked_at 
+            : null;
+            
+        if (date && !isNaN(date.getTime())) {
+          const formatted = formatDistanceToNow(date, { 
+            addSuffix: true,
+            locale: ar
+          });
+          setFormattedTime(formatted);
+          console.log(`Formatted time for ${id}:`, formatted);
+        } else {
+          console.error("Invalid date for formatting:", last_checked_at);
+          setFormattedTime("");
+        }
+      } catch (error) {
+        console.error("Error formatting date:", error);
+        setFormattedTime("");
+      }
+    };
     
-    try {
-      return last_checked_at instanceof Date 
-        ? last_checked_at 
-        : new Date(last_checked_at);
-    } catch (error) {
-      console.error("Error parsing date:", error);
-      return null;
-    }
-  };
-
-  const lastCheckedDate = getLastCheckedDate();
+    updateLastCheckedFormat();
+    
+    // تحديث التنسيق كل دقيقة
+    const interval = setInterval(updateLastCheckedFormat, 60 * 1000);
+    return () => clearInterval(interval);
+  }, [last_checked_at, id]);
 
   return (
     <TableRow className="text-xs">
@@ -125,14 +149,11 @@ export const HistoryRow = ({
         </TooltipProvider>
       </TableCell>
       <TableCell className="w-24 p-2">
-        {last_checked_price && lastCheckedDate ? (
+        {last_checked_price && formattedTime ? (
           <div className="text-xs">
             <div>{last_checked_price}</div>
             <div className="text-muted-foreground text-[10px]">
-              {formatDistanceToNow(lastCheckedDate, { 
-                addSuffix: true,
-                locale: ar
-              })}
+              {formattedTime}
             </div>
           </div>
         ) : (

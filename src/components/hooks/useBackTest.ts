@@ -17,6 +17,7 @@ export const useBackTest = () => {
         .limit(1);
 
       if (!error && data && data.length > 0 && data[0].last_checked_at) {
+        console.log("Initial last_checked_at:", data[0].last_checked_at);
         setLastCheckTime(new Date(data[0].last_checked_at));
       }
     };
@@ -92,7 +93,7 @@ export const useBackTest = () => {
       setLastCheckTime(new Date(currentTime));
       toast.success('تم فحص جميع التحليلات بنجاح');
       
-      // إجراء تحديث إضافي للتأكد من أن البيانات محدثة
+      // إعادة تحميل البيانات بعد التحديث
       await refreshHistory();
       
     } catch (error) {
@@ -106,9 +107,14 @@ export const useBackTest = () => {
   // دالة لتحديث بيانات سجل البحث بعد إجراء الفحص
   const refreshHistory = async () => {
     try {
-      // تحديث البيانات دون إعادة التحميل الكامل للصفحة
-      await supabase.from('search_history').select('count').limit(1);
-      console.log('Refreshed search history data');
+      // طريقة أفضل لإعادة تحميل البيانات - استعلام مباشر وتحديث عام في الصفحة
+      await supabase.from('search_history').select('id, last_checked_at, last_checked_price').limit(1);
+      
+      // إضافة هذا الاستدعاء للتأكد من تحديث البيانات في الواجهة
+      const event = new CustomEvent('historyUpdated');
+      window.dispatchEvent(event);
+      
+      console.log('Refreshed search history data and triggered UI update');
     } catch (error) {
       console.error('Failed to refresh search history:', error);
     }

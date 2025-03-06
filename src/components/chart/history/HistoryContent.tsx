@@ -4,6 +4,7 @@ import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { useEffect, useState } from "react";
 
 interface HistoryContentProps {
   history: Array<{
@@ -32,6 +33,23 @@ export const HistoryContent = ({
   onDelete,
 }: HistoryContentProps) => {
   console.log("HistoryContent history:", history);
+  
+  // إضافة مكوّن القوة للاستماع لتحديثات البيانات
+  const [, forceUpdate] = useState({});
+  
+  useEffect(() => {
+    // إنشاء مستمع للتحديثات من البيانات
+    const handleHistoryUpdate = () => {
+      console.log("History update detected, refreshing UI");
+      forceUpdate({});
+    };
+    
+    window.addEventListener('historyUpdated', handleHistoryUpdate);
+    
+    return () => {
+      window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
+  }, []);
 
   return (
     <div className="relative w-full h-full">
