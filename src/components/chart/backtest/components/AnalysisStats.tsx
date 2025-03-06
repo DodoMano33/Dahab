@@ -31,6 +31,7 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
   console.log("Analysis Stats - Available types:", stats.map(s => 
     `${s.type} -> ${s.display_name || getStrategyName(s.type)}`
   ));
+  console.log("Analysis Stats - Total types:", stats.length);
 
   return (
     <div className="space-y-6">

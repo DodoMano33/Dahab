@@ -28,18 +28,34 @@ export const useBacktestStats = () => {
 
       console.log('Fetched backtest stats raw data:', results);
       
+      if (!results || !Array.isArray(results)) {
+        console.error('Invalid results format:', results);
+        setStats([]);
+        return;
+      }
+      
       // Process stats to ensure analysis_type is properly displayed
-      const processedStats = results ? results.map((stat: any) => {
+      const processedStats = results.map((stat: any) => {
+        // Ensure we have a valid type
+        if (!stat.type) {
+          console.warn('Found stat without type:', stat);
+          stat.type = 'unknown';
+        }
+        
         const displayName = getStrategyName(stat.type);
         console.log(`Processing stat: ${stat.type} -> ${displayName}`);
+        
         return {
           ...stat,
           display_name: displayName
         };
-      }) : [];
+      });
       
       console.log('Processed backtest stats:', processedStats);
-      setStats(processedStats || []);
+      console.log('Unique analysis types:', [...new Set(processedStats.map(s => s.type))]);
+      console.log('Total types count:', processedStats.length);
+      
+      setStats(processedStats);
     } catch (error) {
       console.error('Error in fetchStats:', error);
       toast.error('حدث خطأ أثناء جلب الإحصائيات');

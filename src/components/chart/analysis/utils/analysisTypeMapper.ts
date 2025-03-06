@@ -45,6 +45,10 @@ export const mapToAnalysisType = (analysisType: string): string => {
     return "يومي";
   }
   
+  if (normalizedType.includes('normal') || normalizedType.includes('عادي')) {
+    return "عادي";
+  }
+  
   // أطبع النوع غير المعروف للتشخيص
   console.log(`Unknown analysis type: "${analysisType}", normalized: "${normalizedType}", original type: ${typeof analysisType}`);
   
@@ -62,7 +66,7 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
     isICT: normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق'),
     isTurtleSoup: normalizedType.includes('turtlesoup') || normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtle'),
     isGann: normalizedType.includes('gann') || normalizedType.includes('جان'),
-    isWaves: normalizedType.includes('waves') || normalizedType.includes('تقلبات') || normalizedType.includes('موجات'),
+    isWaves: normalizedType.includes('waves') || normalizedType.includes('تقلبات'),
     isPatternAnalysis: normalizedType.includes('pattern') || normalizedType.includes('نمطي'),
     isPriceAction: normalizedType.includes('priceaction') || normalizedType.includes('حركةالسعر'),
     isNeuralNetwork: normalizedType.includes('neuralnetwork') || normalizedType.includes('شبكاتعصبية'),

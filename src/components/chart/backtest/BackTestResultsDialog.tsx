@@ -39,11 +39,14 @@ export const BackTestResultsDialog = ({
   useEffect(() => {
     if (completedAnalyses.length > 0) {
       console.log("BackTestResultsDialog: Loaded analysis types:", 
-        completedAnalyses.map(a => a.analysis_type));
+        completedAnalyses.slice(0, 20).map(a => a.analysis_type));
       
+      console.log("BackTestResultsDialog: Unique analysis types:", 
+        [...new Set(completedAnalyses.map(a => a.analysis_type))]);
+        
       // Add more detailed logging to check each item's display name
       console.log("BackTestResultsDialog: Analysis types with display names:", 
-        completedAnalyses.slice(0, 10).map(a => ({
+        completedAnalyses.slice(0, 20).map(a => ({
           id: a.id,
           type: a.analysis_type,
           display: getStrategyName(a.analysis_type)
@@ -54,11 +57,15 @@ export const BackTestResultsDialog = ({
       console.log("BackTestResultsDialog: Loaded stats types:", 
         stats.map(s => s.type));
       
+      console.log("BackTestResultsDialog: Unique stats types:", 
+        [...new Set(stats.map(s => s.type))]);
+      
       // Add more detailed logging for stats display names
       console.log("BackTestResultsDialog: Stats types with display names:", 
         stats.map(s => ({
           type: s.type,
           display: getStrategyName(s.type),
+          displayFromStat: s.display_name,
           success: s.success,
           fail: s.fail
         })));

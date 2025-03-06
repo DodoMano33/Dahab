@@ -24,12 +24,27 @@ export function useDashboardStats(userId: string | undefined) {
         }
         
         console.log("Received backtest stats:", data);
+        console.log("Unique analysis types in stats:", 
+          [...new Set(data?.map((stat: any) => stat.type) || [])]);
         
         // Process stats to ensure analysis_type is properly displayed
-        const processedStats = data ? data.map((stat: any) => ({
-          ...stat,
-          display_name: getStrategyName(stat.type)
-        })) : [];
+        const processedStats = data ? data.map((stat: any) => {
+          if (!stat.type) {
+            console.warn('Found stat without type:', stat);
+            stat.type = 'normal';
+          }
+          
+          const displayName = getStrategyName(stat.type);
+          console.log(`Processing dashboard stat: ${stat.type} -> ${displayName}`);
+          
+          return {
+            ...stat,
+            display_name: displayName
+          };
+        }) : [];
+        
+        console.log("Processed dashboard stats:", processedStats);
+        console.log("Total dashboard stats count:", processedStats.length);
         
         setStats(processedStats || []);
       } catch (error) {
@@ -52,13 +67,14 @@ export function useDashboardStats(userId: string | undefined) {
     
     const overallRate = total > 0 ? Math.round((totalSuccess / total) * 100) : 0;
     
+    // Find the best performing analysis type
     const bestType = stats.length > 0 ? stats.reduce((prev, current) => {
       const prevTotal = prev.success + prev.fail;
       const currentTotal = current.success + current.fail;
       
-      // Only consider stats with at least some data
-      if (currentTotal === 0) return prev;
-      if (prevTotal === 0) return current;
+      // Only consider stats with at least some data (minimum 5 analyses)
+      if (currentTotal < 5) return prev;
+      if (prevTotal < 5) return currentTotal >= 5 ? current : prev;
       
       const prevRate = prev.success / prevTotal || 0;
       const currentRate = current.success / currentTotal || 0;

@@ -17,6 +17,7 @@ import { analyzeBehavioral } from "@/components/chart/analysis/behavioralAnalysi
 import { analyzeFibonacciChart } from "@/components/chart/analysis/fibonacciAnalysis";
 import { analyzeFibonacciAdvancedChart } from "@/components/chart/analysis/fibonacciAdvancedAnalysis";
 import { analyzeDailyChart } from "@/components/chart/analysis/dailyAnalysis";
+import { getStrategyName } from "./analysisTypeMap";
 
 /**
  * Execute a specific analysis based on the given type
@@ -27,42 +28,103 @@ export const executeSpecificAnalysis = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log(`Executing specific analysis for type: ${type}`);
+  console.log(`Executing specific analysis for type: ${type} (Display name: ${getStrategyName(type)})`);
   
-  switch (type) {
+  // Normalize the type for switching
+  const normalizedType = type.toLowerCase().replace(/_/g, '').trim();
+  console.log(`Normalized type for analysis: ${normalizedType}`);
+  
+  switch (normalizedType) {
     case "scalping":
+    case "مضاربة":
+    case "سكالبينج":
+      console.log("Executing Scalping analysis");
       return await analyzeScalpingChart(chartImage, currentPrice, timeframe);
+      
     case "smc":
+    case "نظريةهيكلالسوق":
+      console.log("Executing SMC analysis");
       return await analyzeSMCChart(chartImage, currentPrice, timeframe);
+      
     case "ict":
+    case "نظريةالسوق":
+      console.log("Executing ICT analysis");
       return await analyzeICTChart(chartImage, currentPrice, timeframe);
-    case "turtleSoup":
+      
+    case "turtlesoup":
+    case "turtle":
+    case "الحساءالسلحفائي":
+      console.log("Executing Turtle Soup analysis");
       return await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
+      
     case "gann":
+    case "جان":
+      console.log("Executing Gann analysis");
       return await analyzeGannChart(chartImage, currentPrice, timeframe);
+      
     case "waves":
+    case "تقلبات":
+      console.log("Executing Waves analysis");
       return await analyzeWavesChart(chartImage, currentPrice, timeframe);
+      
     case "patterns":
+    case "pattern":
+    case "نمطي":
+      console.log("Executing Pattern analysis");
       return await analyzePattern(chartImage, currentPrice, timeframe);
-    case "priceAction":
+      
+    case "priceaction":
+    case "حركةالسعر":
+      console.log("Executing Price Action analysis");
       return await analyzePriceAction(chartImage, currentPrice, timeframe);
-    case "neural_networks":
+      
+    case "neuralnetworks":
+    case "شبكاتعصبية":
+      console.log("Executing Neural Networks analysis");
       return await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
+      
     case "rnn":
+    case "شبكاتعصبيةمتكررة":
+      console.log("Executing RNN analysis");
       return await analyzeRNN(chartImage, currentPrice, timeframe);
-    case "time_clustering":
+      
+    case "timeclustering":
+    case "تصفيقزمني":
+      console.log("Executing Time Clustering analysis");
       return await analyzeTimeClustering(chartImage, currentPrice, timeframe);
-    case "multi_variance":
+      
+    case "multivariance":
+    case "تباينمتعددالعوامل":
+      console.log("Executing Multi Variance analysis");
       return await analyzeMultiVariance(chartImage, currentPrice, timeframe);
-    case "composite_candlestick":
+      
+    case "compositecandlestick":
+    case "شمعاتمركبة":
+      console.log("Executing Composite Candlestick analysis");
       return await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
+      
     case "behavioral":
+    case "تحليلسلوكي":
+      console.log("Executing Behavioral analysis");
       return await analyzeBehavioral(chartImage, currentPrice, timeframe);
-    case "fibonacci":
-      return await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
-    case "fibonacci_advanced":
+      
+    case "fibonacciadvanced":
+    case "تحليلفيبوناتشيمتقدم":
+      console.log("Executing Fibonacci Advanced analysis");
       return await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
+      
+    case "fibonacci":
+    case "فيبوناتشي":
+      console.log("Executing Fibonacci analysis");
+      return await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
+      
+    case "daily":
+    case "يومي":
+      console.log("Executing Daily analysis");
+      return await analyzeDailyChart(chartImage, currentPrice, timeframe);
+      
     default:
+      console.log(`Unknown analysis type "${type}", defaulting to Daily analysis`);
       return await analyzeDailyChart(chartImage, currentPrice, timeframe);
   }
 };
@@ -77,6 +139,7 @@ export const executeMultipleAnalyses = async (
   timeframe: string
 ): Promise<AnalysisData[]> => {
   console.log("Executing multiple analyses for types:", types);
+  console.log("Analysis display names:", types.map(t => getStrategyName(t)));
   
   const promises = types.map(type => 
     executeSpecificAnalysis(type, chartImage, currentPrice, timeframe)

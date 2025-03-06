@@ -30,6 +30,8 @@ export const AnalysisTable = ({
     console.log("Sample analysis types from items:", analyses.slice(0, 5).map(a => 
       `${a.id}: ${a.analysis_type} -> ${getStrategyName(a.analysis_type)}`
     ));
+    console.log("Unique analysis types in table:", 
+      [...new Set(analyses.map(a => a.analysis_type))]);
   }
 
   return (

@@ -29,15 +29,15 @@ interface AnalysisType {
 
 const analysisTypes: AnalysisType[] = [
   { value: "normal", label: "تحديد الكل" },
-  { value: "scalping", label: "Scalping" },
-  { value: "ict", label: "ICT" },
-  { value: "gann", label: "Gann" },
-  { value: "patterns", label: "Patterns" },
-  { value: "smc", label: "SMC" },
-  { value: "turtle_soup", label: "Turtle Soup" },
-  { value: "waves", label: "Waves" },
-  { value: "price_action", label: "Price Action" },
-  { value: "fibonacci", label: "Fibonacci" },
+  { value: "scalping", label: "مضاربة (Scalping)" },
+  { value: "ict", label: "ICT - نظرية السوق" },
+  { value: "smc", label: "SMC - نظرية هيكل السوق" },
+  { value: "turtle_soup", label: "الحساء السلحفائي" },
+  { value: "gann", label: "جان (Gann)" },
+  { value: "waves", label: "تقلبات (Waves)" },
+  { value: "patterns", label: "نمطي (Patterns)" },
+  { value: "price_action", label: "حركة السعر (Price Action)" },
+  { value: "fibonacci", label: "فيبوناتشي (Fibonacci)" },
   { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
   { value: "neural_networks", label: "شبكات عصبية" },
   { value: "rnn", label: "شبكات عصبية متكررة" },
@@ -56,6 +56,10 @@ export const AnalysisTypes = ({
   selectedTypes,
   onTypesChange,
 }: AnalysisTypesProps) => {
+  // Log the available types for debugging
+  console.log("Available analysis types:", analysisTypes.map(t => t.value));
+  console.log("Currently selected types:", selectedTypes);
+  
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
       // If "تحديد الكل" is clicked
@@ -95,6 +99,9 @@ export const AnalysisTypes = ({
       <div className="space-y-4">
         <div className="text-center mb-4">
           <h3 className="text-xl font-semibold">أنواع التحليل المراد تنفيذها</h3>
+          <p className="text-sm text-gray-700 mt-1">
+            {selectedTypes.length} من {analysisTypes.length-1} نوع محدد
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {analysisTypes.map((type) => (
