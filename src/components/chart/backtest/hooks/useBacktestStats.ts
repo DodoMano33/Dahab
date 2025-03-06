@@ -8,6 +8,7 @@ interface AnalysisStats {
   type: string;
   success: number;
   fail: number;
+  display_name?: string;
 }
 
 export const useBacktestStats = () => {

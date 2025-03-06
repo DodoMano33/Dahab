@@ -8,6 +8,7 @@ interface AnalysisStatsProps {
     type: string;
     success: number;
     fail: number;
+    display_name?: string;
   }>;
 }
 
@@ -18,26 +19,26 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
 
   // تحديد وجود معلومات تلميح لنوع التحليل
   const hasTooltip = (type: string) => {
-    const displayName = getStrategyName(type);
+    const displayName = stat.display_name || getStrategyName(type);
     return Object.keys(analysisTypeTooltips).includes(displayName);
   };
 
   // الحصول على نص التلميح
   const getTooltipContent = (type: string) => {
-    const displayName = getStrategyName(type);
+    const displayName = stat.display_name || getStrategyName(type);
     return analysisTypeTooltips[displayName] || `معلومات عن ${displayName}`;
   };
   
   // طباعة أنواع التحليل المتاحة للتشخيص
   console.log("Analysis Stats - Available types:", stats.map(s => 
-    `${s.type} -> ${getStrategyName(s.type)}`
+    `${s.type} -> ${s.display_name || getStrategyName(s.type)}`
   ));
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {stats.map((stat) => {
-          const displayName = getStrategyName(stat.type);
+          const displayName = stat.display_name || getStrategyName(stat.type);
           const tooltipContent = getTooltipContent(stat.type);
           
           // طباعة تشخيصية لكل نوع تحليل
