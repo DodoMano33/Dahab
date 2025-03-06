@@ -31,6 +31,7 @@ export const analysisTypeMap: Record<string, string> = {
   "fibonacci_advanced": "تحليل فيبوناتشي متقدم",
   "fibonacci advanced": "تحليل فيبوناتشي متقدم",
   "fibonacciadvanced": "تحليل فيبوناتشي متقدم",
+  // Add Arabic names as keys too for better matching
   "شبكات عصبية": "شبكات عصبية",
   "شبكات عصبية متكررة": "شبكات عصبية متكررة",
   "تصفيق زمني": "تصفيق زمني",
@@ -38,7 +39,19 @@ export const analysisTypeMap: Record<string, string> = {
   "شمعات مركبة": "شمعات مركبة",
   "تحليل سلوكي": "تحليل سلوكي",
   "فيبوناتشي": "فيبوناتشي",
-  "تحليل فيبوناتشي متقدم": "تحليل فيبوناتشي متقدم"
+  "تحليل فيبوناتشي متقدم": "تحليل فيبوناتشي متقدم",
+  // Add standard Arabic names for the original analysis types
+  "مضاربة": "مضاربة", 
+  "نظرية هيكل السوق": "نظرية هيكل السوق",
+  "نظرية السوق": "نظرية السوق",
+  "الحساء السلحفائي": "الحساء السلحفائي",
+  "جان": "جان",
+  "تقلبات": "تقلبات",
+  "نمطي": "نمطي",
+  "حركة السعر": "حركة السعر",
+  "ذكي": "ذكي",
+  "عادي": "عادي",
+  "يومي": "يومي"
 };
 
 /**
@@ -46,6 +59,11 @@ export const analysisTypeMap: Record<string, string> = {
  */
 export const getStrategyName = (type: string): string => {
   if (!type) return "غير محدد";
+  
+  // Direct lookup first
+  if (type in analysisTypeMap) {
+    return analysisTypeMap[type];
+  }
   
   // Handle different case formats and variations
   const normalizedType = type.toLowerCase().replace(/_/g, '').trim();
