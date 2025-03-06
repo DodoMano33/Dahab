@@ -1,145 +1,114 @@
-/**
- * Maps analysis type keys to their display names
- */
-export const analysisTypeMap: Record<string, string> = {
-  "scalping": "مضاربة",
-  "smc": "نظرية هيكل السوق",
-  "ict": "نظرية السوق",
-  "turtleSoup": "الحساء السلحفائي",
-  "turtle soup": "الحساء السلحفائي",
-  "turtle_soup": "الحساء السلحفائي",
-  "turtle": "الحساء السلحفائي",
-  "gann": "جان",
-  "waves": "تقلبات",
-  "patterns": "نمطي",
-  "pattern": "نمطي",
-  "priceAction": "حركة السعر",
-  "price action": "حركة السعر",
-  "price_action": "حركة السعر",
-  "neural_networks": "شبكات عصبية",
-  "neural networks": "شبكات عصبية",
-  "neuralnetworks": "شبكات عصبية",
-  "rnn": "شبكات عصبية متكررة",
-  "recurrent neural networks": "شبكات عصبية متكررة",
-  "time_clustering": "تصفيق زمني",
-  "time clustering": "تصفيق زمني",
-  "timeclustering": "تصفيق زمني",
-  "multi_variance": "تباين متعدد العوامل",
-  "multi variance": "تباين متعدد العوامل",
-  "multivariance": "تباين متعدد العوامل",
-  "composite_candlestick": "شمعات مركبة",
-  "composite candlestick": "شمعات مركبة",
-  "compositecandlestick": "شمعات مركبة",
-  "behavioral": "تحليل سلوكي",
-  "behavioral analysis": "تحليل سلوكي",
-  "fibonacci": "فيبوناتشي",
-  "fibonacci_advanced": "تحليل فيبوناتشي متقدم",
-  "fibonacci advanced": "تحليل فيبوناتشي متقدم",
-  "fibonacciadvanced": "تحليل فيبوناتشي متقدم",
-  // Add Arabic names as keys too for better matching
-  "شبكات عصبية": "شبكات عصبية",
-  "شبكات عصبية متكررة": "شبكات عصبية متكررة",
-  "تصفيق زمني": "تصفيق زمني",
-  "تباين متعدد العوامل": "تباين متعدد العوامل",
-  "شمعات مركبة": "شمعات مركبة",
-  "تحليل سلوكي": "تحليل سلوكي",
-  "فيبوناتشي": "فيبوناتشي",
-  "تحليل فيبوناتشي متقدم": "تحليل فيبوناتشي متقدم",
-  // Add standard Arabic names for the original analysis types
-  "مضاربة": "مضاربة", 
-  "سكالبينج": "مضاربة",
-  "نظرية هيكل السوق": "نظرية هيكل السوق",
-  "نظرية السوق": "نظرية السوق",
-  "الحساء السلحفائي": "الحساء السلحفائي",
-  "جان": "جان",
-  "تقلبات": "تقلبات",
-  "نمطي": "نمطي",
-  "حركة السعر": "حركة السعر",
-  "ذكي": "ذكي",
-  "عادي": "عادي",
-  "يومي": "يومي",
-  "smart": "ذكي",
-  "daily": "يومي",
-  "normal": "عادي",
-  "ICT": "نظرية السوق",
-  "SMC": "نظرية هيكل السوق",
-  "Turtle Soup": "الحساء السلحفائي",
-  "Gann": "جان",
-  "Waves": "تقلبات",
-  "Patterns": "نمطي",
-  "Price Action": "حركة السعر"
+
+// نقل دالة getStrategyName لتكون قبل استخدامها
+export const getStrategyName = (type: string): string => {
+  const strategyMap: Record<string, string> = {
+    normal: "التحليل العادي",
+    trend: "تحليل الاتجاه",
+    support_resistance: "الدعم والمقاومة",
+    oscillator: "المذبذبات",
+    candlestick: "الشموع اليابانية",
+    fibonacci: "فيبوناتشي",
+    fibonacci_advanced: "فيبوناتشي المتقدم",
+    gann: "تحليل جان",
+    waves: "تحليل الموجات",
+    price_action: "حركة السعر",
+    scalping: "سكالبينج",
+    smc: "تحليل تحكم السيولة",
+    ict: "تحليل ICT",
+    time_clustering: "تحليل تجمع الوقت",
+    pattern: "تحليل الأنماط",
+    multi_variance: "التباين المتعدد",
+    neural_network: "الشبكة العصبية",
+    behaviors: "تحليل السلوك",
+    turtle_soup: "تحليل Turtle Soup",
+    rnn: "شبكة RNN العصبية",
+    composite_candlesticks: "تحليل الشموع المركب",
+    // أية أنواع أخرى يمكن إضافتها هنا
+  };
+
+  // إذا وجد النوع، نرجع اسمه، وإلا نرجع النوع كما هو
+  return strategyMap[type] || type;
 };
 
-// القائمة الرئيسية لأنواع التحليل الـ18 (المعرفات الرئيسية)
+// قائمة أنواع التحليل الرئيسية
 export const mainAnalysisTypes = [
+  "normal",
+  "trend",
+  "support_resistance",
+  "oscillator",
+  "candlestick",
+  "fibonacci",
+  "fibonacci_advanced",
+  "gann",
+  "waves",
+  "price_action",
   "scalping",
   "smc",
   "ict",
-  "turtle_soup",
-  "gann",
-  "waves",
-  "patterns",
-  "price_action",
-  "neural_networks",
-  "rnn",
   "time_clustering",
+  "pattern",
   "multi_variance",
-  "composite_candlestick",
-  "behavioral",
-  "fibonacci",
-  "fibonacci_advanced",
-  "smart",
-  "normal"
+  "neural_network",
+  "behaviors",
+  "turtle_soup",
+  "rnn",
+  "composite_candlesticks"
 ];
 
-// الحصول على أسماء عرض أنواع التحليل الرئيسية
-export const mainAnalysisTypeNames = mainAnalysisTypes.map(type => getStrategyName(type));
+// قائمة أنواع التحليل مع أسماء العرض
+export const analysisTypesWithDisplayNames = mainAnalysisTypes.map(type => ({
+  value: type,
+  label: getStrategyName(type)
+}));
 
-/**
- * Get a formatted display name for an analysis type
- */
-export const getStrategyName = (type: string): string => {
-  if (!type) {
-    console.log(`Strategy name lookup for empty type`);
-    return "غير محدد";
+// الأنواع المتاحة للتحليل السريع
+export const quickAnalysisTypes = [
+  { value: "normal", label: "التحليل العادي" },
+  { value: "trend", label: "تحليل الاتجاه" },
+  { value: "support_resistance", label: "الدعم والمقاومة" },
+  { value: "fibonacci", label: "فيبوناتشي" },
+  { value: "price_action", label: "حركة السعر" },
+  { value: "pattern", label: "تحليل الأنماط" }
+];
+
+// مجموعات التحليل
+export const analysisGroups = [
+  {
+    title: "التحليلات الأساسية",
+    types: ["normal", "trend", "support_resistance", "oscillator"]
+  },
+  {
+    title: "تحليلات الشموع والأنماط",
+    types: ["candlestick", "pattern", "composite_candlesticks"]
+  },
+  {
+    title: "تحليلات فيبوناتشي وجان",
+    types: ["fibonacci", "fibonacci_advanced", "gann"]
+  },
+  {
+    title: "تحليلات الموجات والسعر",
+    types: ["waves", "price_action", "smc", "ict"]
+  },
+  {
+    title: "تحليلات متقدمة",
+    types: [
+      "scalping", 
+      "time_clustering", 
+      "multi_variance", 
+      "neural_network", 
+      "behaviors",
+      "turtle_soup",
+      "rnn"
+    ]
   }
-  
-  // Debug logging to help diagnose issues
-  console.log(`Looking up strategy name for type: "${type}" (${typeof type})`);
-  
-  // Direct lookup first
-  if (type in analysisTypeMap) {
-    console.log(`Direct match found for "${type}": ${analysisTypeMap[type]}`);
-    return analysisTypeMap[type];
-  }
-  
-  // Handle different case formats and variations
-  const normalizedType = typeof type === 'string' 
-    ? type.toLowerCase().replace(/_/g, '').trim() 
-    : String(type).toLowerCase().trim();
-    
-  console.log(`Normalized type: "${normalizedType}"`);
-  
-  for (const key in analysisTypeMap) {
-    const normalizedKey = key.toLowerCase().replace(/_/g, '').trim();
-    if (normalizedType === normalizedKey) {
-      console.log(`Match found after normalization: "${type}" -> "${key}" -> ${analysisTypeMap[key]}`);
-      return analysisTypeMap[key];
+];
+
+// دالة للحصول على مجموعة التحليل التي ينتمي إليها نوع معين
+export const getAnalysisGroup = (type: string): string => {
+  for (const group of analysisGroups) {
+    if (group.types.includes(type)) {
+      return group.title;
     }
   }
-  
-  // If no direct match, check for partial matches
-  for (const key in analysisTypeMap) {
-    const normalizedKey = key.toLowerCase().replace(/_/g, '').trim();
-    if (normalizedType.includes(normalizedKey) || normalizedKey.includes(normalizedType)) {
-      console.log(`Partial match found: "${normalizedType}" matches "${normalizedKey}" -> ${analysisTypeMap[key]}`);
-      return analysisTypeMap[key];
-    }
-  }
-  
-  // For debugging
-  console.log(`No match found for analysis type: "${type}" (normalized: "${normalizedType}")`);
-  
-  // If no match at all, return the original type
-  return type;
+  return "أخرى";
 };

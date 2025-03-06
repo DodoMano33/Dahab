@@ -28,12 +28,6 @@ export const useBacktestStats = () => {
 
       console.log('Fetched backtest stats raw data:', results);
       
-      if (!results || !Array.isArray(results)) {
-        console.error('Invalid results format:', results);
-        setStats([]);
-        return;
-      }
-      
       // جمع نتائج الاستعلام في قاموس لسهولة البحث
       const statsMap: Record<string, AnalysisStats> = {};
       
@@ -48,43 +42,45 @@ export const useBacktestStats = () => {
         };
       });
       
-      // معالجة النتائج من قاعدة البيانات
-      results.forEach((stat: any) => {
-        // التأكد من وجود نوع صالح
-        if (!stat.type) {
-          console.warn('Found stat without type:', stat);
-          stat.type = 'normal';
-        }
-        
-        const displayName = getStrategyName(stat.type);
-        console.log(`Processing stat: ${stat.type} -> ${displayName}`);
-        
-        // البحث عن أقرب مطابقة في قائمة أنواع التحليل الرئيسية
-        let matchedType = stat.type;
-        for (const mainType of mainAnalysisTypes) {
-          if (
-            mainType.toLowerCase() === stat.type.toLowerCase() ||
-            getStrategyName(mainType) === displayName
-          ) {
-            matchedType = mainType;
-            break;
+      // معالجة النتائج من قاعدة البيانات (إذا كانت موجودة)
+      if (results && Array.isArray(results)) {
+        results.forEach((stat: any) => {
+          // التأكد من وجود نوع صالح
+          if (!stat.type) {
+            console.warn('Found stat without type:', stat);
+            stat.type = 'normal';
           }
-        }
-        
-        // تحديث الإحصائيات
-        if (statsMap[matchedType]) {
-          statsMap[matchedType].success += stat.success || 0;
-          statsMap[matchedType].fail += stat.fail || 0;
-        } else {
-          // إذا لم يتم العثور على مطابقة، نضيف النوع كما هو
-          statsMap[stat.type] = {
-            type: stat.type,
-            success: stat.success || 0,
-            fail: stat.fail || 0,
-            display_name: displayName
-          };
-        }
-      });
+          
+          const displayName = getStrategyName(stat.type);
+          console.log(`Processing stat: ${stat.type} -> ${displayName}`);
+          
+          // البحث عن أقرب مطابقة في قائمة أنواع التحليل الرئيسية
+          let matchedType = stat.type;
+          for (const mainType of mainAnalysisTypes) {
+            if (
+              mainType.toLowerCase() === stat.type.toLowerCase() ||
+              getStrategyName(mainType) === displayName
+            ) {
+              matchedType = mainType;
+              break;
+            }
+          }
+          
+          // تحديث الإحصائيات
+          if (statsMap[matchedType]) {
+            statsMap[matchedType].success += stat.success || 0;
+            statsMap[matchedType].fail += stat.fail || 0;
+          } else {
+            // إذا لم يتم العثور على مطابقة، نضيف النوع كما هو
+            statsMap[stat.type] = {
+              type: stat.type,
+              success: stat.success || 0,
+              fail: stat.fail || 0,
+              display_name: displayName
+            };
+          }
+        });
+      }
       
       // تحويل القاموس إلى مصفوفة
       const processedStats = Object.values(statsMap);

@@ -33,19 +33,19 @@ export const AnalysisStatsChart = ({ stats }: { stats: AnalysisStats[] }) => {
       <CardHeader>
         <CardTitle>أداء أنواع التحليل</CardTitle>
         <CardDescription>
-          مقارنة بين معدلات نجاح وفشل أنواع التحليل المختلفة
+          مقارنة بين معدلات نجاح وفشل أنواع التحليل المختلفة ({chartData.length} نوع)
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full">
+        <div className="h-[500px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 120 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name"
                 angle={-45}
                 textAnchor="end"
-                height={80}
+                height={100}
                 interval={0}
                 fontSize={12}
               />
