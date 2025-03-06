@@ -2,14 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Play, Square } from "lucide-react";
 import { useState, useEffect } from "react";
-import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
 import { supabase } from "@/lib/supabase";
 import { HistoryButton } from "./components/HistoryButton";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
   onClick: () => void;
-  onBackTestClick?: () => void;
   disabled?: boolean;
   setIsHistoryOpen: (open: boolean) => void;
 }
@@ -20,24 +18,11 @@ export const AutoAnalysisButton = ({
   disabled,
   setIsHistoryOpen
 }: AutoAnalysisButtonProps) => {
-  const [isBackTestOpen, setIsBackTestOpen] = useState(false);
-  const [isEntryPointBackTestOpen, setIsEntryPointBackTestOpen] = useState(false);
-  const [backtestCount, setBacktestCount] = useState(0);
   const [searchHistoryCount, setSearchHistoryCount] = useState(0);
 
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        // Get backtest results count
-        const { count: backtestCount, error: backtestError } = await supabase
-          .from('backtest_results')
-          .select('*', { count: 'exact', head: true });
-
-        if (backtestError) {
-          console.error('Error fetching backtest count:', backtestError);
-          return;
-        }
-
         // Get search history count
         const { count: historyCount, error: historyError } = await supabase
           .from('search_history')
@@ -48,17 +33,11 @@ export const AutoAnalysisButton = ({
           return;
         }
 
-        setBacktestCount(backtestCount || 0);
         setSearchHistoryCount(historyCount || 0);
 
         // Set up realtime subscription for counts
         const channel = supabase
           .channel('counts_changes')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'backtest_results' },
-            () => fetchCounts()
-          )
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'search_history' },
@@ -101,43 +80,12 @@ export const AutoAnalysisButton = ({
 
       <div className="grid grid-cols-1 gap-4 mt-4">
         <HistoryButton
-          onClick={() => setIsBackTestOpen(true)}
-          title="Back Test Results"
-          count={backtestCount}
-          className="bg-[#800000] hover:bg-[#600000] text-white"
-        />
-
-        <HistoryButton
-          onClick={() => setIsEntryPointBackTestOpen(true)}
-          title={
-            <>
-              Back Test Results
-              <br />
-              (أفضل نقطة دخول)
-            </>
-          }
-          count={backtestCount}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        />
-
-        <HistoryButton
           onClick={() => setIsHistoryOpen(true)}
           title="سجل البحث"
           count={searchHistoryCount}
           variant="outline"
         />
       </div>
-
-      <BackTestResultsDialog 
-        isOpen={isBackTestOpen}
-        onClose={() => setIsBackTestOpen(false)}
-      />
-
-      <BackTestResultsDialog 
-        isOpen={isEntryPointBackTestOpen}
-        onClose={() => setIsEntryPointBackTestOpen(false)}
-        useEntryPoint={true}
-      />
     </div>
   );
 };
