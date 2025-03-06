@@ -27,7 +27,9 @@ export const AnalysisTable = ({
 
   console.log("Rendering analysis table with analyses:", analyses.length);
   if (analyses.length > 0) {
-    console.log("Sample analysis type from first item:", analyses[0].analysis_type);
+    console.log("Sample analysis types from items:", analyses.slice(0, 5).map(a => 
+      `${a.id}: ${a.analysis_type} -> ${getStrategyName(a.analysis_type)}`
+    ));
   }
 
   return (

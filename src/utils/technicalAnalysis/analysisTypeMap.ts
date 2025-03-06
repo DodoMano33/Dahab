@@ -3,19 +3,22 @@
  * Maps analysis type keys to their display names
  */
 export const analysisTypeMap: Record<string, string> = {
-  "scalping": "Scalping",
-  "smc": "SMC",
-  "ict": "ICT",
-  "turtleSoup": "Turtle Soup",
-  "turtle soup": "Turtle Soup",
-  "turtle_soup": "Turtle Soup",
-  "gann": "Gann",
-  "waves": "Waves", 
-  "patterns": "Patterns",
-  "pattern": "Patterns",
-  "priceAction": "Price Action",
-  "price action": "Price Action",
-  "price_action": "Price Action",
+  "scalping": "مضاربة",
+  "smc": "نظرية هيكل السوق",
+  "ict": "نظرية السوق",
+  "turtleSoup": "الحساء السلحفائي",
+  "turtle soup": "الحساء السلحفائي",
+  "turtle_soup": "الحساء السلحفائي",
+  "turtle": "الحساء السلحفائي",
+  "gann": "جان",
+  "waves": "تقلبات",
+  "موجات": "تقلبات", 
+  "patterns": "نمطي",
+  "pattern": "نمطي",
+  "نمطي": "نمطي",
+  "priceAction": "حركة السعر",
+  "price action": "حركة السعر",
+  "price_action": "حركة السعر",
   "neural_networks": "شبكات عصبية",
   "neural networks": "شبكات عصبية",
   "neuralnetworks": "شبكات عصبية",
@@ -61,7 +64,13 @@ export const analysisTypeMap: Record<string, string> = {
   "يومي": "يومي",
   "smart": "ذكي",
   "daily": "يومي",
-  "turtle": "الحساء السلحفائي"
+  "ICT": "نظرية السوق",
+  "SMC": "نظرية هيكل السوق",
+  "Turtle Soup": "الحساء السلحفائي",
+  "Gann": "جان",
+  "Waves": "تقلبات",
+  "Patterns": "نمطي",
+  "Price Action": "حركة السعر"
 };
 
 /**
@@ -70,17 +79,23 @@ export const analysisTypeMap: Record<string, string> = {
 export const getStrategyName = (type: string): string => {
   if (!type) return "غير محدد";
   
+  // Debug logging to help diagnose issues
+  console.log(`Looking up strategy name for type: ${type}`);
+  
   // Direct lookup first
   if (type in analysisTypeMap) {
+    console.log(`Direct match found: ${analysisTypeMap[type]}`);
     return analysisTypeMap[type];
   }
   
   // Handle different case formats and variations
   const normalizedType = type.toLowerCase().replace(/_/g, '').trim();
+  console.log(`Normalized type: ${normalizedType}`);
   
   for (const key in analysisTypeMap) {
     const normalizedKey = key.toLowerCase().replace(/_/g, '').trim();
     if (normalizedType === normalizedKey) {
+      console.log(`Match found after normalization: ${analysisTypeMap[key]}`);
       return analysisTypeMap[key];
     }
   }
@@ -89,6 +104,7 @@ export const getStrategyName = (type: string): string => {
   for (const key in analysisTypeMap) {
     const normalizedKey = key.toLowerCase().replace(/_/g, '').trim();
     if (normalizedType.includes(normalizedKey) || normalizedKey.includes(normalizedType)) {
+      console.log(`Partial match found: ${normalizedType} matches ${normalizedKey} -> ${analysisTypeMap[key]}`);
       return analysisTypeMap[key];
     }
   }

@@ -27,6 +27,11 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
     const displayName = getStrategyName(type);
     return analysisTypeTooltips[displayName] || `معلومات عن ${displayName}`;
   };
+  
+  // طباعة أنواع التحليل المتاحة للتشخيص
+  console.log("Analysis Stats - Available types:", stats.map(s => 
+    `${s.type} -> ${getStrategyName(s.type)}`
+  ));
 
   return (
     <div className="space-y-6">
@@ -34,6 +39,10 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
         {stats.map((stat) => {
           const displayName = getStrategyName(stat.type);
           const tooltipContent = getTooltipContent(stat.type);
+          
+          // طباعة تشخيصية لكل نوع تحليل
+          console.log(`Rendering stats for type: ${stat.type} -> ${displayName}`);
+          
           return (
             <div
               key={stat.type}

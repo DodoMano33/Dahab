@@ -16,7 +16,7 @@ export const mapToAnalysisType = (analysisType: string): string => {
   if (normalizedType.includes('نمطي') || normalizedType.includes('pattern')) return "نمطي";
   if (normalizedType.includes('تقلبات') || normalizedType.includes('wave')) return "تقلبات";
   if (normalizedType.includes('جان') || normalizedType.includes('gann')) return "جان";
-  if (normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtlesoup')) return "الحساء السلحفائي";
+  if (normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtlesoup') || normalizedType.includes('turtle')) return "الحساء السلحفائي";
   if (normalizedType.includes('نظريةالسوق') || normalizedType.includes('ict')) return "نظرية السوق";
   if (normalizedType.includes('نظريةهيكلالسوق') || normalizedType.includes('smc')) return "نظرية هيكل السوق";
   if (normalizedType.includes('مضاربة') || normalizedType.includes('scalping') || normalizedType.includes('سكالبينج')) return "مضاربة";
@@ -60,9 +60,9 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
     isScalping: normalizedType.includes('scalping') || normalizedType.includes('مضاربة') || normalizedType.includes('سكالبينج'),
     isSMC: normalizedType.includes('smc') || normalizedType.includes('نظريةهيكلالسوق'),
     isICT: normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق'),
-    isTurtleSoup: normalizedType.includes('turtlesoup') || normalizedType.includes('الحساءالسلحفائي'),
+    isTurtleSoup: normalizedType.includes('turtlesoup') || normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtle'),
     isGann: normalizedType.includes('gann') || normalizedType.includes('جان'),
-    isWaves: normalizedType.includes('waves') || normalizedType.includes('تقلبات'),
+    isWaves: normalizedType.includes('waves') || normalizedType.includes('تقلبات') || normalizedType.includes('موجات'),
     isPatternAnalysis: normalizedType.includes('pattern') || normalizedType.includes('نمطي'),
     isPriceAction: normalizedType.includes('priceaction') || normalizedType.includes('حركةالسعر'),
     isNeuralNetwork: normalizedType.includes('neuralnetwork') || normalizedType.includes('شبكاتعصبية'),
