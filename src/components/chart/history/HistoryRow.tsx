@@ -10,7 +10,7 @@ import { TargetsList } from "./TargetsList";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { ExpiryTimer } from "./ExpiryTimer";
 import { AnalysisData } from "@/types/analysis";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
