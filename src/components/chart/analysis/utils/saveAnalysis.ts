@@ -1,8 +1,8 @@
 
-import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { supabase } from "@/lib/supabase";
+import { AnalysisType, AnalysisData } from "@/types/analysis";
+import { toast } from "sonner";
 
-// Types for saving analysis
 interface SaveAnalysisParams {
   userId: string;
   symbol: string;
@@ -22,47 +22,58 @@ export const saveAnalysis = async ({
   timeframe,
   durationHours = 8
 }: SaveAnalysisParams) => {
-  console.log("Saving analysis to database:", {
-    userId,
+  // Validate required fields
+  if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
+    console.error("Missing required fields:", { userId, symbol, currentPrice, analysisResult, analysisType, timeframe });
+    throw new Error("جميع الحقول مطلوبة لحفظ التحليل");
+  }
+
+  // Validate analysis result structure
+  if (!analysisResult.pattern || !analysisResult.direction || !analysisResult.stopLoss) {
+    console.error("Invalid analysis result structure:", analysisResult);
+    throw new Error("نتائج التحليل غير صالحة");
+  }
+
+  // Ensure analysisType is a valid value for the database
+  console.log("Final analysis type being saved to database:", analysisType);
+
+  // Set automatic activation type for Fibonacci Advanced Analysis
+  if (!analysisResult.activation_type) {
+    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
+      analysisResult.activation_type = "يدوي";
+    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
+      analysisResult.activation_type = "تلقائي";
+    }
+  }
+
+  console.log("Inserting analysis data with duration:", durationHours, {
+    user_id: userId,
     symbol,
-    currentPrice,
-    analysisType,
+    current_price: currentPrice,
+    analysis: analysisResult,
+    analysis_type: analysisType,
     timeframe,
-    durationHours
+    analysis_duration_hours: durationHours
   });
 
-  // Calculate expiry time from duration in hours
-  const now = new Date();
-  const expiryTime = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
-
-  try {
-    // Create the insert data object
-    const insertData = {
+  const { data, error } = await supabase
+    .from('search_history')
+    .insert({
       user_id: userId,
-      symbol: symbol,
+      symbol,
       current_price: currentPrice,
+      analysis: analysisResult,
       analysis_type: analysisType,
-      timeframe: timeframe,
-      analysis_expiry_date: expiryTime,
-      analysis_duration_hours: durationHours,
-      activation_type: analysisResult.activation_type || "تلقائي",
-      analysis: analysisResult // Store the full analysis object
-    };
+      timeframe,
+      analysis_duration_hours: durationHours
+    })
+    .select()
+    .maybeSingle();
 
-    const { data, error } = await supabase
-      .from("search_history")
-      .insert([insertData])
-      .select();
-
-    if (error) {
-      console.error("Error saving analysis:", error);
-      throw new Error("Failed to save analysis to database");
-    }
-
-    console.log("Analysis saved successfully:", data);
-    return data && data.length > 0 ? data[0] : null;
-  } catch (error) {
-    console.error("Error in saveAnalysis:", error);
+  if (error) {
+    console.error("Error saving to Supabase:", error);
     throw error;
   }
+
+  return data;
 };

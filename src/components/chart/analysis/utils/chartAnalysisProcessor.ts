@@ -1,7 +1,7 @@
 
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { AnalysisData } from "@/types/analysis";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { executeAnalysis } from "@/utils/technicalAnalysis/analysisExecutor";
+import { executeAnalysis } from "./analysisExecutor";
 import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";
 import { dismissToasts, showLoadingToast, showSuccessToast } from "./toastUtils";
 
@@ -22,8 +22,6 @@ interface ChartAnalysisParams {
     isScalping: boolean;
     isPriceAction: boolean;
     isNeuralNetwork: boolean;
-    isFibonacci?: boolean;
-    isFibonacciAdvanced?: boolean;
   };
   duration?: string;
 }
@@ -105,13 +103,6 @@ export const processChartAnalysis = async ({
     if (!analysisResult) {
       dismissToasts(loadingToastId, messageToastId);
       throw new Error("لم يتم العثور على نتائج التحليل");
-    }
-
-    // Ensure the analysis type is properly set
-    if (options.isFibonacci) {
-      analysisResult.analysisType = "fibonacci" as AnalysisType;
-    } else if (options.isFibonacciAdvanced) {
-      analysisResult.analysisType = "fibonacci_advanced" as AnalysisType;
     }
 
     console.log("Analysis completed successfully:", analysisResult);

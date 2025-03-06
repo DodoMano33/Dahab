@@ -1,4 +1,5 @@
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+
+import { AnalysisData } from "@/types/analysis";
 import { calculateFibonacciLevels, findOptimalFibonacciEntry, calculateFibonacciTargets } from "@/utils/technicalAnalysis/fibonacci";
 import { calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis/calculations";
 
@@ -138,7 +139,7 @@ export const analyzeFibonacciAdvancedChart = async (
       price: Number(bestEntryPoint.price.toFixed(2)),
       reason: bestEntryPoint.reason + ` (${wyckoffAnalysis.phase})`
     },
-    analysisType: "fibonacci_advanced" as AnalysisType, // Explicitly cast to AnalysisType
+    analysisType: "تحليل فيبوناتشي متقدم",
     activation_type: "يدوي"
   };
   

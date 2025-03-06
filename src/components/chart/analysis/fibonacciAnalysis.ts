@@ -1,5 +1,5 @@
 
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { AnalysisData } from "@/types/analysis";
 import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
 import { calculateTargets, calculateStopLoss, calculateBestEntryPoint } from "@/utils/technicalAnalysis/calculations";
 import { getTimeframeLabel } from "@/utils/technicalAnalysis/timeUtils";
@@ -87,7 +87,7 @@ export const analyzeFibonacciChart = async (
       bestEntryPoint: entryPoint,
       targets,
       fibonacciLevels,
-      analysisType: "fibonacci" as AnalysisType, // Explicitly cast to AnalysisType
+      analysisType: "فيبوناتشي",
       activation_type: "تلقائي"
     };
   } catch (error) {

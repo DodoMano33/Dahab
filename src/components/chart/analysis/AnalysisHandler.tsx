@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { AnalysisData } from "@/types/analysis";
 import { validateAnalysisInputs } from "./utils/inputValidation";
 import { buildAnalysisConfig } from "./utils/analysisConfigBuilder";
 import { processChartAnalysis } from "./utils/chartAnalysisProcessor";
@@ -107,15 +107,6 @@ export const useAnalysisHandler = () => {
         options,
         duration
       });
-      
-      // Ensure the analysis type is set correctly in the result
-      if (result && result.analysisResult) {
-        if (isFibonacci) {
-          result.analysisResult.analysisType = "fibonacci" as AnalysisType;
-        } else if (isFibonacciAdvanced) {
-          result.analysisResult.analysisType = "fibonacci_advanced" as AnalysisType;
-        }
-      }
       
       // Store the image and analysis result
       setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, providedPrice as number) : null);
