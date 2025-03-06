@@ -8,7 +8,7 @@ interface DateCellProps {
 }
 
 export const DateCell = ({ date }: DateCellProps) => (
-  <TableCell className="w-[110px] text-right whitespace-nowrap text-xs">
+  <TableCell className="w-[110px] text-center whitespace-nowrap text-xs">
     {format(date, 'PPpp', { locale: ar })}
   </TableCell>
 );

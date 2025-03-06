@@ -6,7 +6,7 @@ interface TimeframeCellProps {
 }
 
 export const TimeframeCell = ({ timeframe }: TimeframeCellProps) => (
-  <TableCell className="w-[80px] text-right whitespace-nowrap">
+  <TableCell className="w-[80px] text-center whitespace-nowrap">
     {timeframe}
   </TableCell>
 );

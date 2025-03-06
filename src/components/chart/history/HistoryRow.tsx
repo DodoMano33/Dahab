@@ -1,4 +1,3 @@
-
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -10,7 +9,7 @@ import { TargetsList } from "./TargetsList";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { ExpiryTimer } from "./ExpiryTimer";
 import { AnalysisData } from "@/types/analysis";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -90,18 +89,14 @@ export const HistoryRow = ({
           />
         </TableCell>
       )}
-      <TableCell className="font-medium w-16 p-2 text-right">{symbol}</TableCell>
-      <TableCell className="w-28 p-2 text-right">
-        {format(date, 'PPpp', { locale: ar })}
-      </TableCell>
-      <TableCell className="w-20 p-2 text-right">{timeframe}</TableCell>
-      <TableCell className="w-28 p-2">
-        <AnalysisTypeCell 
-          analysisType={displayAnalysisType} 
-          pattern={analysis.pattern}
-          activation_type={analysis.activation_type}
-        />
-      </TableCell>
+      <TableCell className="font-medium w-16 p-2">{symbol}</TableCell>
+      <DateCell date={date} />
+      <TimeframeCell timeframe={timeframe} />
+      <AnalysisTypeCell 
+        analysisType={displayAnalysisType} 
+        pattern={analysis.pattern}
+        activation_type={analysis.activation_type}
+      />
       <TableCell className="w-16 p-2 text-center">{currentPrice}</TableCell>
       <TableCell className="w-16 p-2"><DirectionIndicator direction={analysis.direction} /></TableCell>
       <TableCell className="w-20 p-2">
