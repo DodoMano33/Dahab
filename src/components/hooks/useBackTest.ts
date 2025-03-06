@@ -26,12 +26,15 @@ export const useBackTest = () => {
       // معالجة كل تحليل
       for (const analysis of analyses) {
         try {
+          // تحديث وقت آخر فحص للتحليل
+          await supabase
+            .from('search_history')
+            .update({ last_checked_at: new Date().toISOString() })
+            .eq('id', analysis.id);
+
           // تحقق من وجود نقطة دخول مثالية
           const hasBestEntryPoint = analysis.analysis.bestEntryPoint?.price;
           const currentPrice = analysis.last_checked_price || analysis.current_price;
-          const direction = analysis.analysis.direction;
-          const targetPrice = analysis.analysis.targets?.[0]?.price;
-          const stopLoss = analysis.analysis.stopLoss;
           
           // تحديث حالة التحليل مع نقطة الدخول المثالية
           if (hasBestEntryPoint) {
