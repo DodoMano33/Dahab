@@ -37,7 +37,7 @@ export const HistoryContent = ({
       <div className="overflow-x-auto h-full overflow-y-auto">
         <Table className="relative w-full table-fixed">
           <HistoryTableHeader showCheckbox={true} />
-          <TableBody className="relative">
+          <TableBody>
             {history.map((item) => (
               <HistoryRow
                 key={item.id}

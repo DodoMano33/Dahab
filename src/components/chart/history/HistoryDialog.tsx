@@ -105,13 +105,15 @@ export const HistoryDialog = ({
             history={validHistory} 
           />
         </div>
-        <div className="flex-1 overflow-hidden mt-2">
-          <HistoryContent 
-            history={validHistory} 
-            onDelete={onDelete} 
-            selectedItems={selectedItems} 
-            onSelect={handleSelect} 
-          />
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-auto">
+            <HistoryContent 
+              history={validHistory} 
+              onDelete={onDelete} 
+              selectedItems={selectedItems} 
+              onSelect={handleSelect} 
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
