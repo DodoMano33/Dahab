@@ -1,3 +1,4 @@
+<lov-codelov-code>
 import { Button } from "@/components/ui/button";
 import { Play, Square } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -140,3 +141,4 @@ export const AutoAnalysisButton = ({
     </div>
   );
 };
+</lov-code>
