@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -13,6 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HistoryRowProps {
   id: string;
@@ -78,9 +80,9 @@ export const HistoryRow = ({
   }, []);
 
   return (
-    <TableRow>
+    <TableRow className="text-xs">
       {onSelect && (
-        <TableCell className="w-12">
+        <TableCell className="w-10 p-2">
           <Checkbox 
             checked={isSelected} 
             onCheckedChange={onSelect}
@@ -88,49 +90,47 @@ export const HistoryRow = ({
           />
         </TableCell>
       )}
-      <TableCell className="font-medium">{symbol}</TableCell>
-      <TableCell><DateCell date={date} /></TableCell>
-      <TableCell><TimeframeCell timeframe={timeframe} /></TableCell>
-      <TableCell>
-        <AnalysisTypeCell 
-          analysisType={displayAnalysisType} 
-          pattern={analysis.pattern}
-          activation_type={analysis.activation_type}
-        />
-      </TableCell>
-      <TableCell>{currentPrice}</TableCell>
-      <TableCell><DirectionIndicator direction={analysis.direction} /></TableCell>
-      <TableCell>
+      <TableCell className="font-medium w-16 p-2">{symbol}</TableCell>
+      <DateCell date={date} />
+      <TimeframeCell timeframe={timeframe} />
+      <AnalysisTypeCell 
+        analysisType={displayAnalysisType} 
+        pattern={analysis.pattern}
+        activation_type={analysis.activation_type}
+      />
+      <TableCell className="w-16 p-2 text-center">{currentPrice}</TableCell>
+      <TableCell className="w-16 p-2"><DirectionIndicator direction={analysis.direction} /></TableCell>
+      <TableCell className="w-20 p-2">
         <StopLoss 
           value={analysis.stopLoss} 
           isHit={false}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="w-24 p-2">
         <TargetsList 
           targets={analysis.targets || []} 
           isTargetHit={false}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="w-24 p-2">
         <BestEntryPoint 
           price={analysis.bestEntryPoint?.price}
           reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="w-20 p-2">
         <ExpiryTimer 
           createdAt={date} 
           analysisId={id} 
           durationHours={analysis_duration_hours}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="w-24 p-2">
         {last_checked_price ? (
           <div className="text-xs">
             <div>{last_checked_price}</div>
             {last_checked_at && (
-              <div className="text-muted-foreground">
+              <div className="text-muted-foreground text-[10px]">
                 {formatDistanceToNow(new Date(last_checked_at), { 
                   addSuffix: true,
                   locale: ar
@@ -139,13 +139,23 @@ export const HistoryRow = ({
             )}
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs">لم يتم الفحص</span>
+          <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>
         )}
       </TableCell>
-      <TableCell>
-        <div className={`px-2 py-1 rounded-full text-xs inline-flex items-center ${marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
-        </div>
+      <TableCell className="w-16 p-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center w-14 ${marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً' : 'السوق مغلق حالياً'}</p>
+              {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
     </TableRow>
   );

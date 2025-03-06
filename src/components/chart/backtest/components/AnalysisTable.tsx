@@ -2,6 +2,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface AnalysisTableProps {
   analyses: any[];
@@ -25,7 +26,7 @@ export const AnalysisTable = ({
 
   return (
     <div className="border rounded-lg bg-white shadow-sm">
-      <div className="grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
+      <div className="grid grid-cols-10 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
         <div className="text-center flex items-center justify-center">
           <Checkbox 
             checked={selectedItems.size === analyses.length && analyses.length > 0}
@@ -42,11 +43,11 @@ export const AnalysisTable = ({
         <div>الرمز</div>
         <div>تاريخ النتيجة</div>
       </div>
-      <div className="divide-y">
+      <div className="divide-y text-xs">
         {analyses.map((analysis) => (
           <div
             key={analysis.id}
-            className={`grid grid-cols-10 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
+            className={`grid grid-cols-10 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
               analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
             }`}
           >
@@ -56,17 +57,53 @@ export const AnalysisTable = ({
                 onCheckedChange={() => onSelect(analysis.id)}
               />
             </div>
-            <div>{formatNumber(analysis.stop_loss)}</div>
-            <div>{formatNumber(analysis.target_price)}</div>
-            <div>{formatNumber(analysis.entry_price)}</div>
-            <div>{formatNumber(analysis.best_entry_price || analysis.entry_price)}</div>
-            <div className={`font-medium ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="truncate">{formatNumber(analysis.stop_loss)}</div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>وقف الخسارة: {formatNumber(analysis.stop_loss)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="truncate">{formatNumber(analysis.target_price)}</div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>الهدف الأول: {formatNumber(analysis.target_price)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="truncate">{formatNumber(analysis.entry_price)}</div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>السعر عند التحليل: {formatNumber(analysis.entry_price)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="truncate">{formatNumber(analysis.best_entry_price || analysis.entry_price)}</div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>أفضل نقطة دخول: {formatNumber(analysis.best_entry_price || analysis.entry_price)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
               {analysis.is_success ? 'ناجح' : 'فاشل'}
             </div>
-            <div>{analysis.timeframe}</div>
-            <div>{analysis.analysis_type}</div>
-            <div>{analysis.symbol}</div>
-            <div>
+            <div className="truncate">{analysis.timeframe}</div>
+            <div className="truncate">{analysis.analysis_type}</div>
+            <div className="truncate">{analysis.symbol}</div>
+            <div className="truncate">
               {analysis.result_timestamp && 
                 format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
             </div>

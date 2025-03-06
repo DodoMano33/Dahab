@@ -92,7 +92,7 @@ export const BackTestResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] md:max-w-6xl h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-[98vw] md:max-w-7xl h-[90vh] flex flex-col p-0">
         <BackTestHeader
           initialAnalysesCount={completedAnalyses.length}
           onClose={onClose}
@@ -105,37 +105,35 @@ export const BackTestResultsDialog = ({
 
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4">
               {!isLoadingStats && <AnalysisStats stats={stats} />}
               
               <div className="overflow-x-auto">
-                <div style={{ minWidth: '800px' }}>
-                  <AnalysisTable
-                    analyses={completedAnalyses}
-                    selectedItems={selectedItems}
-                    onSelectAll={handleSelectAll}
-                    onSelect={handleSelect}
-                  />
-                  
-                  {hasMore && (
-                    <div className="flex justify-center mt-4">
-                      <Button
-                        onClick={loadMore}
-                        disabled={isLoadingResults}
-                        variant="outline"
-                      >
-                        {isLoadingResults ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            جاري التحميل...
-                          </>
-                        ) : (
-                          'تحميل المزيد'
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <AnalysisTable
+                  analyses={completedAnalyses}
+                  selectedItems={selectedItems}
+                  onSelectAll={handleSelectAll}
+                  onSelect={handleSelect}
+                />
+                
+                {hasMore && (
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      onClick={loadMore}
+                      disabled={isLoadingResults}
+                      variant="outline"
+                    >
+                      {isLoadingResults ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          جاري التحميل...
+                        </>
+                      ) : (
+                        'تحميل المزيد'
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

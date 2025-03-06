@@ -65,7 +65,7 @@ export const HistoryDialog = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-[95vw] w-[1200px] p-6 h-[90vh] flex flex-col" dir="rtl">
+      <DialogContent className="max-w-[98vw] w-[1400px] p-4 h-[90vh] flex flex-col" dir="rtl">
         <div className="flex items-center justify-between">
           <SearchHistoryHeader initialCount={validHistory.length} />
           <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export const HistoryDialog = ({
             history={validHistory} 
           />
         </div>
-        <div className="flex-1 overflow-hidden mt-4">
+        <div className="flex-1 overflow-hidden mt-2">
           <HistoryContent 
             history={validHistory} 
             onDelete={onDelete} 

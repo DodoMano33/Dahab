@@ -35,7 +35,7 @@ export const HistoryContent = ({
   return (
     <div className="relative rounded-md border bg-background h-full">
       <div className="overflow-x-auto h-full overflow-y-auto">
-        <Table className="relative">
+        <Table className="relative w-full table-fixed">
           <HistoryTableHeader showCheckbox={true} />
           <TableBody className="relative">
             {history.map((item) => (

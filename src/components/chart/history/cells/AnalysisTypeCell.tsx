@@ -46,18 +46,20 @@ export const AnalysisTypeCell = ({
   };
 
   return (
-    <TableCell className="w-[140px] text-center p-2">
+    <TableCell className="w-[120px] text-center p-1">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className={`px-2 py-1 ${getBgColor()} border-0 shadow-sm`}>
-                  {analysisType || 'غير محدد'}
+              <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
+                {analysisType || 'غير محدد'}
+              </Badge>
+              {pattern && (
+                <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
+                  {pattern}
                 </Badge>
-                {pattern && <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">{pattern}</Badge>}
-              </div>
-              <div className={`h-1 w-16 mt-1.5 rounded-full ${
+              )}
+              <div className={`h-1 w-10 mt-1 rounded-full ${
                 activation_type === 'تلقائي' 
                   ? 'bg-gradient-to-r from-green-400 to-green-500 animate-pulse' 
                   : 'bg-gradient-to-r from-orange-400 to-orange-500'
@@ -66,6 +68,7 @@ export const AnalysisTypeCell = ({
           </TooltipTrigger>
           <TooltipContent>
             <p>{activation_type === 'تلقائي' ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
+            {pattern && <p className="text-xs mt-1">{pattern}</p>}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
