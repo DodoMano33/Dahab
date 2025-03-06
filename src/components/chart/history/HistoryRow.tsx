@@ -95,41 +95,41 @@ export const HistoryRow = ({
         {format(date, 'PPpp', { locale: ar })}
       </TableCell>
       <TableCell className="w-20 p-2 text-right">{timeframe}</TableCell>
-      <TableCell className="w-28 p-2 text-right">
+      <TableCell className="w-28 p-2">
         <AnalysisTypeCell 
           analysisType={displayAnalysisType} 
           pattern={analysis.pattern}
           activation_type={analysis.activation_type}
         />
       </TableCell>
-      <TableCell className="w-16 p-2 text-right">{currentPrice}</TableCell>
-      <TableCell className="w-16 p-2 text-right"><DirectionIndicator direction={analysis.direction} /></TableCell>
-      <TableCell className="w-20 p-2 text-right">
+      <TableCell className="w-16 p-2 text-center">{currentPrice}</TableCell>
+      <TableCell className="w-16 p-2"><DirectionIndicator direction={analysis.direction} /></TableCell>
+      <TableCell className="w-20 p-2">
         <StopLoss 
           value={analysis.stopLoss} 
           isHit={false}
         />
       </TableCell>
-      <TableCell className="w-24 p-2 text-right">
+      <TableCell className="w-24 p-2">
         <TargetsList 
           targets={analysis.targets || []} 
           isTargetHit={false}
         />
       </TableCell>
-      <TableCell className="w-24 p-2 text-right">
+      <TableCell className="w-24 p-2">
         <BestEntryPoint 
           price={analysis.bestEntryPoint?.price}
           reason={analysis.bestEntryPoint?.reason}
         />
       </TableCell>
-      <TableCell className="w-20 p-2 text-right">
+      <TableCell className="w-20 p-2">
         <ExpiryTimer 
           createdAt={date} 
           analysisId={id} 
           durationHours={analysis_duration_hours}
         />
       </TableCell>
-      <TableCell className="w-24 p-2 text-right">
+      <TableCell className="w-24 p-2">
         {last_checked_price ? (
           <div className="text-xs">
             <div>{last_checked_price}</div>
@@ -146,7 +146,7 @@ export const HistoryRow = ({
           <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>
         )}
       </TableCell>
-      <TableCell className="w-16 p-2 text-right">
+      <TableCell className="w-16 p-2">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
