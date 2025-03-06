@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -9,7 +10,7 @@ import { TargetsList } from "./TargetsList";
 import { BestEntryPoint } from "./BestEntryPoint";
 import { ExpiryTimer } from "./ExpiryTimer";
 import { AnalysisData } from "@/types/analysis";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -89,40 +90,20 @@ export const HistoryRow = ({
           />
         </TableCell>
       )}
-      <TableCell className="font-medium w-16 p-2">{symbol}</TableCell>
-      <DateCell date={date} />
-      <TimeframeCell timeframe={timeframe} />
-      <AnalysisTypeCell 
-        analysisType={displayAnalysisType} 
-        pattern={analysis.pattern}
-        activation_type={analysis.activation_type}
-      />
-      <TableCell className="w-16 p-2 text-center">{currentPrice}</TableCell>
-      <TableCell className="w-16 p-2"><DirectionIndicator direction={analysis.direction} /></TableCell>
-      <TableCell className="w-20 p-2">
-        <StopLoss 
-          value={analysis.stopLoss} 
-          isHit={false}
-        />
-      </TableCell>
-      <TableCell className="w-24 p-2">
-        <TargetsList 
-          targets={analysis.targets || []} 
-          isTargetHit={false}
-        />
-      </TableCell>
-      <TableCell className="w-24 p-2">
-        <BestEntryPoint 
-          price={analysis.bestEntryPoint?.price}
-          reason={analysis.bestEntryPoint?.reason}
-        />
-      </TableCell>
-      <TableCell className="w-20 p-2">
-        <ExpiryTimer 
-          createdAt={date} 
-          analysisId={id} 
-          durationHours={analysis_duration_hours}
-        />
+      <TableCell className="w-16 p-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center w-14 ${marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً' : 'السوق مغلق حالياً'}</p>
+              {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
       <TableCell className="w-24 p-2">
         {last_checked_price ? (
@@ -141,21 +122,43 @@ export const HistoryRow = ({
           <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>
         )}
       </TableCell>
-      <TableCell className="w-16 p-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={`px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center w-14 ${marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً' : 'السوق مغلق حالياً'}</p>
-              {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <TableCell className="w-20 p-2">
+        <ExpiryTimer 
+          createdAt={date} 
+          analysisId={id} 
+          durationHours={analysis_duration_hours}
+        />
       </TableCell>
+      <TableCell className="w-24 p-2">
+        <BestEntryPoint 
+          price={analysis.bestEntryPoint?.price}
+          reason={analysis.bestEntryPoint?.reason}
+        />
+      </TableCell>
+      <TableCell className="w-24 p-2">
+        <TargetsList 
+          targets={analysis.targets || []} 
+          isTargetHit={false}
+        />
+      </TableCell>
+      <TableCell className="w-20 p-2">
+        <StopLoss 
+          value={analysis.stopLoss} 
+          isHit={false}
+        />
+      </TableCell>
+      <TableCell className="w-16 p-2"><DirectionIndicator direction={analysis.direction} /></TableCell>
+      <TableCell className="w-16 p-2 text-center">{currentPrice}</TableCell>
+      <TableCell className="w-28 p-2">
+        <AnalysisTypeCell 
+          analysisType={displayAnalysisType} 
+          pattern={analysis.pattern}
+          activation_type={analysis.activation_type}
+        />
+      </TableCell>
+      <TimeframeCell timeframe={timeframe} />
+      <DateCell date={date} />
+      <TableCell className="font-medium w-16 p-2">{symbol}</TableCell>
     </TableRow>
   );
 };
