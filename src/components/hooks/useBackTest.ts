@@ -27,10 +27,15 @@ export const useBackTest = () => {
       for (const analysis of analyses) {
         try {
           // تحديث وقت آخر فحص للتحليل
-          await supabase
+          const { error: updateError } = await supabase
             .from('search_history')
             .update({ last_checked_at: new Date().toISOString() })
             .eq('id', analysis.id);
+            
+          if (updateError) {
+            console.error(`Error updating last_checked_at for analysis ${analysis.id}:`, updateError);
+            continue; // استمر في المعالجة بالرغم من حدوث خطأ في التحديث
+          }
 
           // تحقق من وجود نقطة دخول مثالية
           const hasBestEntryPoint = analysis.analysis.bestEntryPoint?.price;
@@ -56,6 +61,7 @@ export const useBackTest = () => {
         }
       }
 
+      // تحديث وقت آخر فحص عام
       setLastCheckTime(new Date());
       toast.success('تم فحص جميع التحليلات بنجاح');
       
