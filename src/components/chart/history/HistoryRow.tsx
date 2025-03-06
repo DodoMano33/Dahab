@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateCell } from "./cells/DateCell";
@@ -89,14 +90,18 @@ export const HistoryRow = ({
           />
         </TableCell>
       )}
-      <TableCell className="font-medium w-16 p-2">{symbol}</TableCell>
-      <DateCell date={date} />
-      <TimeframeCell timeframe={timeframe} />
-      <AnalysisTypeCell 
-        analysisType={displayAnalysisType} 
-        pattern={analysis.pattern}
-        activation_type={analysis.activation_type}
-      />
+      <TableCell className="font-medium w-16 p-2 text-right">{symbol}</TableCell>
+      <TableCell className="w-28 p-2 text-right">
+        {format(date, 'PPpp', { locale: ar })}
+      </TableCell>
+      <TableCell className="w-20 p-2 text-right">{timeframe}</TableCell>
+      <TableCell className="w-28 p-2">
+        <AnalysisTypeCell 
+          analysisType={displayAnalysisType} 
+          pattern={analysis.pattern}
+          activation_type={analysis.activation_type}
+        />
+      </TableCell>
       <TableCell className="w-16 p-2 text-center">{currentPrice}</TableCell>
       <TableCell className="w-16 p-2"><DirectionIndicator direction={analysis.direction} /></TableCell>
       <TableCell className="w-20 p-2">
