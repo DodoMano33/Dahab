@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 
 interface AnalysisStatsProps {
@@ -15,20 +16,20 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+      <div className="flex flex-wrap justify-center gap-2">
         {stats.map((stat) => (
           <div
             key={stat.type}
-            className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
+            className="flex flex-col items-center text-center bg-white p-2 rounded-lg shadow-sm"
           >
-            <div className="text-sm font-medium mb-3">{stat.type}</div>
-            <div className="flex gap-2">
-              <Badge variant="success" className="flex flex-col items-center p-2">
-                <span>ناجح</span>
+            <div className="text-sm font-medium mb-2">{stat.type}</div>
+            <div className="flex gap-1">
+              <Badge variant="success" className="flex flex-col items-center p-1">
+                <span className="text-xs">ناجح</span>
                 <span className="text-lg font-bold">{stat.success}</span>
               </Badge>
-              <Badge variant="destructive" className="flex flex-col items-center p-2">
-                <span>فاشل</span>
+              <Badge variant="destructive" className="flex flex-col items-center p-1">
+                <span className="text-xs">فاشل</span>
                 <span className="text-lg font-bold">{stat.fail}</span>
               </Badge>
             </div>
