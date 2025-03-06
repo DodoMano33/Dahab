@@ -87,7 +87,7 @@ export const analyzeFibonacciChart = async (
       bestEntryPoint: entryPoint,
       targets,
       fibonacciLevels,
-      analysisType: "fibonacci", // Changed to match database enum value
+      analysisType: "fibonacci" as AnalysisType, // Explicitly cast to AnalysisType
       activation_type: "تلقائي"
     };
   } catch (error) {

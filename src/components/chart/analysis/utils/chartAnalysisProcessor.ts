@@ -109,9 +109,9 @@ export const processChartAnalysis = async ({
 
     // Ensure the analysis type is properly set
     if (options.isFibonacci) {
-      analysisResult.analysisType = "fibonacci";
+      analysisResult.analysisType = "fibonacci" as AnalysisType;
     } else if (options.isFibonacciAdvanced) {
-      analysisResult.analysisType = "fibonacci_advanced";
+      analysisResult.analysisType = "fibonacci_advanced" as AnalysisType;
     }
 
     console.log("Analysis completed successfully:", analysisResult);

@@ -111,9 +111,9 @@ export const useAnalysisHandler = () => {
       // Ensure the analysis type is set correctly in the result
       if (result && result.analysisResult) {
         if (isFibonacci) {
-          result.analysisResult.analysisType = "fibonacci";
+          result.analysisResult.analysisType = "fibonacci" as AnalysisType;
         } else if (isFibonacciAdvanced) {
-          result.analysisResult.analysisType = "fibonacci_advanced";
+          result.analysisResult.analysisType = "fibonacci_advanced" as AnalysisType;
         }
       }
       

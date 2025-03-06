@@ -97,3 +97,45 @@ export const mapToAnalysisType = (analysisType: string): AnalysisType => {
       return "normal";
   }
 };
+
+// Adding a utility function to convert database values to display names
+export const mapAnalysisTypeToConfig = (type: AnalysisType): { value: string, name: string } => {
+  switch (type) {
+    case "normal":
+      return { value: "normal", name: "عادي" };
+    case "fibonacci":
+      return { value: "fibonacci", name: "فيبوناتشي" };
+    case "fibonacci_advanced":
+      return { value: "fibonacci_advanced", name: "تحليل فيبوناتشي متقدم" };
+    case "gann":
+      return { value: "gann", name: "جان" };
+    case "waves":
+      return { value: "waves", name: "موجات" };
+    case "price_action":
+      return { value: "price_action", name: "حركة السعر" };
+    case "scalping":
+      return { value: "scalping", name: "سكالبينج" };
+    case "smc":
+      return { value: "smc", name: "SMC" };
+    case "ict":
+      return { value: "ict", name: "ICT" };
+    case "time_clustering":
+      return { value: "time_clustering", name: "تجمع الوقت" };
+    case "pattern":
+      return { value: "pattern", name: "نمطي" };
+    case "multi_variance":
+      return { value: "multi_variance", name: "تباين متعدد" };
+    case "neural_network":
+      return { value: "neural_network", name: "شبكة عصبية" };
+    case "behaviors":
+      return { value: "behaviors", name: "تحليل سلوكي" };
+    case "turtle_soup":
+      return { value: "turtle_soup", name: "تحليل Turtle Soup" };
+    case "rnn":
+      return { value: "rnn", name: "شبكة RNN العصبية" };
+    case "composite_candlesticks":
+      return { value: "composite_candlesticks", name: "تحليل الشموع المركب" };
+    default:
+      return { value: String(type), name: String(type) };
+  }
+};

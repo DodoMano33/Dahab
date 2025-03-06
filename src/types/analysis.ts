@@ -26,7 +26,25 @@ export type AnalysisType =
   | "نظرية هيكل السوق"
   | "يومي"
   | "مضاربة"
-  | "حركة السعر";
+  | "حركة السعر"
+  // Adding database-compatible enum values
+  | "normal"
+  | "fibonacci"
+  | "fibonacci_advanced"
+  | "gann"
+  | "waves"
+  | "pattern"
+  | "price_action"
+  | "scalping"
+  | "smc"
+  | "ict"
+  | "time_clustering"
+  | "multi_variance"
+  | "neural_network"
+  | "behaviors"
+  | "turtle_soup"
+  | "rnn"
+  | "composite_candlesticks";
 
 export interface ImageData {
   height: number;
