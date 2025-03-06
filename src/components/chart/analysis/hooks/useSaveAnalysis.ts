@@ -37,15 +37,12 @@ export const useSaveAnalysis = () => {
       // تأكد من أن نوع التحليل موجود في النتيجة
       if (!result.analysisResult.analysisType) {
         result.analysisResult.analysisType = mappedAnalysisType;
+      } else {
+        // If there's already an analysisType, make sure it's consistent with the mapped type
+        result.analysisResult.analysisType = mappedAnalysisType;
       }
       
-      // Update the analysis result's analysisType to the mapped value
-      const analysisResultWithMappedType = {
-        ...result.analysisResult,
-        analysisType: mappedAnalysisType
-      };
-      
-      console.log("Final analysis result with type:", analysisResultWithMappedType);
+      console.log("Final analysis result with type:", result.analysisResult);
       
       // Add proper error handling for debugging
       try {
@@ -53,7 +50,7 @@ export const useSaveAnalysis = () => {
           userId,
           symbol,
           currentPrice,
-          analysisResult: analysisResultWithMappedType,
+          analysisResult: result.analysisResult,
           analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
           timeframe,
           durationHours: duration
@@ -65,7 +62,7 @@ export const useSaveAnalysis = () => {
             date: new Date(),
             symbol,
             currentPrice,
-            analysis: analysisResultWithMappedType,
+            analysis: result.analysisResult,
             targetHit: false,
             stopLossHit: false,
             analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
@@ -78,7 +75,7 @@ export const useSaveAnalysis = () => {
         }
         
         // Show success toast with proper analysis type display
-        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+        toast.success(`تم إكمال تحليل ${result.analysisResult.pattern || analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
           duration: 5000,
         });
         

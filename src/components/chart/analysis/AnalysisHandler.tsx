@@ -108,6 +108,15 @@ export const useAnalysisHandler = () => {
         duration
       });
       
+      // Ensure the analysis type is set correctly in the result
+      if (result && result.analysisResult) {
+        if (isFibonacci) {
+          result.analysisResult.analysisType = "fibonacci";
+        } else if (isFibonacciAdvanced) {
+          result.analysisResult.analysisType = "fibonacci_advanced";
+        }
+      }
+      
       // Store the image and analysis result
       setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, providedPrice as number) : null);
       setAnalysis(result ? result.analysisResult : null);

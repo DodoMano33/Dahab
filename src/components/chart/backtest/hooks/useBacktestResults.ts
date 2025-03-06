@@ -40,8 +40,11 @@ export const useBacktestResults = () => {
           result.analysis_type = 'normal';
         }
         
+        // Set display name for the analysis type
+        result.display_name = getStrategyName(result.analysis_type);
+        
         // Log the analysis type for debugging
-        console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${getStrategyName(result.analysis_type)}`);
+        console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${result.display_name}`);
         
         return result;
       }) || [];

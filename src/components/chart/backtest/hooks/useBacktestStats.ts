@@ -47,6 +47,7 @@ export const useBacktestStats = () => {
         results.forEach((stat: any) => {
           // تخطي أي نوع تحليل ليس موجود في القائمة المعتمدة
           if (!stat.type || !mainAnalysisTypes.includes(stat.type)) {
+            console.log(`Skipping non-approved analysis type: ${stat.type}`);
             return;
           }
           

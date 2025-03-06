@@ -139,7 +139,7 @@ export const analyzeFibonacciAdvancedChart = async (
       price: Number(bestEntryPoint.price.toFixed(2)),
       reason: bestEntryPoint.reason + ` (${wyckoffAnalysis.phase})`
     },
-    analysisType: "تحليل فيبوناتشي متقدم",
+    analysisType: "fibonacci_advanced", // Changed to match database enum value
     activation_type: "يدوي"
   };
   
