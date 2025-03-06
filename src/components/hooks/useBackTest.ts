@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
@@ -47,7 +47,9 @@ export const useBackTest = () => {
         return;
       }
 
+      // تحديد الوقت الحالي - نفس الوقت سيتم استخدامه لكل التحديثات
       const currentTime = new Date().toISOString();
+      console.log("Setting last_checked_at to:", currentTime);
 
       // تحديث وقت آخر فحص لجميع التحليلات دفعة واحدة
       const { error: batchUpdateError } = await supabase
@@ -59,9 +61,6 @@ export const useBackTest = () => {
         console.error('Error updating last_checked_at:', batchUpdateError);
         throw batchUpdateError;
       }
-
-      // التحقق من تحديث البيانات
-      console.log('Updated last_checked_at to:', currentTime);
       
       // معالجة كل تحليل
       for (const analysis of analyses) {
@@ -107,10 +106,9 @@ export const useBackTest = () => {
   // دالة لتحديث بيانات سجل البحث بعد إجراء الفحص
   const refreshHistory = async () => {
     try {
-      // طريقة أفضل لإعادة تحميل البيانات - استعلام مباشر وتحديث عام في الصفحة
-      await supabase.from('search_history').select('id, last_checked_at, last_checked_price').limit(1);
+      console.log('Refreshing history data...');
       
-      // إضافة هذا الاستدعاء للتأكد من تحديث البيانات في الواجهة
+      // إرسال حدث مخصص لتحديث واجهة المستخدم
       const event = new CustomEvent('historyUpdated');
       window.dispatchEvent(event);
       

@@ -4,7 +4,8 @@ import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface HistoryContentProps {
   history: Array<{
@@ -32,22 +33,118 @@ export const HistoryContent = ({
   onSelect,
   onDelete,
 }: HistoryContentProps) => {
-  console.log("HistoryContent history:", history);
+  console.log("HistoryContent rendered with history items:", history.length);
   
-  // إضافة مكوّن القوة للاستماع لتحديثات البيانات
-  const [, forceUpdate] = useState({});
+  // استخدام حالة محلية لتخزين البيانات المحدثة
+  const [localHistory, setLocalHistory] = useState(history);
   
+  // تحديث البيانات المحلية عند تغير البيانات القادمة من المستوى الأعلى
   useEffect(() => {
-    // إنشاء مستمع للتحديثات من البيانات
+    console.log("History prop updated, updating local history");
+    setLocalHistory(history);
+  }, [history]);
+  
+  // وظيفة تحديث البيانات من قاعدة البيانات
+  const refreshHistoryData = useCallback(async () => {
+    try {
+      console.log("Manually refreshing history data for displayed items");
+      
+      if (history.length === 0) return;
+      
+      const ids = history.map(item => item.id);
+      
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('id, last_checked_at, last_checked_price')
+        .in('id', ids);
+        
+      if (error) {
+        console.error("Error fetching updated history data:", error);
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        console.log("No updated data received");
+        return;
+      }
+      
+      console.log("Received updated history data:", data);
+      
+      // تحديث البيانات المحلية بالقيم الجديدة
+      setLocalHistory(prev => {
+        const updated = [...prev];
+        data.forEach(update => {
+          const index = updated.findIndex(item => item.id === update.id);
+          if (index !== -1) {
+            // تحديث البيانات مع الحفاظ على البيانات الأخرى
+            updated[index] = {
+              ...updated[index],
+              last_checked_at: update.last_checked_at,
+              last_checked_price: update.last_checked_price
+            };
+            console.log(`Updated item ${update.id} with new data:`, update);
+          }
+        });
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error in refreshHistoryData:", error);
+    }
+  }, [history]);
+  
+  // الاستماع إلى حدث تحديث البيانات
+  useEffect(() => {
     const handleHistoryUpdate = () => {
-      console.log("History update detected, refreshing UI");
-      forceUpdate({});
+      console.log("History update event detected, refreshing data");
+      refreshHistoryData();
     };
     
     window.addEventListener('historyUpdated', handleHistoryUpdate);
     
     return () => {
       window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
+  }, [refreshHistoryData]);
+  
+  // استماع إلى التغييرات في الوقت الحقيقي من قاعدة البيانات
+  useEffect(() => {
+    console.log("Setting up realtime subscription for search_history");
+    
+    const channel = supabase
+      .channel('search_history_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'search_history'
+        },
+        (payload) => {
+          console.log("Realtime update received:", payload);
+          
+          // تحديث البيانات المحلية
+          setLocalHistory(prev => {
+            const updated = [...prev];
+            const index = updated.findIndex(item => item.id === payload.new.id);
+            
+            if (index !== -1) {
+              // تحديث العنصر بالبيانات الجديدة
+              updated[index] = {
+                ...updated[index],
+                last_checked_at: payload.new.last_checked_at,
+                last_checked_price: payload.new.last_checked_price
+              };
+              console.log(`Updated item ${payload.new.id} via realtime:`, payload.new);
+            }
+            
+            return updated;
+          });
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -57,7 +154,7 @@ export const HistoryContent = ({
         <Table className="w-full table-fixed">
           <HistoryTableHeader showCheckbox={true} />
           <TableBody>
-            {history.map((item) => (
+            {localHistory.map((item) => (
               <HistoryRow
                 key={item.id}
                 {...item}

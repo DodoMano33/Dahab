@@ -92,25 +92,35 @@ export const HistoryRow = ({
       }
       
       try {
-        const date = typeof last_checked_at === 'string' 
-          ? new Date(last_checked_at) 
-          : last_checked_at instanceof Date 
-            ? last_checked_at 
-            : null;
-            
-        if (date && !isNaN(date.getTime())) {
-          const formatted = formatDistanceToNow(date, { 
+        let dateToFormat: Date | null = null;
+        
+        // تحويل التاريخ حسب نوعه
+        if (typeof last_checked_at === 'string') {
+          dateToFormat = new Date(last_checked_at);
+          console.log(`[${id}] Converted string date:`, dateToFormat);
+        } else if (last_checked_at instanceof Date) {
+          dateToFormat = last_checked_at;
+          console.log(`[${id}] Using Date object directly:`, dateToFormat);
+        } else {
+          console.error(`[${id}] Unsupported date type:`, typeof last_checked_at);
+          setFormattedTime("");
+          return;
+        }
+        
+        // التحقق من صحة التاريخ
+        if (dateToFormat && !isNaN(dateToFormat.getTime())) {
+          const formatted = formatDistanceToNow(dateToFormat, { 
             addSuffix: true,
             locale: ar
           });
+          console.log(`[${id}] Formatted time:`, formatted);
           setFormattedTime(formatted);
-          console.log(`Formatted time for ${id}:`, formatted);
         } else {
-          console.error("Invalid date for formatting:", last_checked_at);
+          console.error(`[${id}] Invalid date for formatting:`, last_checked_at);
           setFormattedTime("");
         }
       } catch (error) {
-        console.error("Error formatting date:", error);
+        console.error(`[${id}] Error formatting date:`, error);
         setFormattedTime("");
       }
     };
@@ -121,6 +131,59 @@ export const HistoryRow = ({
     const interval = setInterval(updateLastCheckedFormat, 60 * 1000);
     return () => clearInterval(interval);
   }, [last_checked_at, id]);
+  
+  // الاستماع لتحديثات البيانات في الوقت الحقيقي
+  useEffect(() => {
+    const handleHistoryUpdate = () => {
+      console.log(`[${id}] History update detected, will refresh row data`);
+      
+      // تحديث البيانات للصف الحالي فقط
+      const fetchUpdatedData = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('search_history')
+            .select('last_checked_at, last_checked_price')
+            .eq('id', id)
+            .single();
+          
+          if (error) {
+            console.error(`[${id}] Error fetching updated data:`, error);
+            return;
+          }
+          
+          if (data) {
+            console.log(`[${id}] Received updated data:`, data);
+            
+            // تحديث البيانات المحلية - في حالة معالجة هذا على مستوى المكون الأب
+            if (data.last_checked_at) {
+              try {
+                const newDate = new Date(data.last_checked_at);
+                if (!isNaN(newDate.getTime())) {
+                  const newFormattedTime = formatDistanceToNow(newDate, { 
+                    addSuffix: true,
+                    locale: ar
+                  });
+                  console.log(`[${id}] Updated formatted time:`, newFormattedTime);
+                  setFormattedTime(newFormattedTime);
+                }
+              } catch (err) {
+                console.error(`[${id}] Error formatting updated date:`, err);
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`[${id}] Error in fetchUpdatedData:`, err);
+        }
+      };
+      
+      fetchUpdatedData();
+    };
+    
+    window.addEventListener('historyUpdated', handleHistoryUpdate);
+    return () => {
+      window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
+  }, [id]);
 
   return (
     <TableRow className="text-xs">

@@ -14,10 +14,17 @@ export const BacktestCheckButton = memo(() => {
     
     const updateFormattedTime = () => {
       try {
+        console.log("Formatting time from:", lastCheckTime);
+        if (!(lastCheckTime instanceof Date) || isNaN(lastCheckTime.getTime())) {
+          console.error("Invalid date object:", lastCheckTime);
+          return;
+        }
+        
         const formatted = formatDistanceToNow(lastCheckTime, { 
           addSuffix: true, 
           locale: ar 
         });
+        console.log("Formatted time:", formatted);
         setFormattedTime(formatted);
       } catch (error) {
         console.error("Error formatting last check time:", error, lastCheckTime);
