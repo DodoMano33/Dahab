@@ -1,4 +1,6 @@
+
 import { Badge } from "@/components/ui/badge";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface AnalysisStatsProps {
   stats: Array<{
@@ -15,13 +17,13 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {stats.map((stat) => (
           <div
             key={stat.type}
             className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
           >
-            <div className="text-sm font-medium mb-3">{stat.type}</div>
+            <div className="text-sm font-medium mb-3">{getStrategyName(stat.type)}</div>
             <div className="flex gap-2">
               <Badge variant="success" className="flex flex-col items-center p-2">
                 <span>ناجح</span>

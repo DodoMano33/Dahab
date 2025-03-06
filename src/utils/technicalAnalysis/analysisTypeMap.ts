@@ -25,5 +25,22 @@ export const analysisTypeMap: Record<string, string> = {
  * Get a formatted display name for an analysis type
  */
 export const getStrategyName = (type: string): string => {
-  return analysisTypeMap[type] || type;
+  // Handle different case formats and variations
+  const normalizedType = type.toLowerCase().replace(/_/g, '');
+  
+  for (const key in analysisTypeMap) {
+    if (normalizedType === key.toLowerCase().replace(/_/g, '')) {
+      return analysisTypeMap[key];
+    }
+  }
+  
+  // If no direct match, check for partial matches
+  for (const key in analysisTypeMap) {
+    if (normalizedType.includes(key.toLowerCase().replace(/_/g, ''))) {
+      return analysisTypeMap[key];
+    }
+  }
+  
+  // If no match at all, return the original type
+  return type;
 };

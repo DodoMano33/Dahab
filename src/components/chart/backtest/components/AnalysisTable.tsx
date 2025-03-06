@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface AnalysisTableProps {
   analyses: any[];
@@ -101,7 +102,7 @@ export const AnalysisTable = ({
               {analysis.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="truncate">{analysis.timeframe}</div>
-            <div className="truncate">{analysis.analysis_type}</div>
+            <div className="truncate">{getStrategyName(analysis.analysis_type)}</div>
             <div className="truncate">{analysis.symbol}</div>
             <div className="truncate">
               {analysis.result_timestamp && 
