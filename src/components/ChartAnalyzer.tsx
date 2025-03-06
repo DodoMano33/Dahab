@@ -7,6 +7,7 @@ import { useSearchHistory } from "./hooks/search-history";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
+import { useBackTest } from "./hooks/useBackTest";
 
 export const ChartAnalyzer = () => {
   const {
@@ -28,6 +29,9 @@ export const ChartAnalyzer = () => {
     refreshSearchHistory,
     isRefreshing
   } = useSearchHistory();
+
+  // استخدام هوك فحص التحليلات للتوافق مع الأنواع فقط
+  const { triggerManualCheck, isLoading: isCheckLoading, lastCheckTime } = useBackTest();
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
@@ -123,6 +127,9 @@ export const ChartAnalyzer = () => {
         setIsHistoryOpen={setIsHistoryOpen}
         onAnalysisComplete={handleAnalysisComplete}
         chartDisplayComponent={chartDisplayComponent}
+        onManualCheck={triggerManualCheck}
+        isCheckLoading={isCheckLoading}
+        lastCheckTime={lastCheckTime}
       />
       
       {isHistoryOpen && (

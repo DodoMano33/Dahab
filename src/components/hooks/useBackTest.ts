@@ -5,7 +5,7 @@ export const useBackTest = () => {
   const [isLoading] = useState(false);
   const [lastCheckTime] = useState<Date | null>(null);
   
-  // إرجاع واجهة فارغة فقط للاحتفاظ بالتوافق
+  // إرجاع واجهة فارغة فقط للاحتفاظ بالتوافق مع الأنواع
   return {
     triggerManualCheck: () => {},
     isLoading,
