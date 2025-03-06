@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -29,15 +28,15 @@ interface AnalysisType {
 
 const analysisTypes: AnalysisType[] = [
   { value: "normal", label: "تحديد الكل" },
-  { value: "scalping", label: "Scalping" },
-  { value: "ict", label: "ICT" },
-  { value: "gann", label: "Gann" },
-  { value: "patterns", label: "Patterns" },
-  { value: "smc", label: "SMC" },
-  { value: "turtle_soup", label: "Turtle Soup" },
-  { value: "waves", label: "Waves" },
-  { value: "price_action", label: "Price Action" },
-  { value: "fibonacci", label: "Fibonacci" },
+  { value: "scalping", label: "مضاربة" },
+  { value: "ict", label: "نظرية السوق" },
+  { value: "smc", label: "نظرية هيكل السوق" },
+  { value: "turtle_soup", label: "الحساء السلحفائي" },
+  { value: "gann", label: "جان" },
+  { value: "waves", label: "تقلبات" },
+  { value: "patterns", label: "نمطي" },
+  { value: "price_action", label: "حركة السعر" },
+  { value: "fibonacci", label: "فيبوناتشي" },
   { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
   { value: "neural_networks", label: "شبكات عصبية" },
   { value: "rnn", label: "شبكات عصبية متكررة" },
@@ -58,12 +57,9 @@ export const AnalysisTypes = ({
 }: AnalysisTypesProps) => {
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
-      // If "تحديد الكل" is clicked
       if (selectedTypes.includes("normal")) {
-        // If it's currently selected, deselect all
         onTypesChange([]);
       } else {
-        // If it's not selected, select all
         onTypesChange(analysisTypes.map(t => t.value));
       }
     } else {
@@ -71,7 +67,6 @@ export const AnalysisTypes = ({
         ? selectedTypes.filter((t) => t !== type)
         : [...selectedTypes, type];
 
-      // If all other types are selected, also select "normal"
       const otherTypesSelected = analysisTypes
         .filter(t => t.value !== "normal")
         .every(t => newTypes.includes(t.value));
@@ -79,7 +74,6 @@ export const AnalysisTypes = ({
       if (otherTypesSelected) {
         newTypes.push("normal");
       } else {
-        // Remove "normal" if not all types are selected
         const normalIndex = newTypes.indexOf("normal");
         if (normalIndex !== -1) {
           newTypes.splice(normalIndex, 1);
