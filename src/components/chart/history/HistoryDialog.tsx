@@ -66,7 +66,7 @@ export const HistoryDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-w-[98vw] w-[1400px] p-4 h-[90vh] flex flex-col overflow-hidden" dir="rtl">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <SearchHistoryHeader initialCount={validHistory.length} />
           <div className="flex items-center gap-2">
             <ExportAnalysis selectedItems={selectedHistoryItems} />
@@ -98,22 +98,20 @@ export const HistoryDialog = ({
             )}
           </div>
         </div>
-        <div className="flex justify-end p-2">
+        <div className="flex justify-end p-2 mb-2 border-b">
           <HistoryActions 
             selectedItems={selectedItems} 
             onDelete={handleDeleteSelected} 
             history={validHistory} 
           />
         </div>
-        <div className="flex-1 overflow-hidden relative">
-          <div className="absolute inset-0 overflow-auto">
-            <HistoryContent 
-              history={validHistory} 
-              onDelete={onDelete} 
-              selectedItems={selectedItems} 
-              onSelect={handleSelect} 
-            />
-          </div>
+        <div className="flex-1 h-full overflow-hidden">
+          <HistoryContent 
+            history={validHistory} 
+            onDelete={onDelete} 
+            selectedItems={selectedItems} 
+            onSelect={handleSelect} 
+          />
         </div>
       </DialogContent>
     </Dialog>

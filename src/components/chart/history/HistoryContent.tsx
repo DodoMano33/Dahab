@@ -1,4 +1,5 @@
 
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
 import { HistoryRow } from "./HistoryRow";
@@ -33,23 +34,25 @@ export const HistoryContent = ({
   console.log("HistoryContent history:", history);
 
   return (
-    <div className="relative w-full">
-      <Table className="w-full table-fixed">
-        <HistoryTableHeader showCheckbox={true} />
-        <TableBody className="relative">
-          {history.map((item) => (
-            <HistoryRow
-              key={item.id}
-              {...item}
-              analysis_duration_hours={item.analysis_duration_hours}
-              last_checked_price={item.last_checked_price}
-              last_checked_at={item.last_checked_at}
-              isSelected={selectedItems.has(item.id)}
-              onSelect={() => onSelect(item.id)}
-            />
-          ))}
-        </TableBody>
-      </Table>
+    <div className="relative w-full h-full">
+      <ScrollArea className="h-full">
+        <Table className="w-full table-fixed">
+          <HistoryTableHeader showCheckbox={true} />
+          <TableBody>
+            {history.map((item) => (
+              <HistoryRow
+                key={item.id}
+                {...item}
+                analysis_duration_hours={item.analysis_duration_hours}
+                last_checked_price={item.last_checked_price}
+                last_checked_at={item.last_checked_at}
+                isSelected={selectedItems.has(item.id)}
+                onSelect={() => onSelect(item.id)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </ScrollArea>
     </div>
   );
 };
