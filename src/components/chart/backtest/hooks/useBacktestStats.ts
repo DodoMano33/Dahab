@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { getStrategyName } from '@/utils/technicalAnalysis/analysisTypeMap';
+import { getStrategyName, mainAnalysisTypes } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 interface AnalysisStats {
   type: string;
@@ -34,22 +34,60 @@ export const useBacktestStats = () => {
         return;
       }
       
-      // Process stats to ensure analysis_type is properly displayed
-      const processedStats = results.map((stat: any) => {
-        // Ensure we have a valid type
+      // جمع نتائج الاستعلام في قاموس لسهولة البحث
+      const statsMap: Record<string, AnalysisStats> = {};
+      
+      // إعداد قاموس بجميع أنواع التحليل المتاحة (بقيم صفرية)
+      mainAnalysisTypes.forEach(type => {
+        const displayName = getStrategyName(type);
+        statsMap[type] = {
+          type,
+          success: 0,
+          fail: 0,
+          display_name: displayName
+        };
+      });
+      
+      // معالجة النتائج من قاعدة البيانات
+      results.forEach((stat: any) => {
+        // التأكد من وجود نوع صالح
         if (!stat.type) {
           console.warn('Found stat without type:', stat);
-          stat.type = 'unknown';
+          stat.type = 'normal';
         }
         
         const displayName = getStrategyName(stat.type);
         console.log(`Processing stat: ${stat.type} -> ${displayName}`);
         
-        return {
-          ...stat,
-          display_name: displayName
-        };
+        // البحث عن أقرب مطابقة في قائمة أنواع التحليل الرئيسية
+        let matchedType = stat.type;
+        for (const mainType of mainAnalysisTypes) {
+          if (
+            mainType.toLowerCase() === stat.type.toLowerCase() ||
+            getStrategyName(mainType) === displayName
+          ) {
+            matchedType = mainType;
+            break;
+          }
+        }
+        
+        // تحديث الإحصائيات
+        if (statsMap[matchedType]) {
+          statsMap[matchedType].success += stat.success || 0;
+          statsMap[matchedType].fail += stat.fail || 0;
+        } else {
+          // إذا لم يتم العثور على مطابقة، نضيف النوع كما هو
+          statsMap[stat.type] = {
+            type: stat.type,
+            success: stat.success || 0,
+            fail: stat.fail || 0,
+            display_name: displayName
+          };
+        }
       });
+      
+      // تحويل القاموس إلى مصفوفة
+      const processedStats = Object.values(statsMap);
       
       console.log('Processed backtest stats:', processedStats);
       console.log('Unique analysis types:', [...new Set(processedStats.map(s => s.type))]);

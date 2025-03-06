@@ -1,4 +1,3 @@
-
 /**
  * Maps analysis type keys to their display names
  */
@@ -70,6 +69,31 @@ export const analysisTypeMap: Record<string, string> = {
   "Patterns": "نمطي",
   "Price Action": "حركة السعر"
 };
+
+// القائمة الرئيسية لأنواع التحليل الـ18 (المعرفات الرئيسية)
+export const mainAnalysisTypes = [
+  "scalping",
+  "smc",
+  "ict",
+  "turtle_soup",
+  "gann",
+  "waves",
+  "patterns",
+  "price_action",
+  "neural_networks",
+  "rnn",
+  "time_clustering",
+  "multi_variance",
+  "composite_candlestick",
+  "behavioral",
+  "fibonacci",
+  "fibonacci_advanced",
+  "smart",
+  "normal"
+];
+
+// الحصول على أسماء عرض أنواع التحليل الرئيسية
+export const mainAnalysisTypeNames = mainAnalysisTypes.map(type => getStrategyName(type));
 
 /**
  * Get a formatted display name for an analysis type
