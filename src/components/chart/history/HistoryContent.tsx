@@ -18,7 +18,7 @@ interface HistoryContentProps {
     timeframe: string;
     analysis_duration_hours?: number;
     last_checked_price?: number;
-    last_checked_at?: Date;
+    last_checked_at?: Date | string | null;
   }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;

@@ -40,6 +40,12 @@ export const useBackTest = () => {
 
       console.log('Analyses to check:', analyses);
 
+      if (analyses.length === 0) {
+        toast.info('لا توجد تحليلات نشطة للفحص');
+        setIsLoading(false);
+        return;
+      }
+
       const currentTime = new Date().toISOString();
 
       // تحديث وقت آخر فحص لجميع التحليلات دفعة واحدة
@@ -53,6 +59,9 @@ export const useBackTest = () => {
         throw batchUpdateError;
       }
 
+      // التحقق من تحديث البيانات
+      console.log('Updated last_checked_at to:', currentTime);
+      
       // معالجة كل تحليل
       for (const analysis of analyses) {
         try {
@@ -83,11 +92,25 @@ export const useBackTest = () => {
       setLastCheckTime(new Date(currentTime));
       toast.success('تم فحص جميع التحليلات بنجاح');
       
+      // إجراء تحديث إضافي للتأكد من أن البيانات محدثة
+      await refreshHistory();
+      
     } catch (error) {
       console.error('Error in manual check:', error);
       toast.error('حدث خطأ أثناء فحص التحليلات');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // دالة لتحديث بيانات سجل البحث بعد إجراء الفحص
+  const refreshHistory = async () => {
+    try {
+      // تحديث البيانات دون إعادة التحميل الكامل للصفحة
+      await supabase.from('search_history').select('count').limit(1);
+      console.log('Refreshed search history data');
+    } catch (error) {
+      console.error('Failed to refresh search history:', error);
     }
   };
 

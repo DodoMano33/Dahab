@@ -28,7 +28,7 @@ interface HistoryRowProps {
   onSelect?: () => void;
   analysis_duration_hours?: number;
   last_checked_price?: number;
-  last_checked_at?: Date;
+  last_checked_at?: Date | string | null;
 }
 
 export const HistoryRow = ({
@@ -49,6 +49,9 @@ export const HistoryRow = ({
   
   // طباعة نوع التحليل للتشخيص
   console.log(`HistoryRow for ${id}: analysisType=${analysisType}, pattern=${analysis.pattern}, activation_type=${analysis.activation_type}`);
+  
+  // تشخيص وقت آخر فحص
+  console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
   
   // Use the pattern from the analysis data to display the real analysis type
   // This helps when the database type is mapped but we want to show the original
@@ -79,6 +82,22 @@ export const HistoryRow = ({
     return () => clearInterval(interval);
   }, []);
 
+  // تحويل last_checked_at إلى كائن Date إذا كان نصا أو null
+  const getLastCheckedDate = () => {
+    if (!last_checked_at) return null;
+    
+    try {
+      return last_checked_at instanceof Date 
+        ? last_checked_at 
+        : new Date(last_checked_at);
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return null;
+    }
+  };
+
+  const lastCheckedDate = getLastCheckedDate();
+
   return (
     <TableRow className="text-xs">
       {onSelect && (
@@ -106,17 +125,15 @@ export const HistoryRow = ({
         </TooltipProvider>
       </TableCell>
       <TableCell className="w-24 p-2">
-        {last_checked_price ? (
+        {last_checked_price && lastCheckedDate ? (
           <div className="text-xs">
             <div>{last_checked_price}</div>
-            {last_checked_at && (
-              <div className="text-muted-foreground text-[10px]">
-                {formatDistanceToNow(new Date(last_checked_at), { 
-                  addSuffix: true,
-                  locale: ar
-                })}
-              </div>
-            )}
+            <div className="text-muted-foreground text-[10px]">
+              {formatDistanceToNow(lastCheckedDate, { 
+                addSuffix: true,
+                locale: ar
+              })}
+            </div>
           </div>
         ) : (
           <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>
