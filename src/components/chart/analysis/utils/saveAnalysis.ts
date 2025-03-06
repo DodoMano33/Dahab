@@ -1,3 +1,4 @@
+
 import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { supabase } from "@/lib/supabase";
 
@@ -35,40 +36,30 @@ export const saveAnalysis = async ({
   const expiryTime = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
 
   try {
-    // Fix comparisons by directly checking with string literals instead of comparing with AnalysisType
-    let pattern = analysisResult.pattern;
-    let activation_type = analysisResult.activation_type || "تلقائي";
-    
-    // Special handling for fibonacci types
-    if (analysisType === "fibonacci_advanced" as AnalysisType) {
-      pattern = "تحليل فيبوناتشي متقدم";
-    } else if (analysisType === "fibonacci" as AnalysisType) {
-      pattern = "تحليل فيبوناتشي";
-    }
+    // Create the insert data object without activation_type which is causing issues
+    const insertData = {
+      user_id: userId,
+      symbol: symbol,
+      date: new Date(),
+      current_price: currentPrice,
+      pattern: analysisResult.pattern,
+      direction: analysisResult.direction,
+      support: analysisResult.support,
+      resistance: analysisResult.resistance,
+      stop_loss: analysisResult.stopLoss,
+      best_entry_point_price: analysisResult.bestEntryPoint?.price,
+      best_entry_point_reason: analysisResult.bestEntryPoint?.reason,
+      targets: analysisResult.targets,
+      analysis_type: analysisType,
+      timeframe: timeframe,
+      expiry_time: expiryTime,
+      analysis: analysisResult // Store the full analysis object
+    };
 
     const { data, error } = await supabase
       .from("search_history")
-      .insert([
-        {
-          user_id: userId,
-          symbol: symbol,
-          date: new Date(),
-          current_price: currentPrice,
-          pattern: pattern,
-          direction: analysisResult.direction,
-          support: analysisResult.support,
-          resistance: analysisResult.resistance,
-          stop_loss: analysisResult.stopLoss,
-          best_entry_point_price: analysisResult.bestEntryPoint?.price,
-          best_entry_point_reason: analysisResult.bestEntryPoint?.reason,
-          targets: analysisResult.targets,
-          activation_type: activation_type,
-          analysis_type: analysisType,
-          timeframe: timeframe,
-          expiry_time: expiryTime,
-        }
-      ])
-      .select()
+      .insert([insertData])
+      .select();
 
     if (error) {
       console.error("Error saving analysis:", error);
