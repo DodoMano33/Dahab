@@ -59,11 +59,13 @@ export const AnalysisTypeCell = ({
                   {pattern}
                 </Badge>
               )}
-              <div className={`h-1 w-10 mt-1 rounded-full ${
+              <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${
                 activation_type === 'تلقائي' 
-                  ? 'bg-gradient-to-r from-green-400 to-green-500 animate-pulse' 
-                  : 'bg-gradient-to-r from-orange-400 to-orange-500'
-              }`} />
+                  ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' 
+                  : 'bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300'
+              }`}>
+                {activation_type === 'تلقائي' ? 'اوتوماتيكي' : 'يدوي'}
+              </Badge>
             </div>
           </TooltipTrigger>
           <TooltipContent>
