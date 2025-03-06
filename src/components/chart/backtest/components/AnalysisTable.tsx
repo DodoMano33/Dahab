@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
+import { getStrategyName, mainAnalysisTypes } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface AnalysisTableProps {
   analyses: any[];
@@ -55,7 +55,13 @@ export const AnalysisTable = ({
       </div>
       <div className="divide-y text-xs">
         {analyses.map((analysis) => {
-          const displayedAnalysisType = getStrategyName(analysis.analysis_type);
+          // تأكد من أن نوع التحليل معتمد
+          const analysisType = mainAnalysisTypes.includes(analysis.analysis_type) 
+            ? analysis.analysis_type 
+            : 'normal';
+          
+          const displayedAnalysisType = getStrategyName(analysisType);
+          
           return (
             <div
               key={analysis.id}

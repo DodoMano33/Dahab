@@ -3,10 +3,6 @@
 export const getStrategyName = (type: string): string => {
   const strategyMap: Record<string, string> = {
     normal: "التحليل العادي",
-    trend: "تحليل الاتجاه",
-    support_resistance: "الدعم والمقاومة",
-    oscillator: "المذبذبات",
-    candlestick: "الشموع اليابانية",
     fibonacci: "فيبوناتشي",
     fibonacci_advanced: "فيبوناتشي المتقدم",
     gann: "تحليل جان",
@@ -22,21 +18,16 @@ export const getStrategyName = (type: string): string => {
     behaviors: "تحليل السلوك",
     turtle_soup: "تحليل Turtle Soup",
     rnn: "شبكة RNN العصبية",
-    composite_candlesticks: "تحليل الشموع المركب",
-    // أية أنواع أخرى يمكن إضافتها هنا
+    composite_candlesticks: "تحليل الشموع المركب"
   };
 
   // إذا وجد النوع، نرجع اسمه، وإلا نرجع النوع كما هو
   return strategyMap[type] || type;
 };
 
-// قائمة أنواع التحليل الرئيسية
+// قائمة أنواع التحليل الرئيسية - تم حذف الأنواع غير المطلوبة
 export const mainAnalysisTypes = [
   "normal",
-  "trend",
-  "support_resistance",
-  "oscillator",
-  "candlestick",
   "fibonacci",
   "fibonacci_advanced",
   "gann",
@@ -64,8 +55,6 @@ export const analysisTypesWithDisplayNames = mainAnalysisTypes.map(type => ({
 // الأنواع المتاحة للتحليل السريع
 export const quickAnalysisTypes = [
   { value: "normal", label: "التحليل العادي" },
-  { value: "trend", label: "تحليل الاتجاه" },
-  { value: "support_resistance", label: "الدعم والمقاومة" },
   { value: "fibonacci", label: "فيبوناتشي" },
   { value: "price_action", label: "حركة السعر" },
   { value: "pattern", label: "تحليل الأنماط" }
@@ -75,11 +64,11 @@ export const quickAnalysisTypes = [
 export const analysisGroups = [
   {
     title: "التحليلات الأساسية",
-    types: ["normal", "trend", "support_resistance", "oscillator"]
+    types: ["normal"]
   },
   {
     title: "تحليلات الشموع والأنماط",
-    types: ["candlestick", "pattern", "composite_candlesticks"]
+    types: ["pattern", "composite_candlesticks"]
   },
   {
     title: "تحليلات فيبوناتشي وجان",

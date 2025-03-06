@@ -31,7 +31,7 @@ export const useBacktestStats = () => {
       // جمع نتائج الاستعلام في قاموس لسهولة البحث
       const statsMap: Record<string, AnalysisStats> = {};
       
-      // إعداد قاموس بجميع أنواع التحليل المتاحة (بقيم صفرية)
+      // إعداد قاموس فقط بأنواع التحليل المعتمدة (بقيم صفرية)
       mainAnalysisTypes.forEach(type => {
         const displayName = getStrategyName(type);
         statsMap[type] = {
@@ -45,39 +45,15 @@ export const useBacktestStats = () => {
       // معالجة النتائج من قاعدة البيانات (إذا كانت موجودة)
       if (results && Array.isArray(results)) {
         results.forEach((stat: any) => {
-          // التأكد من وجود نوع صالح
-          if (!stat.type) {
-            console.warn('Found stat without type:', stat);
-            stat.type = 'normal';
-          }
-          
-          const displayName = getStrategyName(stat.type);
-          console.log(`Processing stat: ${stat.type} -> ${displayName}`);
-          
-          // البحث عن أقرب مطابقة في قائمة أنواع التحليل الرئيسية
-          let matchedType = stat.type;
-          for (const mainType of mainAnalysisTypes) {
-            if (
-              mainType.toLowerCase() === stat.type.toLowerCase() ||
-              getStrategyName(mainType) === displayName
-            ) {
-              matchedType = mainType;
-              break;
-            }
+          // تخطي أي نوع تحليل ليس موجود في القائمة المعتمدة
+          if (!stat.type || !mainAnalysisTypes.includes(stat.type)) {
+            return;
           }
           
           // تحديث الإحصائيات
-          if (statsMap[matchedType]) {
-            statsMap[matchedType].success += stat.success || 0;
-            statsMap[matchedType].fail += stat.fail || 0;
-          } else {
-            // إذا لم يتم العثور على مطابقة، نضيف النوع كما هو
-            statsMap[stat.type] = {
-              type: stat.type,
-              success: stat.success || 0,
-              fail: stat.fail || 0,
-              display_name: displayName
-            };
+          if (statsMap[stat.type]) {
+            statsMap[stat.type].success += stat.success || 0;
+            statsMap[stat.type].fail += stat.fail || 0;
           }
         });
       }
@@ -86,7 +62,6 @@ export const useBacktestStats = () => {
       const processedStats = Object.values(statsMap);
       
       console.log('Processed backtest stats:', processedStats);
-      console.log('Unique analysis types:', [...new Set(processedStats.map(s => s.type))]);
       console.log('Total types count:', processedStats.length);
       
       setStats(processedStats);

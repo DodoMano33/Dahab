@@ -1,6 +1,7 @@
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { mainAnalysisTypes } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 interface AnalysisStats {
   type: string;
@@ -10,9 +11,13 @@ interface AnalysisStats {
 }
 
 export const AnalysisStatsChart = ({ stats }: { stats: AnalysisStats[] }) => {
+  // تصفية البيانات للتأكد من استخدام أنواع التحليل المعتمدة فقط
+  const filteredStats = stats.filter(stat => 
+    stat.display_name && mainAnalysisTypes.includes(stat.type)
+  );
+  
   // تهيئة بيانات الرسم البياني
-  const chartData = stats
-    .filter(stat => stat.display_name) // تصفية البيانات للتأكد من وجود أسماء عرض
+  const chartData = filteredStats
     .map(stat => ({
       name: stat.display_name || stat.type,
       نجاح: stat.success,
