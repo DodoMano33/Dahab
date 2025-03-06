@@ -18,14 +18,12 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
   const totalFail = stats.reduce((acc, stat) => acc + stat.fail, 0);
 
   // تحديد وجود معلومات تلميح لنوع التحليل
-  const hasTooltip = (type: string) => {
-    const displayName = stat.display_name || getStrategyName(type);
+  const hasTooltip = (type: string, displayName: string) => {
     return Object.keys(analysisTypeTooltips).includes(displayName);
   };
 
   // الحصول على نص التلميح
-  const getTooltipContent = (type: string) => {
-    const displayName = stat.display_name || getStrategyName(type);
+  const getTooltipContent = (type: string, displayName: string) => {
     return analysisTypeTooltips[displayName] || `معلومات عن ${displayName}`;
   };
   
@@ -39,7 +37,7 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {stats.map((stat) => {
           const displayName = stat.display_name || getStrategyName(stat.type);
-          const tooltipContent = getTooltipContent(stat.type);
+          const tooltipContent = getTooltipContent(stat.type, displayName);
           
           // طباعة تشخيصية لكل نوع تحليل
           console.log(`Rendering stats for type: ${stat.type} -> ${displayName}`);
@@ -50,7 +48,7 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
               className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
             >
               <div className="text-sm font-medium mb-3">
-                {hasTooltip(stat.type) ? (
+                {hasTooltip(stat.type, displayName) ? (
                   <AnalysisTooltip content={tooltipContent}>
                     {displayName}
                   </AnalysisTooltip>
