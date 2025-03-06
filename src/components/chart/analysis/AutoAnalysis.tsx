@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
@@ -87,7 +88,6 @@ export const AutoAnalysis = ({
     <AutoAnalysisButton
       isAnalyzing={isAnalyzing}
       onClick={handleAnalysisClick}
-      onBackTestClick={() => {}}
       setIsHistoryOpen={setIsHistoryOpen}
     />
   );
