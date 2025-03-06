@@ -33,10 +33,10 @@ export const HistoryContent = ({
   console.log("HistoryContent history:", history);
 
   return (
-    <div className="relative rounded-md border bg-background">
+    <div className="relative w-full">
       <Table className="w-full table-fixed">
         <HistoryTableHeader showCheckbox={true} />
-        <TableBody>
+        <TableBody className="relative">
           {history.map((item) => (
             <HistoryRow
               key={item.id}
