@@ -7,6 +7,7 @@ import { ar } from "date-fns/locale";
 export const BacktestCheckButton = memo(() => {
   const { triggerManualCheck, isLoading, lastCheckTime } = useBackTest();
   const [formattedTime, setFormattedTime] = useState<string>("");
+  const [nextAutoCheck, setNextAutoCheck] = useState<string>("");
 
   // تحديث تنسيق الوقت عندما يتغير lastCheckTime
   useEffect(() => {
@@ -26,6 +27,14 @@ export const BacktestCheckButton = memo(() => {
         });
         console.log("Formatted time:", formatted);
         setFormattedTime(formatted);
+        
+        // حساب الوقت المتبقي للفحص التلقائي التالي
+        const nextCheckTime = new Date(lastCheckTime.getTime() + 5 * 60 * 1000); // إضافة 5 دقائق
+        const timeUntilNextCheck = formatDistanceToNow(nextCheckTime, { 
+          addSuffix: false, 
+          locale: ar 
+        });
+        setNextAutoCheck(timeUntilNextCheck);
       } catch (error) {
         console.error("Error formatting last check time:", error, lastCheckTime);
       }
@@ -63,6 +72,11 @@ export const BacktestCheckButton = memo(() => {
         {formattedTime && (
           <p className="text-xs text-muted-foreground mt-1">
             آخر فحص: {formattedTime}
+          </p>
+        )}
+        {nextAutoCheck && (
+          <p className="text-xs text-muted-foreground mt-1">
+            الفحص التلقائي التالي بعد: {nextAutoCheck}
           </p>
         )}
       </div>

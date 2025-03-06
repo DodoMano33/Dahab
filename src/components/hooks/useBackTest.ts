@@ -23,83 +23,51 @@ export const useBackTest = () => {
     };
 
     fetchLastCheckTime();
+    
+    // الاستماع لحدث تحديث التاريخ
+    const handleHistoryUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.timestamp) {
+        console.log("useBackTest detected history update with timestamp:", customEvent.detail.timestamp);
+        setLastCheckTime(new Date(customEvent.detail.timestamp));
+      }
+    };
+    
+    window.addEventListener('historyUpdated', handleHistoryUpdate);
+    
+    return () => {
+      window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
   }, []);
 
   const triggerManualCheck = async () => {
     try {
       setIsLoading(true);
       
-      // جلب جميع التحليلات النشطة من سجل البحث
-      const { data: analyses, error } = await supabase
-        .from('search_history')
-        .select('*')
-        .is('result_timestamp', null);
-
+      // استدعاء وظيفة الفحص التلقائي
+      const { data, error } = await supabase.functions.invoke('auto-check-analyses');
+      
       if (error) {
+        console.error('Error invoking auto-check function:', error);
         throw error;
       }
-
-      console.log('Analyses to check:', analyses.length);
-
-      if (analyses.length === 0) {
-        toast.info('لا توجد تحليلات نشطة للفحص');
-        setIsLoading(false);
-        return;
-      }
-
-      // تحديد الوقت الحالي - نفس الوقت سيتم استخدامه لكل التحديثات
-      const currentTime = new Date().toISOString();
-      console.log("Setting last_checked_at to:", currentTime);
-
-      // تحديث وقت آخر فحص لجميع التحليلات دفعة واحدة
-      const { error: batchUpdateError } = await supabase
-        .from('search_history')
-        .update({ last_checked_at: currentTime })
-        .in('id', analyses.map(a => a.id));
-
-      if (batchUpdateError) {
-        console.error('Error updating last_checked_at:', batchUpdateError);
-        throw batchUpdateError;
-      }
       
-      // معالجة كل تحليل
-      for (const analysis of analyses) {
-        try {
-          // تحقق من وجود نقطة دخول مثالية
-          const hasBestEntryPoint = analysis.analysis.bestEntryPoint?.price;
-          const currentPrice = analysis.last_checked_price || analysis.current_price;
-          
-          // تحديث حالة التحليل مع نقطة الدخول المثالية
-          if (hasBestEntryPoint) {
-            await supabase.rpc('update_analysis_status_with_entry_point', {
-              p_id: analysis.id,
-              p_current_price: currentPrice
-            });
-          } else {
-            // تحديث حالة التحليل العادي
-            await supabase.rpc('update_analysis_status', {
-              p_id: analysis.id,
-              p_current_price: currentPrice
-            });
-          }
-        } catch (analysisError) {
-          console.error(`Error processing analysis ${analysis.id}:`, analysisError);
-          toast.error(`حدث خطأ أثناء معالجة التحليل ${analysis.symbol}`);
-        }
-      }
-
+      console.log('Manual check completed:', data);
+      
       // تحديث وقت آخر فحص في واجهة المستخدم
-      setLastCheckTime(new Date(currentTime));
-      toast.success('تم فحص جميع التحليلات بنجاح');
-      
-      // إطلاق حدث لتحديث واجهة المستخدم
-      const event = new CustomEvent('historyUpdated', {
-        detail: { timestamp: currentTime }
-      });
-      window.dispatchEvent(event);
-      
-      console.log('Dispatched historyUpdated event with timestamp:', currentTime);
-      
+      if (data && data.timestamp) {
+        setLastCheckTime(new Date(data.timestamp));
+        
+        // إطلاق حدث لتحديث واجهة المستخدم
+        const event = new CustomEvent('historyUpdated', {
+          detail: { timestamp: data.timestamp }
+        });
+        window.dispatchEvent(event);
+        
+        toast.success(`تم فحص ${data.checked || 'جميع'} التحليلات بنجاح`);
+      } else {
+        toast.info('لا توجد تحليلات نشطة للفحص');
+      }
     } catch (error) {
       console.error('Error in manual check:', error);
       toast.error('حدث خطأ أثناء فحص التحليلات');
