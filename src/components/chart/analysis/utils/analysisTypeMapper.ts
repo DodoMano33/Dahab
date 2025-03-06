@@ -92,3 +92,120 @@ export const mapToAnalysisType = (type: string): AnalysisType => {
       return "نمطي"; // Default to pattern analysis
   }
 };
+
+// Helper function to map analysis type to configuration flags
+export const mapAnalysisTypeToConfig = (type: string) => {
+  // Convert to lowercase and normalize
+  const normalizedType = type.toLowerCase().replace(/[_\s]/g, "");
+  
+  // Default config object
+  const config = {
+    isScalping: false,
+    isSMC: false,
+    isICT: false,
+    isTurtleSoup: false,
+    isGann: false,
+    isWaves: false,
+    isPatternAnalysis: false,
+    isPriceAction: false,
+    isNeuralNetwork: false,
+    isRNN: false,
+    isTimeClustering: false,
+    isMultiVariance: false,
+    isCompositeCandlestick: false,
+    isBehavioral: false,
+    isFibonacci: false,
+    isFibonacciAdvanced: false
+  };
+  
+  // Set the appropriate flag based on type
+  switch (normalizedType) {
+    case "scalping":
+    case "سكالبينج":
+    case "مضاربة":
+      config.isScalping = true;
+      break;
+    
+    case "smc":
+    case "نظريةهيكلالسوق":
+      config.isSMC = true;
+      break;
+    
+    case "ict":
+    case "نظريةالسوق":
+      config.isICT = true;
+      break;
+    
+    case "turtlesoup":
+    case "الحساءالسلحفائي":
+      config.isTurtleSoup = true;
+      break;
+    
+    case "gann":
+    case "جان":
+      config.isGann = true;
+      break;
+    
+    case "waves":
+    case "تقلبات":
+    case "موجات":
+      config.isWaves = true;
+      break;
+    
+    case "normal":
+    case "نمطي":
+    case "pattern":
+    case "patterns":
+      config.isPatternAnalysis = true;
+      break;
+    
+    case "priceaction":
+    case "حركةالسعر":
+      config.isPriceAction = true;
+      break;
+    
+    case "fibonacci":
+    case "فيبوناتشي":
+      config.isFibonacci = true;
+      break;
+    
+    case "fibonacci_advanced":
+    case "fibonacciadvanced":
+    case "advancedfibonacci":
+    case "تحليلفيبوناتشيمتقدم":
+      config.isFibonacciAdvanced = true;
+      break;
+    
+    case "neuralnetwork":
+    case "شبكاتعصبية":
+      config.isNeuralNetwork = true;
+      break;
+    
+    case "rnn":
+    case "شبكاتعصبيةمتكررة":
+      config.isRNN = true;
+      break;
+    
+    case "timeclustering":
+    case "تصفيقزمني":
+      config.isTimeClustering = true;
+      break;
+    
+    case "multivariance":
+    case "تباينمتعدد":
+      config.isMultiVariance = true;
+      break;
+    
+    case "compositecandlestick":
+    case "شمعاتمركبة":
+      config.isCompositeCandlestick = true;
+      break;
+    
+    case "behavioral":
+    case "تحليلسلوكي":
+      config.isBehavioral = true;
+      break;
+  }
+  
+  return config;
+};

@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
 import { mapAnalysisTypeToConfig, mapToAnalysisType } from "../utils/analysisTypeMapper";
