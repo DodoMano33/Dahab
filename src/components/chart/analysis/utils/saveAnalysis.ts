@@ -36,23 +36,16 @@ export const saveAnalysis = async ({
   const expiryTime = new Date(now.getTime() + durationHours * 60 * 60 * 1000);
 
   try {
-    // Create the insert data object without activation_type which is causing issues
+    // Create the insert data object
     const insertData = {
       user_id: userId,
       symbol: symbol,
-      date: new Date(),
       current_price: currentPrice,
-      pattern: analysisResult.pattern,
-      direction: analysisResult.direction,
-      support: analysisResult.support,
-      resistance: analysisResult.resistance,
-      stop_loss: analysisResult.stopLoss,
-      best_entry_point_price: analysisResult.bestEntryPoint?.price,
-      best_entry_point_reason: analysisResult.bestEntryPoint?.reason,
-      targets: analysisResult.targets,
       analysis_type: analysisType,
       timeframe: timeframe,
-      expiry_time: expiryTime,
+      analysis_expiry_date: expiryTime,
+      analysis_duration_hours: durationHours,
+      activation_type: analysisResult.activation_type || "تلقائي",
       analysis: analysisResult // Store the full analysis object
     };
 

@@ -74,7 +74,8 @@ export const combinedAnalysis = async (
         price: weightedValues.entryPrice,
         reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`
       },
-      analysisType: "ذكي" // Set a fixed analysis type for combined analysis
+      activation_type: "تلقائي",
+      analysisType: "ذكي" as AnalysisType
     };
 
     console.log("Combined analysis result:", combinedResult);
