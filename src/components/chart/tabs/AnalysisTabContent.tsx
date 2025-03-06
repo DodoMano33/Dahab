@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { AnalysisInfoCard } from "../info/AnalysisInfoCard";
 import { LiveTradingViewChart } from "../LiveTradingViewChart";
@@ -85,12 +84,8 @@ export const AnalysisTabContent = ({
       {/* Manual Analysis Display */}
       {chartDisplayComponent}
       
-      {/* Backtest Check Button */}
-      <BacktestCheckButton 
-        onCheck={onManualCheck}
-        isLoading={isCheckLoading}
-        lastCheckTime={lastCheckTime}
-      />
+      {/* Backtest Check Button - Keep the UI but disable functionality */}
+      <BacktestCheckButton />
     </div>
   );
 };

@@ -18,31 +18,23 @@ const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashbo
 const Header = memo(({ 
   isLoggedIn, 
   user, 
-  onLoginClick, 
-  onManualCheck, 
-  isLoading, 
-  lastCheckTime 
+  onLoginClick
 }: {
   isLoggedIn: boolean;
   user: any;
   onLoginClick: () => void;
-  onManualCheck: () => void;
-  isLoading: boolean;
-  lastCheckTime: Date | null;
 }) => (
   <header className="border-b">
     <div className="container mx-auto px-4 py-3 flex justify-between items-center">
       <h1 className="text-xl font-bold">تحليل الأسواق المالية</h1>
       <div className="flex items-center gap-3">
-        {isLoggedIn && lastCheckTime && (
+        {isLoggedIn && (
           <Button 
             size="sm"
             variant="outline"
-            className="text-xs"
-            onClick={onManualCheck}
-            disabled={isLoading}
+            className="text-xs cursor-default"
           >
-            <RefreshCw className={`h-3 w-3 ml-1 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className="h-3 w-3 ml-1" />
             تحديث
           </Button>
         )}
@@ -64,12 +56,12 @@ function Index() {
   const location = useLocation();
   const { isLoggedIn, user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { triggerManualCheck, isLoading, lastCheckTime } = useBackTest();
+  const { triggerManualCheck } = useBackTest(); // Keep this import but don't use the functionality
   const [activePage, setActivePage] = useState<'analysis' | 'dashboard'>('analysis');
 
-  // تعديل الدالة لتتوافق مع نوع onClick في الزر
+  // Keep this function but make it do nothing
   const handleManualCheck = () => {
-    triggerManualCheck();
+    console.log("تم إيقاف وظيفة فحص التحليلات");
   };
   
   // استخدام useEffect لمعالجة تغيير المسار
@@ -88,9 +80,6 @@ function Index() {
         isLoggedIn={isLoggedIn}
         user={user}
         onLoginClick={() => setShowAuthModal(true)}
-        onManualCheck={handleManualCheck}
-        isLoading={isLoading}
-        lastCheckTime={lastCheckTime}
       />
       
       {isLoggedIn && (
