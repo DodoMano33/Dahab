@@ -7,10 +7,15 @@ export const analysisTypeMap: Record<string, string> = {
   "smc": "SMC",
   "ict": "ICT",
   "turtleSoup": "Turtle Soup",
+  "turtle soup": "Turtle Soup",
+  "turtle_soup": "Turtle Soup",
   "gann": "Gann",
   "waves": "Waves", 
   "patterns": "Patterns",
+  "pattern": "Patterns",
   "priceAction": "Price Action",
+  "price action": "Price Action",
+  "price_action": "Price Action",
   "neural_networks": "شبكات عصبية",
   "neural networks": "شبكات عصبية",
   "neuralnetworks": "شبكات عصبية",
@@ -42,16 +47,21 @@ export const analysisTypeMap: Record<string, string> = {
   "تحليل فيبوناتشي متقدم": "تحليل فيبوناتشي متقدم",
   // Add standard Arabic names for the original analysis types
   "مضاربة": "مضاربة", 
+  "سكالبينج": "مضاربة",
   "نظرية هيكل السوق": "نظرية هيكل السوق",
   "نظرية السوق": "نظرية السوق",
   "الحساء السلحفائي": "الحساء السلحفائي",
   "جان": "جان",
   "تقلبات": "تقلبات",
+  "موجات": "تقلبات",
   "نمطي": "نمطي",
   "حركة السعر": "حركة السعر",
   "ذكي": "ذكي",
   "عادي": "عادي",
-  "يومي": "يومي"
+  "يومي": "يومي",
+  "smart": "ذكي",
+  "daily": "يومي",
+  "turtle": "الحساء السلحفائي"
 };
 
 /**

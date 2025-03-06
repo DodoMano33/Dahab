@@ -15,6 +15,7 @@ import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { DateCell } from "./cells/DateCell";
 import { SymbolCell } from "./cells/SymbolCell";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface HistoryRowProps {
   id: string;
@@ -45,13 +46,12 @@ export const HistoryRow = ({
   last_checked_price,
   last_checked_at,
 }: HistoryRowProps) => {
-  // Use the pattern from the analysis data to display the real analysis type
-  // This helps when the database type is mapped but we want to show the original
+  // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
   const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
     ? "فيبوناتشي" 
     : analysis.pattern === "تحليل فيبوناتشي متقدم" 
       ? "تحليل فيبوناتشي متقدم" 
-      : analysisType;
+      : getStrategyName(analysisType);
   
   // تشخيص وقت آخر فحص
   console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
