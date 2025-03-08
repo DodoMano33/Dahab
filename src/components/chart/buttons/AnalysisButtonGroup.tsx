@@ -6,7 +6,6 @@ import { BasicButtonGroup } from "./groups/BasicButtonGroup";
 import { WavesAndPriceActionGroup } from "./groups/WavesAndPriceActionGroup";
 import { FibonacciButtonGroup } from "./groups/FibonacciButtonGroup";
 import { AdvancedAnalysisGroup } from "./groups/AdvancedAnalysisGroup";
-import { PatternButton } from "./PatternButton";
 
 interface AnalysisButtonGroupProps {
   isAnalyzing: boolean;
@@ -80,59 +79,49 @@ export const AnalysisButtonGroup = ({
 
   return (
     <div className="space-y-4">
-      {/* Smart Analysis Button - Full width */}
+      {/* Basic Analysis Group */}
       <BasicButtonGroup 
         isAnalyzing={isAnalyzing}
-        onNormalClick={(e) => onSubmit(e)}
+        onPatternClick={(e) => onSubmit(e, false, false, false, false, false, false, false, true)}
         onScalpingClick={(e) => onSubmit(e, true)}
-        onAIClick={(e) => onSubmit(e, false, true)}
         onSmartAnalysisClick={handleSmartAnalysisClick}
         currentAnalysis={currentAnalysis}
       />
 
       {/* Technical Analysis Buttons */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <AdvancedAnalysisGroup
-            isAnalyzing={isAnalyzing}
-            onSMCClick={(e) => onSubmit(e, false, false, true)}
-            onICTClick={(e) => onSubmit(e, false, false, false, true)}
-            onTurtleSoupClick={(e) => onSubmit(e, false, false, false, false, true)}
-            onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
-            onNeuralNetworkClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, true)}
-            onRNNClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, true)}
-            onTimeClusteringClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, true)}
-            onMultiVarianceClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, true)}
-            onCompositeCandlestickClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
-            onBehavioralClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
-          />
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <TechnicalButtons
+          isAnalyzing={isAnalyzing}
+          onSMCClick={(e) => onSubmit(e, false, false, true)}
+          onICTClick={(e) => onSubmit(e, false, false, false, true)}
+          onTurtleSoupClick={(e) => onSubmit(e, false, false, false, false, true)}
+          onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
+        />
         
-        <div>
-          <WavesAndPriceActionGroup 
-            isAnalyzing={isAnalyzing}
-            onWavesClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
-            onPriceActionClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
-          />
-        </div>
+        <WavesAndPriceActionGroup 
+          isAnalyzing={isAnalyzing}
+          onWavesClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
+          onPriceActionClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
+        />
       </div>
 
       {/* Fibonacci Analysis Buttons */}
-      <div className="mb-4">
-        <FibonacciButtonGroup 
-          isAnalyzing={isAnalyzing}
-          onFibonacciClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
-          onFibonacciAdvancedClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
-        />
-      </div>
+      <FibonacciButtonGroup 
+        isAnalyzing={isAnalyzing}
+        onFibonacciClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+        onFibonacciAdvancedClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+      />
 
-      {/* Pattern Analysis Button */}
-      <div>
-        <PatternButton 
-          isAnalyzing={isAnalyzing} 
-          onClick={(e) => onSubmit(e, false, false, false, false, false, false, false, true)}
-        />
-      </div>
+      {/* Advanced Analysis Buttons */}
+      <AdvancedAnalysisGroup 
+        isAnalyzing={isAnalyzing}
+        onNeuralNetworkClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, true)}
+        onRNNClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, true)}
+        onTimeClusteringClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, true)}
+        onMultiVarianceClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+        onCompositeCandlestickClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+        onBehavioralClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true)}
+      />
 
       {/* Combined Analysis Dialog */}
       <CombinedAnalysisDialog 
