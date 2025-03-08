@@ -27,14 +27,14 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
-      // طباعة نوع التحليل قبل المعالجة
+      // Log the original analysis type for debugging
       console.log("Original analysis type before mapping:", analysisType);
       
       // Map the analysis type to a valid database enum value
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // تأكد من أن نوع التحليل موجود في النتيجة
+      // Make sure the analysis type is present in the result
       if (!result.analysisResult.analysisType) {
         result.analysisResult.analysisType = mappedAnalysisType;
       }
@@ -47,14 +47,13 @@ export const useSaveAnalysis = () => {
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
       
-      // Add proper error handling for debugging
       try {
         const savedData = await saveAnalysis({
           userId,
           symbol,
           currentPrice,
           analysisResult: analysisResultWithMappedType,
-          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+          analysisType: mappedAnalysisType as AnalysisType,
           timeframe,
           durationHours: duration
         });
@@ -68,7 +67,7 @@ export const useSaveAnalysis = () => {
             analysis: analysisResultWithMappedType,
             targetHit: false,
             stopLossHit: false,
-            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            analysisType: mappedAnalysisType as AnalysisType,
             timeframe,
             analysis_duration_hours: duration
           };
@@ -77,7 +76,7 @@ export const useSaveAnalysis = () => {
           onAnalysisComplete(newHistoryEntry);
         }
         
-        // Show success toast with proper analysis type display
+        // Show success toast with the original analysis type for user-friendly display
         toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
           duration: 5000,
         });

@@ -34,15 +34,14 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Ensure analysisType matches one of the valid types defined in the database constraint
-  // Valid types: "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", "Price Action", 
-  // "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", "Multi Variance", "Composite Candlestick", "Behavioral Analysis"
+  // Valid analysis types from the database constraint
   const validTypes = [
-    "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", "Price Action",
-    "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", "Multi Variance", 
-    "Composite Candlestick", "Behavioral Analysis"
+    "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", 
+    "Price Action", "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", 
+    "Multi Variance", "Composite Candlestick", "Behavioral Analysis", "Daily"
   ];
 
+  // Check if the analysisType is valid
   if (!validTypes.includes(analysisType)) {
     console.error(`Invalid analysis type: "${analysisType}". Must be one of: ${validTypes.join(", ")}`);
     throw new Error(`نوع التحليل "${analysisType}" غير صالح`);

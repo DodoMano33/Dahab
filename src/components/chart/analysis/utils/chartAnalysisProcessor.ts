@@ -22,6 +22,13 @@ interface ChartAnalysisParams {
     isScalping: boolean;
     isPriceAction: boolean;
     isNeuralNetwork: boolean;
+    isRNN?: boolean;
+    isTimeClustering?: boolean;
+    isMultiVariance?: boolean;
+    isCompositeCandlestick?: boolean;
+    isBehavioral?: boolean;
+    isFibonacci?: boolean;
+    isFibonacciAdvanced?: boolean;
   };
   duration?: string;
 }
@@ -103,6 +110,11 @@ export const processChartAnalysis = async ({
     if (!analysisResult) {
       dismissToasts(loadingToastId, messageToastId);
       throw new Error("لم يتم العثور على نتائج التحليل");
+    }
+
+    // Ensure the analysisType is set correctly
+    if (options.isScalping && !analysisResult.analysisType) {
+      analysisResult.analysisType = "Scalping";
     }
 
     console.log("Analysis completed successfully:", analysisResult);

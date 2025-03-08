@@ -10,24 +10,24 @@ export const analyzeScalpingChart = async (
 ): Promise<AnalysisData> => {
   console.log("Starting Scalping analysis for symbol:", timeframe);
 
-  // تعديل النطاق بناءً على الإطار الزمني
+  // Adjust range based on timeframe
   const multipliers = getTimeframeMultipliers(timeframe);
   const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
-  // حساب النطاق المتغير حسب الإطار الزمني
+  // Calculate variable range based on timeframe
   const range = currentPrice * multipliers[0];
   const support = currentPrice - range;
   const resistance = currentPrice + range;
 
-  // تحديد الاتجاه بناءً على نمط السكالبينج
+  // Determine direction based on scalping pattern
   const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
 
-  // حساب وقف الخسارة المتغير
+  // Calculate variable stop loss
   const stopLoss = direction === "صاعد" 
     ? currentPrice - (range * stopLossMultiplier)
     : currentPrice + (range * stopLossMultiplier);
 
-  // حساب نقطة الدخول المثالية
+  // Calculate ideal entry point
   const bestEntry = {
     price: direction === "صاعد" 
       ? currentPrice - (range * 0.382)
@@ -37,7 +37,7 @@ export const analyzeScalpingChart = async (
       : "Entry point at Fibonacci 38.2% retracement with short-term bearish trend"
   };
 
-  // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
+  // Calculate targets with variable timing based on timeframe
   const targets = [
     {
       price: direction === "صاعد"
@@ -68,7 +68,7 @@ export const analyzeScalpingChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "Scalping"
+    analysisType: "Scalping" // Make sure this is explicitly set to "Scalping"
   };
 
   console.log("Scalping analysis results:", analysisResult);

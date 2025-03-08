@@ -7,6 +7,7 @@ import { useAnalysisHandler } from "../AnalysisHandler";
 import { validateAnalysisInputs } from "../utils/analysisValidation";
 import { getIntervalInMs } from "../utils/intervalUtils";
 import { useSaveAnalysis } from "./useSaveAnalysis";
+import { mapAnalysisTypeToConfig } from "../utils/analysisTypeMapper";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -47,105 +48,33 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
-            // Initialize all flags to false
-            let isPatternAnalysis = false;
-            let isScalping = false;
-            let isSMC = false;
-            let isICT = false;
-            let isTurtleSoup = false;
-            let isGann = false;
-            let isWaves = false;
-            let isPriceAction = false;
-            let isNeuralNetwork = false;
-            let isRNN = false;
-            let isTimeClustering = false;
-            let isMultiVariance = false;
-            let isCompositeCandlestick = false;
-            let isBehavioral = false;
-            let isFibonacci = false;
-            let isFibonacciAdvanced = false;
+            // Use the imported mapAnalysisTypeToConfig function to get the correct flags
+            const config = mapAnalysisTypeToConfig(analysisType);
             
-            // Set the appropriate flag based on the analysis type
-            switch (analysisType.toLowerCase().replace(/[_\s-]/g, "")) {
-              case "patterns":
-                isPatternAnalysis = true;
-                break;
-              case "scalping":
-                isScalping = true;
-                break;
-              case "smc":
-                isSMC = true;
-                break;
-              case "ict":
-                isICT = true;
-                break;
-              case "turtlesoup":
-              case "turtle_soup":
-                isTurtleSoup = true;
-                break;
-              case "gann":
-                isGann = true;
-                break;
-              case "waves":
-                isWaves = true;
-                break;
-              case "priceaction":
-              case "price_action":
-                isPriceAction = true;
-                break;
-              case "neuralnetworks":
-              case "neural_networks":
-                isNeuralNetwork = true;
-                break;
-              case "rnn":
-                isRNN = true;
-                break;
-              case "timeclustering":
-              case "time_clustering":
-                isTimeClustering = true;
-                break;
-              case "multivariance":
-              case "multi_variance":
-                isMultiVariance = true;
-                break;
-              case "compositecandlestick":
-              case "composite_candlestick":
-                isCompositeCandlestick = true;
-                break;
-              case "behavioral":
-                isBehavioral = true;
-                break;
-              case "fibonacci":
-                isFibonacci = true;
-                break;
-              case "fibonacciadvanced":
-              case "fibonacci_advanced":
-                isFibonacciAdvanced = true;
-                break;
-            }
+            console.log("Analysis configuration:", config);
             
-            // Call the analysis function with the correct flags set
+            // Call the analysis function with the correct flags from the config
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
               currentPrice,
-              isScalping,
+              config.isScalping,
               false, // isAI
-              isSMC,
-              isICT,
-              isTurtleSoup,
-              isGann,
-              isWaves,
-              isPatternAnalysis,
-              isPriceAction,
-              isNeuralNetwork,
-              isRNN,
-              isTimeClustering,
-              isMultiVariance,
-              isCompositeCandlestick,
-              isBehavioral,
-              isFibonacci,
-              isFibonacciAdvanced
+              config.isSMC,
+              config.isICT,
+              config.isTurtleSoup,
+              config.isGann,
+              config.isWaves,
+              config.isPatternAnalysis,
+              config.isPriceAction,
+              config.isNeuralNetwork,
+              config.isRNN,
+              config.isTimeClustering,
+              config.isMultiVariance,
+              config.isCompositeCandlestick,
+              config.isBehavioral,
+              config.isFibonacci,
+              config.isFibonacciAdvanced
             );
 
             if (result && result.analysisResult) {
