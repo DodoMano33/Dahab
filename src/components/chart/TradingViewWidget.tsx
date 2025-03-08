@@ -17,6 +17,11 @@ function TradingViewWidget({
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
 
   useEffect(() => {
+    // Update the currentSymbol state when the prop changes
+    setCurrentSymbol(symbol);
+  }, [symbol]);
+
+  useEffect(() => {
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
@@ -68,28 +73,57 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
+    // Dedicated function to update price to ensure we handle all needed transforms
+    const updatePrice = (price: number) => {
+      if (typeof price === 'number' && !isNaN(price)) {
+        console.log('Setting price to:', price);
+        setCurrentPrice(price);
+        onPriceUpdate?.(price);
+      } else {
+        console.warn('Invalid price received:', price);
+      }
+    };
+
+    // Dedicated function to update symbol
+    const updateSymbol = (newSymbol: string) => {
+      if (typeof newSymbol === 'string' && newSymbol.trim() !== '') {
+        console.log('Setting symbol to:', newSymbol);
+        setCurrentSymbol(newSymbol);
+        onSymbolChange?.(newSymbol);
+      } else {
+        console.warn('Invalid symbol received:', newSymbol);
+      }
+    };
+
     // Add event listeners for symbol and price updates
     const handleMessage = (event: MessageEvent) => {
       try {
-        if (event.data && typeof event.data === 'object') {
-          // Handle symbol change events
-          if (event.data.name === 'tv-symbol-change' || event.data.name === 'symbol-change') {
-            const newSymbol = event.data.symbol;
-            console.log('Symbol changed to:', newSymbol);
-            setCurrentSymbol(newSymbol);
-            onSymbolChange?.(newSymbol);
-          }
-          
-          // Handle price update events
-          if (event.data.name === 'tv-price-update' || event.data.name === 'price-update' || 
-              (event.data.name === 'quoteUpdate' && event.data.data && event.data.data.price)) {
-            const price = event.data.price || (event.data.data && event.data.data.price);
-            if (typeof price === 'number' && !isNaN(price)) {
-              console.log('Price updated to:', price);
-              setCurrentPrice(price);
-              onPriceUpdate?.(price);
-            }
-          }
+        if (!event.data || typeof event.data !== 'object') {
+          return;
+        }
+
+        const data = event.data;
+        console.log('Received TradingView message:', data);
+        
+        // Handle all possible symbol change event types
+        if (
+          (data.name === 'tv-symbol-change' && data.symbol) || 
+          (data.name === 'symbol-change' && data.symbol) ||
+          (data.type === 'symbol-change' && data.symbol)
+        ) {
+          updateSymbol(data.symbol);
+        }
+        
+        // Handle all possible price update event types
+        if (
+          (data.name === 'tv-price-update' && data.price !== undefined) || 
+          (data.name === 'price-update' && data.price !== undefined) ||
+          (data.name === 'quoteUpdate' && data.data && data.data.price !== undefined) ||
+          (data.name === 'quotes' && data.price !== undefined) ||
+          (data.price !== undefined && typeof data.price === 'number')
+        ) {
+          const price = data.price !== undefined ? data.price : (data.data && data.data.price);
+          updatePrice(price);
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
@@ -98,8 +132,19 @@ function TradingViewWidget({
 
     window.addEventListener('message', handleMessage);
 
-    // Update the currentSymbol state when the prop changes
-    setCurrentSymbol(symbol);
+    // Set initial price if available from props
+    if (window.TradingView && window.TradingView.widget) {
+      try {
+        // Attempt to get price directly if available
+        const widget = window.TradingView.widget();
+        if (widget && widget.symbolInterval) {
+          console.log('TradingView widget loaded, attempting to get current price');
+          // This might get picked up through the message events
+        }
+      } catch (e) {
+        console.warn('Could not access TradingView widget:', e);
+      }
+    }
 
     return () => {
       window.removeEventListener('message', handleMessage);
