@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { cleanSymbolName, isValidPrice } from '@/utils/tradingViewUtils';
+import { cleanSymbolName, isValidPrice, extractPriceFromMessage, extractSymbolFromMessage } from '@/utils/tradingViewUtils';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -37,6 +37,7 @@ function TradingViewWidget({
     widgetContainer.style.width = '100%';
 
     const widgetDiv = document.createElement('div');
+    widgetDiv.id = 'tradingview_widget_' + Date.now(); // Unique ID to prevent conflicts
     widgetDiv.className = 'tradingview-widget-container__widget';
     widgetDiv.style.height = 'calc(100% - 32px)';
     widgetDiv.style.width = '100%';
@@ -93,7 +94,9 @@ function TradingViewWidget({
       
       // Initial notification of current symbol and price (if available)
       if (onSymbolChange) {
-        onSymbolChange(symbol);
+        const cleanedSymbol = cleanSymbolName(symbol);
+        console.log("Initial symbol set to:", cleanedSymbol);
+        onSymbolChange(cleanedSymbol);
       }
     };
 
@@ -112,39 +115,16 @@ function TradingViewWidget({
     const handleMessage = (event: MessageEvent) => {
       try {
         // Only process messages with data
-        if (!event.data || typeof event.data !== 'object') return;
-
-        console.log("TradingView message received:", JSON.stringify(event.data).substring(0, 200));
+        if (!event.data) return;
         
-        // Extract symbol from different possible formats
-        let newSymbol: string | null = null;
-        let newPrice: number | null = null;
+        // Debug log to see all incoming messages
+        console.log("TradingView raw message received:", event.data);
         
-        // Handle symbol changes
-        if (event.data.name === 'symbol-change' && event.data.symbol) {
-          newSymbol = event.data.symbol;
-        } else if (event.data.symbolInfo && event.data.symbolInfo.name) {
-          newSymbol = event.data.symbolInfo.name;
-        } else if (event.data.symbol && typeof event.data.symbol === 'string') {
-          newSymbol = event.data.symbol;
-        }
+        // Extract symbol and price from different message formats
+        const newSymbol = extractSymbolFromMessage(event.data);
+        const newPrice = extractPriceFromMessage(event.data);
         
-        // Handle price updates
-        if (event.data.name === 'price-update' && typeof event.data.price === 'number') {
-          newPrice = event.data.price;
-        } else if (typeof event.data.price === 'number') {
-          newPrice = event.data.price;
-        } else if (typeof event.data.last_price === 'number') {
-          newPrice = event.data.last_price;
-        } else if (typeof event.data.close === 'number') {
-          newPrice = event.data.close;
-        } else if (event.data.symbolInfo && typeof event.data.symbolInfo.price === 'number') {
-          newPrice = event.data.symbolInfo.price;
-        } else if (event.data.symbolInfo && typeof event.data.symbolInfo.last === 'number') {
-          newPrice = event.data.symbolInfo.last;
-        }
-        
-        // Process symbol change if needed
+        // Process symbol change if detected
         if (newSymbol && newSymbol !== lastSymbolRef.current) {
           const cleanedSymbol = cleanSymbolName(newSymbol);
           console.log('Symbol changed to:', cleanedSymbol, '(from:', newSymbol, ')');
@@ -155,7 +135,7 @@ function TradingViewWidget({
           }
         }
         
-        // Process price update if needed
+        // Process price update if detected
         if (newPrice !== null && isValidPrice(newPrice) && newPrice !== lastPriceRef.current) {
           console.log('Price updated to:', newPrice);
           lastPriceRef.current = newPrice;

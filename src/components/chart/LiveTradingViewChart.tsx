@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 import { cleanSymbolName } from '@/utils/tradingViewUtils';
 
@@ -14,9 +14,17 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  const initializedRef = useRef<boolean>(false);
+  const lastSymbolRef = useRef<string | null>(null);
+  const lastPriceRef = useRef<number | null>(null);
+  
   // Handler for symbol changes
   const handleSymbolChange = (newSymbol: string) => {
+    if (!newSymbol || newSymbol === lastSymbolRef.current) return;
+    
+    lastSymbolRef.current = newSymbol;
     console.log("LiveTradingViewChart: Symbol changed to:", newSymbol);
+    
     if (onSymbolChange) {
       onSymbolChange(newSymbol);
     }
@@ -24,7 +32,11 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 
   // Handler for price updates
   const handlePriceUpdate = (newPrice: number) => {
+    if (!newPrice || newPrice === lastPriceRef.current) return;
+    
+    lastPriceRef.current = newPrice;
     console.log("LiveTradingViewChart: Price updated to:", newPrice);
+    
     if (onPriceUpdate) {
       onPriceUpdate(newPrice);
     }
@@ -32,10 +44,14 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 
   // Ensure initial values are passed up to parent components on mount
   useEffect(() => {
-    if (symbol && onSymbolChange) {
+    if (!initializedRef.current && symbol) {
+      initializedRef.current = true;
       const cleanedSymbol = cleanSymbolName(symbol);
       console.log("LiveTradingViewChart: Initial symbol:", cleanedSymbol);
-      onSymbolChange(cleanedSymbol);
+      
+      if (onSymbolChange) {
+        onSymbolChange(cleanedSymbol);
+      }
     }
   }, [symbol, onSymbolChange]);
 
