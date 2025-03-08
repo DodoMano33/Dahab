@@ -25,13 +25,13 @@ export const saveAnalysis = async ({
   // Validate required fields
   if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
     console.error("Missing required fields:", { userId, symbol, currentPrice, analysisResult, analysisType, timeframe });
-    throw new Error("جميع الحقول مطلوبة لحفظ التحليل");
+    throw new Error("All fields are required for saving analysis");
   }
 
   // Validate analysis result structure
   if (!analysisResult.pattern || !analysisResult.direction || !analysisResult.stopLoss) {
     console.error("Invalid analysis result structure:", analysisResult);
-    throw new Error("نتائج التحليل غير صالحة");
+    throw new Error("Invalid analysis results");
   }
 
   // Map Fibonacci analysis types to valid database values
@@ -39,12 +39,11 @@ export const saveAnalysis = async ({
   const analysisTypeStr = String(analysisType).toLowerCase();
   
   if (
-    analysisTypeStr === "فيبوناتشي" || 
-    analysisTypeStr === "فيبوناتشي متقدم" || 
     analysisTypeStr === "fibonacci" || 
+    analysisTypeStr === "fibonacci advanced" || 
     analysisTypeStr === "fibonacci_advanced"
   ) {
-    validAnalysisType = "فيبوناتشي" as AnalysisType;
+    validAnalysisType = "Fibonacci" as AnalysisType;
   }
 
   // Ensure analysisType is a valid value for the database
@@ -59,10 +58,10 @@ export const saveAnalysis = async ({
 
   // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
-    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
-      analysisResult.activation_type = "يدوي";
-    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
-      analysisResult.activation_type = "تلقائي";
+    if (analysisResult.pattern === "Fibonacci Advanced Analysis") {
+      analysisResult.activation_type = "manual";
+    } else if (analysisResult.pattern === "Fibonacci Retracement and Extension") {
+      analysisResult.activation_type = "auto";
     }
   }
 

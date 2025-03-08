@@ -48,7 +48,7 @@ export const analyzeFibonacciChart = async (
     // Determine entry point - typically at 61.8% retracement in bullish trend
     const entryPoint = {
       price: direction === "صاعد" ? retracement_levels[2].price : retracement_levels[1].price,
-      reason: `نقطة دخول على مستوى فيبوناتشي ${direction === "صاعد" ? "61.8%" : "50%"} مع إشارة تأكيد`
+      reason: `Entry point at Fibonacci ${direction === "صاعد" ? "61.8%" : "50%"} level with confirmation signal`
     };
     
     // Set profit targets based on Fibonacci extension levels
@@ -77,9 +77,9 @@ export const analyzeFibonacciChart = async (
     // Combine retracement and extension levels
     const fibonacciLevels = [...retracement_levels, ...extension_levels];
     
-    // Explicitly set the analysis type to "فيبوناتشي" for database compatibility
+    // Explicitly set the analysis type to "Fibonacci" for database compatibility
     return {
-      pattern: "فيبوناتشي ريتريسمينت وإكستينشين",
+      pattern: "Fibonacci Retracement and Extension",
       direction,
       currentPrice,
       support,
@@ -88,8 +88,8 @@ export const analyzeFibonacciChart = async (
       bestEntryPoint: entryPoint,
       targets,
       fibonacciLevels,
-      analysisType: "فيبوناتشي",  // تم ضبط نوع التحليل بشكل صحيح هنا
-      activation_type: "تلقائي"
+      analysisType: "Fibonacci",
+      activation_type: "auto"
     };
   } catch (error) {
     console.error("Error in Fibonacci analysis:", error);
