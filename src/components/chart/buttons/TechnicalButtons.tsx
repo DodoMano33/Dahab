@@ -7,34 +7,34 @@ import { WavesAndPriceActionGroup } from "./groups/WavesAndPriceActionGroup";
 
 interface TechnicalButtonsProps {
   isAnalyzing: boolean;
-  onNormalClick: (e: React.MouseEvent) => void;
-  onScalpingClick: (e: React.MouseEvent) => void;
-  onAIClick: (e: React.MouseEvent) => void;
-  onSMCClick: (e: React.MouseEvent) => void;
-  onICTClick: (e: React.MouseEvent) => void;
-  onTurtleSoupClick: (e: React.MouseEvent) => void;
-  onGannClick: (e: React.MouseEvent) => void;
-  onWavesClick: (e: React.MouseEvent) => void;
-  onPriceActionClick: (e: React.MouseEvent) => void;
-  onPatternClick: (e: React.MouseEvent) => void;
-  onFibonacciClick: (e: React.MouseEvent) => void;
-  onFibonacciAdvancedClick: (e: React.MouseEvent) => void;
+  onNormalClick?: (e: React.MouseEvent) => void;
+  onScalpingClick?: (e: React.MouseEvent) => void;
+  onAIClick?: (e: React.MouseEvent) => void;
+  onSMCClick?: (e: React.MouseEvent) => void;
+  onICTClick?: (e: React.MouseEvent) => void;
+  onTurtleSoupClick?: (e: React.MouseEvent) => void;
+  onGannClick?: (e: React.MouseEvent) => void;
+  onWavesClick?: (e: React.MouseEvent) => void;
+  onPriceActionClick?: (e: React.MouseEvent) => void;
+  onPatternClick?: (e: React.MouseEvent) => void;
+  onFibonacciClick?: (e: React.MouseEvent) => void;
+  onFibonacciAdvancedClick?: (e: React.MouseEvent) => void;
 }
 
 export const TechnicalButtons = ({
   isAnalyzing,
-  onNormalClick,
-  onScalpingClick,
-  onAIClick,
-  onSMCClick,
-  onICTClick,
-  onTurtleSoupClick,
-  onGannClick,
-  onWavesClick,
-  onPriceActionClick,
-  onPatternClick,
-  onFibonacciClick,
-  onFibonacciAdvancedClick
+  onNormalClick = () => {},
+  onScalpingClick = () => {},
+  onAIClick = () => {},
+  onSMCClick = () => {},
+  onICTClick = () => {},
+  onTurtleSoupClick = () => {},
+  onGannClick = () => {},
+  onWavesClick = () => {},
+  onPriceActionClick = () => {},
+  onPatternClick = () => {},
+  onFibonacciClick = () => {},
+  onFibonacciAdvancedClick = () => {}
 }: TechnicalButtonsProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">

@@ -1,5 +1,5 @@
 
-import { Brain, Candlestick, Gem } from "lucide-react";
+import { Brain, BarChart2, Gem } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -8,13 +8,19 @@ interface BasicButtonGroupProps {
   onNormalClick: (e: React.MouseEvent) => void;
   onScalpingClick: (e: React.MouseEvent) => void;
   onAIClick: (e: React.MouseEvent) => void;
+  onPatternClick?: (e: React.MouseEvent) => void;
+  onSmartAnalysisClick?: (e: React.MouseEvent) => void;
+  currentAnalysis?: string;
 }
 
 export const BasicButtonGroup = ({
   isAnalyzing,
   onNormalClick,
   onScalpingClick,
-  onAIClick
+  onAIClick,
+  onPatternClick,
+  onSmartAnalysisClick,
+  currentAnalysis
 }: BasicButtonGroupProps) => {
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -46,7 +52,7 @@ export const BasicButtonGroup = ({
               onClick={onScalpingClick}
               className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Candlestick className="w-4 h-4" />
+              <BarChart2 className="w-4 h-4" />
               <span className="whitespace-nowrap">Scalping Analysis</span>
             </Button>
           </TooltipTrigger>

@@ -9,6 +9,12 @@ interface AdvancedAnalysisGroupProps {
   onICTClick: (e: React.MouseEvent) => void;
   onTurtleSoupClick: (e: React.MouseEvent) => void;
   onGannClick: (e: React.MouseEvent) => void;
+  onNeuralNetworkClick?: (e: React.MouseEvent) => void;
+  onRNNClick?: (e: React.MouseEvent) => void;
+  onTimeClusteringClick?: (e: React.MouseEvent) => void;
+  onMultiVarianceClick?: (e: React.MouseEvent) => void;
+  onCompositeCandlestickClick?: (e: React.MouseEvent) => void;
+  onBehavioralClick?: (e: React.MouseEvent) => void;
 }
 
 export const AdvancedAnalysisGroup = ({
@@ -16,7 +22,13 @@ export const AdvancedAnalysisGroup = ({
   onSMCClick,
   onICTClick,
   onTurtleSoupClick,
-  onGannClick
+  onGannClick,
+  onNeuralNetworkClick,
+  onRNNClick,
+  onTimeClusteringClick,
+  onMultiVarianceClick,
+  onCompositeCandlestickClick,
+  onBehavioralClick
 }: AdvancedAnalysisGroupProps) => {
   return (
     <div className="grid grid-cols-2 gap-2">
