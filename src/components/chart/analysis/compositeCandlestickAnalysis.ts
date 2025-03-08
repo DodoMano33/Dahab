@@ -1,6 +1,5 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
 
 export const analyzeCompositeCandlestick = async (
   chartImage: string,
@@ -9,9 +8,8 @@ export const analyzeCompositeCandlestick = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with Composite Candlestick for:", { timeframe, currentPrice });
   
-  // مُحاكاة التحليل باستخدام الشمعات المركبة
-  const arabicDirection = Math.random() > 0.5 ? "صاعد" : "هابط";
-  const direction = convertArabicDirectionToEnglish(arabicDirection);
+  // محاكاة التحليل باستخدام الشمعات المركبة
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
   const movePercent = Math.random() * 0.045 + 0.015; // حركة بين 1.5% و 6%
   
   // احتساب مستويات الدعم والمقاومة باستخدام تحليل الشمعات
@@ -20,13 +18,13 @@ export const analyzeCompositeCandlestick = async (
   const resistance = Number((currentPrice * (1 + candlestickRange)).toFixed(2));
   
   // احتساب مستويات وقف الخسارة بناءً على الاتجاه
-  const stopLoss = direction === "Up" 
+  const stopLoss = direction === "صاعد" 
     ? Number((support - currentPrice * 0.004).toFixed(2))
     : Number((resistance + currentPrice * 0.004).toFixed(2));
   
   // مستويات الأهداف
   const targets = [];
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.6)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent)).toFixed(2));
     
@@ -64,7 +62,7 @@ export const analyzeCompositeCandlestick = async (
   const pattern = candlePatterns[Math.floor(Math.random() * candlePatterns.length)];
   
   // نقطة الدخول المثالية
-  const entryPrice = direction === "Up"
+  const entryPrice = direction === "صاعد"
     ? Number((currentPrice * (1 + Math.random() * 0.002)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.002)).toFixed(2));
   
@@ -80,8 +78,8 @@ export const analyzeCompositeCandlestick = async (
       price: entryPrice,
       reason: `Entry based on ${pattern} candlestick pattern`
     },
-    analysisType: "Composite Candlestick",
-    activation_type: "Automatic"
+    analysisType: "شمعات مركبة",
+    activation_type: "تلقائي"
   };
   
   return result;

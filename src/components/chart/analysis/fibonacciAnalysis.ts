@@ -1,6 +1,8 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
+import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
+import { calculateTargets, calculateStopLoss, calculateBestEntryPoint } from "@/utils/technicalAnalysis/calculations";
+import { getTimeframeLabel } from "@/utils/technicalAnalysis/timeUtils";
 
 export const analyzeFibonacciChart = async (
   chartImage: string,
@@ -13,8 +15,7 @@ export const analyzeFibonacciChart = async (
     // Determine the trend based on current price and history (simulated)
     // In a real implementation, this would analyze the chart image or fetch historical data
     const isBullish = Math.random() > 0.5; // Simplified for demo
-    const arabicDirection = isBullish ? "صاعد" : "هابط";
-    const direction = convertArabicDirectionToEnglish(arabicDirection);
+    const direction = isBullish ? "صاعد" : "هابط";
     
     // Calculate the range for Fibonacci levels based on recent high and low
     const recentHigh = currentPrice * (1 + (Math.random() * 0.1));
@@ -36,18 +37,18 @@ export const analyzeFibonacciChart = async (
     ];
     
     // Determine support and resistance based on Fibonacci levels
-    const support = direction === "Up" ? retracement_levels[2].price : extension_levels[0].price;
-    const resistance = direction === "Up" ? extension_levels[1].price : retracement_levels[1].price;
+    const support = direction === "صاعد" ? retracement_levels[2].price : extension_levels[0].price;
+    const resistance = direction === "صاعد" ? extension_levels[1].price : retracement_levels[1].price;
     
     // Calculate stop loss - typically below 78.6% retracement in bullish trend
-    const stopLossPrice = direction === "Up" 
+    const stopLossPrice = direction === "صاعد" 
       ? retracement_levels[3].price * 0.99  // Below 78.6% level
       : extension_levels[0].price * 1.01;   // Above 127.2% level
     
     // Determine entry point - typically at 61.8% retracement in bullish trend
     const entryPoint = {
-      price: direction === "Up" ? retracement_levels[2].price : retracement_levels[1].price,
-      reason: `Entry point at Fibonacci ${direction === "Up" ? "61.8%" : "50%"} level with confirmation signal`
+      price: direction === "صاعد" ? retracement_levels[2].price : retracement_levels[1].price,
+      reason: `نقطة دخول على مستوى فيبوناتشي ${direction === "صاعد" ? "61.8%" : "50%"} مع إشارة تأكيد`
     };
     
     // Set profit targets based on Fibonacci extension levels
@@ -67,7 +68,7 @@ export const analyzeFibonacciChart = async (
       }
     ];
     
-    if (direction === "Down") {
+    if (direction === "هابط") {
       targets.forEach(target => {
         target.price = 2 * currentPrice - target.price; // Invert for bearish trend
       });
@@ -76,9 +77,9 @@ export const analyzeFibonacciChart = async (
     // Combine retracement and extension levels
     const fibonacciLevels = [...retracement_levels, ...extension_levels];
     
-    // Explicitly set the analysis type to "Fibonacci" for database compatibility
+    // Explicitly set the analysis type to "فيبوناتشي" for database compatibility
     return {
-      pattern: "Fibonacci Retracement & Extension",
+      pattern: "فيبوناتشي ريتريسمينت وإكستينشين",
       direction,
       currentPrice,
       support,
@@ -87,8 +88,8 @@ export const analyzeFibonacciChart = async (
       bestEntryPoint: entryPoint,
       targets,
       fibonacciLevels,
-      analysisType: "Fibonacci",
-      activation_type: "Automatic"
+      analysisType: "فيبوناتشي",  // تم ضبط نوع التحليل بشكل صحيح هنا
+      activation_type: "تلقائي"
     };
   } catch (error) {
     console.error("Error in Fibonacci analysis:", error);

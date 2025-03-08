@@ -1,6 +1,5 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
 
 export const analyzeBehavioral = async (
   chartImage: string,
@@ -9,9 +8,8 @@ export const analyzeBehavioral = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with Behavioral Analysis for:", { timeframe, currentPrice });
   
-  // مُحاكاة التحليل السلوكي
-  const arabicDirection = Math.random() > 0.5 ? "صاعد" : "هابط";
-  const direction = convertArabicDirectionToEnglish(arabicDirection);
+  // محاكاة التحليل السلوكي
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
   const movePercent = Math.random() * 0.05 + 0.02; // حركة بين 2% و 7%
   
   // احتساب مستويات الدعم والمقاومة باستخدام التحليل السلوكي
@@ -20,13 +18,13 @@ export const analyzeBehavioral = async (
   const resistance = Number((currentPrice * (1 + behavioralRange)).toFixed(2));
   
   // احتساب مستويات وقف الخسارة بناءً على الاتجاه
-  const stopLoss = direction === "Up" 
+  const stopLoss = direction === "صاعد" 
     ? Number((support - currentPrice * 0.005).toFixed(2))
     : Number((resistance + currentPrice * 0.005).toFixed(2));
   
   // مستويات الأهداف
   const targets = [];
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.5)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent * 1.1)).toFixed(2));
     
@@ -63,7 +61,7 @@ export const analyzeBehavioral = async (
   const pattern = behavioralPatterns[Math.floor(Math.random() * behavioralPatterns.length)];
   
   // نقطة الدخول المثالية
-  const entryPrice = direction === "Up"
+  const entryPrice = direction === "صاعد"
     ? Number((currentPrice * (1 + Math.random() * 0.003)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.003)).toFixed(2));
   
@@ -79,8 +77,8 @@ export const analyzeBehavioral = async (
       price: entryPrice,
       reason: `Entry based on ${pattern} behavioral analysis`
     },
-    analysisType: "Behavioral Analysis",
-    activation_type: "Automatic"
+    analysisType: "تحليل سلوكي",
+    activation_type: "تلقائي"
   };
   
   return result;

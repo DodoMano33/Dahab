@@ -22,15 +22,15 @@ export function SettingsTab({
   setUserProfile,
   resetOnboarding 
 }: SettingsTabProps) {
-  // Enable or disable automatic checking
+  // تفعيل أو تعطيل الفحص التلقائي
   useEffect(() => {
     const setupAutoCheck = async () => {
       try {
         if (userProfile.autoCheckEnabled) {
-          // Schedule automatic checking
+          // جدولة الفحص التلقائي
           console.log("Setting up auto-check with interval:", userProfile.autoCheckInterval);
           
-          // Call check function periodically
+          // استدعاء وظيفة الفحص التلقائي كل فترة
           const checkFunction = async () => {
             try {
               const { data, error } = await supabase.functions.invoke('auto-check-analyses');
@@ -39,7 +39,7 @@ export function SettingsTab({
                 console.error("Error invoking auto-check function:", error);
               } else if (data) {
                 console.log("Auto-check completed:", data);
-                // Dispatch history update event with timestamp
+                // إطلاق حدث تحديث التاريخ مع timestamp
                 if (data.timestamp) {
                   const event = new CustomEvent('historyUpdated', {
                     detail: { timestamp: data.timestamp }
@@ -52,10 +52,10 @@ export function SettingsTab({
             }
           };
           
-          // Execute initial check
+          // تنفيذ فحص أولي
           checkFunction();
           
-          // Schedule check every 5 minutes
+          // جدولة الفحص كل 5 دقائق
           const intervalId = setInterval(checkFunction, 5 * 60 * 1000);
           
           return () => {
@@ -74,9 +74,9 @@ export function SettingsTab({
     <div className="grid gap-4 py-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Notifications</Label>
+          <Label>الإشعارات</Label>
           <p className="text-sm text-muted-foreground">
-            Receive notifications when targets and stop losses are reached
+            تلقي إشعارات عند تحقق الأهداف ووقف الخسارة
           </p>
         </div>
         <Switch
@@ -87,9 +87,9 @@ export function SettingsTab({
       
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Automatic Check</Label>
+          <Label>الفحص التلقائي</Label>
           <p className="text-sm text-muted-foreground">
-            Automatically check analyses and compare with current prices every 5 minutes
+            فحص تلقائي للتحليلات ومقارنتها بالأسعار الحالية كل 5 دقائق
           </p>
         </div>
         <Switch
@@ -97,9 +97,9 @@ export function SettingsTab({
           onCheckedChange={(checked) => {
             setUserProfile({ ...userProfile, autoCheckEnabled: checked });
             if (checked) {
-              toast.success("Automatic check activated every 5 minutes");
+              toast.success("تم تفعيل الفحص التلقائي كل 5 دقائق");
             } else {
-              toast.info("Automatic check deactivated");
+              toast.info("تم إيقاف الفحص التلقائي");
             }
           }}
         />
@@ -111,14 +111,14 @@ export function SettingsTab({
           onClick={resetOnboarding}
           className="w-full"
         >
-          Restart Onboarding Tour
+          إعادة تشغيل جولة التعريف
         </Button>
         
         <Button
           variant="outline"
           className="w-full"
         >
-          Clear Analysis History
+          مسح سجل التحليلات
         </Button>
       </div>
     </div>

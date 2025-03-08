@@ -1,6 +1,5 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
 
 export const analyzeTimeClustering = async (
   chartImage: string,
@@ -9,22 +8,21 @@ export const analyzeTimeClustering = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with Time Clustering for:", { timeframe, currentPrice });
   
-  // مُحاكاة التحليل باستخدام التصفيق الزمني
-  const arabicDirection = Math.random() > 0.5 ? "صاعد" : "هابط";
-  const direction = convertArabicDirectionToEnglish(arabicDirection);
+  // محاكاة التحليل باستخدام التصفيق الزمني
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
   const movePercent = Math.random() * 0.04 + 0.01; // حركة بين 1% و 5%
   
   const support = Number((currentPrice * (1 - Math.random() * 0.025)).toFixed(2));
   const resistance = Number((currentPrice * (1 + Math.random() * 0.025)).toFixed(2));
   
   // احتساب مستويات وقف الخسارة بناءً على الاتجاه
-  const stopLoss = direction === "Up" 
+  const stopLoss = direction === "صاعد" 
     ? Number((support - currentPrice * 0.004).toFixed(2))
     : Number((resistance + currentPrice * 0.004).toFixed(2));
   
   // مستويات الأهداف
   const targets = [];
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.7)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent * 1.3)).toFixed(2));
     
@@ -51,7 +49,7 @@ export const analyzeTimeClustering = async (
   }
   
   // نقطة الدخول المثالية
-  const entryPrice = direction === "Up"
+  const entryPrice = direction === "صاعد"
     ? Number((currentPrice * (1 + Math.random() * 0.002)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.002)).toFixed(2));
   
@@ -67,8 +65,8 @@ export const analyzeTimeClustering = async (
       price: entryPrice,
       reason: "Entry based on time clustering and seasonal patterns"
     },
-    analysisType: "Time Clustering",
-    activation_type: "Automatic"
+    analysisType: "تصفيق زمني",
+    activation_type: "تلقائي"
   };
   
   return result;

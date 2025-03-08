@@ -2,7 +2,6 @@
 import { supabase } from "@/lib/supabase";
 import { AnalysisType, AnalysisData } from "@/types/analysis";
 import { toast } from "sonner";
-import { convertActivationTypeToEnglish } from "@/utils/directionConverter";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -26,33 +25,44 @@ export const saveAnalysis = async ({
   // Validate required fields
   if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
     console.error("Missing required fields:", { userId, symbol, currentPrice, analysisResult, analysisType, timeframe });
-    throw new Error("All fields are required to save the analysis");
+    throw new Error("جميع الحقول مطلوبة لحفظ التحليل");
   }
 
   // Validate analysis result structure
   if (!analysisResult.pattern || !analysisResult.direction || !analysisResult.stopLoss) {
     console.error("Invalid analysis result structure:", analysisResult);
-    throw new Error("Invalid analysis results");
+    throw new Error("نتائج التحليل غير صالحة");
+  }
+
+  // Map Fibonacci analysis types to valid database values
+  let validAnalysisType = analysisType;
+  const analysisTypeStr = String(analysisType).toLowerCase();
+  
+  if (
+    analysisTypeStr === "فيبوناتشي" || 
+    analysisTypeStr === "فيبوناتشي متقدم" || 
+    analysisTypeStr === "fibonacci" || 
+    analysisTypeStr === "fibonacci_advanced"
+  ) {
+    validAnalysisType = "فيبوناتشي" as AnalysisType;
   }
 
   // Ensure analysisType is a valid value for the database
   console.log("Original analysis type:", analysisType);
-  
-  // Ensure the activation_type is in English
-  if (analysisResult.activation_type) {
-    const activationType = analysisResult.activation_type;
-    
-    if (activationType === "يدوي" || activationType === "تلقائي") {
-      analysisResult.activation_type = convertActivationTypeToEnglish(activationType);
-    }
+  console.log("Mapped analysis type being saved to database:", validAnalysisType);
+
+  // Make sure the analysis result also has the correct analysis type
+  if (analysisResult.analysisType !== validAnalysisType) {
+    console.log("Updating analysis result type from", analysisResult.analysisType, "to", validAnalysisType);
+    analysisResult.analysisType = validAnalysisType;
   }
-  
-  // Set automatic activation type for different analysis types if not set
+
+  // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
-    if (analysisResult.pattern === "Advanced Fibonacci Analysis") {
-      analysisResult.activation_type = "Manual";
-    } else if (analysisResult.pattern === "Fibonacci Retracement & Extension") {
-      analysisResult.activation_type = "Automatic";
+    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
+      analysisResult.activation_type = "يدوي";
+    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
+      analysisResult.activation_type = "تلقائي";
     }
   }
 
@@ -61,7 +71,7 @@ export const saveAnalysis = async ({
     symbol,
     current_price: currentPrice,
     analysis: analysisResult,
-    analysis_type: analysisType,
+    analysis_type: validAnalysisType,
     timeframe,
     analysis_duration_hours: durationHours
   });
@@ -73,7 +83,7 @@ export const saveAnalysis = async ({
       symbol,
       current_price: currentPrice,
       analysis: analysisResult,
-      analysis_type: analysisType,
+      analysis_type: validAnalysisType,
       timeframe,
       analysis_duration_hours: durationHours
     })

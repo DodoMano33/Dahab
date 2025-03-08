@@ -53,29 +53,29 @@ export function LatestAnalyses({ userId }: LatestAnalysesProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Latest Analyses</CardTitle>
+        <CardTitle>آخر التحليلات</CardTitle>
         <CardDescription>
-          Your most recent analyses
+          أحدث التحليلات التي قمت بها
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {analyses.length === 0 ? (
-            <p className="text-center text-muted-foreground">No recent analyses</p>
+            <p className="text-center text-muted-foreground">لا توجد تحليلات حديثة</p>
           ) : (
             analyses.map((analysis) => (
               <div key={analysis.id} className="border rounded-lg p-3">
                 <div className="flex justify-between">
                   <h4 className="font-medium">{analysis.symbol}</h4>
                   <span className="text-sm text-muted-foreground">
-                    {new Date(analysis.created_at).toLocaleDateString()}
+                    {new Date(analysis.created_at).toLocaleDateString('ar-SA')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm">{analysis.analysis_type} - {analysis.timeframe}</span>
                   <div className="flex items-center">
                     <span className={`text-sm ${analysis.target_hit ? 'text-green-500' : ''}`}>
-                      {analysis.direction}
+                      {analysis.analysis.direction}
                     </span>
                   </div>
                 </div>
