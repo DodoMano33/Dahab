@@ -48,6 +48,14 @@ export const HistoryContent = ({
     setLocalHistory(history);
   }, [history]);
   
+  // التحقق مما إذا كانت جميع العناصر محددة
+  const isAllSelected = history.length > 0 && selectedItems.size === history.length;
+  
+  // وظيفة لتحديد أو إلغاء تحديد جميع العناصر
+  const handleSelectAll = () => {
+    console.log("Toggle select all items");
+  };
+  
   // وظيفة تحديث البيانات من قاعدة البيانات
   const refreshHistoryData = useCallback(async () => {
     try {
@@ -170,7 +178,11 @@ export const HistoryContent = ({
     <div className="relative w-full h-full">
       <ScrollArea className="h-full">
         <Table className="w-full table-fixed">
-          <HistoryTableHeader showCheckbox={true} />
+          <HistoryTableHeader 
+            showCheckbox={true} 
+            isAllSelected={isAllSelected}
+            onSelectAll={handleSelectAll}
+          />
           <TableBody>
             {localHistory.map((item) => (
               <HistoryRow
