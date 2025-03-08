@@ -30,13 +30,20 @@ export const useSaveAnalysis = () => {
       // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
+      // اختبار إذا كان نوع التحليل يتعلق بفيبوناتشي
+      const isFibonacciAnalysis = String(analysisType).toLowerCase().includes("fibonacci") || 
+                                  String(analysisType).toLowerCase().includes("فيبوناتشي");
+      
       // Map the analysis type to a valid database enum value
-      const mappedAnalysisType = mapToAnalysisType(analysisType);
+      const mappedAnalysisType = isFibonacciAnalysis ? "فيبوناتشي" : mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
       // تأكد من أن نوع التحليل موجود في النتيجة
       if (!result.analysisResult.analysisType) {
         result.analysisResult.analysisType = mappedAnalysisType;
+      } else if (isFibonacciAnalysis) {
+        // تأكد من أن نوع التحليل لفيبوناتشي صحيح دائمًا
+        result.analysisResult.analysisType = "فيبوناتشي";
       }
       
       // Update the analysis result's analysisType to the mapped value
