@@ -78,7 +78,9 @@ export function useHistoryData() {
       setSearchHistory(formattedHistory);
     } catch (error) {
       console.error("خطأ في جلب سجل البحث:", error);
-      toast.error("حدث خطأ أثناء جلب سجل البحث");
+      toast.error("حدث خطأ أثناء جلب سجل البحث", {
+        duration: 3000, // تعديل مدة التنبيه
+      });
     } finally {
       setIsRefreshing(false);
     }
@@ -95,18 +97,24 @@ export function useHistoryData() {
 
       if (error) {
         console.error("خطأ في حذف العنصر:", error);
-        toast.error("حدث خطأ أثناء حذف العنصر");
+        toast.error("حدث خطأ أثناء حذف العنصر", {
+          duration: 3000, // تعديل مدة التنبيه
+        });
         return;
       }
 
       // تحديث القائمة المحلية
       setSearchHistory(prev => prev.filter(item => item.id !== id));
-      toast.success("تم حذف العنصر بنجاح");
+      toast.success("تم حذف العنصر بنجاح", {
+        duration: 3000, // تعديل مدة التنبيه
+      });
       
       console.log("تم حذف العنصر بنجاح:", id);
     } catch (error) {
       console.error("خطأ في handleDeleteHistoryItem:", error);
-      toast.error("حدث خطأ أثناء حذف العنصر");
+      toast.error("حدث خطأ أثناء حذف العنصر", {
+        duration: 3000, // تعديل مدة التنبيه
+      });
     }
   };
 

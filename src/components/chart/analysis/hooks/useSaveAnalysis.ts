@@ -77,19 +77,23 @@ export const useSaveAnalysis = () => {
           onAnalysisComplete(newHistoryEntry);
         }
         
-        // Show success toast with proper analysis type display
+        // Show success toast with proper analysis type display and standard duration
         toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
-          duration: 5000,
+          duration: 3000, // تغيير من 5000 إلى 3000 (3 ثواني)
         });
         
       } catch (dbError) {
         console.error("Database error saving analysis:", dbError);
-        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
+        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات", {
+          duration: 3000, // إضافة مدة 3 ثواني
+        });
         throw dbError;
       }
     } catch (error) {
       console.error("Error saving analysis:", error);
-      toast.error("حدث خطأ أثناء حفظ التحليل");
+      toast.error("حدث خطأ أثناء حفظ التحليل", {
+        duration: 3000, // إضافة مدة 3 ثواني
+      });
       throw error;
     }
   };

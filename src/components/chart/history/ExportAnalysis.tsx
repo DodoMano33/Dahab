@@ -19,20 +19,28 @@ export const ExportAnalysis = ({ selectedItems }: ExportAnalysisProps) => {
   const handleExportToPDF = async () => {
     try {
       await exportToPDF(selectedItems);
-      toast.success('تم تصدير التحليلات إلى PDF بنجاح');
+      toast.success('تم تصدير التحليلات إلى PDF بنجاح', {
+        duration: 3000, // تغيير مدة التنبيه إلى 3 ثواني
+      });
     } catch (error) {
       console.error('خطأ أثناء تصدير PDF:', error);
-      toast.error('حدث خطأ أثناء تصدير التحليلات إلى PDF');
+      toast.error('حدث خطأ أثناء تصدير التحليلات إلى PDF', {
+        duration: 3000, // تغيير مدة التنبيه إلى 3 ثواني
+      });
     }
   };
   
   const handleExportToExcel = async () => {
     try {
       await exportToExcel(selectedItems);
-      toast.success('تم تصدير التحليلات إلى Excel بنجاح');
+      toast.success('تم تصدير التحليلات إلى Excel بنجاح', {
+        duration: 3000, // تغيير مدة التنبيه إلى 3 ثواني
+      });
     } catch (error) {
       console.error('خطأ أثناء تصدير Excel:', error);
-      toast.error('حدث خطأ أثناء تصدير التحليلات إلى Excel');
+      toast.error('حدث خطأ أثناء تصدير التحليلات إلى Excel', {
+        duration: 3000, // تغيير مدة التنبيه إلى 3 ثواني
+      });
     }
   };
   
@@ -40,9 +48,13 @@ export const ExportAnalysis = ({ selectedItems }: ExportAnalysisProps) => {
     try {
       const text = selectedItems.map(item => generateShareText(item)).join('\n\n---\n\n');
       await navigator.clipboard.writeText(text);
-      toast.success('تم نسخ التحليلات كنص بنجاح');
+      toast.success('تم نسخ التحليلات كنص بنجاح', {
+        duration: 3000, // تغيير مدة التنبيه إلى 3 ثواني
+      });
     } catch (error) {
-      toast.error('حدث خطأ أثناء نسخ التحليلات');
+      toast.error('حدث خطأ أثناء نسخ التحليلات', {
+        duration: 3000, // تغيير مدة التنبيه إلى 3 ثواني
+      });
     }
   };
 

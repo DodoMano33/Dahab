@@ -59,7 +59,7 @@ function App() {
               richColors
               expand
               visibleToasts={5}
-              duration={5000}
+              duration={3000} // تغيير من 5000 إلى 3000 (3 ثواني)
             />
             <Suspense fallback={<LoadingFallback />}>
               <Index />
