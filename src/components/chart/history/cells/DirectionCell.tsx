@@ -3,7 +3,7 @@ import { TableCell } from "@/components/ui/table";
 import { DirectionIndicator } from "../DirectionIndicator";
 
 interface DirectionCellProps {
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "صاعد" | "هابط" | "محايد" | "Up" | "Down" | "Neutral";
 }
 
 export const DirectionCell = ({ direction }: DirectionCellProps) => (
