@@ -49,23 +49,23 @@ export const detectAnalysisType = (
  * Order matches the manual analysis UI order
  */
 export const buildAnalysisConfig = (
-  isPatternAnalysis: boolean,
   isScalping: boolean,
+  isAI: boolean,
   isSMC: boolean,
   isICT: boolean,
   isTurtleSoup: boolean,
   isGann: boolean,
   isWaves: boolean, 
+  isPatternAnalysis: boolean,
   isPriceAction: boolean,
-  isFibonacci: boolean,
-  isFibonacciAdvanced: boolean,
   isNeuralNetwork: boolean,
   isRNN: boolean = false,
   isTimeClustering: boolean = false,
   isMultiVariance: boolean = false,
   isCompositeCandlestick: boolean = false,
   isBehavioral: boolean = false,
-  isAI: boolean = false
+  isFibonacci: boolean = false,
+  isFibonacciAdvanced: boolean = false
 ) => {
   const selectedTypes: string[] = [];
   

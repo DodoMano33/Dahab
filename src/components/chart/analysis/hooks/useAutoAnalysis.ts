@@ -47,25 +47,77 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
-            // Map analysis type to boolean flags, matching the order in the UI
-            const isPatternAnalysis = analysisType === "patterns";
-            const isScalping = analysisType === "scalping";
-            const isSMC = analysisType === "smc";
-            const isICT = analysisType === "ict";
-            const isTurtleSoup = analysisType === "turtle_soup";
-            const isGann = analysisType === "gann";
-            const isWaves = analysisType === "waves";
-            const isPriceAction = analysisType === "price_action";
-            const isFibonacci = analysisType === "fibonacci";
-            const isFibonacciAdvanced = analysisType === "fibonacci_advanced";
-            const isNeuralNetwork = analysisType === "neural_networks";
-            const isRNN = analysisType === "rnn";
-            const isTimeClustering = analysisType === "time_clustering";
-            const isMultiVariance = analysisType === "multi_variance";
-            const isCompositeCandlestick = analysisType === "composite_candlestick";
-            const isBehavioral = analysisType === "behavioral";
+            // Initialize all flags to false
+            let isPatternAnalysis = false;
+            let isScalping = false;
+            let isSMC = false;
+            let isICT = false;
+            let isTurtleSoup = false;
+            let isGann = false;
+            let isWaves = false;
+            let isPriceAction = false;
+            let isNeuralNetwork = false;
+            let isRNN = false;
+            let isTimeClustering = false;
+            let isMultiVariance = false;
+            let isCompositeCandlestick = false;
+            let isBehavioral = false;
+            let isFibonacci = false;
+            let isFibonacciAdvanced = false;
             
-            // Call the analysis function with the parameters in the correct order
+            // Set the appropriate flag based on the analysis type
+            switch (analysisType) {
+              case "patterns":
+                isPatternAnalysis = true;
+                break;
+              case "scalping":
+                isScalping = true;
+                break;
+              case "smc":
+                isSMC = true;
+                break;
+              case "ict":
+                isICT = true;
+                break;
+              case "turtle_soup":
+                isTurtleSoup = true;
+                break;
+              case "gann":
+                isGann = true;
+                break;
+              case "waves":
+                isWaves = true;
+                break;
+              case "price_action":
+                isPriceAction = true;
+                break;
+              case "neural_networks":
+                isNeuralNetwork = true;
+                break;
+              case "rnn":
+                isRNN = true;
+                break;
+              case "time_clustering":
+                isTimeClustering = true;
+                break;
+              case "multi_variance":
+                isMultiVariance = true;
+                break;
+              case "composite_candlestick":
+                isCompositeCandlestick = true;
+                break;
+              case "behavioral":
+                isBehavioral = true;
+                break;
+              case "fibonacci":
+                isFibonacci = true;
+                break;
+              case "fibonacci_advanced":
+                isFibonacciAdvanced = true;
+                break;
+            }
+            
+            // Call the analysis function with the correct flags set
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
