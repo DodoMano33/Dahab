@@ -1,4 +1,3 @@
-
 export const getTradingViewChartImage = async (
   symbol: string,
   timeframe: string,
@@ -14,7 +13,6 @@ export const getTradingViewChartImage = async (
         <rect width="100%" height="100%" fill="#f0f0f0"/>
         <text x="50%" y="50%" font-family="Arial" font-size="20" text-anchor="middle">
           Chart Preview for ${symbol} - ${timeframe}
-          Current Price: ${currentPrice || 'N/A'}
         </text>
       </svg>
     `)}`;

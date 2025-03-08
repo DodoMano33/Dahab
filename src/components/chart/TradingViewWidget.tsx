@@ -15,22 +15,8 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
   const [currentSymbol, setCurrentSymbol] = useState(symbol);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
-  const scriptLoaded = useRef(false);
-
-  // Update local state when prop changes
-  useEffect(() => {
-    console.log('Symbol prop changed to:', symbol);
-    setCurrentSymbol(symbol);
-  }, [symbol]);
 
   useEffect(() => {
-    if (scriptLoaded.current) {
-      return; // Prevent duplicate script loading
-    }
-    
-    scriptLoaded.current = true;
-    console.log('Initializing TradingView widget with symbol:', symbol);
-
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
@@ -82,106 +68,33 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
-    // Dedicated function to update price to ensure we handle all needed transforms
-    const updatePrice = (price: number) => {
-      if (typeof price === 'number' && !isNaN(price)) {
-        console.log('Setting price to:', price);
-        setCurrentPrice(price);
-        onPriceUpdate?.(price);
-      } else {
-        console.warn('Invalid price received:', price);
-      }
-    };
-
-    // Dedicated function to update symbol
-    const updateSymbol = (newSymbol: string) => {
-      if (typeof newSymbol === 'string' && newSymbol.trim() !== '') {
-        console.log('Setting symbol to:', newSymbol);
-        setCurrentSymbol(newSymbol);
-        onSymbolChange?.(newSymbol);
-      } else {
-        console.warn('Invalid symbol received:', newSymbol);
-      }
-    };
-
     // Add event listeners for symbol and price updates
     const handleMessage = (event: MessageEvent) => {
       try {
-        if (!event.data || typeof event.data !== 'object') {
-          return;
+        if (event.data.name === 'symbol-change') {
+          console.log('Symbol changed to:', event.data.symbol);
+          setCurrentSymbol(event.data.symbol);
+          onSymbolChange?.(event.data.symbol);
         }
-
-        const data = event.data;
-        
-        // Debug all messages to understand what's being sent
-        if (data.name || data.type || data.m) {
-          console.log('Received TradingView message:', data);
-        }
-        
-        // Handle symbol change events from TradingView
-        if (
-          (data.name === 'tv-symbol-change' && data.symbol) || 
-          (data.type === 'symbol-change' && data.symbol) ||
-          (data.name === 'symbol-change' && data.symbol) ||
-          (data.m === 'symbol_changed' && data.p) ||
-          (data.method === 'symbolChange' && data.params && data.params[0])
-        ) {
-          const newSymbol = data.symbol || (data.p && data.p[0]) || (data.params && data.params[0]);
-          updateSymbol(newSymbol);
-        }
-        
-        // Handle price update events from TradingView
-        if (
-          (data.name === 'tv-price-update' && data.price !== undefined) || 
-          (data.name === 'price-update' && data.price !== undefined) ||
-          (data.name === 'quoteUpdate' && data.data && data.data.price !== undefined) ||
-          (data.m === 'quote_update' && data.p && data.p.last !== undefined) ||
-          (data.method === 'quoteUpdate' && data.params && data.params.last !== undefined) ||
-          (data.name === 'quotes' && data.price !== undefined) ||
-          (data.price !== undefined && typeof data.price === 'number')
-        ) {
-          const price = 
-            data.price !== undefined ? data.price : 
-            (data.data && data.data.price) || 
-            (data.p && data.p.last) || 
-            (data.params && data.params.last);
-          
-          updatePrice(Number(price));
-        }
-        
-        // Additional handling for quotes format
-        if (data.m === 'q' && data.p) {
-          // Attempt to extract price from various quote formats
-          const quoteData = Array.isArray(data.p) ? data.p[0] : data.p;
-          if (quoteData && (quoteData.last || quoteData.lp)) {
-            const price = quoteData.last || quoteData.lp;
-            updatePrice(Number(price));
-          }
-        }
-        
-        // Additional handling for chart_loaded event - try to get symbol
-        if (data.name === 'chart_loaded' || data.type === 'chart_loaded') {
-          console.log('Chart loaded, current symbol is:', currentSymbol);
-          // The chart_loaded event doesn't contain the symbol or price
-          // but we can use it to confirm the chart is ready
+        if (event.data.name === 'price-update') {
+          console.log('Price updated to:', event.data.price);
+          setCurrentPrice(event.data.price);
+          onPriceUpdate?.(event.data.price);
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
       }
     };
 
-    // Setup the message event listener
     window.addEventListener('message', handleMessage);
 
-    // Clean up function
     return () => {
       window.removeEventListener('message', handleMessage);
       if (container.current) {
         container.current.innerHTML = '';
       }
-      scriptLoaded.current = false;
     };
-  }, [symbol, onSymbolChange, onPriceUpdate]); // Re-initialize when symbol prop changes
+  }, [symbol, onSymbolChange, onPriceUpdate]);
 
   // Format price with proper decimal places based on symbol type
   const formattedPrice = currentPrice !== null 
@@ -192,14 +105,8 @@ function TradingViewWidget({
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-      <div 
-        ref={container}
-        style={{ height: "calc(100% - 40px)", width: "100%" }}
-        className="pt-0"
-      />
-      
-      {/* Info bar at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 text-white px-4 py-2 flex justify-between items-center h-10">
+      {/* Info bar to display symbol and price */}
+      <div className="absolute top-0 left-0 right-0 z-10 bg-black/70 text-white px-4 py-2 flex justify-between items-center">
         <div className="font-semibold">
           <span className="opacity-70 mr-2">الرمز:</span>
           {currentSymbol}
@@ -211,6 +118,11 @@ function TradingViewWidget({
           </span>
         </div>
       </div>
+      
+      <div 
+        ref={container}
+        style={{ height: "100%", width: "100%" }}
+      />
     </div>
   );
 }
