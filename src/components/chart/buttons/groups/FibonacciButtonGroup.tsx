@@ -23,7 +23,7 @@ export const FibonacciButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onFibonacciClick}
-              className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="bg-gradient-to-r from-fuchsia-400 to-fuchsia-500 hover:from-fuchsia-500 hover:to-fuchsia-600 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Divide className="w-4 h-4" />
               <span className="whitespace-nowrap">Fibonacci Analysis</span>
@@ -42,7 +42,7 @@ export const FibonacciButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onFibonacciAdvancedClick}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Target className="w-4 h-4" />
               <span className="whitespace-nowrap">Advanced Fibonacci</span>
