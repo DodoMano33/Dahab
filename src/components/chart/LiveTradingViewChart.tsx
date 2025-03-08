@@ -67,7 +67,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         onPriceUpdate(currentPrice);
         console.log("LiveTradingViewChart: Forcing price update:", currentPrice);
       }
-    }, 10000); // 10 seconds
+    }, 5000); // تقليل المدة إلى 5 ثوانٍ لتحديثات أسرع
     
     return () => clearInterval(interval);
   }, [currentSymbol, currentPrice, onSymbolChange, onPriceUpdate]);

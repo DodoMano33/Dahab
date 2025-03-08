@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
 import { TimeframeInput } from "../inputs/TimeframeInput";
@@ -48,10 +49,22 @@ export const ChartAnalysisForm = ({
   defaultSymbol,
   defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState(defaultSymbol || "");
-  const [price, setPrice] = useState(defaultPrice?.toString() || "");
+  const [symbol, setSymbol] = useState("");
+  const [price, setPrice] = useState("");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
+  
+  // تتبع تغييرات القيم الافتراضية
+  const defaultPriceString = defaultPrice ? defaultPrice.toString() : "";
+  
+  // لعرض القيم في الكونسول للتأكد من تدفق البيانات
+  useEffect(() => {
+    console.log("ChartAnalysisForm default values updated:", {
+      defaultSymbol,
+      defaultPrice,
+      defaultPriceString
+    });
+  }, [defaultSymbol, defaultPrice, defaultPriceString]);
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
@@ -86,6 +99,16 @@ export const ChartAnalysisForm = ({
     selectedTypes: string[] = []
   ) => {
     e.preventDefault();
+    
+    // طباعة القيم المستخدمة للتحقق
+    console.log("Form submission values:", {
+      symbol,
+      defaultSymbol,
+      price,
+      defaultPrice,
+      finalSymbol: symbol || defaultSymbol || "",
+      finalPrice: price ? Number(price) : defaultPrice
+    });
     
     const isValid = validateInputs({
       symbol,
@@ -172,7 +195,7 @@ export const ChartAnalysisForm = ({
       <PriceInput 
         value={price} 
         onChange={setPrice}
-        defaultValue={defaultPrice?.toString()}
+        defaultValue={defaultPriceString}
       />
       <AnalysisDurationInput
         value={duration}

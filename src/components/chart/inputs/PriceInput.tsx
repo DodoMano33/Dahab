@@ -11,11 +11,11 @@ interface PriceInputProps {
 export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) => {
   // تحديث القيمة عندما تتغير القيمة الافتراضية
   useEffect(() => {
-    if (defaultValue && !value) {
+    if (defaultValue && (!value || value === "")) {
       console.log("Setting price input value from default:", defaultValue);
       onChange(defaultValue);
     }
-  }, [defaultValue, value, onChange]);
+  }, [defaultValue, onChange]);
 
   return (
     <div>

@@ -11,11 +11,11 @@ interface SymbolInputProps {
 export const SymbolInput = ({ value, onChange, defaultValue }: SymbolInputProps) => {
   // تحديث القيمة عندما تتغير القيمة الافتراضية
   useEffect(() => {
-    if (defaultValue && !value) {
+    if (defaultValue && defaultValue.trim() !== "" && (!value || value.trim() === "")) {
       console.log("Setting symbol input value from default:", defaultValue);
       onChange(defaultValue);
     }
-  }, [defaultValue, value, onChange]);
+  }, [defaultValue, onChange]);
 
   return (
     <div>
