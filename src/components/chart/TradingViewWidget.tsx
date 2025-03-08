@@ -71,15 +71,25 @@ function TradingViewWidget({
     // Add event listeners for symbol and price updates
     const handleMessage = (event: MessageEvent) => {
       try {
-        if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed to:', event.data.symbol);
-          setCurrentSymbol(event.data.symbol);
-          onSymbolChange?.(event.data.symbol);
-        }
-        if (event.data.name === 'price-update') {
-          console.log('Price updated to:', event.data.price);
-          setCurrentPrice(event.data.price);
-          onPriceUpdate?.(event.data.price);
+        if (event.data && typeof event.data === 'object') {
+          // Handle symbol change events
+          if (event.data.name === 'tv-symbol-change' || event.data.name === 'symbol-change') {
+            const newSymbol = event.data.symbol;
+            console.log('Symbol changed to:', newSymbol);
+            setCurrentSymbol(newSymbol);
+            onSymbolChange?.(newSymbol);
+          }
+          
+          // Handle price update events
+          if (event.data.name === 'tv-price-update' || event.data.name === 'price-update' || 
+              (event.data.name === 'quoteUpdate' && event.data.data && event.data.data.price)) {
+            const price = event.data.price || (event.data.data && event.data.data.price);
+            if (typeof price === 'number' && !isNaN(price)) {
+              console.log('Price updated to:', price);
+              setCurrentPrice(price);
+              onPriceUpdate?.(price);
+            }
+          }
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
@@ -87,6 +97,9 @@ function TradingViewWidget({
     };
 
     window.addEventListener('message', handleMessage);
+
+    // Update the currentSymbol state when the prop changes
+    setCurrentSymbol(symbol);
 
     return () => {
       window.removeEventListener('message', handleMessage);
@@ -111,7 +124,7 @@ function TradingViewWidget({
         className="pt-0"
       />
       
-      {/* Info bar moved to bottom */}
+      {/* Info bar at bottom */}
       <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 text-white px-4 py-2 flex justify-between items-center h-10">
         <div className="font-semibold">
           <span className="opacity-70 mr-2">الرمز:</span>
