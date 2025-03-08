@@ -37,8 +37,8 @@ export const saveAnalysis = async ({
   // Valid analysis types from the database constraint
   const validTypes = [
     "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", 
-    "Price Action", "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", 
-    "Multi Variance", "Composite Candlestick", "Behavioral Analysis", "Daily"
+    "Price Action", "Neural Networks", "RNN", "Time Clustering", 
+    "Multi Variance", "Composite Candlestick", "Behavioral Analysis", "Fibonacci", "Fibonacci Advanced", "Daily"
   ];
 
   // Check if the analysisType is valid

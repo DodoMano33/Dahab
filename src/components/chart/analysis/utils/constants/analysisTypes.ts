@@ -4,8 +4,8 @@
  */
 export const VALID_ANALYSIS_TYPES = [
   "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", 
-  "Price Action", "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", 
-  "Multi Variance", "Composite Candlestick", "Behavioral Analysis", "Daily"
+  "Price Action", "Neural Networks", "RNN", "Time Clustering", 
+  "Multi Variance", "Composite Candlestick", "Behavioral Analysis", "Fibonacci", "Fibonacci Advanced", "Daily"
 ] as const;
 
 export type ValidAnalysisType = typeof VALID_ANALYSIS_TYPES[number];

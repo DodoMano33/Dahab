@@ -1,3 +1,4 @@
+
 export type AnalysisType = 
   | "Scalping" 
   | "Smart" 
@@ -9,13 +10,13 @@ export type AnalysisType =
   | "Patterns" 
   | "Price Action" 
   | "Neural Networks" 
-  | "Recurrent Neural Networks" 
+  | "RNN" 
   | "Time Clustering" 
   | "Multi Variance" 
   | "Composite Candlestick" 
   | "Behavioral Analysis" 
   | "Fibonacci"
-  | "Advanced Fibonacci"
+  | "Fibonacci Advanced"
   | "Normal"
   | "Daily";
 
