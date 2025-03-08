@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { addHours, addDays } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -8,76 +7,76 @@ export const analyzeNeuralNetworkChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل الشبكات العصبية للرمز:", timeframe);
+  console.log("Starting Neural Network analysis for:", timeframe);
 
-  // تعديل النطاق بناءً على الإطار الزمني
+  // Adjust range based on timeframe
   const multipliers = getTimeframeMultipliers(timeframe);
   const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
-  // حساب النطاق المتغير حسب الإطار الزمني
+  // Calculate variable range based on timeframe
   const range = currentPrice * multipliers[0];
   
-  // تحديد الاتجاه بناءً على نموذج الشبكات العصبية (محاكاة)
+  // Determine direction based on neural network model (simulated)
   const confidenceScore = Math.random();
-  const direction = confidenceScore > 0.5 ? "صاعد" : "هابط";
+  const direction = confidenceScore > 0.5 ? "Up" : "Down";
   
-  // حساب مستويات الدعم والمقاومة
-  const support = direction === "صاعد" 
+  // Calculate support and resistance levels
+  const support = direction === "Up" 
     ? currentPrice - (range * 0.15)
     : currentPrice - (range * 0.25);
     
-  const resistance = direction === "صاعد" 
+  const resistance = direction === "Up" 
     ? currentPrice + (range * 0.35)
     : currentPrice + (range * 0.15);
 
-  // حساب وقف الخسارة المتغير
-  const stopLoss = direction === "صاعد" 
+  // Calculate variable stop loss
+  const stopLoss = direction === "Up" 
     ? currentPrice - (range * stopLossMultiplier * 0.8)
     : currentPrice + (range * stopLossMultiplier * 0.8);
 
-  // حساب نقطة الدخول المثالية
+  // Calculate best entry point
   const bestEntry = {
-    price: direction === "صاعد" 
+    price: direction === "Up" 
       ? currentPrice + (range * 0.05)
       : currentPrice - (range * 0.05),
-    reason: `نقطة دخول مثالية وفقًا لتحليل الشبكات العصبية بنسبة ثقة ${(confidenceScore * 100).toFixed(1)}% على الإطار الزمني ${timeframe}`
+    reason: `Ideal entry point according to neural network analysis with ${(confidenceScore * 100).toFixed(1)}% confidence on ${timeframe} timeframe`
   };
 
-  // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
+  // Calculate targets with variable timing based on timeframe
   const targets = [
     {
-      price: direction === "صاعد"
+      price: direction === "Up"
         ? currentPrice + (range * multipliers[0] * 1.1)
         : currentPrice - (range * multipliers[0] * 1.1),
       expectedTime: getExpectedTime(timeframe, 0)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Up"
         ? currentPrice + (range * multipliers[1] * 1.2)
         : currentPrice - (range * multipliers[1] * 1.2),
       expectedTime: getExpectedTime(timeframe, 1)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Up"
         ? currentPrice + (range * multipliers[2] * 1.3)
         : currentPrice - (range * multipliers[2] * 1.3),
       expectedTime: getExpectedTime(timeframe, 2)
     }
   ];
 
-  // إضافة مستويات فيبوناتشي
+  // Add Fibonacci levels
   const fibonacciLevels = [
-    { level: 0.236, price: direction === "صاعد" ? currentPrice + (range * 0.236) : currentPrice - (range * 0.236) },
-    { level: 0.382, price: direction === "صاعد" ? currentPrice + (range * 0.382) : currentPrice - (range * 0.382) },
-    { level: 0.5, price: direction === "صاعد" ? currentPrice + (range * 0.5) : currentPrice - (range * 0.5) },
-    { level: 0.618, price: direction === "صاعد" ? currentPrice + (range * 0.618) : currentPrice - (range * 0.618) },
-    { level: 0.786, price: direction === "صاعد" ? currentPrice + (range * 0.786) : currentPrice - (range * 0.786) },
-    { level: 1, price: direction === "صاعد" ? currentPrice + range : currentPrice - range },
+    { level: 0.236, price: direction === "Up" ? currentPrice + (range * 0.236) : currentPrice - (range * 0.236) },
+    { level: 0.382, price: direction === "Up" ? currentPrice + (range * 0.382) : currentPrice - (range * 0.382) },
+    { level: 0.5, price: direction === "Up" ? currentPrice + (range * 0.5) : currentPrice - (range * 0.5) },
+    { level: 0.618, price: direction === "Up" ? currentPrice + (range * 0.618) : currentPrice - (range * 0.618) },
+    { level: 0.786, price: direction === "Up" ? currentPrice + (range * 0.786) : currentPrice - (range * 0.786) },
+    { level: 1, price: direction === "Up" ? currentPrice + range : currentPrice - range },
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `تحليل الشبكات العصبية: اتجاه ${direction} على الإطار الزمني ${timeframe}`,
-    direction,
+    pattern: `Neural Network Analysis: ${direction} trend on ${timeframe} timeframe`,
+    direction: direction as "Up" | "Down" | "Neutral",
     currentPrice,
     support,
     resistance,
@@ -85,11 +84,11 @@ export const analyzeNeuralNetworkChart = async (
     targets,
     bestEntryPoint: bestEntry,
     fibonacciLevels,
-    analysisType: "شبكات عصبية",
-    activation_type: "تلقائي"
+    analysisType: "Neural Networks",
+    activation_type: "auto"
   };
 
-  console.log("نتائج تحليل الشبكات العصبية:", analysisResult);
+  console.log("Neural Network analysis results:", analysisResult);
   return analysisResult;
 };
 

@@ -1,4 +1,3 @@
-
 import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { analyzeSMCChart } from "../smcAnalysis";
 import { analyzeICTChart } from "../ictAnalysis";
@@ -16,7 +15,7 @@ import { analyzeMultiVariance } from "../multiVarianceAnalysis";
 import { analyzeCompositeCandlestick } from "../compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "../behavioralAnalysis";
 import { analyzeFibonacciChart } from "../fibonacciAnalysis";
-import { analyzeFibonacciAdvancedChart } from "../fibonacciAdvancedAnalysis";
+import { analyzeFibonacciAdvanced } from "../fibonacciAdvancedAnalysis";
 import { mapToAnalysisType } from "./analysisTypeMapper";
 
 interface AnalysisOptions {
@@ -77,7 +76,7 @@ export const executeAnalysis = async (
   if (isTimeClustering) selectedStrategies.push("Time Clustering");
   if (isMultiVariance) selectedStrategies.push("Multi Variance");
   if (isCompositeCandlestick) selectedStrategies.push("Composite Candlestick");
-  if (isBehavioral) selectedStrategies.push("Behavioral");
+  if (isBehavioral) selectedStrategies.push("Behavioral Analysis");
   if (isFibonacci) selectedStrategies.push("Fibonacci");
   if (isFibonacciAdvanced) selectedStrategies.push("Fibonacci Advanced");
 
@@ -99,9 +98,9 @@ export const executeAnalysis = async (
         case "Time Clustering": return analyzeTimeClustering(chartImage, currentPrice, timeframe);
         case "Multi Variance": return analyzeMultiVariance(chartImage, currentPrice, timeframe);
         case "Composite Candlestick": return analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
-        case "Behavioral": return analyzeBehavioral(chartImage, currentPrice, timeframe);
+        case "Behavioral Analysis": return analyzeBehavioral(chartImage, currentPrice, timeframe);
         case "Fibonacci": return analyzeFibonacciChart(chartImage, currentPrice, timeframe);
-        case "Fibonacci Advanced": return analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
+        case "Fibonacci Advanced": return analyzeFibonacciAdvanced(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
@@ -113,8 +112,8 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "ذكي" as AnalysisType;
-    analysis.activation_type = "تلقائي";
+    analysis.analysisType = "Smart";
+    analysis.activation_type = "auto";
   } else {
     const strategy = selectedStrategies[0] || "Standard";
     switch (strategy) {
@@ -148,45 +147,43 @@ export const executeAnalysis = async (
       case "RNN":
         analysis = await analyzeRNN(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "شبكات عصبية" as AnalysisType;
+          analysis.analysisType = "RNN";
         }
         break;
       case "Time Clustering":
         analysis = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "تقلبات" as AnalysisType;
+          analysis.analysisType = "Time Clustering";
         }
         break;
       case "Multi Variance":
         analysis = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "تقلبات" as AnalysisType;
+          analysis.analysisType = "Multi Variance";
         }
         break;
       case "Composite Candlestick":
         analysis = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "نمطي" as AnalysisType;
+          analysis.analysisType = "Composite Candlestick";
         }
         break;
-      case "Behavioral":
+      case "Behavioral Analysis":
         analysis = await analyzeBehavioral(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "حركة السعر" as AnalysisType;
+          analysis.analysisType = "Behavioral Analysis";
         }
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         if (analysis) {
-          // تأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
-          analysis.analysisType = "فيبوناتشي" as AnalysisType;
+          analysis.analysisType = "Fibonacci";
         }
         break;
       case "Fibonacci Advanced":
-        analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
+        analysis = await analyzeFibonacciAdvanced(chartImage, currentPrice, timeframe);
         if (analysis) {
-          // تأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
-          analysis.analysisType = "فيبوناتشي" as AnalysisType;
+          analysis.analysisType = "Fibonacci Advanced";
         }
         break;
       default:

@@ -7,51 +7,51 @@ export const analyzeScalpingChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل السكالبينج للرمز:", timeframe);
+  console.log("Starting Scalping analysis for:", timeframe);
 
-  // تعديل النطاق بناءً على الإطار الزمني
+  // Adjust range based on timeframe
   const multipliers = getTimeframeMultipliers(timeframe);
   const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
-  // حساب النطاق المتغير حسب الإطار الزمني
+  // Calculate variable range based on timeframe
   const range = currentPrice * multipliers[0];
   const support = currentPrice - range;
   const resistance = currentPrice + range;
 
-  // تحديد الاتجاه بناءً على نمط السكالبينج
-  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  // Determine direction based on scalping pattern
+  const direction = Math.random() > 0.5 ? "Up" : "Down";
 
-  // حساب وقف الخسارة المتغير
-  const stopLoss = direction === "صاعد" 
+  // Calculate variable stop loss
+  const stopLoss = direction === "Up" 
     ? currentPrice - (range * stopLossMultiplier)
     : currentPrice + (range * stopLossMultiplier);
 
-  // حساب نقطة الدخول المثالية
+  // Calculate best entry point
   const bestEntry = {
-    price: direction === "صاعد" 
+    price: direction === "Up" 
       ? currentPrice - (range * 0.382)
       : currentPrice + (range * 0.382),
-    reason: direction === "صاعد"
-      ? "نقطة دخول عند مستوى تصحيح فيبوناتشي 38.2% مع اتجاه صعودي قصير المدى"
-      : "نقطة دخول عند مستوى تصحيح فيبوناتشي 38.2% مع اتجاه هبوطي قصير المدى"
+    reason: direction === "Up"
+      ? "Entry point at 38.2% Fibonacci retracement with short-term uptrend"
+      : "Entry point at 38.2% Fibonacci retracement with short-term downtrend"
   };
 
-  // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
+  // Calculate targets with variable timing based on timeframe
   const targets = [
     {
-      price: direction === "صاعد"
+      price: direction === "Up"
         ? currentPrice + (range * multipliers[0])
         : currentPrice - (range * multipliers[0]),
       expectedTime: getExpectedTime(timeframe, 0)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Up"
         ? currentPrice + (range * multipliers[1])
         : currentPrice - (range * multipliers[1]),
       expectedTime: getExpectedTime(timeframe, 1)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Up"
         ? currentPrice + (range * multipliers[2])
         : currentPrice - (range * multipliers[2]),
       expectedTime: getExpectedTime(timeframe, 2)
@@ -59,18 +59,18 @@ export const analyzeScalpingChart = async (
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `نموذج سكالبينج ${direction} على الإطار الزمني ${timeframe}`,
-    direction,
+    pattern: `Scalping ${direction} Pattern on ${timeframe} timeframe`,
+    direction: direction as "Up" | "Down" | "Neutral",
     currentPrice,
     support,
     resistance,
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "سكالبينج"
+    analysisType: "Scalping"
   };
 
-  console.log("نتائج تحليل السكالبينج:", analysisResult);
+  console.log("Scalping analysis results:", analysisResult);
   return analysisResult;
 };
 

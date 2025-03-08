@@ -1,3 +1,4 @@
+
 -- Drop existing table if it exists
 DROP TABLE IF EXISTS public.search_history;
 
@@ -12,7 +13,7 @@ CREATE TABLE public.search_history (
   analysis_type text NOT NULL check (analysis_type in (
     'Normal', 'Scalping', 'Smart', 'SMC', 'ICT', 'Turtle Soup', 'Gann', 'Waves', 'Patterns', 
     'Price Action', 'Neural Networks', 'RNN', 'Time Clustering', 'Multi Variance',
-    'Composite Candlestick', 'Behavioral Analysis', 'Pattern', 'Daily', 'Fibonacci'
+    'Composite Candlestick', 'Behavioral Analysis', 'Pattern', 'Daily', 'Fibonacci', 'Fibonacci Advanced'
   ))
 );
 

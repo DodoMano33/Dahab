@@ -8,33 +8,33 @@ export const analyzeBehavioral = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with Behavioral Analysis for:", { timeframe, currentPrice });
   
-  // محاكاة التحليل السلوكي
-  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
-  const movePercent = Math.random() * 0.05 + 0.02; // حركة بين 2% و 7%
+  // Simulate behavioral analysis
+  const direction = Math.random() > 0.5 ? "Up" : "Down";
+  const movePercent = Math.random() * 0.05 + 0.02; // Movement between 2% and 7%
   
-  // احتساب مستويات الدعم والمقاومة باستخدام التحليل السلوكي
-  const behavioralRange = Math.random() * 0.025 + 0.015; // نطاق سلوكي بين 1.5% و 4%
+  // Calculate support and resistance based on behavioral analysis
+  const behavioralRange = Math.random() * 0.025 + 0.015; // Behavioral range between 1.5% and 4%
   const support = Number((currentPrice * (1 - behavioralRange)).toFixed(2));
   const resistance = Number((currentPrice * (1 + behavioralRange)).toFixed(2));
   
-  // احتساب مستويات وقف الخسارة بناءً على الاتجاه
-  const stopLoss = direction === "صاعد" 
+  // Calculate stop loss based on trend
+  const stopLoss = direction === "Up" 
     ? Number((support - currentPrice * 0.005).toFixed(2))
     : Number((resistance + currentPrice * 0.005).toFixed(2));
   
-  // مستويات الأهداف
+  // Target levels
   const targets = [];
-  if (direction === "صاعد") {
+  if (direction === "Up") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.5)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent * 1.1)).toFixed(2));
     
     targets.push({
       price: target1Price,
-      expectedTime: new Date(Date.now() + 36 * 60 * 60 * 1000) // 36 ساعة
+      expectedTime: new Date(Date.now() + 36 * 60 * 60 * 1000) // 36 hours
     });
     targets.push({
       price: target2Price,
-      expectedTime: new Date(Date.now() + 84 * 60 * 60 * 1000) // 84 ساعة
+      expectedTime: new Date(Date.now() + 84 * 60 * 60 * 1000) // 84 hours
     });
   } else {
     const target1Price = Number((currentPrice * (1 - movePercent * 0.5)).toFixed(2));
@@ -42,15 +42,15 @@ export const analyzeBehavioral = async (
     
     targets.push({
       price: target1Price,
-      expectedTime: new Date(Date.now() + 36 * 60 * 60 * 1000) // 36 ساعة
+      expectedTime: new Date(Date.now() + 36 * 60 * 60 * 1000) // 36 hours
     });
     targets.push({
       price: target2Price,
-      expectedTime: new Date(Date.now() + 84 * 60 * 60 * 1000) // 84 ساعة
+      expectedTime: new Date(Date.now() + 84 * 60 * 60 * 1000) // 84 hours
     });
   }
   
-  // توليد نوع نمط سلوكي
+  // Generate behavioral pattern
   const behavioralPatterns = [
     "Fear & Greed Pattern", 
     "Market Sentiment", 
@@ -60,14 +60,14 @@ export const analyzeBehavioral = async (
   ];
   const pattern = behavioralPatterns[Math.floor(Math.random() * behavioralPatterns.length)];
   
-  // نقطة الدخول المثالية
-  const entryPrice = direction === "صاعد"
+  // Best entry point
+  const entryPrice = direction === "Up"
     ? Number((currentPrice * (1 + Math.random() * 0.003)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.003)).toFixed(2));
   
   const result: AnalysisData = {
     pattern,
-    direction,
+    direction: direction as "Up" | "Down" | "Neutral",
     currentPrice,
     support,
     resistance,
@@ -77,8 +77,8 @@ export const analyzeBehavioral = async (
       price: entryPrice,
       reason: `Entry based on ${pattern} behavioral analysis`
     },
-    analysisType: "تحليل سلوكي",
-    activation_type: "تلقائي"
+    analysisType: "Behavioral Analysis",
+    activation_type: "auto"
   };
   
   return result;

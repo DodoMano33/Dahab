@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -15,7 +14,7 @@ import { analyzeMultiVariance } from "@/components/chart/analysis/multiVarianceA
 import { analyzeCompositeCandlestick } from "@/components/chart/analysis/compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "@/components/chart/analysis/behavioralAnalysis";
 import { analyzeFibonacciChart } from "@/components/chart/analysis/fibonacciAnalysis";
-import { analyzeFibonacciAdvancedChart } from "@/components/chart/analysis/fibonacciAdvancedAnalysis";
+import { analyzeFibonacciAdvanced } from "@/components/chart/analysis/fibonacciAdvancedAnalysis";
 import { analyzeDailyChart } from "@/components/chart/analysis/dailyAnalysis";
 import { getStrategyName } from "./analysisTypeMap";
 
@@ -36,100 +35,82 @@ export const executeSpecificAnalysis = async (
   
   switch (normalizedType) {
     case "scalping":
-    case "مضاربة":
-    case "سكالبينج":
       console.log("Executing Scalping analysis");
       return await analyzeScalpingChart(chartImage, currentPrice, timeframe);
       
     case "smc":
-    case "نظريةهيكلالسوق":
       console.log("Executing SMC analysis");
       return await analyzeSMCChart(chartImage, currentPrice, timeframe);
       
     case "ict":
-    case "نظريةالسوق":
       console.log("Executing ICT analysis");
       return await analyzeICTChart(chartImage, currentPrice, timeframe);
       
     case "turtlesoup":
     case "turtle":
-    case "الحساءالسلحفائي":
       console.log("Executing Turtle Soup analysis");
       return await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
       
     case "gann":
-    case "جان":
       console.log("Executing Gann analysis");
       return await analyzeGannChart(chartImage, currentPrice, timeframe);
       
     case "waves":
-    case "تقلبات":
       console.log("Executing Waves analysis");
       return await analyzeWavesChart(chartImage, currentPrice, timeframe);
       
     case "patterns":
     case "pattern":
-    case "نمطي":
       console.log("Executing Pattern analysis");
       return await analyzePattern(chartImage, currentPrice, timeframe);
       
     case "priceaction":
-    case "حركةالسعر":
       console.log("Executing Price Action analysis");
       return await analyzePriceAction(chartImage, currentPrice, timeframe);
       
     case "neuralnetworks":
-    case "شبكاتعصبية":
       console.log("Executing Neural Networks analysis");
       return await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
       
     case "rnn":
-    case "شبكاتعصبيةمتكررة":
       console.log("Executing RNN analysis");
       return await analyzeRNN(chartImage, currentPrice, timeframe);
       
     case "timeclustering":
-    case "تصفيقزمني":
       console.log("Executing Time Clustering analysis");
       return await analyzeTimeClustering(chartImage, currentPrice, timeframe);
       
     case "multivariance":
-    case "تباينمتعددالعوامل":
       console.log("Executing Multi Variance analysis");
       return await analyzeMultiVariance(chartImage, currentPrice, timeframe);
       
     case "compositecandlestick":
-    case "شمعاتمركبة":
       console.log("Executing Composite Candlestick analysis");
       return await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
       
     case "behavioral":
-    case "تحليلسلوكي":
       console.log("Executing Behavioral analysis");
       return await analyzeBehavioral(chartImage, currentPrice, timeframe);
       
     case "fibonacciadvanced":
-    case "تحليلفيبوناتشيمتقدم":
       console.log("Executing Fibonacci Advanced analysis");
-      const advancedResult = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
+      const advancedResult = await analyzeFibonacciAdvanced(chartImage, currentPrice, timeframe);
       if (advancedResult) {
-        // تأكد من تعيين نوع التحليل بشكل صحيح
-        advancedResult.analysisType = "فيبوناتشي";
+        // Make sure analysis type is correctly set
+        advancedResult.analysisType = "Fibonacci";
       }
       return advancedResult;
       
     case "fibonacci":
-    case "فيبوناتشي":
       console.log("Executing Fibonacci analysis");
       const result = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
       if (result) {
-        // تأكد من تعيين نوع التحليل بشكل صحيح
-        result.analysisType = "فيبوناتشي";
+        // Make sure analysis type is correctly set
+        result.analysisType = "Fibonacci";
       }
       return result;
       
     case "daily":
-    case "يومي":
       console.log("Executing Daily analysis");
       return await analyzeDailyChart(chartImage, currentPrice, timeframe);
       

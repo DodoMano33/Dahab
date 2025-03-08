@@ -1,3 +1,4 @@
+
 export type AnalysisType = 
   | "Scalping" 
   | "Smart" 
@@ -30,7 +31,7 @@ export interface ImageData {
 
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "Up" | "Down" | "Neutral";
   currentPrice: number;
   support: number;
   resistance: number;
@@ -47,7 +48,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: "تلقائي" | "يدوي";
+  activation_type?: "auto" | "manual";
   analysisType: AnalysisType;
 }
 

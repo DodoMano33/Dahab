@@ -1,7 +1,6 @@
-
 import { AnalysisData } from "@/types/analysis";
-import { calculateFibonacciLevels, findOptimalFibonacciEntry, calculateFibonacciTargets } from "@/utils/technicalAnalysis/fibonacci";
-import { calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis/calculations";
+import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
+import { calculateSupportResistance } from "@/utils/technicalAnalysis/calculations";
 import { getWyckoffAnalysis } from "@/utils/technicalAnalysis/wyckoff";
 import { addHours, addDays } from "date-fns";
 
@@ -20,10 +19,10 @@ export const analyzeFibonacciAdvanced = async (
     
     // Detect the trend using advanced algorithm (simulated)
     const trend = detectAdvancedTrend(currentPrice, recentHigh, recentLow);
-    const direction = trend.direction as "صاعد" | "هابط";
+    const direction = trend.direction as "Up" | "Down" | "Neutral";
     
     // Calculate support and resistance levels with institutional order blocks
-    const { support, resistance } = calculateSupportResistance([recentLow, currentPrice, recentHigh], currentPrice, direction, timeframe);
+    const { support, resistance } = calculateSupportResistance([recentLow, currentPrice, recentHigh], currentPrice);
     
     // Calculate advanced Fibonacci levels with extensions and projections
     const fibLevels = calculateAdvancedFibonacciLevels(recentHigh, recentLow, currentPrice, direction);
@@ -32,8 +31,7 @@ export const analyzeFibonacciAdvanced = async (
     const bestEntryPoint = findOptimalFibonacciEntry(
       currentPrice,
       fibLevels,
-      direction,
-      timeframe
+      direction
     );
     
     // Calculate stop loss with volatility adjustment
@@ -69,7 +67,7 @@ export const analyzeFibonacciAdvanced = async (
         price: Number(bestEntryPoint.price.toFixed(2)),
         reason: bestEntryPoint.reason + ` (${wyckoffAnalysis.phase})`
       },
-      analysisType: "Fibonacci", // Ensuring correct analysis type for database
+      analysisType: "Fibonacci Advanced", 
       activation_type: "manual"
     };
   } catch (error) {
@@ -85,7 +83,7 @@ function detectAdvancedTrend(currentPrice: number, high: number, low: number) {
   const bullishProbability = pricePosition < 0.5 ? 0.7 : 0.3; // Higher chance of bullish if price is closer to the low
   
   return {
-    direction: Math.random() < bullishProbability ? "صاعد" : "هابط",
+    direction: Math.random() < bullishProbability ? "Up" : "Down",
     strength: Math.random() * 0.5 + 0.5, // Trend strength between 0.5-1.0
     confirmed: Math.random() > 0.3 // 70% chance the trend is confirmed
   };
@@ -128,11 +126,11 @@ function calculateAdvancedFibonacciLevels(high: number, low: number, currentPric
   ];
   
   // Projection levels (from current price)
-  const projectionBase = direction === "صاعد" ? currentPrice - low : high - currentPrice;
+  const projectionBase = direction === "Up" ? currentPrice - low : high - currentPrice;
   const projectionLevels = [
-    { level: 0.618, price: currentPrice + (direction === "صاعد" ? 1 : -1) * projectionBase * 0.618 },
-    { level: 1.0, price: currentPrice + (direction === "صاعد" ? 1 : -1) * projectionBase },
-    { level: 1.618, price: currentPrice + (direction === "صاعد" ? 1 : -1) * projectionBase * 1.618 }
+    { level: 0.618, price: currentPrice + (direction === "Up" ? 1 : -1) * projectionBase * 0.618 },
+    { level: 1.0, price: currentPrice + (direction === "Up" ? 1 : -1) * projectionBase },
+    { level: 1.618, price: currentPrice + (direction === "Up" ? 1 : -1) * projectionBase * 1.618 }
   ];
   
   // Combine all levels and round to 2 decimal places
@@ -150,17 +148,34 @@ function calculateAdvancedStopLoss(
   volatilityFactor: number
 ): number {
   // Find appropriate Fibonacci level for stop loss
-  const stopLevel = direction === "صاعد" 
+  const stopLevel = direction === "Up" 
     ? fibLevels.find(level => level.level === 0.786)?.price || currentPrice * 0.97
     : fibLevels.find(level => level.level === 1.27)?.price || currentPrice * 1.03;
   
   // Add buffer based on volatility
   const buffer = currentPrice * volatilityFactor * 0.5;
-  const adjustedStop = direction === "صاعد"
+  const adjustedStop = direction === "Up"
     ? stopLevel - buffer
     : stopLevel + buffer;
   
   return Number(adjustedStop.toFixed(2));
+}
+
+// Find optimal entry point based on Fibonacci levels
+function findOptimalFibonacciEntry(
+  currentPrice: number,
+  fibLevels: { level: number, price: number }[],
+  direction: string
+) {
+  // Find appropriate Fibonacci level for entry
+  const entryLevel = direction === "Up" 
+    ? fibLevels.find(level => level.level === 0.618)?.price || currentPrice * 0.97
+    : fibLevels.find(level => level.level === 0.382)?.price || currentPrice * 1.03;
+  
+  return {
+    price: Number(entryLevel.toFixed(2)),
+    reason: `Entry at ${direction === "Up" ? "61.8%" : "38.2%"} Fibonacci level`
+  };
 }
 
 // Calculate advanced targets based on Fibonacci projections
@@ -173,7 +188,7 @@ function calculateAdvancedTargets(
   const now = new Date();
   
   // Find appropriate Fibonacci levels for targets
-  const targetsLevels = direction === "صاعد"
+  const targetsLevels = direction === "Up"
     ? [
         fibLevels.find(level => level.level === 1.27)?.price || currentPrice * 1.02,
         fibLevels.find(level => level.level === 1.618)?.price || currentPrice * 1.05,
