@@ -1,5 +1,6 @@
 
 import { AnalysisData } from "@/types/analysis";
+import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
 import { calculateFibonacciLevels, findOptimalFibonacciEntry, calculateFibonacciTargets } from "@/utils/technicalAnalysis/fibonacci";
 import { calculateSupportResistance, detectTrend } from "@/utils/technicalAnalysis/calculations";
 
@@ -60,14 +61,14 @@ const applyWyckoffFilter = (trend: string, currentPrice: number, prices: number[
   const recentHigh = Math.max(...recent);
   const recentLow = Math.min(...recent);
   
-  if (trend === "صاعد") {
+  if (trend === "Up") {
     // Check for accumulation signs
     const hasHigherLows = recent[recent.length - 1] > recent[0];
     const isNearLow = (currentPrice - recentLow) / (recentHigh - recentLow) < 0.3;
     
     return {
       isValid: hasHigherLows && !isNearLow,
-      phase: hasHigherLows ? "تراكم متقدم" : "تراكم مبكر",
+      phase: hasHigherLows ? "Advanced Accumulation" : "Early Accumulation",
       confidence: hasHigherLows && !isNearLow ? 0.85 : 0.6
     };
   } else {
@@ -77,7 +78,7 @@ const applyWyckoffFilter = (trend: string, currentPrice: number, prices: number[
     
     return {
       isValid: hasLowerHighs && !isNearHigh,
-      phase: hasLowerHighs ? "توزيع متقدم" : "توزيع مبكر",
+      phase: hasLowerHighs ? "Advanced Distribution" : "Early Distribution",
       confidence: hasLowerHighs && !isNearHigh ? 0.85 : 0.6
     };
   }
@@ -94,10 +95,11 @@ export const analyzeFibonacciAdvancedChart = async (
   const prices = generatePriceHistory(currentPrice, timeframe);
   
   // 1. Determine the market trend
-  const trend = detectTrend(prices);
+  const arabicTrend = detectTrend(prices);
+  const trend = convertArabicDirectionToEnglish(arabicTrend);
   
   // 2. Calculate support and resistance
-  const { support, resistance } = calculateSupportResistance(prices, currentPrice, trend, timeframe);
+  const { support, resistance } = calculateSupportResistance(prices, currentPrice, arabicTrend, timeframe);
   
   // 3. Get institutional liquidity zones
   const liquidityZones = getInstitutionalLiquidityZones(prices, currentPrice);
@@ -122,13 +124,13 @@ export const analyzeFibonacciAdvancedChart = async (
     }));
   
   // 8. Calculate stop loss using support/resistance and institutional zones
-  const stopLossLevel = trend === "صاعد" 
+  const stopLossLevel = trend === "Up" 
     ? Math.min(...liquidityZones.filter(z => z.type === "support").map(z => z.price), support * 0.98)
     : Math.max(...liquidityZones.filter(z => z.type === "resistance").map(z => z.price), resistance * 1.02);
   
   // 9. Build the analysis result
   const analysisResult: AnalysisData = {
-    pattern: "تحليل فيبوناتشي متقدم",
+    pattern: "Advanced Fibonacci Analysis",
     direction: trend,
     currentPrice,
     support,
@@ -139,10 +141,9 @@ export const analyzeFibonacciAdvancedChart = async (
       price: Number(bestEntryPoint.price.toFixed(2)),
       reason: bestEntryPoint.reason + ` (${wyckoffAnalysis.phase})`
     },
-    analysisType: "فيبوناتشي", // Ensuring correct analysis type for database
-    activation_type: "يدوي"
+    analysisType: "Fibonacci Advanced",
+    activation_type: "Manual"
   };
-  
-  console.log("Fibonacci Advanced analysis completed:", analysisResult);
+
   return analysisResult;
 };

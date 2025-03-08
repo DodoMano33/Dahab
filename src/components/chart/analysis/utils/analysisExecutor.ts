@@ -113,8 +113,8 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "ذكي" as AnalysisType;
-    analysis.activation_type = "تلقائي";
+    analysis.analysisType = "Smart";
+    analysis.activation_type = "Automatic";
   } else {
     const strategy = selectedStrategies[0] || "Standard";
     switch (strategy) {
@@ -148,45 +148,43 @@ export const executeAnalysis = async (
       case "RNN":
         analysis = await analyzeRNN(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "شبكات عصبية" as AnalysisType;
+          analysis.analysisType = "RNN";
         }
         break;
       case "Time Clustering":
         analysis = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "تقلبات" as AnalysisType;
+          analysis.analysisType = "Time Clustering";
         }
         break;
       case "Multi Variance":
         analysis = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "تقلبات" as AnalysisType;
+          analysis.analysisType = "Multi Variance";
         }
         break;
       case "Composite Candlestick":
         analysis = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "نمطي" as AnalysisType;
+          analysis.analysisType = "Composite Candlestick";
         }
         break;
       case "Behavioral":
         analysis = await analyzeBehavioral(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "حركة السعر" as AnalysisType;
+          analysis.analysisType = "Behavioral Analysis";
         }
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         if (analysis) {
-          // تأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
-          analysis.analysisType = "فيبوناتشي" as AnalysisType;
+          analysis.analysisType = "Fibonacci";
         }
         break;
       case "Fibonacci Advanced":
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         if (analysis) {
-          // تأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
-          analysis.analysisType = "فيبوناتشي" as AnalysisType;
+          analysis.analysisType = "Fibonacci Advanced";
         }
         break;
       default:

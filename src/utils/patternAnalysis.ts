@@ -2,6 +2,7 @@
 import { AnalysisData } from "@/types/analysis";
 import { analyzePatternWithPrice } from "./patternRecognition";
 import { getExpectedTime } from "./technicalAnalysis";
+import { convertArabicDirectionToEnglish } from "./directionConverter";
 
 export const analyzePattern = async (
   chartImage: string,
@@ -22,6 +23,12 @@ export const analyzePattern = async (
     }
 
     const analysis = analyzePatternWithPrice(chartImage, currentPrice, timeframe);
+    
+    // Convert direction to English if it's in Arabic
+    if (analysis.direction === "صاعد" || analysis.direction === "هابط") {
+      analysis.direction = convertArabicDirectionToEnglish(analysis.direction);
+    }
+    
     console.log("Pattern analysis completed successfully:", analysis);
     return analysis;
 

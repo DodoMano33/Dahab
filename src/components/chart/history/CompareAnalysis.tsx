@@ -1,12 +1,9 @@
 
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { SearchHistoryItem } from "@/types/analysis";
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { DirectionIndicator } from "./DirectionIndicator";
 
 interface CompareAnalysisProps {
   isOpen: boolean;
@@ -15,111 +12,71 @@ interface CompareAnalysisProps {
 }
 
 export const CompareAnalysis = ({ isOpen, onClose, items }: CompareAnalysisProps) => {
-  const [activeTab, setActiveTab] = useState("overview");
-  
-  if (items.length === 0) return null;
-  
-  const isPriceHigher = (price: number, currentPrice: number) => price > currentPrice;
-  
-  // تهيئة مصفوفة المقارنة
-  const comparisonItems = items.slice(0, 2); // نأخذ أول عنصرين فقط للمقارنة
-  
+  const [sortedItems, setSortedItems] = useState<SearchHistoryItem[]>([]);
+
+  useEffect(() => {
+    if (items.length) {
+      // Sort items by date (newest first)
+      const sorted = [...items].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      setSortedItems(sorted);
+    }
+  }, [items]);
+
+  // If dialog is not open, don't render anything
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] overflow-auto p-6" dir="rtl">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">مقارنة التحليلات</DialogTitle>
+          <DialogTitle>Compare Analysis Results</DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-          {comparisonItems.map((item, index) => (
-            <Card key={index} className="overflow-hidden">
-              <CardHeader className="bg-muted/30">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">
-                    {item.symbol} - {item.timeframe}
-                  </CardTitle>
-                  <Badge>{item.analysisType}</Badge>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {format(item.date, 'PPpp', { locale: ar })}
-                </div>
-              </CardHeader>
-              
-              <CardContent className="p-4 space-y-4 mt-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">النمط</h4>
-                    <p className="font-medium">{item.analysis.pattern}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">الاتجاه</h4>
-                    <p className={cn(
-                      "font-medium",
-                      item.analysis.direction === "صاعد" ? "text-green-600" : "text-red-600"
-                    )}>
-                      {item.analysis.direction}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">السعر الحالي</h4>
-                    <p className="font-bold">{item.currentPrice}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">وقف الخسارة</h4>
-                    <p className={cn(
-                      "font-medium",
-                      isPriceHigher(item.analysis.stopLoss, item.currentPrice) ? "text-red-600" : "text-green-600"
-                    )}>
-                      {item.analysis.stopLoss}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">مستوى الدعم</h4>
-                    <p className={cn(
-                      "font-medium",
-                      isPriceHigher(item.analysis.support, item.currentPrice) ? "text-red-600" : "text-green-600"
-                    )}>
-                      {item.analysis.support}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">مستوى المقاومة</h4>
-                    <p className={cn(
-                      "font-medium",
-                      isPriceHigher(item.analysis.resistance, item.currentPrice) ? "text-red-600" : "text-green-600"
-                    )}>
-                      {item.analysis.resistance}
-                    </p>
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          {sortedItems.map((item) => (
+            <Card key={item.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="text-sm font-bold">{item.symbol}</div>
+                <div className="text-xs text-gray-500">
+                  {new Date(item.date).toLocaleString()}
                 </div>
                 
-                {item.analysis.bestEntryPoint && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">أفضل نقطة دخول</h4>
-                    <p className={cn(
-                      "font-medium",
-                      isPriceHigher(item.analysis.bestEntryPoint.price, item.currentPrice) ? "text-red-600" : "text-green-600"
-                    )}>
-                      {item.analysis.bestEntryPoint.price}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{item.analysis.bestEntryPoint.reason}</p>
+                <div className="mt-3 grid grid-cols-2 gap-y-2 text-xs">
+                  <div className="font-semibold">Direction:</div>
+                  <div className="flex items-center">
+                    <DirectionIndicator direction={item.analysis.direction} />
+                    <span className="ml-1">{item.analysis.direction}</span>
                   </div>
-                )}
+                  
+                  <div className="font-semibold">Price:</div>
+                  <div>${item.currentPrice.toFixed(2)}</div>
+                  
+                  <div className="font-semibold">Support:</div>
+                  <div>${item.analysis.support.toFixed(2)}</div>
+                  
+                  <div className="font-semibold">Resistance:</div>
+                  <div>${item.analysis.resistance.toFixed(2)}</div>
+                  
+                  <div className="font-semibold">Stop Loss:</div>
+                  <div>${item.analysis.stopLoss.toFixed(2)}</div>
+                  
+                  <div className="font-semibold">Analysis Type:</div>
+                  <div>{item.analysisType}</div>
+                  
+                  <div className="font-semibold">Pattern:</div>
+                  <div>{item.analysis.pattern}</div>
+                </div>
                 
                 {item.analysis.targets && item.analysis.targets.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">الأهداف</h4>
-                    <div className="space-y-2">
+                  <div className="mt-3">
+                    <div className="text-xs font-semibold">Targets:</div>
+                    <div className="mt-1 space-y-1">
                       {item.analysis.targets.map((target, idx) => (
-                        <div key={idx} className="flex justify-between items-center bg-muted/20 p-2 rounded">
-                          <span className="text-sm">الهدف {idx + 1}</span>
-                          <span className={cn(
-                            "font-medium",
-                            isPriceHigher(target.price, item.currentPrice) ? "text-red-600" : "text-green-600"
-                          )}>
-                            {target.price}
-                          </span>
+                        <div key={idx} className="text-xs flex justify-between">
+                          <span>Target {idx + 1}:</span>
+                          <span className="font-medium">${target.price.toFixed(2)}</span>
                         </div>
                       ))}
                     </div>

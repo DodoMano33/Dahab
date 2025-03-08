@@ -7,6 +7,7 @@ import {
   combineAndSortTargets,
   calculateWeightedValues 
 } from "./analysisAggregator";
+import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
 
 export const combinedAnalysis = async (
   chartImage: string,
@@ -56,7 +57,8 @@ export const combinedAnalysis = async (
     const weightedValues = calculateWeightedValues(analysisResults);
     
     // Determine direction based on combined analysis
-    const direction = calculateCombinedDirection(analysisResults);
+    const arabicDirection = calculateCombinedDirection(analysisResults);
+    const direction = convertArabicDirectionToEnglish(arabicDirection);
 
     // Combine and sort targets
     const combinedTargets = combineAndSortTargets(analysisResults);
@@ -74,8 +76,8 @@ export const combinedAnalysis = async (
         price: weightedValues.entryPrice,
         reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`
       },
-      analysisType: "ذكي",
-      activation_type: "تلقائي"
+      analysisType: "Smart",
+      activation_type: "Automatic"
     };
 
     console.log("Combined analysis result:", combinedResult);

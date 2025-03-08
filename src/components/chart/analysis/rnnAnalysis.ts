@@ -1,5 +1,6 @@
 
 import { AnalysisData } from "@/types/analysis";
+import { convertArabicDirectionToEnglish } from "@/utils/directionConverter";
 
 export const analyzeRNN = async (
   chartImage: string,
@@ -8,21 +9,22 @@ export const analyzeRNN = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with RNN for:", { timeframe, currentPrice });
   
-  // محاكاة التحليل باستخدام الشبكات العصبية المتكررة
-  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  // مُحاكاة التحليل باستخدام الشبكات العصبية المتكررة
+  const arabicDirection = Math.random() > 0.5 ? "صاعد" : "هابط";
+  const direction = convertArabicDirectionToEnglish(arabicDirection);
   const movePercent = Math.random() * 0.05 + 0.01; // حركة بين 1% و 6%
   
   const support = Number((currentPrice * (1 - Math.random() * 0.03)).toFixed(2));
   const resistance = Number((currentPrice * (1 + Math.random() * 0.03)).toFixed(2));
   
   // احتساب مستويات وقف الخسارة بناءً على الاتجاه
-  const stopLoss = direction === "صاعد" 
+  const stopLoss = direction === "Up" 
     ? Number((support - currentPrice * 0.005).toFixed(2))
     : Number((resistance + currentPrice * 0.005).toFixed(2));
   
   // مستويات الأهداف
   const targets = [];
-  if (direction === "صاعد") {
+  if (direction === "Up") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.5)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent)).toFixed(2));
     const target3Price = Number((currentPrice * (1 + movePercent * 1.5)).toFixed(2));
@@ -59,7 +61,7 @@ export const analyzeRNN = async (
   }
   
   // نقطة الدخول المثالية
-  const entryPrice = direction === "صاعد"
+  const entryPrice = direction === "Up"
     ? Number((currentPrice * (1 + Math.random() * 0.005)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.005)).toFixed(2));
   
@@ -75,8 +77,8 @@ export const analyzeRNN = async (
       price: entryPrice,
       reason: "Entry based on RNN analysis of historical patterns"
     },
-    analysisType: "شبكات عصبية متكررة",
-    activation_type: "تلقائي"
+    analysisType: "RNN", 
+    activation_type: "Automatic"
   };
   
   return result;
