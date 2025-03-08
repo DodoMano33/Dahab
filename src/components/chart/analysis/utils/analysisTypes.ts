@@ -13,8 +13,8 @@ export const getAnalysisType = (
   isPriceAction: boolean,
   isNeuralNetwork: boolean
 ): AnalysisType => {
-  if (isAI) return "ذكي";
-  if (isScalping) return "سكالبينج";
+  if (isAI) return "Smart";
+  if (isScalping) return "Scalping";
   if (isSMC) return "SMC";
   if (isICT) return "ICT";
   if (isTurtleSoup) return "Turtle Soup";
@@ -22,6 +22,7 @@ export const getAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
-  if (isNeuralNetwork) return "شبكات عصبية";
-  return "عادي";
+  if (isNeuralNetwork) return "Neural Networks";
+  return "Normal";
 };
+

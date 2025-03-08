@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { addMinutes, addHours, addDays } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -7,7 +8,7 @@ export const analyzeWavesChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل Waves للرمز:", timeframe);
+  console.log("Starting Waves analysis for:", timeframe);
 
   // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
@@ -19,39 +20,39 @@ export const analyzeWavesChart = async (
   const resistance = currentPrice + range;
 
   // تحديد الاتجاه بناءً على نمط الموجات
-  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  const direction = Math.random() > 0.5 ? "Bullish" : "Bearish";
 
   // حساب وقف الخسارة المتغير
-  const stopLoss = direction === "صاعد" 
+  const stopLoss = direction === "Bullish" 
     ? currentPrice - (range * stopLossMultiplier)
     : currentPrice + (range * stopLossMultiplier);
 
   // حساب نقطة الدخول المثالية
   const bestEntry = {
-    price: direction === "صاعد" 
+    price: direction === "Bullish" 
       ? currentPrice - (range * 0.618)
       : currentPrice + (range * 0.618),
-    reason: direction === "صاعد"
-      ? `نقطة دخول عند تصحيح الموجة بنسبة 61.8% على الإطار الزمني ${timeframe}`
-      : `نقطة دخول عند اكتمال الموجة التصحيحية على الإطار الزمني ${timeframe}`
+    reason: direction === "Bullish"
+      ? `Entry point at 61.8% wave correction on ${timeframe} timeframe`
+      : `Entry point at completion of corrective wave on ${timeframe} timeframe`
   };
 
   // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
   const targets = [
     {
-      price: direction === "صاعد"
+      price: direction === "Bullish"
         ? currentPrice + (range * multipliers[0])
         : currentPrice - (range * multipliers[0]),
       expectedTime: getExpectedTime(timeframe, 0)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Bullish"
         ? currentPrice + (range * multipliers[1])
         : currentPrice - (range * multipliers[1]),
       expectedTime: getExpectedTime(timeframe, 1)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Bullish"
         ? currentPrice + (range * multipliers[2])
         : currentPrice - (range * multipliers[2]),
       expectedTime: getExpectedTime(timeframe, 2)
@@ -59,7 +60,7 @@ export const analyzeWavesChart = async (
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `نموذج موجي ${direction} على الإطار الزمني ${timeframe}`,
+    pattern: `Wave pattern ${direction} on ${timeframe} timeframe`,
     direction,
     currentPrice,
     support,
@@ -70,7 +71,7 @@ export const analyzeWavesChart = async (
     analysisType: "Waves"
   };
 
-  console.log("نتائج تحليل Waves:", analysisResult);
+  console.log("Waves analysis results:", analysisResult);
   return analysisResult;
 };
 
@@ -95,3 +96,4 @@ const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
       return addHours(now, multiplier * 8);
   }
 };
+

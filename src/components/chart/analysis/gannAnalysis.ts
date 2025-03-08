@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { addDays, addHours, addMinutes } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -7,7 +8,7 @@ export const analyzeGannChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل Gann للرمز:", timeframe);
+  console.log("Starting Gann analysis for:", timeframe);
 
   // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
@@ -19,10 +20,10 @@ export const analyzeGannChart = async (
   const resistance = currentPrice + range;
 
   // تحديد الاتجاه بناءً على زوايا غان
-  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  const direction = Math.random() > 0.5 ? "Bullish" : "Bearish";
 
   // حساب وقف الخسارة المتغير
-  const stopLoss = direction === "صاعد" 
+  const stopLoss = direction === "Bullish" 
     ? currentPrice - (range * stopLossMultiplier)
     : currentPrice + (range * stopLossMultiplier);
 
@@ -31,30 +32,30 @@ export const analyzeGannChart = async (
 
   // حساب نقطة الدخول المثالية
   const bestEntry = {
-    price: direction === "صاعد" 
+    price: direction === "Bullish" 
       ? currentPrice - (range * 0.5)
       : currentPrice + (range * 0.5),
-    reason: direction === "صاعد"
-      ? `نقطة دخول محسوبة على زاوية غان 1x1 للإطار الزمني ${timeframe}`
-      : `نقطة دخول محسوبة على زاوية غان 2x1 للإطار الزمني ${timeframe}`
+    reason: direction === "Bullish"
+      ? `Entry point calculated on Gann 1x1 angle for ${timeframe} timeframe`
+      : `Entry point calculated on Gann 2x1 angle for ${timeframe} timeframe`
   };
 
   // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
   const targets = [
     {
-      price: direction === "صاعد"
+      price: direction === "Bullish"
         ? currentPrice + (range * multipliers[0])
         : currentPrice - (range * multipliers[0]),
       expectedTime: getExpectedTime(timeframe, 0)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Bullish"
         ? currentPrice + (range * multipliers[1])
         : currentPrice - (range * multipliers[1]),
       expectedTime: getExpectedTime(timeframe, 1)
     },
     {
-      price: direction === "صاعد"
+      price: direction === "Bullish"
         ? currentPrice + (range * multipliers[2])
         : currentPrice - (range * multipliers[2]),
       expectedTime: getExpectedTime(timeframe, 2)
@@ -62,7 +63,7 @@ export const analyzeGannChart = async (
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `نموذج غان ${direction} على الإطار الزمني ${timeframe}`,
+    pattern: `Gann pattern ${direction} on ${timeframe} timeframe`,
     direction,
     currentPrice,
     support,
@@ -74,7 +75,7 @@ export const analyzeGannChart = async (
     analysisType: "Gann"
   };
 
-  console.log("نتائج تحليل Gann:", analysisResult);
+  console.log("Gann analysis results:", analysisResult);
   return analysisResult;
 };
 
