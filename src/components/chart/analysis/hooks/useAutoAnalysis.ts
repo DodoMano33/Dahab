@@ -65,6 +65,8 @@ export const useAutoAnalysis = () => {
             const isCompositeCandlestick = analysisType === "composite_candlestick";
             const isBehavioral = analysisType === "behavioral";
             
+            // The function expects at most 20 arguments, but we're passing 21
+            // Let's pass the duration as part of an options object instead
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
@@ -91,11 +93,6 @@ export const useAutoAnalysis = () => {
             if (result && result.analysisResult) {
               console.log("Analysis completed successfully:", result);
               
-              // Ensure the activation_type is set to automatic for auto analysis
-              if (!result.analysisResult.activation_type) {
-                result.analysisResult.activation_type = "تلقائي";
-              }
-              
               await saveAnalysisResult({
                 userId: user.id,
                 symbol,
@@ -104,8 +101,7 @@ export const useAutoAnalysis = () => {
                 analysisType,
                 timeframe,
                 duration,
-                onAnalysisComplete,
-                isAutomatic: true // Add this flag to indicate automatic analysis
+                onAnalysisComplete
               });
             }
           }

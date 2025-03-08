@@ -24,7 +24,6 @@ interface ChartAnalysisParams {
     isNeuralNetwork: boolean;
   };
   duration?: string;
-  isAutomatic?: boolean;
 }
 
 export const processChartAnalysis = async ({
@@ -35,8 +34,7 @@ export const processChartAnalysis = async ({
   selectedTypes,
   isAI,
   options,
-  duration,
-  isAutomatic = false
+  duration
 }: ChartAnalysisParams): Promise<{
   analysisResult: AnalysisData;
   currentPrice: number;
@@ -73,8 +71,7 @@ export const processChartAnalysis = async ({
       providedPrice,
       analysisType,
       selectedTypes,
-      duration,
-      isAutomatic
+      duration
     });
 
     const chartImage = await getTradingViewChartImage(symbol, timeframe, providedPrice);
@@ -106,12 +103,6 @@ export const processChartAnalysis = async ({
     if (!analysisResult) {
       dismissToasts(loadingToastId, messageToastId);
       throw new Error("لم يتم العثور على نتائج التحليل");
-    }
-
-    // Set the activation_type based on how the analysis was performed
-    if (!analysisResult.activation_type) {
-      analysisResult.activation_type = isAutomatic ? "تلقائي" : "يدوي";
-      console.log(`Setting activation_type to ${analysisResult.activation_type} based on isAutomatic=${isAutomatic}`);
     }
 
     console.log("Analysis completed successfully:", analysisResult);

@@ -57,21 +57,15 @@ export const saveAnalysis = async ({
     analysisResult.analysisType = validAnalysisType;
   }
 
-  // Ensure the activation_type is set properly
+  // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
-    console.log("Setting default activation_type as it was not provided");
-    // For certain specific patterns we know are automatic
     if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
       analysisResult.activation_type = "يدوي";
     } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
       analysisResult.activation_type = "تلقائي";
-    } else {
-      // Default to manual if nothing else matches
-      analysisResult.activation_type = "يدوي";
     }
   }
 
-  console.log("Final activation_type before saving:", analysisResult.activation_type);
   console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,

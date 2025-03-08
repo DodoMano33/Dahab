@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { addDays, addHours, addMinutes } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -72,8 +71,7 @@ export const analyzeGannChart = async (
     targets,
     bestEntryPoint: bestEntry,
     fibonacciLevels: gannLevels,
-    analysisType: "Gann",
-    activation_type: "تلقائي"  // Set to automatic for Gann analysis
+    analysisType: "Gann"
   };
 
   console.log("نتائج تحليل Gann:", analysisResult);

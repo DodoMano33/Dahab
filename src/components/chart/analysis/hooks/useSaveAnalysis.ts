@@ -13,7 +13,6 @@ interface SaveAnalysisParams {
   timeframe: string;
   duration: number;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
-  isAutomatic?: boolean;
 }
 
 export const useSaveAnalysis = () => {
@@ -25,8 +24,7 @@ export const useSaveAnalysis = () => {
     analysisType,
     timeframe,
     duration,
-    onAnalysisComplete,
-    isAutomatic = false
+    onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
       // طباعة نوع التحليل قبل المعالجة
@@ -50,20 +48,10 @@ export const useSaveAnalysis = () => {
         result.analysisResult.analysisType = "فيبوناتشي";
       }
       
-      // Set activation_type for automatic analysis
-      if (isAutomatic && !result.analysisResult.activation_type) {
-        console.log("Setting activation_type to تلقائي for automatic analysis");
-        result.analysisResult.activation_type = "تلقائي";
-      } else if (!result.analysisResult.activation_type) {
-        console.log("Setting default activation_type to يدوي");
-        result.analysisResult.activation_type = "يدوي";
-      }
-      
       // Update the analysis result's analysisType to the mapped value
       const analysisResultWithMappedType = {
         ...result.analysisResult,
-        analysisType: mappedAnalysisType,
-        activation_type: result.analysisResult.activation_type
+        analysisType: mappedAnalysisType
       };
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
@@ -76,7 +64,6 @@ export const useSaveAnalysis = () => {
         console.log("Saving analysis with analysisType:", mappedAnalysisType);
         console.log("Saving analysis with timeframe:", timeframe);
         console.log("Saving analysis with duration:", duration);
-        console.log("Saving analysis with activation_type:", analysisResultWithMappedType.activation_type);
         
         const savedData = await saveAnalysis({
           userId,

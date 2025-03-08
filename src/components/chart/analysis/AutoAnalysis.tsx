@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
@@ -73,10 +72,6 @@ export const AutoAnalysis = ({
         onAnalysisComplete: (result) => {
           console.log("Auto analysis result:", result);
           if (result && onAnalysisComplete) {
-            // Make sure the result has the correct activation_type for auto analysis
-            if (result.analysis && !result.analysis.activation_type) {
-              result.analysis.activation_type = "تلقائي";
-            }
             onAnalysisComplete(result);
           }
         }
