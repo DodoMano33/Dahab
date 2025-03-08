@@ -28,7 +28,7 @@ export interface ImageData {
 
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "Bullish" | "Bearish" | "Neutral" | "صاعد" | "هابط" | "محايد";
   currentPrice: number;
   support: number;
   resistance: number;
@@ -45,7 +45,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: "تلقائي" | "يدوي" | "Automatic" | "Manual";
+  activation_type?: "Automatic" | "Manual" | "تلقائي" | "يدوي";
   analysisType: AnalysisType;
 }
 

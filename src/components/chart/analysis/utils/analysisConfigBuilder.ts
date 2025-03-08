@@ -23,8 +23,8 @@ export const detectAnalysisType = (
   isFibonacci: boolean = false,
   isFibonacciAdvanced: boolean = false
 ): AnalysisType => {
-  if (isAI) return "ذكي";
-  if (isScalping) return "سكالبينج";
+  if (isAI) return "Smart";
+  if (isScalping) return "Scalping";
   if (isSMC) return "SMC";
   if (isICT) return "ICT";
   if (isTurtleSoup) return "Turtle Soup";
@@ -32,15 +32,15 @@ export const detectAnalysisType = (
   if (isWaves) return "Waves";
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
-  if (isFibonacci) return "فيبوناتشي";
-  if (isFibonacciAdvanced) return "تحليل فيبوناتشي متقدم";
-  if (isNeuralNetwork) return "شبكات عصبية";
-  if (isRNN) return "شبكات عصبية متكررة";
-  if (isTimeClustering) return "تصفيق زمني";
-  if (isMultiVariance) return "تباين متعدد العوامل";
-  if (isCompositeCandlestick) return "شمعات مركبة";
-  if (isBehavioral) return "تحليل سلوكي";
-  return "عادي";
+  if (isFibonacci) return "Fibonacci";
+  if (isFibonacciAdvanced) return "Advanced Fibonacci";
+  if (isNeuralNetwork) return "Neural Networks";
+  if (isRNN) return "Recurrent Neural Networks";
+  if (isTimeClustering) return "Time Clustering";
+  if (isMultiVariance) return "Multi Variance";
+  if (isCompositeCandlestick) return "Composite Candlestick";
+  if (isBehavioral) return "Behavioral Analysis";
+  return "Normal";
 };
 
 /**
@@ -84,7 +84,7 @@ export const buildAnalysisConfig = (
   if (isFibonacci) selectedTypes.push("fibonacci");
   if (isFibonacciAdvanced) selectedTypes.push("fibonacciAdvanced");
   
-  const analysisType: AnalysisType = isAI ? "ذكي" : detectAnalysisType(
+  const analysisType: AnalysisType = detectAnalysisType(
     isPatternAnalysis,
     isWaves,
     isGann,

@@ -128,7 +128,7 @@ export const analyzeFibonacciAdvancedChart = async (
   
   // 9. Build the analysis result
   const analysisResult: AnalysisData = {
-    pattern: "تحليل فيبوناتشي متقدم",
+    pattern: "Advanced Fibonacci Analysis",
     direction: trend,
     currentPrice,
     support,
@@ -139,8 +139,8 @@ export const analyzeFibonacciAdvancedChart = async (
       price: Number(bestEntryPoint.price.toFixed(2)),
       reason: bestEntryPoint.reason + ` (${wyckoffAnalysis.phase})`
     },
-    analysisType: "تحليل فيبوناتشي متقدم",
-    activation_type: "يدوي"
+    analysisType: "Advanced Fibonacci",
+    activation_type: "Manual"
   };
   
   console.log("Fibonacci Advanced analysis completed:", analysisResult);

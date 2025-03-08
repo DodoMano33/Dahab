@@ -77,8 +77,8 @@ export const analyzeBehavioral = async (
       price: entryPrice,
       reason: `Entry based on ${pattern} behavioral analysis`
     },
-    analysisType: "تحليل سلوكي",
-    activation_type: "تلقائي"
+    analysisType: "Behavioral Analysis",
+    activation_type: "Automatic"
   };
   
   return result;

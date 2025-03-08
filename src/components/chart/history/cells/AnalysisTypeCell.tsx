@@ -81,16 +81,16 @@ export const AnalysisTypeCell = ({
                 </Badge>
               )}
               <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${
-                activationType === 'Automatic' || activationType === 'تلقائي'
+                activationType === 'Automatic'
                   ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' 
                   : 'bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300'
               }`}>
-                {activationType === 'Automatic' || activationType === 'تلقائي' ? 'Automatic' : 'Manual'}
+                {activationType}
               </Badge>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{activationType === 'Automatic' || activationType === 'تلقائي' ? 'Analysis performed automatically' : 'Analysis performed manually'}</p>
+            <p>{activationType === 'Automatic' ? 'Analysis performed automatically' : 'Analysis performed manually'}</p>
             {pattern && <p className="text-xs mt-1">{pattern}</p>}
           </TooltipContent>
         </Tooltip>

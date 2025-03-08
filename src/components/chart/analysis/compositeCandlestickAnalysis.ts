@@ -78,8 +78,8 @@ export const analyzeCompositeCandlestick = async (
       price: entryPrice,
       reason: `Entry based on ${pattern} candlestick pattern`
     },
-    analysisType: "شمعات مركبة",
-    activation_type: "تلقائي"
+    analysisType: "Composite Candlestick",
+    activation_type: "Automatic"
   };
   
   return result;

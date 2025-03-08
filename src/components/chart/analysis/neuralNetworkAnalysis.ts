@@ -8,7 +8,7 @@ export const analyzeNeuralNetworkChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل الشبكات العصبية للرمز:", timeframe);
+  console.log("Starting Neural Network analysis for symbol:", timeframe);
 
   // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
@@ -40,7 +40,7 @@ export const analyzeNeuralNetworkChart = async (
     price: direction === "صاعد" 
       ? currentPrice + (range * 0.05)
       : currentPrice - (range * 0.05),
-    reason: `نقطة دخول مثالية وفقًا لتحليل الشبكات العصبية بنسبة ثقة ${(confidenceScore * 100).toFixed(1)}% على الإطار الزمني ${timeframe}`
+    reason: `Ideal entry point based on Neural Network analysis with confidence level ${(confidenceScore * 100).toFixed(1)}% on timeframe ${timeframe}`
   };
 
   // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
@@ -76,7 +76,7 @@ export const analyzeNeuralNetworkChart = async (
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `تحليل الشبكات العصبية: اتجاه ${direction} على الإطار الزمني ${timeframe}`,
+    pattern: `Neural Network Analysis: ${direction === "صاعد" ? "Bullish" : "Bearish"} trend on ${timeframe} timeframe`,
     direction,
     currentPrice,
     support,
@@ -85,11 +85,11 @@ export const analyzeNeuralNetworkChart = async (
     targets,
     bestEntryPoint: bestEntry,
     fibonacciLevels,
-    analysisType: "شبكات عصبية",
-    activation_type: "تلقائي"
+    analysisType: "Neural Networks",
+    activation_type: "Automatic"
   };
 
-  console.log("نتائج تحليل الشبكات العصبية:", analysisResult);
+  console.log("Neural Network analysis results:", analysisResult);
   return analysisResult;
 };
 

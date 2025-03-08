@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { addMinutes, addHours, addDays } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -7,7 +8,7 @@ export const analyzeScalpingChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل السكالبينج للرمز:", timeframe);
+  console.log("Starting Scalping analysis for symbol:", timeframe);
 
   // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
@@ -32,8 +33,8 @@ export const analyzeScalpingChart = async (
       ? currentPrice - (range * 0.382)
       : currentPrice + (range * 0.382),
     reason: direction === "صاعد"
-      ? "نقطة دخول عند مستوى تصحيح فيبوناتشي 38.2% مع اتجاه صعودي قصير المدى"
-      : "نقطة دخول عند مستوى تصحيح فيبوناتشي 38.2% مع اتجاه هبوطي قصير المدى"
+      ? "Entry point at Fibonacci 38.2% retracement with short-term bullish trend"
+      : "Entry point at Fibonacci 38.2% retracement with short-term bearish trend"
   };
 
   // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
@@ -59,7 +60,7 @@ export const analyzeScalpingChart = async (
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `نموذج سكالبينج ${direction} على الإطار الزمني ${timeframe}`,
+    pattern: `Scalping pattern ${direction === "صاعد" ? "Bullish" : "Bearish"} on ${timeframe} timeframe`,
     direction,
     currentPrice,
     support,
@@ -67,10 +68,10 @@ export const analyzeScalpingChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "سكالبينج"
+    analysisType: "Scalping"
   };
 
-  console.log("نتائج تحليل السكالبينج:", analysisResult);
+  console.log("Scalping analysis results:", analysisResult);
   return analysisResult;
 };
 
