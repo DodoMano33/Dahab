@@ -105,8 +105,14 @@ function TradingViewWidget({
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-      {/* Info bar to display symbol and price */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-black/70 text-white px-4 py-2 flex justify-between items-center">
+      <div 
+        ref={container}
+        style={{ height: "calc(100% - 40px)", width: "100%" }}
+        className="pt-0"
+      />
+      
+      {/* Info bar moved to bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 text-white px-4 py-2 flex justify-between items-center h-10">
         <div className="font-semibold">
           <span className="opacity-70 mr-2">الرمز:</span>
           {currentSymbol}
@@ -118,11 +124,6 @@ function TradingViewWidget({
           </span>
         </div>
       </div>
-      
-      <div 
-        ref={container}
-        style={{ height: "100%", width: "100%" }}
-      />
     </div>
   );
 }
