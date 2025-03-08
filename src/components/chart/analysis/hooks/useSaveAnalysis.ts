@@ -34,25 +34,27 @@ export const useSaveAnalysis = () => {
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // Make sure the analysis type is present in the result
+      // Check if the analysis result has an analysis type property
       if (!result.analysisResult.analysisType) {
+        console.log("Setting analysis type in result:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
+      } else {
+        // If it does, make sure it matches the mapped type
+        console.log("Existing analysis type in result:", result.analysisResult.analysisType);
+        if (result.analysisResult.analysisType !== mappedAnalysisType) {
+          console.log("Updating analysis type in result to match mapped type");
+          result.analysisResult.analysisType = mappedAnalysisType;
+        }
       }
       
-      // Update the analysis result's analysisType to the mapped value
-      const analysisResultWithMappedType = {
-        ...result.analysisResult,
-        analysisType: mappedAnalysisType
-      };
-      
-      console.log("Final analysis result with type:", analysisResultWithMappedType);
+      console.log("Final analysis result with type:", result.analysisResult);
       
       try {
         const savedData = await saveAnalysis({
           userId,
           symbol,
           currentPrice,
-          analysisResult: analysisResultWithMappedType,
+          analysisResult: result.analysisResult,
           analysisType: mappedAnalysisType as AnalysisType,
           timeframe,
           durationHours: duration
@@ -64,7 +66,7 @@ export const useSaveAnalysis = () => {
             date: new Date(),
             symbol,
             currentPrice,
-            analysis: analysisResultWithMappedType,
+            analysis: result.analysisResult,
             targetHit: false,
             stopLossHit: false,
             analysisType: mappedAnalysisType as AnalysisType,

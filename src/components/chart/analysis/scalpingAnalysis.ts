@@ -68,7 +68,7 @@ export const analyzeScalpingChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "Scalping" // Make sure this is explicitly set to "Scalping"
+    analysisType: "Scalping" // Make sure this is exactly "Scalping", matching the database constraint
   };
 
   console.log("Scalping analysis results:", analysisResult);

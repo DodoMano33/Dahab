@@ -1,3 +1,4 @@
+
 /**
  * Maps analysis type names to valid database enum values
  */
@@ -88,6 +89,10 @@ export const mapToAnalysisType = (analysisType: string): string => {
     case "تحليلسلوكي":
       return "Behavioral Analysis";
     
+    case "daily":
+    case "يومي":
+      return "Daily";
+    
     default:
       console.warn(`Unknown analysis type "${analysisType}", defaulting to "Normal"`);
       return "Normal";
@@ -104,6 +109,7 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
   // Default configuration with all flags set to false
   const config = {
     isScalping: false,
+    isAI: false,
     isSMC: false,
     isICT: false,
     isTurtleSoup: false,
@@ -127,6 +133,10 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
     case "سكالبينج":
     case "مضاربة":
       config.isScalping = true;
+      break;
+    case "smart":
+    case "ذكي":
+      config.isAI = true;
       break;
     case "smc":
     case "نظريةهيكلالسوق":

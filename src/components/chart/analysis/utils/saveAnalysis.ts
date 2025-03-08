@@ -47,6 +47,13 @@ export const saveAnalysis = async ({
     throw new Error(`نوع التحليل "${analysisType}" غير صالح`);
   }
 
+  // Also check the analysis type in the result
+  if (analysisResult.analysisType && !validTypes.includes(analysisResult.analysisType)) {
+    // Correct the analysisType in the analysisResult to match the one being saved
+    console.log(`Correcting analysis result type from "${analysisResult.analysisType}" to "${analysisType}"`);
+    analysisResult.analysisType = analysisType;
+  }
+
   console.log("Final analysis type being saved to database:", analysisType);
 
   // Set automatic activation type for Fibonacci Advanced Analysis
