@@ -11,4 +11,3 @@ export const DirectionCell = ({ direction }: DirectionCellProps) => (
     <DirectionIndicator direction={direction} />
   </TableCell>
 );
-
