@@ -25,6 +25,7 @@ interface HistoryContentProps {
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  onSelectAll?: (select: boolean) => void;
 }
 
 export const HistoryContent = ({
@@ -32,6 +33,7 @@ export const HistoryContent = ({
   selectedItems,
   onSelect,
   onDelete,
+  onSelectAll,
 }: HistoryContentProps) => {
   console.log("HistoryContent rendered with history items:", history.length);
   console.log("Sample first history item last_checked_at:", 
@@ -53,7 +55,9 @@ export const HistoryContent = ({
   
   // وظيفة لتحديد أو إلغاء تحديد جميع العناصر
   const handleSelectAll = () => {
-    console.log("Toggle select all items");
+    if (onSelectAll) {
+      onSelectAll(!isAllSelected);
+    }
   };
   
   // وظيفة تحديث البيانات من قاعدة البيانات
