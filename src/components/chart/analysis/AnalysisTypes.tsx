@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -29,13 +28,13 @@ interface AnalysisType {
 
 const analysisTypes: AnalysisType[] = [
   { value: "normal", label: "Select All" },
+  { value: "patterns", label: "Patterns" },
   { value: "scalping", label: "Scalping" },
-  { value: "ict", label: "ICT" },
   { value: "smc", label: "SMC" },
+  { value: "ict", label: "ICT" },
   { value: "turtle_soup", label: "Turtle Soup" },
   { value: "gann", label: "Gann" },
   { value: "waves", label: "Waves" },
-  { value: "patterns", label: "Patterns" },
   { value: "price_action", label: "Price Action" },
   { value: "fibonacci", label: "Fibonacci" },
   { value: "fibonacci_advanced", label: "Advanced Fibonacci" },
@@ -56,18 +55,14 @@ export const AnalysisTypes = ({
   selectedTypes,
   onTypesChange,
 }: AnalysisTypesProps) => {
-  // Log the available types for debugging
   console.log("Available analysis types:", analysisTypes.map(t => t.value));
   console.log("Currently selected types:", selectedTypes);
   
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
-      // If "Select All" is clicked
       if (selectedTypes.includes("normal")) {
-        // If it's currently selected, deselect all
         onTypesChange([]);
       } else {
-        // If it's not selected, select all
         onTypesChange(analysisTypes.map(t => t.value));
       }
     } else {
@@ -75,7 +70,6 @@ export const AnalysisTypes = ({
         ? selectedTypes.filter((t) => t !== type)
         : [...selectedTypes, type];
 
-      // If all other types are selected, also select "normal"
       const otherTypesSelected = analysisTypes
         .filter(t => t.value !== "normal")
         .every(t => newTypes.includes(t.value));
@@ -83,7 +77,6 @@ export const AnalysisTypes = ({
       if (otherTypesSelected) {
         newTypes.push("normal");
       } else {
-        // Remove "normal" if not all types are selected
         const normalIndex = newTypes.indexOf("normal");
         if (normalIndex !== -1) {
           newTypes.splice(normalIndex, 1);

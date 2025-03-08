@@ -47,26 +47,25 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
-            // Map analysis type to boolean flags
-            const isFibonacciAdvanced = analysisType === "fibonacci_advanced" || analysisType === "تحليل فيبوناتشي متقدم";
-            const isFibonacci = analysisType === "fibonacci";
+            // Map analysis type to boolean flags, matching the order in the UI
+            const isPatternAnalysis = analysisType === "patterns";
             const isScalping = analysisType === "scalping";
             const isSMC = analysisType === "smc";
             const isICT = analysisType === "ict";
             const isTurtleSoup = analysisType === "turtle_soup";
             const isGann = analysisType === "gann";
             const isWaves = analysisType === "waves";
-            const isPatternAnalysis = analysisType === "patterns";
             const isPriceAction = analysisType === "price_action";
-            const isNeuralNetwork = analysisType === "neural_network";
+            const isFibonacci = analysisType === "fibonacci";
+            const isFibonacciAdvanced = analysisType === "fibonacci_advanced";
+            const isNeuralNetwork = analysisType === "neural_networks";
             const isRNN = analysisType === "rnn";
             const isTimeClustering = analysisType === "time_clustering";
             const isMultiVariance = analysisType === "multi_variance";
             const isCompositeCandlestick = analysisType === "composite_candlestick";
             const isBehavioral = analysisType === "behavioral";
             
-            // The function expects at most 20 arguments, but we're passing 21
-            // Let's pass the duration as part of an options object instead
+            // Call the analysis function with the parameters in the correct order
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,

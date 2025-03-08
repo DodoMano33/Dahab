@@ -32,25 +32,27 @@ export const AnalysisTypeCell = ({
     const type = analysisType?.toLowerCase() || '';
     const normalizedType = type.replace(/_/g, '').trim();
     
-    // Old analysis types
+    // UI color mapping aligned with button UI colors
+    if (normalizedType.includes('patterns') || normalizedType.includes('نمطي')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
+    if (normalizedType.includes('scalping') || normalizedType.includes('مضاربة') || normalizedType.includes('سكالبينج')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
     if (normalizedType.includes('smc') || normalizedType.includes('نظريةهيكلالسوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
-    if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
+    if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
     if (normalizedType.includes('turtle') || normalizedType.includes('الحساءالسلحفائي')) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
     if (normalizedType.includes('gann') || normalizedType.includes('جان')) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
     if (normalizedType.includes('waves') || normalizedType.includes('تقلبات') || normalizedType.includes('موجات')) return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300';
-    if (normalizedType.includes('pattern') || normalizedType.includes('نمطي')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
     if (normalizedType.includes('priceaction') || normalizedType.includes('حركةالسعر')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
     if (normalizedType.includes('smart') || normalizedType.includes('ذكي')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300';
-    if (normalizedType.includes('scalping') || normalizedType.includes('مضاربة') || normalizedType.includes('سكالبينج')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
     
-    // New analysis types
+    // Fibonacci types  
     if (normalizedType.includes('fibonacci') || normalizedType.includes('فيبوناتشي')) {
       // Check for advanced fibonacci first
       if (normalizedType.includes('advanced') || normalizedType.includes('متقدم')) {
-        return 'bg-yellow-200 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-200';
+        return 'bg-amber-200 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200';
       }
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
     }
+    
+    // Advanced analysis types
     if (normalizedType.includes('neural') || normalizedType.includes('شبكاتعصبية')) {
       // Check for RNN first
       if (normalizedType.includes('rnn') || normalizedType.includes('متكررة')) {
@@ -61,7 +63,7 @@ export const AnalysisTypeCell = ({
     if (normalizedType.includes('timecluster') || normalizedType.includes('تصفيقزمني')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300';
     if (normalizedType.includes('multivariance') || normalizedType.includes('تباينمتعدد')) return 'bg-lime-100 text-lime-800 dark:bg-lime-900/20 dark:text-lime-300';
     if (normalizedType.includes('composite') || normalizedType.includes('شمعاتمركبة')) return 'bg-violet-100 text-violet-800 dark:bg-violet-900/20 dark:text-violet-300';
-    if (normalizedType.includes('behavioral') || normalizedType.includes('تحليلسلوكي')) return 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/20 dark:text-fuchsia-300';
+    if (normalizedType.includes('behavioral') || normalizedType.includes('تحليلسلوكي')) return 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-300';
     
     return 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300';
   };
