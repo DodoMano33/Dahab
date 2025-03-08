@@ -47,7 +47,7 @@ export const ChartInput = ({
       isAnalyzing={isAnalyzing}
       onHistoryClick={onHistoryClick || (() => {})}
       defaultSymbol={defaultSymbol}
-      defaultPrice={defaultPrice ? defaultPrice.toString() : undefined}
+      defaultPrice={defaultPrice}
     />
   );
 };

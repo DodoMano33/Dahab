@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 interface ValidationProps {
@@ -21,13 +22,14 @@ export const useFormValidation = () => {
       return false;
     }
 
+    // Convert the price string to a number, or use defaultPrice
     const providedPrice = price ? Number(price) : defaultPrice;
     if (!providedPrice) {
       toast.error("الرجاء إدخال السعر أو انتظار تحميل الشارت");
       return false;
     }
 
-    if (isNaN(providedPrice)) {
+    if (isNaN(Number(providedPrice))) {
       toast.error("الرجاء إدخال سعر صحيح");
       return false;
     }
