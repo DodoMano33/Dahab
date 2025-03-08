@@ -82,6 +82,7 @@ export function useNotifications() {
             setNotifications(prev => [payload.new as Notification, ...prev]);
             toast(payload.new.title, {
               description: payload.new.message,
+              duration: 3000, // تحديث مدة التنبيه إلى 3 ثواني
               action: {
                 label: "عرض",
                 onClick: () => handleNotificationClick(payload.new as Notification),
