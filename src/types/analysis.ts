@@ -26,7 +26,28 @@ export type AnalysisType =
   | "نظرية هيكل السوق"
   | "يومي"
   | "مضاربة"
-  | "حركة السعر";
+  | "حركة السعر"
+  // English versions
+  | "scalping"
+  | "smart"
+  | "smc"
+  | "ict"
+  | "turtle_soup"
+  | "gann"
+  | "waves"
+  | "patterns"
+  | "price_action"
+  | "neural_network"
+  | "rnn"
+  | "time_clustering"
+  | "multi_variance"
+  | "composite_candlesticks"
+  | "behavioral"
+  | "pattern"
+  | "daily"
+  | "normal"
+  | "fibonacci"
+  | "fibonacci_advanced";
 
 export interface ImageData {
   height: number;
@@ -36,7 +57,7 @@ export interface ImageData {
 
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "صاعد" | "هابط" | "محايد" | "Up" | "Down" | "Neutral";
   currentPrice: number;
   support: number;
   resistance: number;
@@ -53,7 +74,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: "تلقائي" | "يدوي";
+  activation_type?: "تلقائي" | "يدوي" | "Automatic" | "Manual";
   analysisType: AnalysisType;
 }
 
@@ -69,7 +90,7 @@ export interface SearchHistoryItem {
   timeframe: string;
   analysis_duration_hours?: number;
   last_checked_price?: number;
-  last_checked_at?: Date;
+  last_checked_at?: Date | string | null;
   result_timestamp?: Date;
   is_success?: boolean;
 }

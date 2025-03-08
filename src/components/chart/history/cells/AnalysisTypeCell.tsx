@@ -7,7 +7,7 @@ import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 export interface AnalysisTypeCellProps {
   analysisType: string;
   pattern?: string;
-  activation_type?: 'تلقائي' | 'يدوي';
+  activation_type?: 'تلقائي' | 'يدوي' | 'Automatic' | 'Manual';
 }
 
 export const AnalysisTypeCell = ({ 
@@ -26,7 +26,7 @@ export const AnalysisTypeCell = ({
     const type = analysisType?.toLowerCase() || '';
     const normalizedType = type.replace(/_/g, '').trim();
     
-    // Old analysis types
+    // Analysis types mapping
     if (normalizedType.includes('smc') || normalizedType.includes('نظريةهيكلالسوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
     if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
     if (normalizedType.includes('turtle') || normalizedType.includes('الحساءالسلحفائي')) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
@@ -60,6 +60,9 @@ export const AnalysisTypeCell = ({
     return 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300';
   };
 
+  // Determine if we should use the displayed type name or the pattern
+  const displayText = displayName !== 'يومي' ? displayName : pattern || analysisType;
+
   return (
     <TableCell className="w-[120px] text-center p-1">
       <TooltipProvider>
@@ -67,24 +70,24 @@ export const AnalysisTypeCell = ({
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
-                {displayName || 'غير محدد'}
+                {displayText || 'غير محدد'}
               </Badge>
-              {pattern && (
+              {pattern && pattern !== displayText && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
                   {pattern}
                 </Badge>
               )}
               <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${
-                activation_type === 'تلقائي' 
+                activation_type === 'تلقائي' || activation_type === 'Automatic'
                   ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' 
                   : 'bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300'
               }`}>
-                {activation_type === 'تلقائي' ? 'اوتوماتيكي' : 'يدوي'}
+                {activation_type === 'تلقائي' || activation_type === 'Automatic' ? 'اوتوماتيكي' : 'يدوي'}
               </Badge>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{activation_type === 'تلقائي' ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
+            <p>{(activation_type === 'تلقائي' || activation_type === 'Automatic') ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
             {pattern && <p className="text-xs mt-1">{pattern}</p>}
           </TooltipContent>
         </Tooltip>

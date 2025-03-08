@@ -47,11 +47,7 @@ export const HistoryRow = ({
   last_checked_at,
 }: HistoryRowProps) => {
   // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
-  const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
-    ? "فيبوناتشي" 
-    : analysis.pattern === "تحليل فيبوناتشي متقدم" 
-      ? "تحليل فيبوناتشي متقدم" 
-      : getStrategyName(analysisType);
+  const displayAnalysisType = analysis.pattern;
   
   // تشخيص وقت آخر فحص
   console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
@@ -98,8 +94,8 @@ export const HistoryRow = ({
       <DirectionCell direction={analysis.direction} />
       <CurrentPriceCell price={currentPrice} />
       <AnalysisTypeCell 
-        analysisType={displayAnalysisType} 
-        pattern={analysis.pattern}
+        analysisType={analysisType} 
+        pattern={displayAnalysisType}
         activation_type={analysis.activation_type}
       />
       <TimeframeCell timeframe={timeframe} />

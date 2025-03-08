@@ -1,28 +1,70 @@
 
 // نقل دالة getStrategyName لتكون قبل استخدامها
 export const getStrategyName = (type: string): string => {
+  if (!type) return "تحليل فني";
+  
+  // Normalize the type for comparison
+  const normalizedType = type.toLowerCase().replace(/[_\s-]/g, '');
+  
   const strategyMap: Record<string, string> = {
-    normal: "التحليل العادي",
-    fibonacci: "فيبوناتشي",
-    fibonacci_advanced: "فيبوناتشي المتقدم",
-    gann: "تحليل جان",
-    waves: "تحليل الموجات",
-    price_action: "حركة السعر",
-    scalping: "سكالبينج",
-    smc: "تحليل تحكم السيولة",
-    ict: "تحليل ICT",
-    time_clustering: "تحليل تجمع الوقت",
-    pattern: "تحليل الأنماط",
-    multi_variance: "التباين المتعدد",
-    neural_network: "الشبكة العصبية",
-    behaviors: "تحليل السلوك",
-    turtle_soup: "تحليل Turtle Soup",
-    rnn: "شبكة RNN العصبية",
-    composite_candlesticks: "تحليل الشموع المركب"
+    // Arabic types
+    "عادي": "تحليل عادي",
+    "يومي": "تحليل فني",
+    "نمطي": "تحليل الأنماط",
+    "سكالبينج": "سكالبينج",
+    "مضاربة": "مضاربة",
+    "نظريةهيكلالسوق": "SMC",
+    "نظريةالسوق": "ICT",
+    "تقلبات": "تحليل الموجات",
+    "حركةالسعر": "حركة السعر",
+    "جان": "تحليل جان",
+    "الحساءالسلحفائي": "Turtle Soup",
+    "ذكي": "تحليل ذكي",
+    "شبكاتعصبية": "شبكات عصبية",
+    "شبكاتعصبيةمتكررة": "شبكات RNN",
+    "تصفيقزمني": "تصفيق زمني",
+    "تباينمتعددالعوامل": "تباين متعدد",
+    "شمعاتمركبة": "شمعات مركبة",
+    "تحليلسلوكي": "تحليل سلوكي",
+    "فيبوناتشي": "فيبوناتشي",
+    "فيبوناتشيمتقدم": "فيبوناتشي متقدم",
+    
+    // English types
+    "normal": "تحليل عادي",
+    "daily": "تحليل يومي",
+    "pattern": "تحليل الأنماط",
+    "scalping": "سكالبينج",
+    "smc": "تحليل SMC",
+    "ict": "تحليل ICT",
+    "waves": "تحليل الموجات",
+    "price_action": "حركة السعر",
+    "gann": "تحليل جان",
+    "turtle_soup": "Turtle Soup",
+    "smart": "تحليل ذكي",
+    "neural_network": "شبكات عصبية",
+    "rnn": "شبكات RNN",
+    "time_clustering": "تصفيق زمني",
+    "multi_variance": "تباين متعدد",
+    "composite_candlesticks": "شمعات مركبة",
+    "behaviors": "تحليل سلوكي",
+    "fibonacci": "فيبوناتشي",
+    "fibonacci_advanced": "فيبوناتشي متقدم"
   };
 
-  // إذا وجد النوع، نرجع اسمه، وإلا نرجع النوع كما هو
-  return strategyMap[type] || type;
+  // Try to find an exact match
+  if (strategyMap[type]) {
+    return strategyMap[type];
+  }
+  
+  // Try to find a normalized match
+  for (const [key, value] of Object.entries(strategyMap)) {
+    if (normalizedType.includes(key.toLowerCase())) {
+      return value;
+    }
+  }
+
+  // If no match found, return the original type
+  return type;
 };
 
 // قائمة أنواع التحليل الرئيسية - تم حذف الأنواع غير المطلوبة

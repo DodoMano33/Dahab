@@ -1,16 +1,17 @@
+
 import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 interface DirectionIndicatorProps {
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "صاعد" | "هابط" | "محايد" | "Up" | "Down" | "Neutral";
 }
 
 export const DirectionIndicator = ({ direction }: DirectionIndicatorProps) => {
-  switch (direction) {
-    case "صاعد":
-      return <ArrowUp className="text-green-500 inline w-6 h-6" />;
-    case "هابط":
-      return <ArrowDown className="text-red-500 inline w-6 h-6" />;
-    case "محايد":
-      return <Minus className="text-gray-500 inline w-6 h-6" />;
+  // Handle both Arabic and English direction values
+  if (direction === "صاعد" || direction === "Up") {
+    return <ArrowUp className="text-green-500 inline w-6 h-6" />;
+  } else if (direction === "هابط" || direction === "Down") {
+    return <ArrowDown className="text-red-500 inline w-6 h-6" />;
+  } else {
+    return <Minus className="text-gray-500 inline w-6 h-6" />;
   }
 };
