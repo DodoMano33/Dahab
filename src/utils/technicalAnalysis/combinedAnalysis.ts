@@ -1,7 +1,7 @@
 
 import { AnalysisData } from "@/types/analysis";
 import { getStrategyName } from "./analysisTypeMap";
-import { executeMultipleAnalyses } from "./analysisExecutor";
+import { executeMultipleAnalyses } from "./core/executeAnalysis";
 import { 
   calculateCombinedDirection, 
   combineAndSortTargets,

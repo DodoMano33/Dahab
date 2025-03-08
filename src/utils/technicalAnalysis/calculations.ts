@@ -1,3 +1,4 @@
+
 import { getTimeframeMultipliers, getStopLossMultiplier, getRangeMultiplier } from './timeframeMultipliers';
 import { getTimeframeLabel } from './timeUtils';
 
