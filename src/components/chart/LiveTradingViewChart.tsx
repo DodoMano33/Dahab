@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import TradingViewWidget from './TradingViewWidget';
+import { cleanSymbolName } from '@/utils/tradingViewUtils';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -28,6 +29,15 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       onPriceUpdate(newPrice);
     }
   };
+
+  // Ensure initial values are passed up to parent components on mount
+  useEffect(() => {
+    if (symbol && onSymbolChange) {
+      const cleanedSymbol = cleanSymbolName(symbol);
+      console.log("LiveTradingViewChart: Initial symbol:", cleanedSymbol);
+      onSymbolChange(cleanedSymbol);
+    }
+  }, [symbol, onSymbolChange]);
 
   return (
     <div className="w-full h-full">

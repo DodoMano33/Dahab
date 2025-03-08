@@ -27,7 +27,8 @@ export const getTradingViewChartImage = async (
 export const cleanSymbolName = (symbol: string): string => {
   // TradingView symbols often come in format like "EXCHANGE:SYMBOL"
   if (symbol.includes(':')) {
-    return symbol.split(':')[1];
+    const parts = symbol.split(':');
+    return parts[1] || parts[0]; // Return the part after colon, or the whole string if splitting fails
   }
   return symbol;
 };
@@ -35,4 +36,28 @@ export const cleanSymbolName = (symbol: string): string => {
 // Helper function to validate price value
 export const isValidPrice = (price: number): boolean => {
   return !isNaN(price) && isFinite(price) && price > 0;
+};
+
+// Helper to extract price from TradingView message
+export const extractPriceFromMessage = (data: any): number | null => {
+  if (!data || typeof data !== 'object') return null;
+  
+  if (typeof data.price === 'number') return data.price;
+  if (typeof data.last_price === 'number') return data.last_price;
+  if (typeof data.close === 'number') return data.close;
+  if (data.symbolInfo && typeof data.symbolInfo.price === 'number') return data.symbolInfo.price;
+  if (data.symbolInfo && typeof data.symbolInfo.last === 'number') return data.symbolInfo.last;
+  
+  return null;
+};
+
+// Helper to extract symbol from TradingView message
+export const extractSymbolFromMessage = (data: any): string | null => {
+  if (!data || typeof data !== 'object') return null;
+  
+  if (data.name === 'symbol-change' && data.symbol) return data.symbol;
+  if (data.symbolInfo && data.symbolInfo.name) return data.symbolInfo.name;
+  if (data.symbol && typeof data.symbol === 'string') return data.symbol;
+  
+  return null;
 };
