@@ -1,9 +1,9 @@
 
 import { saveAnalysis } from "../utils/saveAnalysis";
-import { mapToAnalysisType } from "../utils/mapAnalysisType";
+import { mapToAnalysisType, isValidAnalysisType } from "../utils/mapAnalysisType";
 import { toast } from "sonner";
 import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
-import { isValidAnalysisType } from "../utils/mapAnalysisType";
+import { ValidAnalysisType } from "../utils/constants/analysisTypes";
 
 interface SaveAnalysisParams {
   userId: string;
