@@ -135,12 +135,10 @@ function TradingViewWidget({
     // Set initial price if available from props
     if (window.TradingView && window.TradingView.widget) {
       try {
-        // Attempt to get price directly if available
-        const widget = window.TradingView.widget();
-        if (widget && widget.symbolInterval) {
-          console.log('TradingView widget loaded, attempting to get current price');
-          // This might get picked up through the message events
-        }
+        // Fix: Use proper syntax to access TradingView widget
+        // Don't call TradingView.widget directly, it's a constructor
+        console.log('TradingView widget loaded, attempting to get current price');
+        // We'll use message events to get price updates instead of trying to access directly
       } catch (e) {
         console.warn('Could not access TradingView widget:', e);
       }
