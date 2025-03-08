@@ -66,7 +66,7 @@ export const useAutoAnalysis = () => {
             let isFibonacciAdvanced = false;
             
             // Set the appropriate flag based on the analysis type
-            switch (analysisType) {
+            switch (analysisType.toLowerCase().replace(/[_\s-]/g, "")) {
               case "patterns":
                 isPatternAnalysis = true;
                 break;
@@ -79,6 +79,7 @@ export const useAutoAnalysis = () => {
               case "ict":
                 isICT = true;
                 break;
+              case "turtlesoup":
               case "turtle_soup":
                 isTurtleSoup = true;
                 break;
@@ -88,21 +89,26 @@ export const useAutoAnalysis = () => {
               case "waves":
                 isWaves = true;
                 break;
+              case "priceaction":
               case "price_action":
                 isPriceAction = true;
                 break;
+              case "neuralnetworks":
               case "neural_networks":
                 isNeuralNetwork = true;
                 break;
               case "rnn":
                 isRNN = true;
                 break;
+              case "timeclustering":
               case "time_clustering":
                 isTimeClustering = true;
                 break;
+              case "multivariance":
               case "multi_variance":
                 isMultiVariance = true;
                 break;
+              case "compositecandlestick":
               case "composite_candlestick":
                 isCompositeCandlestick = true;
                 break;
@@ -112,6 +118,7 @@ export const useAutoAnalysis = () => {
               case "fibonacci":
                 isFibonacci = true;
                 break;
+              case "fibonacciadvanced":
               case "fibonacci_advanced":
                 isFibonacciAdvanced = true;
                 break;

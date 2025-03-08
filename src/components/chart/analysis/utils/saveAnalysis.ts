@@ -34,7 +34,20 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Ensure analysisType is a valid value for the database
+  // Ensure analysisType matches one of the valid types defined in the database constraint
+  // Valid types: "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", "Price Action", 
+  // "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", "Multi Variance", "Composite Candlestick", "Behavioral Analysis"
+  const validTypes = [
+    "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", "Price Action",
+    "Fibonacci", "Fibonacci Advanced", "Neural Networks", "RNN", "Time Clustering", "Multi Variance", 
+    "Composite Candlestick", "Behavioral Analysis"
+  ];
+
+  if (!validTypes.includes(analysisType)) {
+    console.error(`Invalid analysis type: "${analysisType}". Must be one of: ${validTypes.join(", ")}`);
+    throw new Error(`نوع التحليل "${analysisType}" غير صالح`);
+  }
+
   console.log("Final analysis type being saved to database:", analysisType);
 
   // Set automatic activation type for Fibonacci Advanced Analysis
