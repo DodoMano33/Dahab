@@ -38,13 +38,11 @@ export const useSaveAnalysis = () => {
       if (!result.analysisResult.analysisType) {
         console.log("Setting analysis type in result:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
-      } else {
+      } else if (result.analysisResult.analysisType !== mappedAnalysisType) {
         // If it does, make sure it matches the mapped type
         console.log("Existing analysis type in result:", result.analysisResult.analysisType);
-        if (result.analysisResult.analysisType !== mappedAnalysisType) {
-          console.log("Updating analysis type in result to match mapped type");
-          result.analysisResult.analysisType = mappedAnalysisType;
-        }
+        console.log("Updating analysis type in result to match mapped type");
+        result.analysisResult.analysisType = mappedAnalysisType;
       }
       
       console.log("Final analysis result with type:", result.analysisResult);
@@ -83,14 +81,16 @@ export const useSaveAnalysis = () => {
           duration: 5000,
         });
         
-      } catch (dbError) {
+      } catch (dbError: any) {
         console.error("Database error saving analysis:", dbError);
-        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
+        const errorMessage = dbError.message || "حدث خطأ أثناء حفظ التحليل في قاعدة البيانات";
+        toast.error(errorMessage);
         throw dbError;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving analysis:", error);
-      toast.error("حدث خطأ أثناء حفظ التحليل");
+      const errorMessage = error.message || "حدث خطأ أثناء حفظ التحليل";
+      toast.error(errorMessage);
       throw error;
     }
   };

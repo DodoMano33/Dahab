@@ -65,34 +65,55 @@ export const saveAnalysis = async ({
     }
   }
 
+  // Create a safe copy of the analysis data to avoid any unexpected properties
+  const safeAnalysis = {
+    pattern: analysisResult.pattern,
+    direction: analysisResult.direction,
+    currentPrice: analysisResult.currentPrice,
+    support: analysisResult.support,
+    resistance: analysisResult.resistance,
+    stopLoss: analysisResult.stopLoss,
+    targets: analysisResult.targets,
+    bestEntryPoint: analysisResult.bestEntryPoint,
+    analysisType: analysisType,
+    activation_type: analysisResult.activation_type
+  };
+
   console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,
     current_price: currentPrice,
-    analysis: analysisResult,
+    analysis: safeAnalysis,
     analysis_type: analysisType,
     timeframe,
     analysis_duration_hours: durationHours
   });
 
-  const { data, error } = await supabase
-    .from('search_history')
-    .insert({
-      user_id: userId,
-      symbol,
-      current_price: currentPrice,
-      analysis: analysisResult,
-      analysis_type: analysisType,
-      timeframe,
-      analysis_duration_hours: durationHours
-    })
-    .select()
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('search_history')
+      .insert({
+        user_id: userId,
+        symbol,
+        current_price: currentPrice,
+        analysis: safeAnalysis,
+        analysis_type: analysisType,
+        timeframe,
+        analysis_duration_hours: durationHours
+      })
+      .select()
+      .maybeSingle();
 
-  if (error) {
-    console.error("Error saving to Supabase:", error);
+    if (error) {
+      console.error("Error saving to Supabase:", error);
+      console.error("Error details:", error.details, error.hint, error.message);
+      throw new Error(`خطأ في حفظ التحليل: ${error.message}`);
+    }
+
+    console.log("Analysis saved successfully:", data);
+    return data;
+  } catch (error) {
+    console.error("Exception during save operation:", error);
     throw error;
   }
-
-  return data;
 };
