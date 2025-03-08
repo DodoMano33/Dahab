@@ -43,18 +43,6 @@ export const HistoryDialog = ({
     });
   };
   
-  // إضافة معالج تحديد جميع العناصر
-  const handleSelectAll = (selected: boolean) => {
-    if (selected) {
-      // إذا كان محددًا، أضف جميع معرفات العناصر إلى المجموعة
-      const allIds = validHistory.map(item => item.id);
-      setSelectedItems(new Set(allIds));
-    } else {
-      // إذا لم يكن محددًا، قم بإفراغ المجموعة
-      setSelectedItems(new Set());
-    }
-  };
-  
   const handleDeleteSelected = async () => {
     try {
       const selectedIds = Array.from(selectedItems);
@@ -109,8 +97,7 @@ export const HistoryDialog = ({
             history={validHistory} 
             onDelete={onDelete} 
             selectedItems={selectedItems} 
-            onSelect={handleSelect}
-            onSelectAll={handleSelectAll}
+            onSelect={handleSelect} 
           />
         </div>
       </DialogContent>

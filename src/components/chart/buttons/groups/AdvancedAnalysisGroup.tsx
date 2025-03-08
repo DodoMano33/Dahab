@@ -1,6 +1,6 @@
 
+import { Network, BarChart3, Clock, Calculator, CandlestickChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Network, Cpu, Clock, Layers, BarChart3, User } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdvancedAnalysisGroupProps {
@@ -23,120 +23,126 @@ export const AdvancedAnalysisGroup = ({
   onBehavioralClick
 }: AdvancedAnalysisGroupProps) => {
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onNeuralNetworkClick}
-              className="w-full bg-red-500 hover:bg-red-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
-            >
-              <Network className="w-4 h-4" />
-              <span className="whitespace-nowrap">Neural Networks</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Using artificial neural networks to analyze data and predict price movement</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onNeuralNetworkClick}
+                className="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Network className="w-4 h-4" />
+                <span className="whitespace-nowrap">تحليل الشبكات العصبية</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>تحليل متقدم باستخدام الشبكات العصبية للتنبؤ بحركة الأسعار المستقبلية</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onRNNClick}
-              className="w-full bg-pink-500 hover:bg-pink-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
-            >
-              <Cpu className="w-4 h-4" />
-              <span className="whitespace-nowrap">Recurrent Neural Networks</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Advanced neural networks used to predict time series and recurring patterns</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onRNNClick}
+                className="bg-gradient-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Network className="w-4 h-4" />
+                <span className="whitespace-nowrap">الشبكات العصبية المتكررة</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>تحليل متقدم باستخدام الشبكات العصبية المتكررة (RNN) للتعرف على الأنماط المعقدة</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onTimeClusteringClick}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
-            >
-              <Clock className="w-4 h-4" />
-              <span className="whitespace-nowrap">Time Clustering</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Analysis based on repetition of time patterns and price clusters in specific time periods</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onTimeClusteringClick}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Clock className="w-4 h-4" />
+                <span className="whitespace-nowrap">تحليل التصفيق الزمني</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>تحليل متقدم باستخدام تقنيات التصفيق الزمني لاكتشاف الأنماط الدورية والموسمية</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onMultiVarianceClick}
-              className="w-full bg-lime-500 hover:bg-lime-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
-            >
-              <Layers className="w-4 h-4" />
-              <span className="whitespace-nowrap">Multi Variance</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Analysis studying the relationship between multiple variables to predict price movement</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onMultiVarianceClick}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Calculator className="w-4 h-4" />
+                <span className="whitespace-nowrap">تحليل التباين المتعدد</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>تحليل إحصائي متقدم يأخذ بالاعتبار العديد من المتغيرات المؤثرة على السعر</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onCompositeCandlestickClick}
-              className="w-full bg-violet-500 hover:bg-violet-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span className="whitespace-nowrap">Composite Candlestick</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Analysis strategy that combines multiple candle patterns to infer more accurate entry and exit signals</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onCompositeCandlestickClick}
+                className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <CandlestickChart className="w-4 h-4" />
+                <span className="whitespace-nowrap">تحليل الشمعات المركبة</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>تحليل متقدم يجمع بين عدة شمعات لتكوين أنماط أكثر دقة وموثوقية</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onBehavioralClick}
-              className="w-full bg-teal-500 hover:bg-teal-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
-            >
-              <User className="w-4 h-4" />
-              <span className="whitespace-nowrap">Behavioral Analysis</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Analysis of trader behavior and psychology to predict market movements</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onBehavioralClick}
+                className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="whitespace-nowrap">التحليل السلوكي</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>تحليل يركز على سلوك المتداولين والعوامل النفسية المؤثرة على حركة السوق</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </>
   );
 };

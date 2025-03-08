@@ -13,21 +13,25 @@ interface AnalysisStatsProps {
 }
 
 export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
-  // Calculate total successes and failures
+  // حساب إجمالي النجاحات والفشل
   const totalSuccess = stats.reduce((acc, stat) => acc + stat.success, 0);
   const totalFail = stats.reduce((acc, stat) => acc + stat.fail, 0);
 
-  // Determine if tooltip information exists for analysis type
+  // تحديد وجود معلومات تلميح لنوع التحليل
   const hasTooltip = (type: string, displayName: string) => {
     return Object.keys(analysisTypeTooltips).includes(displayName);
   };
 
-  // Get tooltip content
+  // الحصول على نص التلميح
   const getTooltipContent = (type: string, displayName: string) => {
-    return analysisTypeTooltips[displayName] || `Information about ${displayName}`;
+    return analysisTypeTooltips[displayName] || `معلومات عن ${displayName}`;
   };
   
-  // Log analysis types for debugging
+  // تقسيم الإحصائيات إلى سطرين (9 أنواع في كل سطر)
+  const firstRowStats = stats.slice(0, Math.ceil(stats.length / 2));
+  const secondRowStats = stats.slice(Math.ceil(stats.length / 2));
+  
+  // طباعة أنواع التحليل المتاحة للتشخيص
   console.log("Analysis Stats - Available types:", stats.map(s => 
     `${s.type} -> ${s.display_name || getStrategyName(s.type)}`
   ));
@@ -35,56 +39,91 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        {stats.map((stat) => {
-          const displayName = stat.display_name || getStrategyName(stat.type);
-          const tooltipContent = getTooltipContent(stat.type, displayName);
-          
-          // Diagnostic print for each analysis type
-          console.log(`Rendering stats for type: ${stat.type} -> ${displayName}`);
-          
-          return (
-            <div
-              key={stat.type}
-              className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
-            >
-              <div className="text-sm font-medium mb-3">
-                {hasTooltip(stat.type, displayName) ? (
-                  <AnalysisTooltip content={tooltipContent}>
-                    {displayName}
-                  </AnalysisTooltip>
-                ) : (
-                  displayName
-                )}
+      <div className="space-y-4">
+        {/* السطر الأول من أنواع التحليل */}
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-3">
+          {firstRowStats.map((stat) => {
+            const displayName = stat.display_name || getStrategyName(stat.type);
+            const tooltipContent = getTooltipContent(stat.type, displayName);
+            
+            return (
+              <div
+                key={stat.type}
+                className="flex flex-col items-center text-center bg-white p-3 rounded-lg shadow-sm"
+              >
+                <div className="text-sm font-medium mb-2 h-10 flex items-center">
+                  {hasTooltip(stat.type, displayName) ? (
+                    <AnalysisTooltip content={tooltipContent}>
+                      {displayName}
+                    </AnalysisTooltip>
+                  ) : (
+                    displayName
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <Badge variant="success" className="flex flex-col items-center p-1">
+                    <span className="text-xs">ناجح</span>
+                    <span className="text-base font-bold">{stat.success}</span>
+                  </Badge>
+                  <Badge variant="destructive" className="flex flex-col items-center p-1">
+                    <span className="text-xs">فاشل</span>
+                    <span className="text-base font-bold">{stat.fail}</span>
+                  </Badge>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Badge variant="success" className="flex flex-col items-center p-2">
-                  <span>Success</span>
-                  <span className="text-lg font-bold">{stat.success}</span>
-                </Badge>
-                <Badge variant="destructive" className="flex flex-col items-center p-2">
-                  <span>Failure</span>
-                  <span className="text-lg font-bold">{stat.fail}</span>
-                </Badge>
+            );
+          })}
+        </div>
+        
+        {/* السطر الثاني من أنواع التحليل */}
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-3">
+          {secondRowStats.map((stat) => {
+            const displayName = stat.display_name || getStrategyName(stat.type);
+            const tooltipContent = getTooltipContent(stat.type, displayName);
+            
+            return (
+              <div
+                key={stat.type}
+                className="flex flex-col items-center text-center bg-white p-3 rounded-lg shadow-sm"
+              >
+                <div className="text-sm font-medium mb-2 h-10 flex items-center">
+                  {hasTooltip(stat.type, displayName) ? (
+                    <AnalysisTooltip content={tooltipContent}>
+                      {displayName}
+                    </AnalysisTooltip>
+                  ) : (
+                    displayName
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <Badge variant="success" className="flex flex-col items-center p-1">
+                    <span className="text-xs">ناجح</span>
+                    <span className="text-base font-bold">{stat.success}</span>
+                  </Badge>
+                  <Badge variant="destructive" className="flex flex-col items-center p-1">
+                    <span className="text-xs">فاشل</span>
+                    <span className="text-base font-bold">{stat.fail}</span>
+                  </Badge>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {/* Results summary block */}
+      {/* المستطيل الجديد لإجمالي النتائج */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold">Total Analysis Results</h3>
+          <h3 className="text-lg font-semibold">إجمالي نتائج التحليلات</h3>
         </div>
         <div className="flex justify-center gap-8">
           <div className="flex flex-col items-center">
             <span className="text-green-600 font-bold text-2xl">{totalSuccess}</span>
-            <span className="text-sm text-gray-600">Successful Analyses</span>
+            <span className="text-sm text-gray-600">عدد التحليلات الناجحة</span>
           </div>
           <div className="flex flex-col items-center">
             <span className="text-red-600 font-bold text-2xl">{totalFail}</span>
-            <span className="text-sm text-gray-600">Failed Analyses</span>
+            <span className="text-sm text-gray-600">عدد التحليلات الفاشلة</span>
           </div>
         </div>
       </div>

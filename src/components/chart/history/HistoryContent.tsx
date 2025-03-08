@@ -25,7 +25,6 @@ interface HistoryContentProps {
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
-  onSelectAll?: (selected: boolean) => void;
 }
 
 export const HistoryContent = ({
@@ -33,7 +32,6 @@ export const HistoryContent = ({
   selectedItems,
   onSelect,
   onDelete,
-  onSelectAll
 }: HistoryContentProps) => {
   console.log("HistoryContent rendered with history items:", history.length);
   console.log("Sample first history item last_checked_at:", 
@@ -168,25 +166,11 @@ export const HistoryContent = ({
     return () => clearInterval(interval);
   }, [refreshHistoryData]);
 
-  // حساب ما إذا كانت جميع العناصر محددة
-  const areAllSelected = localHistory.length > 0 && selectedItems.size === localHistory.length;
-
-  // معالج تحديد كل العناصر
-  const handleSelectAll = (checked: boolean) => {
-    if (onSelectAll) {
-      onSelectAll(checked);
-    }
-  };
-
   return (
     <div className="relative w-full h-full">
       <ScrollArea className="h-full">
         <Table className="w-full table-fixed">
-          <HistoryTableHeader 
-            showCheckbox={true} 
-            onSelectAll={handleSelectAll}
-            allSelected={areAllSelected}
-          />
+          <HistoryTableHeader showCheckbox={true} />
           <TableBody>
             {localHistory.map((item) => (
               <HistoryRow

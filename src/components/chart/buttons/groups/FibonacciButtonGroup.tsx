@@ -15,7 +15,7 @@ export const FibonacciButtonGroup = ({
   onFibonacciAdvancedClick
 }: FibonacciButtonGroupProps) => {
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -23,14 +23,14 @@ export const FibonacciButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onFibonacciClick}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
+              className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Divide className="w-4 h-4" />
-              <span className="whitespace-nowrap">Fibonacci Analysis</span>
+              <span className="whitespace-nowrap">تحليل فيبوناتشي</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>Strategy based on Fibonacci retracement and extension levels to determine entry and exit points</p>
+            <p>استراتيجية تعتمد على مستويات فيبوناتشي ريتريسمينت وإكستينشين لتحديد نقاط الدخول والخروج</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -42,14 +42,14 @@ export const FibonacciButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onFibonacciAdvancedClick}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Target className="w-4 h-4" />
-              <span className="whitespace-nowrap">Advanced Fibonacci</span>
+              <span className="whitespace-nowrap">تحليل فيبوناتشي متقدم</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>Advanced trading strategy combining Fibonacci with institutional liquidity, volume profile, and market structure analysis</p>
+            <p>استراتيجية تداول متقدمة تدمج فيبوناتشي مع السيولة المؤسساتية والفوليوم بروفايل وتحليل البنية السوقية</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

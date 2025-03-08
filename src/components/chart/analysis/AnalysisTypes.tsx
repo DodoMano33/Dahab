@@ -1,50 +1,27 @@
+
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { mainAnalysisTypes, getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export type AnalysisTypeValue = 
   | "normal" 
-  | "scalping" 
-  | "ict" 
-  | "smc" 
-  | "turtle_soup" 
+  | "fibonacci"
+  | "fibonacci_advanced"
   | "gann" 
   | "waves" 
-  | "patterns" 
   | "price_action" 
-  | "neural_networks"
+  | "scalping" 
+  | "smc" 
+  | "ict" 
+  | "time_clustering" 
+  | "pattern" 
+  | "multi_variance" 
+  | "neural_network"
+  | "behaviors"
+  | "turtle_soup"
   | "rnn"
-  | "time_clustering"
-  | "multi_variance"
-  | "composite_candlestick"
-  | "behavioral"
-  | "fibonacci"
-  | "fibonacci_advanced";
-
-interface AnalysisType {
-  value: AnalysisTypeValue;
-  label: string;
-}
-
-const analysisTypes: AnalysisType[] = [
-  { value: "normal", label: "Select All" },
-  { value: "patterns", label: "Patterns" },
-  { value: "scalping", label: "Scalping" },
-  { value: "smc", label: "SMC" },
-  { value: "ict", label: "ICT" },
-  { value: "turtle_soup", label: "Turtle Soup" },
-  { value: "gann", label: "Gann" },
-  { value: "waves", label: "Waves" },
-  { value: "price_action", label: "Price Action" },
-  { value: "fibonacci", label: "Fibonacci" },
-  { value: "fibonacci_advanced", label: "Advanced Fibonacci" },
-  { value: "neural_networks", label: "Neural Networks" },
-  { value: "rnn", label: "Recurrent Neural Networks" },
-  { value: "time_clustering", label: "Time Clustering" },
-  { value: "multi_variance", label: "Multi Variance" },
-  { value: "composite_candlestick", label: "Composite Candlestick" },
-  { value: "behavioral", label: "Behavioral Analysis" },
-];
+  | "composite_candlesticks";
 
 interface AnalysisTypesProps {
   selectedTypes: string[];
@@ -55,14 +32,27 @@ export const AnalysisTypes = ({
   selectedTypes,
   onTypesChange,
 }: AnalysisTypesProps) => {
+  // إنشاء قائمة أنواع التحليل من mainAnalysisTypes
+  const analysisTypes = [
+    { value: "normal", label: "تحديد الكل" },
+    ...mainAnalysisTypes.filter(type => type !== "normal").map(type => ({
+      value: type,
+      label: getStrategyName(type)
+    }))
+  ];
+  
+  // Log the available types for debugging
   console.log("Available analysis types:", analysisTypes.map(t => t.value));
   console.log("Currently selected types:", selectedTypes);
   
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
+      // If "تحديد الكل" is clicked
       if (selectedTypes.includes("normal")) {
+        // If it's currently selected, deselect all
         onTypesChange([]);
       } else {
+        // If it's not selected, select all
         onTypesChange(analysisTypes.map(t => t.value));
       }
     } else {
@@ -70,6 +60,7 @@ export const AnalysisTypes = ({
         ? selectedTypes.filter((t) => t !== type)
         : [...selectedTypes, type];
 
+      // If all other types are selected, also select "normal"
       const otherTypesSelected = analysisTypes
         .filter(t => t.value !== "normal")
         .every(t => newTypes.includes(t.value));
@@ -77,6 +68,7 @@ export const AnalysisTypes = ({
       if (otherTypesSelected) {
         newTypes.push("normal");
       } else {
+        // Remove "normal" if not all types are selected
         const normalIndex = newTypes.indexOf("normal");
         if (normalIndex !== -1) {
           newTypes.splice(normalIndex, 1);
@@ -91,9 +83,9 @@ export const AnalysisTypes = ({
     <Card className="p-6 bg-[#FFAC7D] rounded-lg">
       <div className="space-y-4">
         <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold">Analysis Types</h3>
+          <h3 className="text-xl font-semibold">أنواع التحليل المراد تنفيذها</h3>
           <p className="text-sm text-gray-700 mt-1">
-            {selectedTypes.length} of {analysisTypes.length-1} types selected
+            {selectedTypes.length} من {analysisTypes.length-1} نوع محدد
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">

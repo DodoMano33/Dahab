@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import {
   calculateFibonacciLevels,

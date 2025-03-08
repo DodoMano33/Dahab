@@ -2,7 +2,6 @@
 import { supabase } from "@/lib/supabase";
 import { AnalysisType, AnalysisData } from "@/types/analysis";
 import { toast } from "sonner";
-import { isValidAnalysisType, mapToAnalysisType } from "./mapAnalysisType";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -35,32 +34,8 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Special handling for key analysis types to ensure consistency
-  let validAnalysisType: AnalysisType;
-  
-  // Directly use SMC and Scalping without mapping
-  if (analysisType === "SMC" || analysisType === "Scalping") {
-    console.log(`Using direct analysis type: ${analysisType}`);
-    validAnalysisType = analysisType;
-  } else {
-    // For other types, ensure it's valid according to database constraints
-    if (!isValidAnalysisType(analysisType)) {
-      console.warn(`Analysis type "${analysisType}" is not in the allowed list, mapping to a valid type`);
-      validAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
-      console.log(`Mapped to valid type: "${validAnalysisType}"`);
-    } else {
-      validAnalysisType = analysisType;
-    }
-  }
-
-  // Also check the analysis type in the result
-  if (analysisResult.analysisType && !isValidAnalysisType(analysisResult.analysisType)) {
-    // Correct the analysisType in the analysisResult to match the one being saved
-    console.log(`Correcting analysis result type from "${analysisResult.analysisType}" to "${validAnalysisType}"`);
-    analysisResult.analysisType = validAnalysisType;
-  }
-
-  console.log("Final analysis type being saved to database:", validAnalysisType);
+  // Ensure analysisType is a valid value for the database
+  console.log("Final analysis type being saved to database:", analysisType);
 
   // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
@@ -71,55 +46,34 @@ export const saveAnalysis = async ({
     }
   }
 
-  // Create a safe copy of the analysis data to avoid any unexpected properties
-  const safeAnalysis = {
-    pattern: analysisResult.pattern,
-    direction: analysisResult.direction,
-    currentPrice: analysisResult.currentPrice,
-    support: analysisResult.support,
-    resistance: analysisResult.resistance,
-    stopLoss: analysisResult.stopLoss,
-    targets: analysisResult.targets,
-    bestEntryPoint: analysisResult.bestEntryPoint,
-    analysisType: validAnalysisType,
-    activation_type: analysisResult.activation_type
-  };
-
   console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,
     current_price: currentPrice,
-    analysis: safeAnalysis,
-    analysis_type: validAnalysisType,
+    analysis: analysisResult,
+    analysis_type: analysisType,
     timeframe,
     analysis_duration_hours: durationHours
   });
 
-  try {
-    const { data, error } = await supabase
-      .from('search_history')
-      .insert({
-        user_id: userId,
-        symbol,
-        current_price: currentPrice,
-        analysis: safeAnalysis,
-        analysis_type: validAnalysisType,
-        timeframe,
-        analysis_duration_hours: durationHours
-      })
-      .select()
-      .maybeSingle();
+  const { data, error } = await supabase
+    .from('search_history')
+    .insert({
+      user_id: userId,
+      symbol,
+      current_price: currentPrice,
+      analysis: analysisResult,
+      analysis_type: analysisType,
+      timeframe,
+      analysis_duration_hours: durationHours
+    })
+    .select()
+    .maybeSingle();
 
-    if (error) {
-      console.error("Error saving to Supabase:", error);
-      console.error("Error details:", error.details, error.hint, error.message);
-      throw new Error(`خطأ في حفظ التحليل: ${error.message}`);
-    }
-
-    console.log("Analysis saved successfully:", data);
-    return data;
-  } catch (error) {
-    console.error("Exception during save operation:", error);
+  if (error) {
+    console.error("Error saving to Supabase:", error);
     throw error;
   }
+
+  return data;
 };

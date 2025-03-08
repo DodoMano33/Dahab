@@ -1,7 +1,7 @@
 
 import { AnalysisData } from "@/types/analysis";
 import { getStrategyName } from "./analysisTypeMap";
-import { executeMultipleAnalyses } from "./core/executeAnalysis";
+import { executeMultipleAnalyses } from "./analysisExecutor";
 import { 
   calculateCombinedDirection, 
   combineAndSortTargets,
@@ -74,8 +74,8 @@ export const combinedAnalysis = async (
         price: weightedValues.entryPrice,
         reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`
       },
-      analysisType: "Smart",
-      activation_type: "Automatic"
+      analysisType: "ذكي",
+      activation_type: "تلقائي"
     };
 
     console.log("Combined analysis result:", combinedResult);

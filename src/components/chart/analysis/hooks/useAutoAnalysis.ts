@@ -7,7 +7,6 @@ import { useAnalysisHandler } from "../AnalysisHandler";
 import { validateAnalysisInputs } from "../utils/analysisValidation";
 import { getIntervalInMs } from "../utils/intervalUtils";
 import { useSaveAnalysis } from "./useSaveAnalysis";
-import { mapAnalysisTypeToConfig } from "../utils/analysisTypeMapper";
 
 interface AutoAnalysisConfig {
   timeframes: string[];
@@ -48,33 +47,47 @@ export const useAutoAnalysis = () => {
           for (const analysisType of analysisTypes) {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
-            // Use the imported mapAnalysisTypeToConfig function to get the correct flags
-            const config = mapAnalysisTypeToConfig(analysisType);
+            // Map analysis type to boolean flags
+            const isFibonacciAdvanced = analysisType === "fibonacci_advanced" || analysisType === "تحليل فيبوناتشي متقدم";
+            const isFibonacci = analysisType === "fibonacci";
+            const isScalping = analysisType === "scalping";
+            const isSMC = analysisType === "smc";
+            const isICT = analysisType === "ict";
+            const isTurtleSoup = analysisType === "turtle_soup";
+            const isGann = analysisType === "gann";
+            const isWaves = analysisType === "waves";
+            const isPatternAnalysis = analysisType === "patterns";
+            const isPriceAction = analysisType === "price_action";
+            const isNeuralNetwork = analysisType === "neural_network";
+            const isRNN = analysisType === "rnn";
+            const isTimeClustering = analysisType === "time_clustering";
+            const isMultiVariance = analysisType === "multi_variance";
+            const isCompositeCandlestick = analysisType === "composite_candlestick";
+            const isBehavioral = analysisType === "behavioral";
             
-            console.log("Analysis configuration:", config);
-            
-            // Call the analysis function with the correct flags from the config
+            // The function expects at most 20 arguments, but we're passing 21
+            // Let's pass the duration as part of an options object instead
             const result = await handleTradingViewConfig(
               symbol,
               timeframe,
               currentPrice,
-              config.isScalping,
+              isScalping,
               false, // isAI
-              config.isSMC,
-              config.isICT,
-              config.isTurtleSoup,
-              config.isGann,
-              config.isWaves,
-              config.isPatternAnalysis,
-              config.isPriceAction,
-              config.isNeuralNetwork,
-              config.isRNN,
-              config.isTimeClustering,
-              config.isMultiVariance,
-              config.isCompositeCandlestick,
-              config.isBehavioral,
-              config.isFibonacci,
-              config.isFibonacciAdvanced
+              isSMC,
+              isICT,
+              isTurtleSoup,
+              isGann,
+              isWaves,
+              isPatternAnalysis,
+              isPriceAction,
+              isNeuralNetwork,
+              isRNN,
+              isTimeClustering,
+              isMultiVariance,
+              isCompositeCandlestick,
+              isBehavioral,
+              isFibonacci,
+              isFibonacciAdvanced
             );
 
             if (result && result.analysisResult) {

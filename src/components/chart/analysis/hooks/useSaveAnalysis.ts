@@ -1,9 +1,8 @@
 
 import { saveAnalysis } from "../utils/saveAnalysis";
-import { mapToAnalysisType, isValidAnalysisType } from "../utils/mapAnalysisType";
+import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
 import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
-import { ValidAnalysisType } from "../utils/constants/analysisTypes";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -28,49 +27,34 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
-      // Log the original analysis type for debugging
+      // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
-      // Special case handling for known valid types (direct pass-through)
-      let mappedAnalysisType: ValidAnalysisType;
-      
-      // Handle SMC and Scalping directly to ensure consistency
-      if (analysisType === "SMC" || analysisType === "Scalping") {
-        console.log(`Direct handling for known type: ${analysisType}`);
-        mappedAnalysisType = analysisType as ValidAnalysisType; 
-      } else {
-        // Map other analysis types to valid database enum values
-        mappedAnalysisType = mapToAnalysisType(analysisType);
-      }
-      
+      // Map the analysis type to a valid database enum value
+      const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // Check if the mapped type is valid
-      if (!isValidAnalysisType(mappedAnalysisType)) {
-        console.error(`Mapped type "${mappedAnalysisType}" is still not valid`);
-        throw new Error(`نوع التحليل "${analysisType}" غير صالح`);
-      }
-      
-      // Check if the analysis result has an analysis type property
+      // تأكد من أن نوع التحليل موجود في النتيجة
       if (!result.analysisResult.analysisType) {
-        console.log("Setting analysis type in result:", mappedAnalysisType);
-        result.analysisResult.analysisType = mappedAnalysisType;
-      } else if (result.analysisResult.analysisType !== mappedAnalysisType) {
-        // If it does, make sure it matches the mapped type
-        console.log("Existing analysis type in result:", result.analysisResult.analysisType);
-        console.log("Updating analysis type in result to match mapped type");
         result.analysisResult.analysisType = mappedAnalysisType;
       }
       
-      console.log("Final analysis result with type:", result.analysisResult);
+      // Update the analysis result's analysisType to the mapped value
+      const analysisResultWithMappedType = {
+        ...result.analysisResult,
+        analysisType: mappedAnalysisType
+      };
       
+      console.log("Final analysis result with type:", analysisResultWithMappedType);
+      
+      // Add proper error handling for debugging
       try {
         const savedData = await saveAnalysis({
           userId,
           symbol,
           currentPrice,
-          analysisResult: result.analysisResult,
-          analysisType: mappedAnalysisType as AnalysisType,
+          analysisResult: analysisResultWithMappedType,
+          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
           timeframe,
           durationHours: duration
         });
@@ -81,10 +65,10 @@ export const useSaveAnalysis = () => {
             date: new Date(),
             symbol,
             currentPrice,
-            analysis: result.analysisResult,
+            analysis: analysisResultWithMappedType,
             targetHit: false,
             stopLossHit: false,
-            analysisType: mappedAnalysisType as AnalysisType,
+            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
             timeframe,
             analysis_duration_hours: duration
           };
@@ -93,21 +77,19 @@ export const useSaveAnalysis = () => {
           onAnalysisComplete(newHistoryEntry);
         }
         
-        // Show success toast with the original analysis type for user-friendly display
+        // Show success toast with proper analysis type display
         toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
           duration: 5000,
         });
         
-      } catch (dbError: any) {
+      } catch (dbError) {
         console.error("Database error saving analysis:", dbError);
-        const errorMessage = dbError.message || "حدث خطأ أثناء حفظ التحليل في قاعدة البيانات";
-        toast.error(errorMessage);
+        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
         throw dbError;
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving analysis:", error);
-      const errorMessage = error.message || "حدث خطأ أثناء حفظ التحليل";
-      toast.error(errorMessage);
+      toast.error("حدث خطأ أثناء حفظ التحليل");
       throw error;
     }
   };

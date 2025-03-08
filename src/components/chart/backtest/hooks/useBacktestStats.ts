@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { getStrategyName } from '@/utils/technicalAnalysis/analysisTypeMap';
+import { getStrategyName, mainAnalysisTypes } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 interface AnalysisStats {
   type: string;
@@ -28,31 +28,40 @@ export const useBacktestStats = () => {
 
       console.log('Fetched backtest stats raw data:', results);
       
-      if (!results || !Array.isArray(results)) {
-        console.error('Invalid results format:', results);
-        setStats([]);
-        return;
-      }
+      // جمع نتائج الاستعلام في قاموس لسهولة البحث
+      const statsMap: Record<string, AnalysisStats> = {};
       
-      // Process stats to ensure analysis_type is properly displayed
-      const processedStats = results.map((stat: any) => {
-        // Ensure we have a valid type
-        if (!stat.type) {
-          console.warn('Found stat without type:', stat);
-          stat.type = 'unknown';
-        }
-        
-        const displayName = getStrategyName(stat.type);
-        console.log(`Processing stat: ${stat.type} -> ${displayName}`);
-        
-        return {
-          ...stat,
+      // إعداد قاموس فقط بأنواع التحليل المعتمدة (بقيم صفرية)
+      mainAnalysisTypes.forEach(type => {
+        const displayName = getStrategyName(type);
+        statsMap[type] = {
+          type,
+          success: 0,
+          fail: 0,
           display_name: displayName
         };
       });
       
+      // معالجة النتائج من قاعدة البيانات (إذا كانت موجودة)
+      if (results && Array.isArray(results)) {
+        results.forEach((stat: any) => {
+          // تخطي أي نوع تحليل ليس موجود في القائمة المعتمدة
+          if (!stat.type || !mainAnalysisTypes.includes(stat.type)) {
+            return;
+          }
+          
+          // تحديث الإحصائيات
+          if (statsMap[stat.type]) {
+            statsMap[stat.type].success += stat.success || 0;
+            statsMap[stat.type].fail += stat.fail || 0;
+          }
+        });
+      }
+      
+      // تحويل القاموس إلى مصفوفة
+      const processedStats = Object.values(statsMap);
+      
       console.log('Processed backtest stats:', processedStats);
-      console.log('Unique analysis types:', [...new Set(processedStats.map(s => s.type))]);
       console.log('Total types count:', processedStats.length);
       
       setStats(processedStats);

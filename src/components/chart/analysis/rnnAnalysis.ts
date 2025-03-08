@@ -75,8 +75,8 @@ export const analyzeRNN = async (
       price: entryPrice,
       reason: "Entry based on RNN analysis of historical patterns"
     },
-    analysisType: "RNN",
-    activation_type: "Automatic"
+    analysisType: "شبكات عصبية متكررة",
+    activation_type: "تلقائي"
   };
   
   return result;

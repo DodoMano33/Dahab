@@ -8,33 +8,33 @@ export const analyzeCompositeCandlestick = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with Composite Candlestick for:", { timeframe, currentPrice });
   
-  // Simulate Composite Candlestick analysis
-  const direction = Math.random() > 0.5 ? "Bullish" : "Bearish";
-  const movePercent = Math.random() * 0.045 + 0.015; // Movement between 1.5% and 6%
+  // محاكاة التحليل باستخدام الشمعات المركبة
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  const movePercent = Math.random() * 0.045 + 0.015; // حركة بين 1.5% و 6%
   
-  // Calculate support and resistance levels using candlestick analysis
-  const candlestickRange = Math.random() * 0.02 + 0.01; // Candle range between 1% and 3%
+  // احتساب مستويات الدعم والمقاومة باستخدام تحليل الشمعات
+  const candlestickRange = Math.random() * 0.02 + 0.01; // نطاق الشمعة بين 1% و 3%
   const support = Number((currentPrice * (1 - candlestickRange)).toFixed(2));
   const resistance = Number((currentPrice * (1 + candlestickRange)).toFixed(2));
   
-  // Calculate stop loss levels based on direction
-  const stopLoss = direction === "Bullish" 
+  // احتساب مستويات وقف الخسارة بناءً على الاتجاه
+  const stopLoss = direction === "صاعد" 
     ? Number((support - currentPrice * 0.004).toFixed(2))
     : Number((resistance + currentPrice * 0.004).toFixed(2));
   
-  // Target levels
+  // مستويات الأهداف
   const targets = [];
-  if (direction === "Bullish") {
+  if (direction === "صاعد") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.6)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent)).toFixed(2));
     
     targets.push({
       price: target1Price,
-      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 ساعة
     });
     targets.push({
       price: target2Price,
-      expectedTime: new Date(Date.now() + 60 * 60 * 60 * 1000) // 60 hours
+      expectedTime: new Date(Date.now() + 60 * 60 * 60 * 1000) // 60 ساعة
     });
   } else {
     const target1Price = Number((currentPrice * (1 - movePercent * 0.6)).toFixed(2));
@@ -42,15 +42,15 @@ export const analyzeCompositeCandlestick = async (
     
     targets.push({
       price: target1Price,
-      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 ساعة
     });
     targets.push({
       price: target2Price,
-      expectedTime: new Date(Date.now() + 60 * 60 * 60 * 1000) // 60 hours
+      expectedTime: new Date(Date.now() + 60 * 60 * 60 * 1000) // 60 ساعة
     });
   }
   
-  // Generate composite candlestick pattern type
+  // توليد نوع نمط الشمعة المركبة
   const candlePatterns = [
     "Three Line Strike", 
     "Morning Star", 
@@ -61,8 +61,8 @@ export const analyzeCompositeCandlestick = async (
   ];
   const pattern = candlePatterns[Math.floor(Math.random() * candlePatterns.length)];
   
-  // Ideal entry point
-  const entryPrice = direction === "Bullish"
+  // نقطة الدخول المثالية
+  const entryPrice = direction === "صاعد"
     ? Number((currentPrice * (1 + Math.random() * 0.002)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.002)).toFixed(2));
   
@@ -78,8 +78,8 @@ export const analyzeCompositeCandlestick = async (
       price: entryPrice,
       reason: `Entry based on ${pattern} candlestick pattern`
     },
-    analysisType: "Composite Candlestick",
-    activation_type: "Automatic"
+    analysisType: "شمعات مركبة",
+    activation_type: "تلقائي"
   };
   
   return result;

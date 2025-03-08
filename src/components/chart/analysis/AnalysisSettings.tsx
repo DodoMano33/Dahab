@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
@@ -25,20 +24,17 @@ export const AnalysisSettings = ({
   defaultSymbol,
   defaultPrice
 }: AnalysisSettingsProps) => {
-  // State for managing analysis configuration
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [selectedAnalysisTypes, setSelectedAnalysisTypes] = useState<string[]>([]);
   const [repetitions, setRepetitions] = useState<string>("1");
   const [duration, setDuration] = useState<string>("24");
 
-  // Handler for timeframes changes - updates local state and bubbles up to parent
   const handleTimeframesChange = (timeframes: string[]) => {
     setSelectedTimeframes(timeframes);
     onTimeframesChange(timeframes);
   };
 
-  // Handler for interval changes - updates local state and bubbles up to parent
   const handleIntervalChange = (interval: string) => {
     setSelectedInterval(interval);
     onIntervalChange(interval);
@@ -46,8 +42,7 @@ export const AnalysisSettings = ({
 
   return (
     <div className="space-y-6">
-      {/* Analysis configuration grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <TimeframeAnalysis
           selectedTimeframes={selectedTimeframes}
           onTimeframeChange={handleTimeframesChange}
@@ -62,15 +57,14 @@ export const AnalysisSettings = ({
         />
       </div>
 
-      {/* Analysis execution controls */}
-      <div className="flex flex-col sm:flex-row items-start gap-4">
-        <div className="w-full sm:w-1/3">
+      <div className="flex flex-col md:flex-row items-start gap-4">
+        <div className="w-full md:w-1/3">
           <RepetitionInput
             repetitions={repetitions}
             onRepetitionsChange={setRepetitions}
           />
         </div>
-        <div className="w-full sm:w-1/3">
+        <div className="w-full md:w-1/3">
           <AnalysisDurationInput
             value={duration}
             onChange={setDuration}

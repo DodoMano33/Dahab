@@ -48,21 +48,10 @@ export const AnalysisForm = ({
         isFibonacciAdvanced?: boolean,
         duration?: string
       ) => {
-        // استخدام القيم الافتراضية إن لم يتم تحديد قيم
-        const finalSymbol = symbol || defaultSymbol || "";
-        const finalPrice = providedPrice || defaultPrice || 0;
-        
-        console.log("Analysis form using values:", {
-          symbol: finalSymbol,
-          price: finalPrice,
-          defaultSymbol,
-          defaultPrice
-        });
-        
         return handleAnalysis(
-          finalSymbol, 
+          symbol, 
           timeframe, 
-          finalPrice, 
+          providedPrice, 
           isScalping, 
           isAI, 
           isSMC, 
@@ -85,8 +74,6 @@ export const AnalysisForm = ({
       }}
       onHistoryClick={onHistoryClick}
       isAnalyzing={isAnalyzing}
-      defaultSymbol={defaultSymbol}
-      defaultPrice={defaultPrice}
     />
   );
 };

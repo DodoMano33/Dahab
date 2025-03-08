@@ -1,6 +1,4 @@
-
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
 
 interface SymbolInputProps {
   value: string;
@@ -9,14 +7,6 @@ interface SymbolInputProps {
 }
 
 export const SymbolInput = ({ value, onChange, defaultValue }: SymbolInputProps) => {
-  // تحديث القيمة عندما تتغير القيمة الافتراضية
-  useEffect(() => {
-    if (defaultValue && defaultValue.trim() !== "" && (!value || value.trim() === "")) {
-      console.log("Setting symbol input value from default:", defaultValue);
-      onChange(defaultValue);
-    }
-  }, [defaultValue, onChange]);
-
   return (
     <div>
       <label htmlFor="symbol" className="block text-sm font-medium text-gray-700 mb-1">
@@ -30,9 +20,9 @@ export const SymbolInput = ({ value, onChange, defaultValue }: SymbolInputProps)
         className="w-full"
         dir="ltr"
       />
-      {defaultValue && (
+      {defaultValue && !value && (
         <p className="text-sm text-gray-500 mt-1">
-          الرمز الحالي من الشارت: {defaultValue}
+          سيتم استخدام الرمز {defaultValue} من الشارت
         </p>
       )}
     </div>
