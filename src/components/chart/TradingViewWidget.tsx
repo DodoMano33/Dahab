@@ -15,13 +15,22 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
   const [currentSymbol, setCurrentSymbol] = useState(symbol);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const scriptLoaded = useRef(false);
 
+  // Update local state when prop changes
   useEffect(() => {
-    // Update the currentSymbol state when the prop changes
+    console.log('Symbol prop changed to:', symbol);
     setCurrentSymbol(symbol);
   }, [symbol]);
 
   useEffect(() => {
+    if (scriptLoaded.current) {
+      return; // Prevent duplicate script loading
+    }
+    
+    scriptLoaded.current = true;
+    console.log('Initializing TradingView widget with symbol:', symbol);
+
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
@@ -103,54 +112,76 @@ function TradingViewWidget({
         }
 
         const data = event.data;
-        console.log('Received TradingView message:', data);
         
-        // Handle all possible symbol change event types
-        if (
-          (data.name === 'tv-symbol-change' && data.symbol) || 
-          (data.name === 'symbol-change' && data.symbol) ||
-          (data.type === 'symbol-change' && data.symbol)
-        ) {
-          updateSymbol(data.symbol);
+        // Debug all messages to understand what's being sent
+        if (data.name || data.type || data.m) {
+          console.log('Received TradingView message:', data);
         }
         
-        // Handle all possible price update event types
+        // Handle symbol change events from TradingView
+        if (
+          (data.name === 'tv-symbol-change' && data.symbol) || 
+          (data.type === 'symbol-change' && data.symbol) ||
+          (data.name === 'symbol-change' && data.symbol) ||
+          (data.m === 'symbol_changed' && data.p) ||
+          (data.method === 'symbolChange' && data.params && data.params[0])
+        ) {
+          const newSymbol = data.symbol || (data.p && data.p[0]) || (data.params && data.params[0]);
+          updateSymbol(newSymbol);
+        }
+        
+        // Handle price update events from TradingView
         if (
           (data.name === 'tv-price-update' && data.price !== undefined) || 
           (data.name === 'price-update' && data.price !== undefined) ||
           (data.name === 'quoteUpdate' && data.data && data.data.price !== undefined) ||
+          (data.m === 'quote_update' && data.p && data.p.last !== undefined) ||
+          (data.method === 'quoteUpdate' && data.params && data.params.last !== undefined) ||
           (data.name === 'quotes' && data.price !== undefined) ||
           (data.price !== undefined && typeof data.price === 'number')
         ) {
-          const price = data.price !== undefined ? data.price : (data.data && data.data.price);
-          updatePrice(price);
+          const price = 
+            data.price !== undefined ? data.price : 
+            (data.data && data.data.price) || 
+            (data.p && data.p.last) || 
+            (data.params && data.params.last);
+          
+          updatePrice(Number(price));
+        }
+        
+        // Additional handling for quotes format
+        if (data.m === 'q' && data.p) {
+          // Attempt to extract price from various quote formats
+          const quoteData = Array.isArray(data.p) ? data.p[0] : data.p;
+          if (quoteData && (quoteData.last || quoteData.lp)) {
+            const price = quoteData.last || quoteData.lp;
+            updatePrice(Number(price));
+          }
+        }
+        
+        // Additional handling for chart_loaded event - try to get symbol
+        if (data.name === 'chart_loaded' || data.type === 'chart_loaded') {
+          console.log('Chart loaded, current symbol is:', currentSymbol);
+          // The chart_loaded event doesn't contain the symbol or price
+          // but we can use it to confirm the chart is ready
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
       }
     };
 
+    // Setup the message event listener
     window.addEventListener('message', handleMessage);
 
-    // Set initial price if available from props
-    if (window.TradingView && window.TradingView.widget) {
-      try {
-        // Fix: Use proper syntax to access TradingView widget
-        // Don't call TradingView.widget directly, it's a constructor
-        console.log('TradingView widget loaded, attempting to get current price');
-        // We'll use message events to get price updates instead of trying to access directly
-      } catch (e) {
-        console.warn('Could not access TradingView widget:', e);
-      }
-    }
-
+    // Clean up function
     return () => {
       window.removeEventListener('message', handleMessage);
       if (container.current) {
         container.current.innerHTML = '';
       }
+      scriptLoaded.current = false;
     };
-  }, [symbol, onSymbolChange, onPriceUpdate]);
+  }, [symbol, onSymbolChange, onPriceUpdate]); // Re-initialize when symbol prop changes
 
   // Format price with proper decimal places based on symbol type
   const formattedPrice = currentPrice !== null 
