@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
 import { calculateSupportResistance } from "@/utils/technicalAnalysis/calculations";
@@ -22,7 +23,7 @@ export const analyzeFibonacciAdvanced = async (
     const direction = trend.direction as "Up" | "Down" | "Neutral";
     
     // Calculate support and resistance levels with institutional order blocks
-    const { support, resistance } = calculateSupportResistance([recentLow, currentPrice, recentHigh], currentPrice);
+    const { support, resistance } = calculateSupportResistance([recentLow, currentPrice, recentHigh], currentPrice, direction);
     
     // Calculate advanced Fibonacci levels with extensions and projections
     const fibLevels = calculateAdvancedFibonacciLevels(recentHigh, recentLow, currentPrice, direction);

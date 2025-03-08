@@ -4,16 +4,16 @@ import { AnalysisData } from "@/types/analysis";
 /**
  * Calculate combined direction from multiple analysis results
  */
-export const calculateCombinedDirection = (results: AnalysisData[]): "صاعد" | "هابط" | "محايد" => {
-  if (!results.length) return "محايد";
+export const calculateCombinedDirection = (results: AnalysisData[]): "Up" | "Down" | "Neutral" => {
+  if (!results.length) return "Neutral";
   
   const directions = results.map(r => r.direction);
-  const upCount = directions.filter(d => d === "صاعد").length;
-  const downCount = directions.filter(d => d === "هابط").length;
+  const upCount = directions.filter(d => d === "Up").length;
+  const downCount = directions.filter(d => d === "Down").length;
   
-  if (upCount > downCount) return "صاعد";
-  if (downCount > upCount) return "هابط";
-  return "محايد";
+  if (upCount > downCount) return "Up";
+  if (downCount > upCount) return "Down";
+  return "Neutral";
 };
 
 /**

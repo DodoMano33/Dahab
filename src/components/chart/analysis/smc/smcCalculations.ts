@@ -1,3 +1,4 @@
+
 import { getTimeframeMultipliers } from "@/utils/technicalAnalysis/timeframeMultipliers";
 
 export const calculateSMCStopLoss = (
@@ -17,14 +18,14 @@ export const calculateSMCStopLoss = (
 
   const range = Math.abs(resistance - support) || currentPrice * 0.02; // Fallback if range is 0
   
-  // في SMC، نضع وقف الخسارة خلف منطقة السيولة مباشرة
-  if (direction === "صاعد") {
-    // للاتجاه الصاعد، نضع وقف الخسارة تحت منطقة الطلب بنسبة صغيرة
+  // In SMC, we place stop loss directly behind liquidity area
+  if (direction === "Up") {
+    // For bullish direction, place stop loss below demand zone with a small buffer
     const stopLoss = support - (range * 0.02);
     console.log("Bullish Stop Loss:", stopLoss);
     return isFinite(stopLoss) ? Number(stopLoss.toFixed(2)) : Number((currentPrice * 0.98).toFixed(2));
   } else {
-    // للاتجاه الهابط، نضع وقف الخسارة فوق منطقة العرض بنسبة صغيرة
+    // For bearish direction, place stop loss above supply zone with a small buffer
     const stopLoss = resistance + (range * 0.02);
     console.log("Bearish Stop Loss:", stopLoss);
     return isFinite(stopLoss) ? Number(stopLoss.toFixed(2)) : Number((currentPrice * 1.02).toFixed(2));
@@ -48,11 +49,11 @@ export const calculateSMCTargets = (
 
   const range = Math.abs(resistance - support) || currentPrice * 0.05; // Fallback if range is 0
   
-  // نستخدم مناطق عدم التوازن والسيولة لتحديد الأهداف
-  const targetMultipliers = [0.5, 1, 1.5]; // 50%, 100%, 150% من المدى
+  // Use imbalance areas and liquidity to determine targets
+  const targetMultipliers = [0.5, 1, 1.5]; // 50%, 100%, 150% of range
   
-  if (direction === "صاعد") {
-    // للاتجاه الصاعد، نحسب الأهداف فوق السعر الحالي
+  if (direction === "Up") {
+    // For bullish direction, calculate targets above current price
     const targets = targetMultipliers.map(multiplier => {
       const target = currentPrice + (range * multiplier);
       return isFinite(target) ? Number(target.toFixed(2)) : Number((currentPrice * (1 + multiplier * 0.02)).toFixed(2));
@@ -60,7 +61,7 @@ export const calculateSMCTargets = (
     console.log("Bullish Targets:", targets);
     return targets;
   } else {
-    // للاتجاه الهابط، نحسب الأهداف تحت السعر الحالي
+    // For bearish direction, calculate targets below current price
     const targets = targetMultipliers.map(multiplier => {
       const target = currentPrice - (range * multiplier);
       return isFinite(target) ? Number(target.toFixed(2)) : Number((currentPrice * (1 - multiplier * 0.02)).toFixed(2));
@@ -87,31 +88,31 @@ export const calculateSMCEntryPoint = (
 
   const range = Math.abs(resistance - support) || currentPrice * 0.02; // Fallback if range is 0
   
-  if (direction === "صاعد") {
-    // للاتجاه الصاعد، ندخل عند منطقة الطلب
+  if (direction === "Up") {
+    // For bullish direction, enter at demand zone
     const entryPrice = support + (range * 0.1);
     const finalPrice = isFinite(entryPrice) ? Number(entryPrice.toFixed(2)) : Number((currentPrice * 0.995).toFixed(2));
     console.log("Bullish Entry Point:", finalPrice);
     return {
       price: finalPrice,
-      reason: `نقطة دخول محددة عند منطقة الطلب النشطة (Demand Zone) مع وجود تجمع سيولة سفلي على الإطار الزمني ${timeframe}. هذه المنطقة تمثل نقطة تجمع المؤسسات للشراء.`
+      reason: `Entry point specified at active demand zone with lower liquidity pool on ${timeframe} timeframe. This area represents institutional buying area.`
     };
   } else {
-    // للاتجاه الهابط، ندخل عند منطقة العرض
+    // For bearish direction, enter at supply zone
     const entryPrice = resistance - (range * 0.1);
     const finalPrice = isFinite(entryPrice) ? Number(entryPrice.toFixed(2)) : Number((currentPrice * 1.005).toFixed(2));
     console.log("Bearish Entry Point:", finalPrice);
     return {
       price: finalPrice,
-      reason: `نقطة دخول محددة عند منطقة العرض النشطة (Supply Zone) مع وجود تجمع سيولة علوي على الإطار الزمني ${timeframe}. هذه المنطقة تمثل نقطة تجمع المؤسسات للبيع.`
+      reason: `Entry point specified at active supply zone with upper liquidity pool on ${timeframe} timeframe. This area represents institutional selling area.`
     };
   }
 };
 
 export const detectSMCPattern = (direction: string, timeframe: string): string => {
-  if (direction === "صاعد") {
-    return `نموذج تجمع سيولة سفلي مع منطقة طلب مؤسساتية نشطة على الإطار الزمني ${timeframe}`;
+  if (direction === "Up") {
+    return `Lower liquidity pool pattern with active institutional demand zone on ${timeframe} timeframe`;
   } else {
-    return `نموذج تجمع سيولة علوي مع منطقة عرض مؤسساتية نشطة على الإطار الزمني ${timeframe}`;
+    return `Upper liquidity pool pattern with active institutional supply zone on ${timeframe} timeframe`;
   }
 };

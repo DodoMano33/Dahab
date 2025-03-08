@@ -6,10 +6,10 @@ export interface PatternInfo {
   arabicName: string;
   description: string;
   reliability: number; // 1-10
-  expectedMove: "صاعد" | "هابط" | "محايد";
+  expectedMove: "Up" | "Down" | "Neutral";
   stopLossPercent: number;
   targetPercent: number;
-  timeframe: number; // بالأيام
+  timeframe: number; // in days
 }
 
 export const patterns: PatternInfo[] = [
@@ -18,7 +18,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "مثلث متماثل",
     description: "نمط استمراري يتكون من خطي اتجاه متقاربين بنفس الزاوية",
     reliability: 7,
-    expectedMove: "محايد",
+    expectedMove: "Neutral",
     stopLossPercent: 2,
     targetPercent: 5,
     timeframe: 14
@@ -28,7 +28,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "مثلث صاعد",
     description: "نمط صعودي يتكون من خط مقاومة أفقي وخط دعم صاعد",
     reliability: 8,
-    expectedMove: "صاعد",
+    expectedMove: "Up",
     stopLossPercent: 2,
     targetPercent: 6,
     timeframe: 10
@@ -38,7 +38,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "مثلث هابط",
     description: "نمط هبوطي يتكون من خط دعم أفقي وخط مقاومة هابط",
     reliability: 8,
-    expectedMove: "هابط",
+    expectedMove: "Down",
     stopLossPercent: 2,
     targetPercent: 6,
     timeframe: 10
@@ -48,7 +48,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "رأس وكتفين",
     description: "نمط انعكاسي هبوطي يتكون من ثلاث قمم، الوسطى أعلى",
     reliability: 9,
-    expectedMove: "هابط",
+    expectedMove: "Down",
     stopLossPercent: 3,
     targetPercent: 8,
     timeframe: 21
@@ -58,7 +58,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "رأس وكتفين معكوس",
     description: "نمط انعكاسي صعودي يتكون من ثلاث قيعان، الوسطى أدنى",
     reliability: 9,
-    expectedMove: "صاعد",
+    expectedMove: "Up",
     stopLossPercent: 3,
     targetPercent: 8,
     timeframe: 21
@@ -68,7 +68,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "الكوب والمقبض",
     description: "نمط استمراري صعودي يشبه الفنجان مع مقبض",
     reliability: 8,
-    expectedMove: "صاعد",
+    expectedMove: "Up",
     stopLossPercent: 2.5,
     targetPercent: 7,
     timeframe: 30
@@ -78,7 +78,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "وتد هابط",
     description: "نمط انعكاسي صعودي يتكون من خطي اتجاه هابطين متقاربين",
     reliability: 7,
-    expectedMove: "صاعد",
+    expectedMove: "Up",
     stopLossPercent: 2,
     targetPercent: 5,
     timeframe: 14
@@ -88,7 +88,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "وتد صاعد",
     description: "نمط انعكاسي هبوطي يتكون من خطي اتجاه صاعدين متقاربين",
     reliability: 7,
-    expectedMove: "هابط",
+    expectedMove: "Down",
     stopLossPercent: 2,
     targetPercent: 5,
     timeframe: 14
@@ -98,7 +98,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "مستطيل",
     description: "نمط استمراري يتكون من خطي دعم ومقاومة متوازيين",
     reliability: 6,
-    expectedMove: "محايد",
+    expectedMove: "Neutral",
     stopLossPercent: 1.5,
     targetPercent: 4,
     timeframe: 10
@@ -108,7 +108,7 @@ export const patterns: PatternInfo[] = [
     arabicName: "راية",
     description: "نمط استمراري قصير المدى يظهر كتصحيح مؤقت للاتجاه",
     reliability: 7,
-    expectedMove: "محايد",
+    expectedMove: "Neutral",
     stopLossPercent: 1,
     targetPercent: 3,
     timeframe: 5
@@ -116,7 +116,7 @@ export const patterns: PatternInfo[] = [
 ];
 
 export const identifyPattern = (chartImage: string): PatternInfo => {
-  console.log("تحليل الصورة للتعرف على النمط:", chartImage);
+  console.log("Analyzing image to identify pattern:", chartImage);
   const randomIndex = Math.floor(Math.random() * patterns.length);
   return patterns[randomIndex];
 };
@@ -126,12 +126,12 @@ export const analyzePatternWithPrice = (
   currentPrice: number,
   timeframe: string = "1d"
 ): AnalysisData => {
-  console.log("تحليل النمط مع السعر الحالي والإطار الزمني:", { currentPrice, timeframe });
+  console.log("Analyzing pattern with current price and timeframe:", { currentPrice, timeframe });
   
   const pattern = identifyPattern(chartImage);
-  console.log("النمط المكتشف:", pattern);
+  console.log("Detected pattern:", pattern);
 
-  // تعديل النسب بناءً على الإطار الزمني
+  // Adjust ratios based on timeframe
   const timeframeMultiplier = getTimeframeMultiplier(timeframe);
   const stopLossPercent = pattern.stopLossPercent * timeframeMultiplier;
   const targetPercent = pattern.targetPercent * timeframeMultiplier;
@@ -147,8 +147,8 @@ export const analyzePatternWithPrice = (
     resistance: resistance,
     stopLoss: Number((currentPrice * (1 - stopLossPercent / 100)).toFixed(2)),
     bestEntryPoint: {
-      price: pattern.expectedMove === "صاعد" ? support : resistance,
-      reason: `أفضل نقطة دخول بناءً على نمط ${pattern.arabicName} مع موثوقية ${pattern.reliability}/10 على الإطار الزمني ${timeframe}`
+      price: pattern.expectedMove === "Up" ? support : resistance,
+      reason: `Best entry point based on ${pattern.name} pattern with reliability ${pattern.reliability}/10 on ${timeframe} timeframe`
     },
     targets: [
       {
@@ -168,14 +168,14 @@ export const analyzePatternWithPrice = (
     analysisType: "Patterns"
   };
 
-  console.log("نتائج التحليل:", analysis);
+  console.log("Analysis results:", analysis);
   return analysis;
 };
 
 const getTimeframeMultiplier = (timeframe: string): number => {
   switch (timeframe) {
     case "1m":
-      return 0.2;  // نسب صغيرة جداً للإطار الزمني 1 دقيقة
+      return 0.2;  // Nettah small timeframe multiplier
     case "5m":
       return 0.4;
     case "30m":
@@ -185,7 +185,7 @@ const getTimeframeMultiplier = (timeframe: string): number => {
     case "4h":
       return 1.0;
     case "1d":
-      return 1.2;  // نسب أكبر للإطار الزمني اليومي
+      return 1.2;  // Larger timeframe multiplier
     default:
       return 1.0;
   }

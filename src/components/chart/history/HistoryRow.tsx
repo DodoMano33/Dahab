@@ -46,17 +46,17 @@ export const HistoryRow = ({
   last_checked_price,
   last_checked_at,
 }: HistoryRowProps) => {
-  // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
-  const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
-    ? "فيبوناتشي" 
-    : analysis.pattern === "تحليل فيبوناتشي متقدم" 
-      ? "تحليل فيبوناتشي متقدم" 
+  // Use getStrategyName to properly display the analysis type
+  const displayAnalysisType = analysis.pattern === "Fibonacci Retracement and Extension" 
+    ? "Fibonacci" 
+    : analysis.pattern === "Advanced Fibonacci Analysis" 
+      ? "Advanced Fibonacci Analysis" 
       : getStrategyName(analysisType);
   
-  // تشخيص وقت آخر فحص
+  // Debug last checked time
   console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
   
-  // الاستماع للتحديثات في الوقت الحقيقي
+  // Listen for real-time updates
   useEffect(() => {
     const handleHistoryUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;

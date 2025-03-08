@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { ZoomIn, ZoomOut, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
     img.onload = () => {
       console.log("Drawing image and analysis...");
       
-      // حساب النسبة للحفاظ على تناسق الصورة
+      // Calculate ratio to maintain image proportions
       const containerWidth = containerRef.current?.clientWidth || 600;
       const containerHeight = containerRef.current?.clientHeight || 400;
       const ratio = Math.min(containerWidth / img.width, containerHeight / img.height);
@@ -37,15 +38,15 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
       canvas.width = img.width * ratio;
       canvas.height = img.height * ratio;
 
-      // تطبيق التكبير/التصغير على كامل المحتوى
+      // Apply zoom/scale to entire content
       ctx.save();
       ctx.scale(scale, scale);
 
-      // رسم الصورة
+      // Draw image
       ctx.drawImage(img, 0, 0, canvas.width / scale, canvas.height / scale);
 
       if (analysis) {
-        // رسم خط الدعم
+        // Draw support line
         ctx.beginPath();
         ctx.strokeStyle = "green";
         ctx.lineWidth = 2;
@@ -54,7 +55,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
         ctx.lineTo(canvas.width / scale, supportY);
         ctx.stroke();
 
-        // رسم خط المقاومة
+        // Draw resistance line
         ctx.beginPath();
         ctx.strokeStyle = "red";
         ctx.lineWidth = 2;
@@ -63,7 +64,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
         ctx.lineTo(canvas.width / scale, resistanceY);
         ctx.stroke();
 
-        // رسم نقطة وقف الخسارة
+        // Draw stop loss point
         ctx.beginPath();
         ctx.strokeStyle = "red";
         ctx.fillStyle = "red";
@@ -71,11 +72,11 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
         ctx.arc(30, stopLossY, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.font = `${12/scale}px Arial`;
-        ctx.fillText(`وقف الخسارة ${analysis.stopLoss}`, 40, stopLossY);
+        ctx.fillText(`Stop Loss ${analysis.stopLoss}`, 40, stopLossY);
 
-        // رسم الاتجاه المتوقع
+        // Draw expected direction
         const arrowLength = 50 / scale;
-        const arrowAngle = analysis.direction === "صاعد" ? Math.PI / 6 : -Math.PI / 6;
+        const arrowAngle = analysis.direction === "Up" ? Math.PI / 6 : -Math.PI / 6;
         
         ctx.beginPath();
         ctx.strokeStyle = "blue";
@@ -89,7 +90,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
         
-        // رسم رأس السهم
+        // Draw arrow head
         ctx.lineTo(endX - 10 * Math.cos(arrowAngle - Math.PI / 6) / scale,
                   endY - 10 * Math.sin(arrowAngle - Math.PI / 6) / scale);
         ctx.moveTo(endX, endY);
@@ -97,7 +98,7 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
                   endY - 10 * Math.sin(arrowAngle + Math.PI / 6) / scale);
         ctx.stroke();
 
-        // رسم الأهداف المتوقعة
+        // Draw expected targets
         if (analysis.targets) {
           analysis.targets.forEach((target, index) => {
             const targetY = (canvas.height - ((target.price / img.height) * canvas.height)) / scale;
@@ -111,10 +112,10 @@ export const Canvas = ({ image, analysis, onClose }: CanvasProps) => {
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // كتابة قيمة الهدف
+            // Write target value
             ctx.font = `${12/scale}px Arial`;
             ctx.fillStyle = "purple";
-            ctx.fillText(`الهدف ${index + 1}: ${target.price}`, 10, targetY - 5);
+            ctx.fillText(`Target ${index + 1}: ${target.price}`, 10, targetY - 5);
           });
         }
       }

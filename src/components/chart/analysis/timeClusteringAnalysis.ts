@@ -55,7 +55,7 @@ export const analyzeTimeClustering = async (
   
   const result: AnalysisData = {
     pattern: "Time Cluster Pattern",
-    direction: direction as "Up" | "Down" | "Neutral",
+    direction: direction,
     currentPrice,
     support,
     resistance,
