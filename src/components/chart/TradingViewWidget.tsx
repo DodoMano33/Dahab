@@ -18,6 +18,7 @@ function TradingViewWidget({
   const scriptRef = useRef<HTMLScriptElement | null>(null);
   const lastSymbolRef = useRef<string>(symbol);
   const lastPriceRef = useRef<number | null>(null);
+  const widgetIdRef = useRef<string>(`tradingview_widget_${Date.now()}`);
 
   // Track last values to prevent duplicate updates
   useEffect(() => {
@@ -37,7 +38,7 @@ function TradingViewWidget({
     widgetContainer.style.width = '100%';
 
     const widgetDiv = document.createElement('div');
-    widgetDiv.id = 'tradingview_widget_' + Date.now(); // Unique ID to prevent conflicts
+    widgetDiv.id = widgetIdRef.current; // Use the stored unique ID
     widgetDiv.className = 'tradingview-widget-container__widget';
     widgetDiv.style.height = 'calc(100% - 32px)';
     widgetDiv.style.width = '100%';
@@ -157,6 +158,39 @@ function TradingViewWidget({
       window.removeEventListener('message', handleMessage);
     };
   }, [widgetLoaded, onSymbolChange, onPriceUpdate]);
+
+  // Periodically check for price updates (as a fallback)
+  useEffect(() => {
+    if (!widgetLoaded) return;
+    
+    // Attempt to extract price from TradingView widget every 5 seconds
+    const interval = setInterval(() => {
+      try {
+        if (!container.current) return;
+        
+        // Try to find price elements in the widget
+        const priceElements = container.current.querySelectorAll('.tv-symbol-price-quote__value');
+        if (priceElements.length > 0) {
+          const priceText = priceElements[0].textContent;
+          if (priceText) {
+            const price = parseFloat(priceText.replace(/,/g, ''));
+            if (!isNaN(price) && isValidPrice(price) && price !== lastPriceRef.current) {
+              console.log('Price extracted from DOM:', price);
+              lastPriceRef.current = price;
+              
+              if (onPriceUpdate) {
+                onPriceUpdate(price);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error extracting price from DOM:', error);
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [widgetLoaded, onPriceUpdate]);
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">

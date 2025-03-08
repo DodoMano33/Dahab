@@ -28,18 +28,26 @@ interface ChartInputProps {
   ) => void;
   onHistoryClick?: () => void;
   isAnalyzing: boolean;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 export const ChartInput = ({
   onTradingViewConfig,
   onHistoryClick,
-  isAnalyzing
+  isAnalyzing,
+  defaultSymbol,
+  defaultPrice
 }: ChartInputProps) => {
+  console.log("ChartInput received default values:", { defaultSymbol, defaultPrice });
+  
   return (
     <ChartAnalysisForm
       onSubmit={onTradingViewConfig}
       isAnalyzing={isAnalyzing}
       onHistoryClick={onHistoryClick || (() => {})}
+      defaultSymbol={defaultSymbol}
+      defaultPrice={defaultPrice ? defaultPrice.toString() : undefined}
     />
   );
 };

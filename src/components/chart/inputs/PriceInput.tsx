@@ -1,4 +1,6 @@
+
 import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
 
 interface PriceInputProps {
   value: string;
@@ -7,6 +9,14 @@ interface PriceInputProps {
 }
 
 export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) => {
+  // تحديث القيمة عندما تتغير القيمة الافتراضية
+  useEffect(() => {
+    if (defaultValue && !value) {
+      console.log("Setting price input value from default:", defaultValue);
+      onChange(defaultValue);
+    }
+  }, [defaultValue, value, onChange]);
+
   return (
     <div>
       <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
@@ -22,9 +32,9 @@ export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) =
         className="w-full"
         dir="ltr"
       />
-      {defaultValue && !value && (
+      {defaultValue && (
         <p className="text-sm text-gray-500 mt-1">
-          سيتم استخدام السعر {defaultValue} من الشارت
+          السعر الحالي من الشارت: {defaultValue}
         </p>
       )}
     </div>

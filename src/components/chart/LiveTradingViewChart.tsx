@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 import { cleanSymbolName } from '@/utils/tradingViewUtils';
 
@@ -14,15 +14,15 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  const [currentSymbol, setCurrentSymbol] = useState<string>(symbol);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const initializedRef = useRef<boolean>(false);
-  const lastSymbolRef = useRef<string | null>(null);
-  const lastPriceRef = useRef<number | null>(null);
   
   // Handler for symbol changes
   const handleSymbolChange = (newSymbol: string) => {
-    if (!newSymbol || newSymbol === lastSymbolRef.current) return;
+    if (!newSymbol) return;
     
-    lastSymbolRef.current = newSymbol;
+    setCurrentSymbol(newSymbol);
     console.log("LiveTradingViewChart: Symbol changed to:", newSymbol);
     
     if (onSymbolChange) {
@@ -32,9 +32,9 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 
   // Handler for price updates
   const handlePriceUpdate = (newPrice: number) => {
-    if (!newPrice || newPrice === lastPriceRef.current) return;
+    if (!newPrice) return;
     
-    lastPriceRef.current = newPrice;
+    setCurrentPrice(newPrice);
     console.log("LiveTradingViewChart: Price updated to:", newPrice);
     
     if (onPriceUpdate) {
@@ -54,6 +54,23 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       }
     }
   }, [symbol, onSymbolChange]);
+
+  // Force update parent components with current values periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentSymbol && onSymbolChange) {
+        onSymbolChange(currentSymbol);
+        console.log("LiveTradingViewChart: Forcing symbol update:", currentSymbol);
+      }
+      
+      if (currentPrice && onPriceUpdate) {
+        onPriceUpdate(currentPrice);
+        console.log("LiveTradingViewChart: Forcing price update:", currentPrice);
+      }
+    }, 10000); // 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [currentSymbol, currentPrice, onSymbolChange, onPriceUpdate]);
 
   return (
     <div className="w-full h-full">
