@@ -1,8 +1,9 @@
 
 import { saveAnalysis } from "../utils/saveAnalysis";
-import { mapToAnalysisType } from "../utils/analysisTypeMapper";
+import { mapToAnalysisType } from "../utils/mapAnalysisType";
 import { toast } from "sonner";
 import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
+import { isValidAnalysisType } from "../utils/mapAnalysisType";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -33,6 +34,12 @@ export const useSaveAnalysis = () => {
       // Map the analysis type to a valid database enum value
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
+      
+      // Check if the mapped type is valid
+      if (!isValidAnalysisType(mappedAnalysisType)) {
+        console.error(`Mapped type "${mappedAnalysisType}" is still not valid`);
+        throw new Error(`نوع التحليل "${analysisType}" غير صالح`);
+      }
       
       // Check if the analysis result has an analysis type property
       if (!result.analysisResult.analysisType) {

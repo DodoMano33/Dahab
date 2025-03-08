@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import { AnalysisType, AnalysisData } from "@/types/analysis";
 import { toast } from "sonner";
+import { isValidAnalysisType, mapToAnalysisType } from "./mapAnalysisType";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -34,27 +35,22 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Valid analysis types from the database constraint
-  const validTypes = [
-    "Normal", "Scalping", "Smart", "SMC", "ICT", "Turtle Soup", "Gann", "Waves", "Patterns", 
-    "Price Action", "Neural Networks", "RNN", "Time Clustering", 
-    "Multi Variance", "Composite Candlestick", "Behavioral Analysis", "Fibonacci", "Fibonacci Advanced", "Daily"
-  ];
-
-  // Check if the analysisType is valid
-  if (!validTypes.includes(analysisType)) {
-    console.error(`Invalid analysis type: "${analysisType}". Must be one of: ${validTypes.join(", ")}`);
-    throw new Error(`نوع التحليل "${analysisType}" غير صالح`);
+  // Ensure the analysis type is valid according to database constraints
+  let validAnalysisType = analysisType;
+  if (!isValidAnalysisType(analysisType)) {
+    console.warn(`Analysis type "${analysisType}" is not in the allowed list, mapping to a valid type`);
+    validAnalysisType = mapToAnalysisType(analysisType);
+    console.log(`Mapped to valid type: "${validAnalysisType}"`);
   }
 
   // Also check the analysis type in the result
-  if (analysisResult.analysisType && !validTypes.includes(analysisResult.analysisType)) {
+  if (analysisResult.analysisType && !isValidAnalysisType(analysisResult.analysisType)) {
     // Correct the analysisType in the analysisResult to match the one being saved
-    console.log(`Correcting analysis result type from "${analysisResult.analysisType}" to "${analysisType}"`);
-    analysisResult.analysisType = analysisType;
+    console.log(`Correcting analysis result type from "${analysisResult.analysisType}" to "${validAnalysisType}"`);
+    analysisResult.analysisType = validAnalysisType;
   }
 
-  console.log("Final analysis type being saved to database:", analysisType);
+  console.log("Final analysis type being saved to database:", validAnalysisType);
 
   // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
@@ -75,7 +71,7 @@ export const saveAnalysis = async ({
     stopLoss: analysisResult.stopLoss,
     targets: analysisResult.targets,
     bestEntryPoint: analysisResult.bestEntryPoint,
-    analysisType: analysisType,
+    analysisType: validAnalysisType,
     activation_type: analysisResult.activation_type
   };
 
@@ -84,7 +80,7 @@ export const saveAnalysis = async ({
     symbol,
     current_price: currentPrice,
     analysis: safeAnalysis,
-    analysis_type: analysisType,
+    analysis_type: validAnalysisType,
     timeframe,
     analysis_duration_hours: durationHours
   });
@@ -97,7 +93,7 @@ export const saveAnalysis = async ({
         symbol,
         current_price: currentPrice,
         analysis: safeAnalysis,
-        analysis_type: analysisType,
+        analysis_type: validAnalysisType,
         timeframe,
         analysis_duration_hours: durationHours
       })

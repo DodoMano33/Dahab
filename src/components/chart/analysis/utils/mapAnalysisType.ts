@@ -8,6 +8,12 @@ export const mapToAnalysisType = (analysisType: string): ValidAnalysisType => {
   // Log the original analysis type for debugging
   console.log("Mapping analysis type from:", analysisType);
   
+  // Check if it's already a valid type
+  if (VALID_ANALYSIS_TYPES.includes(analysisType as ValidAnalysisType)) {
+    console.log(`Analysis type "${analysisType}" is already valid`);
+    return analysisType as ValidAnalysisType;
+  }
+  
   // Normalize the analysis type by removing spaces, underscores, and converting to lowercase
   const normalizedType = analysisType.toLowerCase().replace(/[_\s-]/g, "");
   

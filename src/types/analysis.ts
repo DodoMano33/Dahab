@@ -1,5 +1,5 @@
-
 export type AnalysisType = 
+  | "Normal"
   | "Scalping" 
   | "Smart" 
   | "SMC" 
@@ -17,7 +17,6 @@ export type AnalysisType =
   | "Behavioral Analysis" 
   | "Fibonacci"
   | "Fibonacci Advanced"
-  | "Normal"
   | "Daily";
 
 export interface ImageData {
