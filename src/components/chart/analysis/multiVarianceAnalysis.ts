@@ -8,38 +8,38 @@ export const analyzeMultiVariance = async (
 ): Promise<AnalysisData> => {
   console.log("Analyzing chart with Multi-factor Variance for:", { timeframe, currentPrice });
   
-  // Simulate multi-factor variance analysis
-  const direction = Math.random() > 0.5 ? "Up" : "Down";
-  const movePercent = Math.random() * 0.06 + 0.02; // Movement between 2% and 8%
+  // محاكاة التحليل باستخدام التباين متعدد العوامل
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  const movePercent = Math.random() * 0.06 + 0.02; // حركة بين 2% و 8%
   
-  // Calculate support and resistance using multi-factor variance
-  const varianceMultiplier = Math.random() * 0.01 + 0.02; // Between 2% and 3%
+  // احتساب مستويات الدعم والمقاومة باستخدام تباين متعدد العوامل
+  const varianceMultiplier = Math.random() * 0.01 + 0.02; // بين 2% و 3%
   const support = Number((currentPrice * (1 - varianceMultiplier)).toFixed(2));
   const resistance = Number((currentPrice * (1 + varianceMultiplier)).toFixed(2));
   
-  // Calculate stop loss based on trend
-  const stopLoss = direction === "Up" 
+  // احتساب مستويات وقف الخسارة بناءً على الاتجاه
+  const stopLoss = direction === "صاعد" 
     ? Number((support - currentPrice * 0.005).toFixed(2))
     : Number((resistance + currentPrice * 0.005).toFixed(2));
   
-  // Target levels
+  // مستويات الأهداف
   const targets = [];
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     const target1Price = Number((currentPrice * (1 + movePercent * 0.4)).toFixed(2));
     const target2Price = Number((currentPrice * (1 + movePercent * 0.8)).toFixed(2));
     const target3Price = Number((currentPrice * (1 + movePercent * 1.2)).toFixed(2));
     
     targets.push({
       price: target1Price,
-      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 ساعة
     });
     targets.push({
       price: target2Price,
-      expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours
+      expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 ساعة
     });
     targets.push({
       price: target3Price,
-      expectedTime: new Date(Date.now() + 96 * 60 * 60 * 1000) // 96 hours
+      expectedTime: new Date(Date.now() + 96 * 60 * 60 * 1000) // 96 ساعة
     });
   } else {
     const target1Price = Number((currentPrice * (1 - movePercent * 0.4)).toFixed(2));
@@ -48,26 +48,26 @@ export const analyzeMultiVariance = async (
     
     targets.push({
       price: target1Price,
-      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 ساعة
     });
     targets.push({
       price: target2Price,
-      expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours
+      expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 ساعة
     });
     targets.push({
       price: target3Price,
-      expectedTime: new Date(Date.now() + 96 * 60 * 60 * 1000) // 96 hours
+      expectedTime: new Date(Date.now() + 96 * 60 * 60 * 1000) // 96 ساعة
     });
   }
   
-  // Best entry point
-  const entryPrice = direction === "Up"
+  // نقطة الدخول المثالية
+  const entryPrice = direction === "صاعد"
     ? Number((currentPrice * (1 + Math.random() * 0.003)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.003)).toFixed(2));
   
   const result: AnalysisData = {
     pattern: "Multi-factor Variance Pattern",
-    direction: direction as "Up" | "Down" | "Neutral",
+    direction,
     currentPrice,
     support,
     resistance,
@@ -77,8 +77,8 @@ export const analyzeMultiVariance = async (
       price: entryPrice,
       reason: "Entry based on multi-factor variance analysis of market conditions"
     },
-    analysisType: "Multi Variance",
-    activation_type: "auto"
+    analysisType: "تباين متعدد العوامل",
+    activation_type: "تلقائي"
   };
   
   return result;

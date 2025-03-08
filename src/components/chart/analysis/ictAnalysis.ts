@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { addHours } from "date-fns";
 
@@ -7,7 +6,7 @@ export const analyzeICTChart = async (
   currentPrice: number,
   symbol: string
 ): Promise<AnalysisData> => {
-  console.log("Starting ICT analysis for symbol:", symbol);
+  console.log("بدء تحليل ICT للرمز:", symbol);
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -21,21 +20,21 @@ export const analyzeICTChart = async (
 
       const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
       if (!imageData) {
-        reject(new Error("Failed to process image"));
+        reject(new Error("فشل في معالجة الصورة"));
         return;
       }
 
-      // ICT analysis relies on institutional liquidity points and zones
+      // تحليل ICT يعتمد على نقاط السيولة والمناطق المؤسسية
       const prices = detectICTPrices(imageData, currentPrice);
-      console.log("Detected prices for ICT analysis:", prices);
+      console.log("الأسعار المكتشفة لتحليل ICT:", prices);
 
       const direction = detectICTDirection(prices, currentPrice);
       const { support, resistance } = calculateICTLevels(prices, currentPrice);
       
-      // Calculate stop loss based on institutional liquidity zones
+      // حساب نقطة وقف الخسارة بناءً على مناطق السيولة المؤسسية
       const stopLoss = calculateICTStopLoss(currentPrice, direction, support, resistance);
       
-      // Calculate targets based on institutional liquidity pools
+      // حساب الأهداف بناءً على مناطق تجمع السيولة المؤسسية
       const targetPrices = calculateICTTargets(currentPrice, direction, support, resistance);
 
       const bestEntryPoint = calculateICTEntryPoint(
@@ -47,10 +46,10 @@ export const analyzeICTChart = async (
 
       const pattern = detectICTPattern(direction, prices, currentPrice);
 
-      // Create targets with expected timelines
+      // إنشاء الأهداف مع توقيتات متوقعة
       const targets = targetPrices.map((price, index) => ({
         price,
-        expectedTime: addHours(new Date(), (index + 1) * 4) // Each target expected after 4 hours
+        expectedTime: addHours(new Date(), (index + 1) * 4) // كل هدف متوقع بعد 4 ساعات
       }));
 
       const analysisResult: AnalysisData = {
@@ -65,12 +64,12 @@ export const analyzeICTChart = async (
         analysisType: "ICT"
       };
 
-      console.log("ICT analysis results:", analysisResult);
+      console.log("نتائج تحليل ICT:", analysisResult);
       resolve(analysisResult);
     };
 
     img.onerror = () => {
-      reject(new Error("Failed to load image"));
+      reject(new Error("فشل في تحميل الصورة"));
     };
 
     img.src = imageData;
@@ -78,9 +77,9 @@ export const analyzeICTChart = async (
 };
 
 const detectICTPrices = (imageData: ImageData, currentPrice: number): number[] => {
-  // Simulate price detection with focus on institutional liquidity areas
+  // محاكاة اكتشاف الأسعار مع التركيز على مناطق السيولة المؤسسية
   const prices: number[] = [];
-  const range = currentPrice * 0.02; // 2% range around current price
+  const range = currentPrice * 0.02; // نطاق 2% حول السعر الحالي
   
   for (let i = 0; i < 20; i++) {
     const deviation = (Math.random() - 0.5) * range;
@@ -90,41 +89,41 @@ const detectICTPrices = (imageData: ImageData, currentPrice: number): number[] =
   return prices.sort((a, b) => a - b);
 };
 
-const detectICTDirection = (prices: number[], currentPrice: number): "Up" | "Down" => {
-  // Determine direction based on position of current price relative to institutional liquidity zones
+const detectICTDirection = (prices: number[], currentPrice: number): "صاعد" | "هابط" => {
+  // تحديد الاتجاه بناءً على موقع السعر الحالي من مناطق السيولة المؤسسية
   const midPoint = prices[Math.floor(prices.length / 2)];
-  return currentPrice > midPoint ? "Up" : "Down";
+  return currentPrice > midPoint ? "صاعد" : "هابط";
 };
 
 const calculateICTLevels = (prices: number[], currentPrice: number) => {
-  // Calculate support and resistance based on institutional liquidity zones
+  // حساب مستويات الدعم والمقاومة بناءً على مناطق السيولة المؤسسية
   const sortedPrices = [...prices].sort((a, b) => a - b);
-  const support = sortedPrices[Math.floor(sortedPrices.length * 0.2)]; // Support level at 20%
-  const resistance = sortedPrices[Math.floor(sortedPrices.length * 0.8)]; // Resistance level at 80%
+  const support = sortedPrices[Math.floor(sortedPrices.length * 0.2)]; // مستوى الدعم عند 20%
+  const resistance = sortedPrices[Math.floor(sortedPrices.length * 0.8)]; // مستوى المقاومة عند 80%
   
   return { support, resistance };
 };
 
-const calculateICTStopLoss = (currentPrice: number, direction: "Up" | "Down", support: number, resistance: number): number => {
+const calculateICTStopLoss = (currentPrice: number, direction: "صاعد" | "هابط", support: number, resistance: number): number => {
   const range = resistance - support;
   
-  if (direction === "Up") {
-    // Stop loss below the last institutional liquidity zone
+  if (direction === "صاعد") {
+    // وقف الخسارة تحت منطقة السيولة المؤسسية الأخيرة
     return currentPrice - (range * 0.3);
   } else {
-    // Stop loss above the last institutional liquidity zone
+    // وقف الخسارة فوق منطقة السيولة المؤسسية الأخيرة
     return currentPrice + (range * 0.3);
   }
 };
 
-const calculateICTTargets = (currentPrice: number, direction: "Up" | "Down", support: number, resistance: number): number[] => {
+const calculateICTTargets = (currentPrice: number, direction: "صاعد" | "هابط", support: number, resistance: number): number[] => {
   const range = resistance - support;
   
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     return [
-      currentPrice + (range * 0.5),  // First target at first institutional liquidity zone
-      currentPrice + (range * 0.8),  // Second target at second institutional liquidity zone
-      currentPrice + range           // Third target at main institutional liquidity zone
+      currentPrice + (range * 0.5),  // الهدف الأول عند منطقة السيولة المؤسسية الأولى
+      currentPrice + (range * 0.8),  // الهدف الثاني عند منطقة السيولة المؤسسية الثانية
+      currentPrice + range           // الهدف الثالث عند منطقة السيولة المؤسسية الرئيسية
     ];
   } else {
     return [
@@ -137,31 +136,31 @@ const calculateICTTargets = (currentPrice: number, direction: "Up" | "Down", sup
 
 const calculateICTEntryPoint = (
   currentPrice: number,
-  direction: "Up" | "Down",
+  direction: "صاعد" | "هابط",
   support: number,
   resistance: number
 ): { price: number; reason: string } => {
   const range = resistance - support;
   
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     const entryPrice = currentPrice - (range * 0.15);
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "Entry point at institutional liquidity pool with potential bullish breakout"
+      reason: "نقطة دخول عند منطقة تجمع السيولة المؤسسية مع احتمالية اختراق صعودي"
     };
   } else {
     const entryPrice = currentPrice + (range * 0.15);
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "Entry point at institutional liquidity pool with potential bearish breakout"
+      reason: "نقطة دخول عند منطقة تجمع السيولة المؤسسية مع احتمالية اختراق هبوطي"
     };
   }
 };
 
-const detectICTPattern = (direction: "Up" | "Down", prices: number[], currentPrice: number): string => {
-  if (direction === "Up") {
-    return "Institutional liquidity collection pattern before bullish breakout";
+const detectICTPattern = (direction: "صاعد" | "هابط", prices: number[], currentPrice: number): string => {
+  if (direction === "صاعد") {
+    return "نموذج تجميع سيولة مؤسسي قبل الاختراق الصعودي";
   } else {
-    return "Institutional liquidity collection pattern before bearish breakout";
+    return "نموذج تجميع سيولة مؤسسي قبل الاختراق الهبوطي";
   }
 };

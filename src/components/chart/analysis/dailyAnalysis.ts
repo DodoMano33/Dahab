@@ -16,7 +16,7 @@ export const analyzeDailyChart = async (
   symbol: string,
   timeframe: string = "1d"
 ): Promise<AnalysisData> => {
-  console.log("Starting daily analysis for symbol:", symbol);
+  console.log("بدء التحليل اليومي للرمز:", symbol);
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -30,14 +30,14 @@ export const analyzeDailyChart = async (
 
       const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
       if (!imageData) {
-        reject(new Error("Failed to process image"));
+        reject(new Error("فشل في معالجة الصورة"));
         return;
       }
 
       const prices = detectPrices(imageData, currentPrice);
-      console.log("Detected prices for daily analysis:", prices);
+      console.log("الأسعار المكتشفة للتحليل اليومي:", prices);
 
-      const direction = detectTrend(prices) as "Up" | "Down";
+      const direction = detectTrend(prices) as "صاعد" | "هابط";
       const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
       const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
       const fibLevelsObj = calculateFibonacciLevels(resistance, support);
@@ -57,9 +57,9 @@ export const analyzeDailyChart = async (
         timeframe
       );
 
-      const pattern = direction === "Up" ? 
-        "Continuing bullish pattern" : 
-        "Continuing bearish pattern";
+      const pattern = direction === "صاعد" ? 
+        "نموذج صعودي مستمر" : 
+        "نموذج هبوطي مستمر";
 
       // Create targets with proper dates
       const targets = targetPrices.map((price, index) => ({
@@ -80,12 +80,12 @@ export const analyzeDailyChart = async (
         analysisType: "Patterns"
       };
 
-      console.log("Daily analysis results:", analysisResult);
+      console.log("نتائج التحليل اليومي:", analysisResult);
       resolve(analysisResult);
     };
 
     img.onerror = () => {
-      reject(new Error("Failed to load image"));
+      reject(new Error("فشل في تحميل الصورة"));
     };
 
     img.src = imageData;
@@ -123,6 +123,6 @@ const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): numb
     }
   }
   
-  console.log("Detected prices:", prices);
+  console.log("الأسعار المكتشفة:", prices);
   return prices;
 };

@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { addHours } from "date-fns";
 
@@ -7,7 +6,7 @@ export const analyzeTurtleSoupChart = async (
   currentPrice: number,
   symbol: string
 ): Promise<AnalysisData> => {
-  console.log("Starting Turtle Soup analysis for symbol:", symbol);
+  console.log("بدء تحليل Turtle Soup للرمز:", symbol);
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -21,21 +20,21 @@ export const analyzeTurtleSoupChart = async (
 
       const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
       if (!imageData) {
-        reject(new Error("Failed to process image"));
+        reject(new Error("فشل في معالجة الصورة"));
         return;
       }
 
-      // Analyze Turtle Soup patterns
+      // تحليل أنماط Turtle Soup
       const prices = detectTurtleSoupPrices(imageData, currentPrice);
-      console.log("Detected prices for Turtle Soup analysis:", prices);
+      console.log("الأسعار المكتشفة لتحليل Turtle Soup:", prices);
 
       const direction = detectTurtleSoupDirection(prices, currentPrice);
       const { support, resistance } = calculateTurtleSoupLevels(prices, currentPrice);
       
-      // Calculate stop loss based on Turtle Soup strategy
+      // حساب نقطة وقف الخسارة بناءً على استراتيجية Turtle Soup
       const stopLoss = calculateTurtleSoupStopLoss(currentPrice, direction, support, resistance);
       
-      // Calculate targets based on Turtle Soup ratios
+      // حساب الأهداف بناءً على نسب Turtle Soup
       const targetPrices = calculateTurtleSoupTargets(currentPrice, direction, support, resistance);
 
       const bestEntryPoint = calculateTurtleSoupEntryPoint(
@@ -47,7 +46,7 @@ export const analyzeTurtleSoupChart = async (
 
       const pattern = detectTurtleSoupPattern(direction);
 
-      // Create targets with expected timelines
+      // إنشاء الأهداف مع توقيتات متوقعة
       const targets = targetPrices.map((price, index) => ({
         price,
         expectedTime: addHours(new Date(), (index + 1) * 4)
@@ -65,12 +64,12 @@ export const analyzeTurtleSoupChart = async (
         analysisType: "Turtle Soup"
       };
 
-      console.log("Turtle Soup analysis results:", analysisResult);
+      console.log("نتائج تحليل Turtle Soup:", analysisResult);
       resolve(analysisResult);
     };
 
     img.onerror = () => {
-      reject(new Error("Failed to load image"));
+      reject(new Error("فشل في تحميل الصورة"));
     };
 
     img.src = imageData;
@@ -78,9 +77,9 @@ export const analyzeTurtleSoupChart = async (
 };
 
 const detectTurtleSoupPrices = (imageData: ImageData, currentPrice: number): number[] => {
-  // Simulate price detection with focus on Turtle Soup pattern
+  // محاكاة اكتشاف الأسعار مع التركيز على نمط Turtle Soup
   const prices: number[] = [];
-  const range = currentPrice * 0.01; // 1% range around current price
+  const range = currentPrice * 0.01; // نطاق 1% حول السعر الحالي
   
   for (let i = 0; i < 20; i++) {
     const deviation = (Math.random() - 0.5) * range;
@@ -90,15 +89,15 @@ const detectTurtleSoupPrices = (imageData: ImageData, currentPrice: number): num
   return prices.sort((a, b) => a - b);
 };
 
-const detectTurtleSoupDirection = (prices: number[], currentPrice: number): "Up" | "Down" => {
-  // Determine direction based on Turtle Soup pattern
+const detectTurtleSoupDirection = (prices: number[], currentPrice: number): "صاعد" | "هابط" => {
+  // تحديد الاتجاه بناءً على نمط Turtle Soup
   const recentPrices = prices.slice(-5);
   const avgPrice = recentPrices.reduce((a, b) => a + b, 0) / recentPrices.length;
-  return currentPrice < avgPrice ? "Up" : "Down";
+  return currentPrice < avgPrice ? "صاعد" : "هابط";
 };
 
 const calculateTurtleSoupLevels = (prices: number[], currentPrice: number) => {
-  // Calculate support and resistance levels according to Turtle Soup strategy
+  // حساب مستويات الدعم والمقاومة وفقاً لاستراتيجية Turtle Soup
   const sortedPrices = [...prices].sort((a, b) => a - b);
   const support = sortedPrices[Math.floor(sortedPrices.length * 0.2)];
   const resistance = sortedPrices[Math.floor(sortedPrices.length * 0.8)];
@@ -106,27 +105,27 @@ const calculateTurtleSoupLevels = (prices: number[], currentPrice: number) => {
   return { support, resistance };
 };
 
-const calculateTurtleSoupStopLoss = (currentPrice: number, direction: "Up" | "Down", support: number, resistance: number): number => {
-  // Calculate stop loss according to Turtle Soup strategy
+const calculateTurtleSoupStopLoss = (currentPrice: number, direction: "صاعد" | "هابط", support: number, resistance: number): number => {
+  // حساب وقف الخسارة وفقاً لاستراتيجية Turtle Soup
   const range = resistance - support;
-  const stopLossPercentage = 0.5; // 50% of the range between support and resistance
+  const stopLossPercentage = 0.5; // 50% من المسافة بين الدعم والمقاومة
   
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     return currentPrice - (range * stopLossPercentage);
   } else {
     return currentPrice + (range * stopLossPercentage);
   }
 };
 
-const calculateTurtleSoupTargets = (currentPrice: number, direction: "Up" | "Down", support: number, resistance: number): number[] => {
-  // Calculate targets according to Turtle Soup strategy
+const calculateTurtleSoupTargets = (currentPrice: number, direction: "صاعد" | "هابط", support: number, resistance: number): number[] => {
+  // حساب الأهداف وفقاً لاستراتيجية Turtle Soup
   const range = resistance - support;
   
-  if (direction === "Up") {
+  if (direction === "صاعد") {
     return [
-      currentPrice + (range * 1),    // First target: 100% of range
-      currentPrice + (range * 1.5),  // Second target: 150% of range
-      currentPrice + (range * 2)     // Third target: 200% of range
+      currentPrice + (range * 1),    // الهدف الأول: 100% من المدى
+      currentPrice + (range * 1.5),  // الهدف الثاني: 150% من المدى
+      currentPrice + (range * 2)     // الهدف الثالث: 200% من المدى
     ];
   } else {
     return [
@@ -139,31 +138,31 @@ const calculateTurtleSoupTargets = (currentPrice: number, direction: "Up" | "Dow
 
 const calculateTurtleSoupEntryPoint = (
   currentPrice: number,
-  direction: "Up" | "Down",
+  direction: "صاعد" | "هابط",
   support: number,
   resistance: number
 ): { price: number; reason: string } => {
   const range = resistance - support;
   
-  if (direction === "Up") {
-    const entryPrice = support + (range * 0.2); // Entry at 20% of range
+  if (direction === "صاعد") {
+    const entryPrice = support + (range * 0.2); // دخول عند 20% من المدى
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "Turtle Soup entry point at support test with expected price bounce"
+      reason: "نقطة دخول Turtle Soup عند اختبار مستوى الدعم مع توقع ارتداد السعر"
     };
   } else {
-    const entryPrice = resistance - (range * 0.2); // Entry at 20% of range
+    const entryPrice = resistance - (range * 0.2); // دخول عند 20% من المدى
     return {
       price: Number(entryPrice.toFixed(2)),
-      reason: "Turtle Soup entry point at resistance test with expected price reversal"
+      reason: "نقطة دخول Turtle Soup عند اختبار مستوى المقاومة مع توقع انعكاس السعر"
     };
   }
 };
 
-const detectTurtleSoupPattern = (direction: "Up" | "Down"): string => {
-  if (direction === "Up") {
-    return "Bullish Turtle Soup Pattern - Support Test";
+const detectTurtleSoupPattern = (direction: "صاعد" | "هابط"): string => {
+  if (direction === "صاعد") {
+    return "نموذج Turtle Soup صاعد - اختبار مستوى الدعم";
   } else {
-    return "Bearish Turtle Soup Pattern - Resistance Test";
+    return "نموذج Turtle Soup هابط - اختبار مستوى المقاومة";
   }
 };

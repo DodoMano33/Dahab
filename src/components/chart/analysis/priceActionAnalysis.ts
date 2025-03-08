@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { getExpectedTime } from "@/utils/technicalAnalysis";
 
@@ -9,44 +8,44 @@ export const analyzePriceAction = async (
 ): Promise<AnalysisData> => {
   console.log("Starting Price Action analysis:", { currentPrice, timeframe });
 
-  // Determine direction based on price pattern
-  const direction = Math.random() > 0.5 ? "Up" : "Down";
+  // تحديد الاتجاه بناءً على نموذج السعر
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
   
-  // Calculate expected trading range (2% of current price)
+  // حساب نطاق التداول المتوقع (2% من السعر الحالي)
   const range = currentPrice * 0.02;
   
-  // Calculate support and resistance levels
-  const support = direction === "Up" 
-    ? currentPrice - (range * 0.5)  // 1% below current price for bullish trend
-    : currentPrice - range;         // 2% below current price for bearish trend
+  // حساب مستويات الدعم والمقاومة
+  const support = direction === "صاعد" 
+    ? currentPrice - (range * 0.5)  // 1% تحت السعر الحالي للاتجاه الصاعد
+    : currentPrice - range;         // 2% تحت السعر الحالي للاتجاه الهابط
     
-  const resistance = direction === "Up"
-    ? currentPrice + range          // 2% above current price for bullish trend
-    : currentPrice + (range * 0.5); // 1% above current price for bearish trend
+  const resistance = direction === "صاعد"
+    ? currentPrice + range          // 2% فوق السعر الحالي للاتجاه الصاعد
+    : currentPrice + (range * 0.5); // 1% فوق السعر الحالي للاتجاه الهابط
 
-  // Calculate stop loss
-  const stopLoss = direction === "Up"
-    ? support - (range * 0.25)      // 0.5% below support level
-    : resistance + (range * 0.25);  // 0.5% above resistance level
+  // حساب وقف الخسارة
+  const stopLoss = direction === "صاعد"
+    ? support - (range * 0.25)      // 0.5% تحت مستوى الدعم
+    : resistance + (range * 0.25);  // 0.5% فوق مستوى المقاومة
 
-  // Calculate expected targets
-  const target1 = direction === "Up"
-    ? currentPrice + (range * 1.5)  // 3% above current price
-    : currentPrice - (range * 1.5); // 3% below current price
+  // حساب الأهداف المتوقعة
+  const target1 = direction === "صاعد"
+    ? currentPrice + (range * 1.5)  // 3% فوق السعر الحالي
+    : currentPrice - (range * 1.5); // 3% تحت السعر الحالي
     
-  const target2 = direction === "Up"
-    ? currentPrice + (range * 2)    // 4% above current price
-    : currentPrice - (range * 2);   // 4% below current price
+  const target2 = direction === "صاعد"
+    ? currentPrice + (range * 2)    // 4% فوق السعر الحالي
+    : currentPrice - (range * 2);   // 4% تحت السعر الحالي
     
-  const target3 = direction === "Up"
-    ? currentPrice + (range * 2.5)  // 5% above current price
-    : currentPrice - (range * 2.5); // 5% below current price
+  const target3 = direction === "صاعد"
+    ? currentPrice + (range * 2.5)  // 5% فوق السعر الحالي
+    : currentPrice - (range * 2.5); // 5% تحت السعر الحالي
 
-  // Determine best entry point
-  const bestEntry = direction === "Up" ? support : resistance;
-  const entryReason = direction === "Up"
-    ? "Entry point at support level with bullish reversal pattern"
-    : "Entry point at resistance level with bearish reversal pattern";
+  // تحديد أفضل نقطة دخول
+  const bestEntry = direction === "صاعد" ? support : resistance;
+  const entryReason = direction === "صاعد"
+    ? "نقطة دخول عند مستوى الدعم مع وجود نموذج انعكاس صاعد"
+    : "نقطة دخول عند مستوى المقاومة مع وجود نموذج انعكاس هابط";
 
   const analysis: AnalysisData = {
     pattern: "Price Action Analysis",

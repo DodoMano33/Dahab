@@ -27,25 +27,25 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
-      // Log original analysis type before mapping
+      // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
-      // Check if analysis type is related to Fibonacci
+      // اختبار إذا كان نوع التحليل يتعلق بفيبوناتشي
       const isFibonacciAnalysis = String(analysisType).toLowerCase().includes("fibonacci") || 
-                                  String(analysisType).toLowerCase().includes("fib");
+                                  String(analysisType).toLowerCase().includes("فيبوناتشي");
       
       // Map the analysis type to a valid database enum value
-      const mappedAnalysisType = isFibonacciAnalysis ? "Fibonacci" : mapToAnalysisType(analysisType);
+      const mappedAnalysisType = isFibonacciAnalysis ? "فيبوناتشي" : mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // Make sure the analysis type exists in the result and is correct
+      // تأكد من أن نوع التحليل موجود في النتيجة وصحيح
       if (!result.analysisResult.analysisType) {
         console.log("Setting analysisType as it was missing:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
       } else if (isFibonacciAnalysis) {
-        // Always override Fibonacci analysis type to ensure consistency
-        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to Fibonacci");
-        result.analysisResult.analysisType = "Fibonacci";
+        // تأكد من أن نوع التحليل لفيبوناتشي صحيح دائمًا
+        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to فيبوناتشي");
+        result.analysisResult.analysisType = "فيبوناتشي";
       }
       
       // Update the analysis result's analysisType to the mapped value
@@ -70,7 +70,7 @@ export const useSaveAnalysis = () => {
           symbol,
           currentPrice,
           analysisResult: analysisResultWithMappedType,
-          analysisType: mappedAnalysisType as AnalysisType,
+          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
           timeframe,
           durationHours: duration
         });
@@ -84,7 +84,7 @@ export const useSaveAnalysis = () => {
             analysis: analysisResultWithMappedType,
             targetHit: false,
             stopLossHit: false,
-            analysisType: mappedAnalysisType as AnalysisType,
+            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
             timeframe,
             analysis_duration_hours: duration
           };
@@ -94,21 +94,21 @@ export const useSaveAnalysis = () => {
         }
         
         // Show success toast with proper analysis type display and standard duration
-        toast.success(`${analysisType} analysis completed successfully for ${timeframe} | ${symbol} Price: ${currentPrice}`, {
-          duration: 3000,
+        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+          duration: 3000, // تغيير من 5000 إلى 3000 (3 ثواني)
         });
         
       } catch (dbError) {
         console.error("Database error saving analysis:", dbError);
-        toast.error("Error saving analysis to database", {
-          duration: 3000,
+        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات", {
+          duration: 3000, // إضافة مدة 3 ثواني
         });
         throw dbError;
       }
     } catch (error) {
       console.error("Error saving analysis:", error);
-      toast.error("Error saving analysis", {
-        duration: 3000,
+      toast.error("حدث خطأ أثناء حفظ التحليل", {
+        duration: 3000, // إضافة مدة 3 ثواني
       });
       throw error;
     }

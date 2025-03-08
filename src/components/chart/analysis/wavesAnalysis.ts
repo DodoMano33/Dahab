@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { addMinutes, addHours, addDays } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -8,51 +7,51 @@ export const analyzeWavesChart = async (
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("Starting Waves analysis for symbol:", timeframe);
+  console.log("بدء تحليل Waves للرمز:", timeframe);
 
-  // Adjust range based on timeframe
+  // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
   const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
-  // Calculate variable range based on timeframe
+  // حساب النطاق المتغير حسب الإطار الزمني
   const range = currentPrice * multipliers[0];
   const support = currentPrice - range;
   const resistance = currentPrice + range;
 
-  // Determine direction based on wave pattern
-  const direction = Math.random() > 0.5 ? "Up" : "Down";
+  // تحديد الاتجاه بناءً على نمط الموجات
+  const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
 
-  // Calculate variable stop loss
-  const stopLoss = direction === "Up" 
+  // حساب وقف الخسارة المتغير
+  const stopLoss = direction === "صاعد" 
     ? currentPrice - (range * stopLossMultiplier)
     : currentPrice + (range * stopLossMultiplier);
 
-  // Calculate optimal entry point
+  // حساب نقطة الدخول المثالية
   const bestEntry = {
-    price: direction === "Up" 
+    price: direction === "صاعد" 
       ? currentPrice - (range * 0.618)
       : currentPrice + (range * 0.618),
-    reason: direction === "Up"
-      ? `Entry point at 61.8% wave correction on ${timeframe} timeframe`
-      : `Entry point at corrective wave completion on ${timeframe} timeframe`
+    reason: direction === "صاعد"
+      ? `نقطة دخول عند تصحيح الموجة بنسبة 61.8% على الإطار الزمني ${timeframe}`
+      : `نقطة دخول عند اكتمال الموجة التصحيحية على الإطار الزمني ${timeframe}`
   };
 
-  // Calculate targets with variable timings based on timeframe
+  // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
   const targets = [
     {
-      price: direction === "Up"
+      price: direction === "صاعد"
         ? currentPrice + (range * multipliers[0])
         : currentPrice - (range * multipliers[0]),
       expectedTime: getExpectedTime(timeframe, 0)
     },
     {
-      price: direction === "Up"
+      price: direction === "صاعد"
         ? currentPrice + (range * multipliers[1])
         : currentPrice - (range * multipliers[1]),
       expectedTime: getExpectedTime(timeframe, 1)
     },
     {
-      price: direction === "Up"
+      price: direction === "صاعد"
         ? currentPrice + (range * multipliers[2])
         : currentPrice - (range * multipliers[2]),
       expectedTime: getExpectedTime(timeframe, 2)
@@ -60,7 +59,7 @@ export const analyzeWavesChart = async (
   ];
 
   const analysisResult: AnalysisData = {
-    pattern: `Wave pattern ${direction} on ${timeframe} timeframe`,
+    pattern: `نموذج موجي ${direction} على الإطار الزمني ${timeframe}`,
     direction,
     currentPrice,
     support,
@@ -71,7 +70,7 @@ export const analyzeWavesChart = async (
     analysisType: "Waves"
   };
 
-  console.log("Waves analysis results:", analysisResult);
+  console.log("نتائج تحليل Waves:", analysisResult);
   return analysisResult;
 };
 

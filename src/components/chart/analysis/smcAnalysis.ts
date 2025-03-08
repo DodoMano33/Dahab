@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import {
   calculateFibonacciLevels,
@@ -40,7 +39,7 @@ export const analyzeSMCChart = async (
       const prices = detectPrices(imageData, currentPrice);
       console.log("Detected prices for SMC analysis:", prices);
 
-      const direction = detectTrend(prices) as "Up" | "Down";
+      const direction = detectTrend(prices) as "صاعد" | "هابط";
       const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
       
       const stopLoss = calculateSMCStopLoss(currentPrice, direction, support, resistance, timeframe);
