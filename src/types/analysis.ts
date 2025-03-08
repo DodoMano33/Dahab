@@ -1,7 +1,7 @@
 
 export type AnalysisType = 
-  | "سكالبينج" 
-  | "ذكي" 
+  | "Scalping" 
+  | "Smart" 
   | "SMC" 
   | "ICT" 
   | "Turtle Soup" 
@@ -9,24 +9,24 @@ export type AnalysisType =
   | "Waves" 
   | "Patterns" 
   | "Price Action" 
-  | "شبكات عصبية" 
-  | "شبكات عصبية متكررة" 
-  | "تصفيق زمني" 
-  | "تباين متعدد العوامل" 
-  | "شمعات مركبة" 
-  | "تحليل سلوكي" 
-  | "فيبوناتشي"
-  | "تحليل فيبوناتشي متقدم"
-  | "عادي"
-  | "نمطي"
-  | "تقلبات"
-  | "جان"
-  | "الحساء السلحفائي"
-  | "نظرية السوق"
-  | "نظرية هيكل السوق"
-  | "يومي"
-  | "مضاربة"
-  | "حركة السعر";
+  | "Neural Network" 
+  | "RNN" 
+  | "Time Clustering" 
+  | "Multi Variance" 
+  | "Composite Candlestick" 
+  | "Behavioral Analysis" 
+  | "Fibonacci"
+  | "Fibonacci Advanced"
+  | "Normal"
+  | "Pattern"
+  | "Volatility"
+  | "Gann"
+  | "Turtle Soup"
+  | "Market Theory"
+  | "Market Structure Theory"
+  | "Daily"
+  | "Scalping"
+  | "Price Action";
 
 export interface ImageData {
   height: number;
@@ -36,7 +36,7 @@ export interface ImageData {
 
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد";
+  direction: "Up" | "Down" | "Neutral";
   currentPrice: number;
   support: number;
   resistance: number;
@@ -53,7 +53,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: "تلقائي" | "يدوي";
+  activation_type?: "Automatic" | "Manual";
   analysisType: AnalysisType;
 }
 

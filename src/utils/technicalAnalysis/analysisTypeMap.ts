@@ -1,31 +1,31 @@
 
-// نقل دالة getStrategyName لتكون قبل استخدامها
+// Get strategy name function - moved to be before its usage
 export const getStrategyName = (type: string): string => {
   const strategyMap: Record<string, string> = {
-    normal: "التحليل العادي",
-    fibonacci: "فيبوناتشي",
-    fibonacci_advanced: "فيبوناتشي المتقدم",
-    gann: "تحليل جان",
-    waves: "تحليل الموجات",
-    price_action: "حركة السعر",
-    scalping: "سكالبينج",
-    smc: "تحليل تحكم السيولة",
-    ict: "تحليل ICT",
-    time_clustering: "تحليل تجمع الوقت",
-    pattern: "تحليل الأنماط",
-    multi_variance: "التباين المتعدد",
-    neural_network: "الشبكة العصبية",
-    behaviors: "تحليل السلوك",
-    turtle_soup: "تحليل Turtle Soup",
-    rnn: "شبكة RNN العصبية",
-    composite_candlesticks: "تحليل الشموع المركب"
+    normal: "Normal Analysis",
+    fibonacci: "Fibonacci",
+    fibonacci_advanced: "Advanced Fibonacci",
+    gann: "Gann Analysis",
+    waves: "Waves Analysis",
+    price_action: "Price Action",
+    scalping: "Scalping",
+    smc: "Smart Money Concept",
+    ict: "ICT Analysis",
+    time_clustering: "Time Clustering",
+    pattern: "Pattern Analysis",
+    multi_variance: "Multi Variance",
+    neural_network: "Neural Network",
+    behaviors: "Behavioral Analysis",
+    turtle_soup: "Turtle Soup",
+    rnn: "RNN Neural Network",
+    composite_candlesticks: "Composite Candlestick"
   };
 
-  // إذا وجد النوع، نرجع اسمه، وإلا نرجع النوع كما هو
+  // Return the name if found, otherwise return the type as-is
   return strategyMap[type] || type;
 };
 
-// قائمة أنواع التحليل الرئيسية - تم حذف الأنواع غير المطلوبة
+// Main analysis types list - removed unwanted types
 export const mainAnalysisTypes = [
   "normal",
   "fibonacci",
@@ -46,40 +46,40 @@ export const mainAnalysisTypes = [
   "composite_candlesticks"
 ];
 
-// قائمة أنواع التحليل مع أسماء العرض
+// Analysis types with display names
 export const analysisTypesWithDisplayNames = mainAnalysisTypes.map(type => ({
   value: type,
   label: getStrategyName(type)
 }));
 
-// الأنواع المتاحة للتحليل السريع
+// Quick analysis types
 export const quickAnalysisTypes = [
-  { value: "normal", label: "التحليل العادي" },
-  { value: "fibonacci", label: "فيبوناتشي" },
-  { value: "price_action", label: "حركة السعر" },
-  { value: "pattern", label: "تحليل الأنماط" }
+  { value: "normal", label: "Normal Analysis" },
+  { value: "fibonacci", label: "Fibonacci" },
+  { value: "price_action", label: "Price Action" },
+  { value: "pattern", label: "Pattern Analysis" }
 ];
 
-// مجموعات التحليل
+// Analysis groups
 export const analysisGroups = [
   {
-    title: "التحليلات الأساسية",
+    title: "Basic Analysis",
     types: ["normal"]
   },
   {
-    title: "تحليلات الشموع والأنماط",
+    title: "Candlestick and Pattern Analysis",
     types: ["pattern", "composite_candlesticks"]
   },
   {
-    title: "تحليلات فيبوناتشي وجان",
+    title: "Fibonacci and Gann Analysis",
     types: ["fibonacci", "fibonacci_advanced", "gann"]
   },
   {
-    title: "تحليلات الموجات والسعر",
+    title: "Wave and Price Analysis",
     types: ["waves", "price_action", "smc", "ict"]
   },
   {
-    title: "تحليلات متقدمة",
+    title: "Advanced Analysis",
     types: [
       "scalping", 
       "time_clustering", 
@@ -92,12 +92,12 @@ export const analysisGroups = [
   }
 ];
 
-// دالة للحصول على مجموعة التحليل التي ينتمي إليها نوع معين
+// Function to get the analysis group a type belongs to
 export const getAnalysisGroup = (type: string): string => {
   for (const group of analysisGroups) {
     if (group.types.includes(type)) {
       return group.title;
     }
   }
-  return "أخرى";
+  return "Other";
 };

@@ -46,62 +46,53 @@ export const mapAnalysisTypeToConfig = (analysisType: string): AnalysisConfig =>
   };
   
   switch (normalizedType) {
-    case 'نمطي':
     case 'pattern':
     case 'patterns':
       config.isPatternAnalysis = true;
       break;
       
-    case 'سكالبينج':
-    case 'مضاربة':
     case 'scalping':
       config.isScalping = true;
       break;
       
     case 'smc':
-    case 'نظريةهيكلالسوق':
+    case 'marketstructuretheory':
       config.isSMC = true;
       break;
       
     case 'ict':
-    case 'نظريةالسوق':
+    case 'markettheory':
       config.isICT = true;
       break;
       
-    case 'تقلبات':
+    case 'volatility':
     case 'wave':
     case 'waves':
       config.isWaves = true;
       break;
       
-    case 'حركةالسعر':
     case 'priceaction':
       config.isPriceAction = true;
       break;
       
-    case 'جان':
     case 'gann':
       config.isGann = true;
       break;
       
-    case 'الحساءالسلحفائي':
     case 'turtlesoup':
     case 'turtle':
       config.isTurtleSoup = true;
       break;
       
-    case 'شبكاتعصبية':
     case 'neuralnetworks':
     case 'neuralnetwork':
       config.isNeuralNetwork = true;
       break;
       
-    case 'فيبوناتشي':
     case 'fibonacci':
       config.isFibonacci = true;
       break;
       
-    case 'فيبوناتشيمتقدم':
     case 'fibonacci_advanced':
     case 'fibonacciadvanced':
       config.isFibonacciAdvanced = true;
@@ -123,61 +114,51 @@ export const mapToAnalysisType = (analysisType: string): AnalysisType => {
   
   // Map the analysis type to a valid database value
   switch (normalizedType) {
-    case 'نمطي':
     case 'pattern':
     case 'patterns':
-      return 'نمطي';
+      return 'Pattern';
       
-    case 'سكالبينج':
-    case 'مضاربة':
     case 'scalping':
-      return 'مضاربة';
+      return 'Scalping';
       
     case 'smc':
-    case 'نظريةهيكلالسوق':
-      return 'نظرية هيكل السوق';
+    case 'marketstructuretheory':
+      return 'Market Structure Theory';
       
     case 'ict':
-    case 'نظريةالسوق':
-      return 'نظرية السوق';
+    case 'markettheory':
+      return 'Market Theory';
       
-    case 'تقلبات':
+    case 'volatility':
     case 'wave':
     case 'waves':
-      return 'تقلبات';
+      return 'Waves';
       
-    case 'حركةالسعر':
     case 'priceaction':
-      return 'حركة السعر';
+      return 'Price Action';
       
-    case 'جان':
     case 'gann':
-      return 'جان';
+      return 'Gann';
       
-    case 'الحساءالسلحفائي':
     case 'turtlesoup':
     case 'turtle':
-      return 'الحساء السلحفائي';
+      return 'Turtle Soup';
       
-    case 'ذكي':
     case 'smart':
     case 'ai':
-      return 'ذكي';
+      return 'Smart';
       
-    case 'شبكاتعصبية':
     case 'neuralnetworks':
     case 'neuralnetwork':
-      return 'شبكات عصبية';
+      return 'Neural Network';
       
-    case 'فيبوناتشي':
-    case 'فيبوناتشيمتقدم':
     case 'fibonacci':
-    case 'fibonacci_advanced':
     case 'fibonacciadvanced':
-      return 'فيبوناتشي';
+    case 'fibonacci_advanced':
+      return 'Fibonacci';
       
     default:
-      console.log("Unknown analysis type:", analysisType, "Using default: يومي");
-      return 'يومي';
+      console.log("Unknown analysis type:", analysisType, "Using default: Daily");
+      return 'Daily';
   }
 };

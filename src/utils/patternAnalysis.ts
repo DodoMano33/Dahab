@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { analyzePatternWithPrice } from "./patternRecognition";
 import { getExpectedTime } from "./technicalAnalysis";
@@ -7,25 +8,25 @@ export const analyzePattern = async (
   currentPrice: number,
   timeframe: string = "1d"
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل النمط - البيانات المستلمة:", { chartImage, currentPrice, timeframe });
+  console.log("Starting pattern analysis - Received data:", { chartImage, currentPrice, timeframe });
   
   try {
     if (!currentPrice || isNaN(currentPrice)) {
-      console.error("خطأ: السعر الحالي غير صالح:", currentPrice);
-      throw new Error("السعر الحالي غير صالح");
+      console.error("Error: Current price is invalid:", currentPrice);
+      throw new Error("Current price is invalid");
     }
 
     if (!chartImage) {
-      console.error("خطأ: لم يتم استلام صورة الشارت");
-      throw new Error("لم يتم استلام صورة الشارت");
+      console.error("Error: Chart image not received");
+      throw new Error("Chart image not received");
     }
 
     const analysis = analyzePatternWithPrice(chartImage, currentPrice, timeframe);
-    console.log("تم إكمال تحليل النمط بنجاح:", analysis);
+    console.log("Pattern analysis completed successfully:", analysis);
     return analysis;
 
   } catch (error) {
-    console.error("خطأ في تحليل النمط:", error);
-    throw new Error(`فشل في تحليل النمط: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+    console.error("Error in pattern analysis:", error);
+    throw new Error(`Failed to analyze pattern: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };

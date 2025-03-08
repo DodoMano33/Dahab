@@ -32,9 +32,9 @@ export const AnalysisTypes = ({
   selectedTypes,
   onTypesChange,
 }: AnalysisTypesProps) => {
-  // إنشاء قائمة أنواع التحليل من mainAnalysisTypes
+  // Create analysis types list from mainAnalysisTypes
   const analysisTypes = [
-    { value: "normal", label: "تحديد الكل" },
+    { value: "normal", label: "Select All" },
     ...mainAnalysisTypes.filter(type => type !== "normal").map(type => ({
       value: type,
       label: getStrategyName(type)
@@ -47,7 +47,7 @@ export const AnalysisTypes = ({
   
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
-      // If "تحديد الكل" is clicked
+      // If "Select All" is clicked
       if (selectedTypes.includes("normal")) {
         // If it's currently selected, deselect all
         onTypesChange([]);
@@ -83,9 +83,9 @@ export const AnalysisTypes = ({
     <Card className="p-6 bg-[#FFAC7D] rounded-lg">
       <div className="space-y-4">
         <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold">أنواع التحليل المراد تنفيذها</h3>
+          <h3 className="text-xl font-semibold">Analysis Types to Execute</h3>
           <p className="text-sm text-gray-700 mt-1">
-            {selectedTypes.length} من {analysisTypes.length-1} نوع محدد
+            {selectedTypes.length} of {analysisTypes.length-1} types selected
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">

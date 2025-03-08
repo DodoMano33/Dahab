@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // جلب جميع التحليلات النشطة من سجل البحث
+    // Fetch all active analyses from search history
     const { data: analyses, error } = await supabase
       .from('search_history')
       .select('*')
@@ -44,11 +44,11 @@ Deno.serve(async (req) => {
       )
     }
 
-    // تحديد الوقت الحالي - نفس الوقت سيتم استخدامه لكل التحديثات
+    // Set current time - same time will be used for all updates
     const currentTime = new Date().toISOString()
     console.log("Setting last_checked_at to:", currentTime)
 
-    // تحديث وقت آخر فحص لجميع التحليلات دفعة واحدة
+    // Update last checked time for all analyses in batch
     const { error: batchUpdateError } = await supabase
       .from('search_history')
       .update({ last_checked_at: currentTime })
@@ -59,21 +59,21 @@ Deno.serve(async (req) => {
       throw batchUpdateError
     }
     
-    // معالجة كل تحليل
+    // Process each analysis
     for (const analysis of analyses) {
       try {
-        // تحقق من وجود نقطة دخول مثالية
+        // Check if it has a best entry point
         const hasBestEntryPoint = analysis.analysis.bestEntryPoint?.price
         const currentPrice = analysis.last_checked_price || analysis.current_price
         
-        // تحديث حالة التحليل مع نقطة الدخول المثالية
+        // Update analysis status with best entry point
         if (hasBestEntryPoint) {
           await supabase.rpc('update_analysis_status_with_entry_point', {
             p_id: analysis.id,
             p_current_price: currentPrice
           })
         } else {
-          // تحديث حالة التحليل العادي
+          // Update normal analysis status
           await supabase.rpc('update_analysis_status', {
             p_id: analysis.id,
             p_current_price: currentPrice
