@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SearchHistoryItem } from "@/types/analysis";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +11,13 @@ import { DirectionIndicator } from "./DirectionIndicator";
 interface CompareAnalysisProps {
   items: SearchHistoryItem[];
   onClose: () => void;
+  isOpen: boolean;
 }
 
-export const CompareAnalysis = ({ items, onClose }: CompareAnalysisProps) => {
+export const CompareAnalysis = ({ items, onClose, isOpen }: CompareAnalysisProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  
+  if (!isOpen) return null;
   
   const toggleExpand = (id: string) => {
     setExpanded(prev => ({
@@ -101,7 +103,6 @@ export const CompareAnalysis = ({ items, onClose }: CompareAnalysisProps) => {
 
       <Separator />
       
-      {/* Detailed comparison for each analysis */}
       <div className="space-y-2">
         <h4 className="font-medium">تفاصيل التحليلات</h4>
         

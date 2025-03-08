@@ -32,7 +32,8 @@ export const analyzeFibonacciAdvanced = async (
     const direction = trend.direction as "Up" | "Down" | "Neutral";
     
     // Calculate support and resistance levels with institutional order blocks
-    const { support, resistance } = calculateSupportResistance([recentLow, currentPrice, recentHigh], currentPrice, direction);
+    // Adding the timeframe as the 4th argument that was missing previously
+    const { support, resistance } = calculateSupportResistance([recentLow, currentPrice, recentHigh], currentPrice, direction, timeframe);
     
     // Calculate advanced Fibonacci levels with extensions and projections
     const fibLevels = calculateAdvancedFibonacciLevels(recentHigh, recentLow, currentPrice, direction);
