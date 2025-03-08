@@ -178,12 +178,14 @@ export const executeAnalysis = async (
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         if (analysis) {
+          // تأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
           analysis.analysisType = "فيبوناتشي" as AnalysisType;
         }
         break;
       case "Fibonacci Advanced":
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         if (analysis) {
+          // تأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
           analysis.analysisType = "فيبوناتشي" as AnalysisType;
         }
         break;
