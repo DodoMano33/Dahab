@@ -53,6 +53,7 @@ export const saveAnalysis = async ({
 
   // Make sure the analysis result also has the correct analysis type
   if (analysisResult.analysisType !== validAnalysisType) {
+    console.log("Updating analysis result type from", analysisResult.analysisType, "to", validAnalysisType);
     analysisResult.analysisType = validAnalysisType;
   }
 

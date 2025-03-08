@@ -77,7 +77,7 @@ export const analyzeFibonacciChart = async (
     // Combine retracement and extension levels
     const fibonacciLevels = [...retracement_levels, ...extension_levels];
     
-    // هام: التأكد من تعيين نوع التحليل بشكل صحيح للتوافق مع قاعدة البيانات
+    // Explicitly set the analysis type to "فيبوناتشي" for database compatibility
     return {
       pattern: "فيبوناتشي ريتريسمينت وإكستينشين",
       direction,

@@ -38,11 +38,13 @@ export const useSaveAnalysis = () => {
       const mappedAnalysisType = isFibonacciAnalysis ? "فيبوناتشي" : mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // تأكد من أن نوع التحليل موجود في النتيجة
+      // تأكد من أن نوع التحليل موجود في النتيجة وصحيح
       if (!result.analysisResult.analysisType) {
+        console.log("Setting analysisType as it was missing:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
       } else if (isFibonacciAnalysis) {
         // تأكد من أن نوع التحليل لفيبوناتشي صحيح دائمًا
+        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to فيبوناتشي");
         result.analysisResult.analysisType = "فيبوناتشي";
       }
       
@@ -56,6 +58,13 @@ export const useSaveAnalysis = () => {
       
       // Add proper error handling for debugging
       try {
+        console.log("Saving analysis with userId:", userId);
+        console.log("Saving analysis with symbol:", symbol);
+        console.log("Saving analysis with currentPrice:", currentPrice);
+        console.log("Saving analysis with analysisType:", mappedAnalysisType);
+        console.log("Saving analysis with timeframe:", timeframe);
+        console.log("Saving analysis with duration:", duration);
+        
         const savedData = await saveAnalysis({
           userId,
           symbol,
