@@ -1,3 +1,4 @@
+
 import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
@@ -26,33 +27,27 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
-      // Log the original analysis type before mapping
+      // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
       // Map the analysis type to a valid database enum value
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // Make sure the analysis result has the correct type property
+      // تأكد من أن نوع التحليل موجود في النتيجة
       if (!result.analysisResult.analysisType) {
         result.analysisResult.analysisType = mappedAnalysisType;
       }
       
-      // Ensure the original display type is preserved in the pattern field
-      let originalPattern = result.analysisResult.pattern;
-      
-      // Update the analysis result with the mapped type for database compatibility
+      // Update the analysis result's analysisType to the mapped value
       const analysisResultWithMappedType = {
         ...result.analysisResult,
-        analysisType: mappedAnalysisType, 
-        // Keep the original pattern for display purposes
-        pattern: originalPattern || (analysisType.includes("fibonacci_advanced") ? "تحليل فيبوناتشي متقدم" : 
-                 analysisType.includes("fibonacci") ? "فيبوناتشي ريتريسمينت وإكستينشين" : 
-                 result.analysisResult.pattern)
+        analysisType: mappedAnalysisType
       };
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
       
+      // Add proper error handling for debugging
       try {
         const savedData = await saveAnalysis({
           userId,
@@ -82,12 +77,8 @@ export const useSaveAnalysis = () => {
           onAnalysisComplete(newHistoryEntry);
         }
         
-        // Use the original analysis type for display in the toast message
-        const displayType = analysisType.includes("fibonacci_advanced") ? "تحليل فيبوناتشي متقدم" : 
-                         analysisType.includes("fibonacci") ? "فيبوناتشي" : 
-                         analysisType;
-                         
-        toast.success(`تم إكمال تحليل ${displayType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+        // Show success toast with proper analysis type display
+        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
           duration: 5000,
         });
         

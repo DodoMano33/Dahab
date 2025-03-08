@@ -87,7 +87,7 @@ export const analyzeFibonacciChart = async (
       bestEntryPoint: entryPoint,
       targets,
       fibonacciLevels,
-      analysisType: "نمطي", // Use a valid enum value for storage
+      analysisType: "فيبوناتشي",
       activation_type: "تلقائي"
     };
   } catch (error) {

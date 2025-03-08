@@ -34,41 +34,46 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Log the analysis type before saving
+  // Ensure analysisType is a valid value for the database
   console.log("Final analysis type being saved to database:", analysisType);
 
-  // Process activation_type (default to تلقائي if not provided)
-  const activation_type = analysisResult.activation_type || "تلقائي";
-  
-  // Prepare data for insertion
-  const insertData = {
+  // Set automatic activation type for Fibonacci Advanced Analysis
+  if (!analysisResult.activation_type) {
+    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
+      analysisResult.activation_type = "يدوي";
+    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
+      analysisResult.activation_type = "تلقائي";
+    }
+  }
+
+  console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,
     current_price: currentPrice,
     analysis: analysisResult,
     analysis_type: analysisType,
     timeframe,
-    analysis_duration_hours: durationHours,
-    activation_type
-  };
-  
-  console.log("Inserting analysis data with duration:", durationHours, insertData);
+    analysis_duration_hours: durationHours
+  });
 
-  try {
-    const { data, error } = await supabase
-      .from('search_history')
-      .insert(insertData)
-      .select()
-      .maybeSingle();
+  const { data, error } = await supabase
+    .from('search_history')
+    .insert({
+      user_id: userId,
+      symbol,
+      current_price: currentPrice,
+      analysis: analysisResult,
+      analysis_type: analysisType,
+      timeframe,
+      analysis_duration_hours: durationHours
+    })
+    .select()
+    .maybeSingle();
 
-    if (error) {
-      console.error("Error saving to Supabase:", error);
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error in saveAnalysis function:", error);
+  if (error) {
+    console.error("Error saving to Supabase:", error);
     throw error;
   }
+
+  return data;
 };

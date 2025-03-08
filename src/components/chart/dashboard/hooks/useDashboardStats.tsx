@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { getStrategyName, mainAnalysisTypes } from "@/utils/technicalAnalysis/analysisTypeMap";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export function useDashboardStats(userId: string | undefined) {
   const [stats, setStats] = useState<any[]>([]);
@@ -24,39 +24,24 @@ export function useDashboardStats(userId: string | undefined) {
         }
         
         console.log("Received backtest stats:", data);
+        console.log("Unique analysis types in stats:", 
+          [...new Set(data?.map((stat: any) => stat.type) || [])]);
         
-        // جمع النتائج في قاموس لسهولة البحث
-        const statsMap: Record<string, any> = {};
-        
-        // إعداد قاموس فقط بأنواع التحليل المعتمدة (بقيم صفرية)
-        mainAnalysisTypes.forEach(type => {
-          const displayName = getStrategyName(type);
-          statsMap[type] = {
-            type,
-            success: 0,
-            fail: 0,
+        // Process stats to ensure analysis_type is properly displayed
+        const processedStats = data ? data.map((stat: any) => {
+          if (!stat.type) {
+            console.warn('Found stat without type:', stat);
+            stat.type = 'normal';
+          }
+          
+          const displayName = getStrategyName(stat.type);
+          console.log(`Processing dashboard stat: ${stat.type} -> ${displayName}`);
+          
+          return {
+            ...stat,
             display_name: displayName
           };
-        });
-        
-        // معالجة النتائج من قاعدة البيانات (إذا كانت موجودة)
-        if (data && Array.isArray(data)) {
-          data.forEach((stat: any) => {
-            // تخطي أي نوع تحليل ليس موجود في القائمة المعتمدة
-            if (!stat.type || !mainAnalysisTypes.includes(stat.type)) {
-              return;
-            }
-            
-            // تحديث الإحصائيات
-            if (statsMap[stat.type]) {
-              statsMap[stat.type].success += stat.success || 0;
-              statsMap[stat.type].fail += stat.fail || 0;
-            }
-          });
-        }
-        
-        // تحويل القاموس إلى مصفوفة
-        const processedStats = Object.values(statsMap);
+        }) : [];
         
         console.log("Processed dashboard stats:", processedStats);
         console.log("Total dashboard stats count:", processedStats.length);

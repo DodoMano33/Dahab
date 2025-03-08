@@ -177,17 +177,9 @@ export const executeAnalysis = async (
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
-        // Set to a valid database enum value
-        if (analysis) {
-          analysis.analysisType = "نمطي" as AnalysisType;
-        }
         break;
       case "Fibonacci Advanced":
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
-        // Set to a valid database enum value
-        if (analysis) {
-          analysis.analysisType = "نمطي" as AnalysisType;
-        }
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
