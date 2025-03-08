@@ -34,9 +34,9 @@ export const detectAnalysisType = (
   if (isWaves) return "Waves";
   if (isPriceAction) return "Price Action";
   if (isFibonacci) return "Fibonacci";
-  if (isFibonacciAdvanced) return "Advanced Fibonacci";
+  if (isFibonacciAdvanced) return "Fibonacci Advanced";
   if (isNeuralNetwork) return "Neural Networks";
-  if (isRNN) return "Recurrent Neural Networks";
+  if (isRNN) return "RNN";
   if (isTimeClustering) return "Time Clustering";
   if (isMultiVariance) return "Multi Variance";
   if (isCompositeCandlestick) return "Composite Candlestick";

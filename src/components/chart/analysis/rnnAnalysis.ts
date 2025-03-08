@@ -75,7 +75,7 @@ export const analyzeRNN = async (
       price: entryPrice,
       reason: "Entry based on RNN analysis of historical patterns"
     },
-    analysisType: "Recurrent Neural Networks",
+    analysisType: "RNN",
     activation_type: "Automatic"
   };
   

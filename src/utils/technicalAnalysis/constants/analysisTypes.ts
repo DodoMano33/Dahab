@@ -14,13 +14,13 @@ export const analysisTypeDisplayMap: Record<string, string> = {
   "patterns": "Patterns",
   "priceaction": "Price Action",
   "neuralnetworks": "Neural Networks",
-  "rnn": "Recurrent Neural Networks",
+  "rnn": "RNN",
   "timeclustering": "Time Clustering",
   "multivariance": "Multi Variance",
   "compositecandlestick": "Composite Candlestick",
   "behavioral": "Behavioral Analysis",
   "fibonacci": "Fibonacci",
-  "fibonacciadvanced": "Advanced Fibonacci",
+  "fibonacciadvanced": "Fibonacci Advanced",
   "daily": "Daily Analysis"
 };
 
