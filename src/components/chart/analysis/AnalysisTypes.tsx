@@ -28,23 +28,23 @@ interface AnalysisType {
 }
 
 const analysisTypes: AnalysisType[] = [
-  { value: "normal", label: "تحديد الكل" },
-  { value: "scalping", label: "مضاربة (Scalping)" },
-  { value: "ict", label: "ICT - نظرية السوق" },
-  { value: "smc", label: "SMC - نظرية هيكل السوق" },
-  { value: "turtle_soup", label: "الحساء السلحفائي" },
-  { value: "gann", label: "جان (Gann)" },
-  { value: "waves", label: "تقلبات (Waves)" },
-  { value: "patterns", label: "نمطي (Patterns)" },
-  { value: "price_action", label: "حركة السعر (Price Action)" },
-  { value: "fibonacci", label: "فيبوناتشي (Fibonacci)" },
-  { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
-  { value: "neural_networks", label: "شبكات عصبية" },
-  { value: "rnn", label: "شبكات عصبية متكررة" },
-  { value: "time_clustering", label: "تصفيق زمني" },
-  { value: "multi_variance", label: "تباين متعدد العوامل" },
-  { value: "composite_candlestick", label: "شمعات مركبة" },
-  { value: "behavioral", label: "تحليل سلوكي" },
+  { value: "normal", label: "Select All" },
+  { value: "scalping", label: "Scalping" },
+  { value: "ict", label: "ICT" },
+  { value: "smc", label: "SMC" },
+  { value: "turtle_soup", label: "Turtle Soup" },
+  { value: "gann", label: "Gann" },
+  { value: "waves", label: "Waves" },
+  { value: "patterns", label: "Patterns" },
+  { value: "price_action", label: "Price Action" },
+  { value: "fibonacci", label: "Fibonacci" },
+  { value: "fibonacci_advanced", label: "Advanced Fibonacci" },
+  { value: "neural_networks", label: "Neural Networks" },
+  { value: "rnn", label: "Recurrent Neural Networks" },
+  { value: "time_clustering", label: "Time Clustering" },
+  { value: "multi_variance", label: "Multi Variance" },
+  { value: "composite_candlestick", label: "Composite Candlestick" },
+  { value: "behavioral", label: "Behavioral Analysis" },
 ];
 
 interface AnalysisTypesProps {
@@ -62,7 +62,7 @@ export const AnalysisTypes = ({
   
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
-      // If "تحديد الكل" is clicked
+      // If "Select All" is clicked
       if (selectedTypes.includes("normal")) {
         // If it's currently selected, deselect all
         onTypesChange([]);
@@ -98,9 +98,9 @@ export const AnalysisTypes = ({
     <Card className="p-6 bg-[#FFAC7D] rounded-lg">
       <div className="space-y-4">
         <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold">أنواع التحليل المراد تنفيذها</h3>
+          <h3 className="text-xl font-semibold">Analysis Types</h3>
           <p className="text-sm text-gray-700 mt-1">
-            {selectedTypes.length} من {analysisTypes.length-1} نوع محدد
+            {selectedTypes.length} of {analysisTypes.length-1} types selected
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">

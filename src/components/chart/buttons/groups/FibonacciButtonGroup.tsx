@@ -26,11 +26,11 @@ export const FibonacciButtonGroup = ({
               className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Divide className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل فيبوناتشي</span>
+              <span className="whitespace-nowrap">Fibonacci Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>استراتيجية تعتمد على مستويات فيبوناتشي ريتريسمينت وإكستينشين لتحديد نقاط الدخول والخروج</p>
+            <p>Strategy based on Fibonacci retracement and extension levels to determine entry and exit points</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -45,11 +45,11 @@ export const FibonacciButtonGroup = ({
               className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Target className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل فيبوناتشي متقدم</span>
+              <span className="whitespace-nowrap">Advanced Fibonacci</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>استراتيجية تداول متقدمة تدمج فيبوناتشي مع السيولة المؤسساتية والفوليوم بروفايل وتحليل البنية السوقية</p>
+            <p>Advanced trading strategy combining Fibonacci with institutional liquidity, volume profile, and market structure analysis</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

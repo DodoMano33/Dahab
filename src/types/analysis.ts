@@ -1,7 +1,7 @@
 
 export type AnalysisType = 
-  | "سكالبينج" 
-  | "ذكي" 
+  | "Scalping" 
+  | "Smart" 
   | "SMC" 
   | "ICT" 
   | "Turtle Soup" 
@@ -9,24 +9,16 @@ export type AnalysisType =
   | "Waves" 
   | "Patterns" 
   | "Price Action" 
-  | "شبكات عصبية" 
-  | "شبكات عصبية متكررة" 
-  | "تصفيق زمني" 
-  | "تباين متعدد العوامل" 
-  | "شمعات مركبة" 
-  | "تحليل سلوكي" 
-  | "فيبوناتشي"
-  | "تحليل فيبوناتشي متقدم"
-  | "عادي"
-  | "نمطي"
-  | "تقلبات"
-  | "جان"
-  | "الحساء السلحفائي"
-  | "نظرية السوق"
-  | "نظرية هيكل السوق"
-  | "يومي"
-  | "مضاربة"
-  | "حركة السعر";
+  | "Neural Networks" 
+  | "Recurrent Neural Networks" 
+  | "Time Clustering" 
+  | "Multi Variance" 
+  | "Composite Candlestick" 
+  | "Behavioral Analysis" 
+  | "Fibonacci"
+  | "Advanced Fibonacci"
+  | "Normal"
+  | "Daily";
 
 export interface ImageData {
   height: number;
@@ -53,7 +45,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: "تلقائي" | "يدوي";
+  activation_type?: "تلقائي" | "يدوي" | "Automatic" | "Manual";
   analysisType: AnalysisType;
 }
 

@@ -28,14 +28,14 @@ export const CombinedAnalysisDialog = ({
     { id: "waves", label: "Waves" },
     { id: "patterns", label: "Patterns" },
     { id: "priceAction", label: "Price Action" },
-    { id: "neural_networks", label: "شبكات عصبية" },
-    { id: "rnn", label: "شبكات عصبية متكررة" },
-    { id: "time_clustering", label: "تصفيق زمني" },
-    { id: "multi_variance", label: "تباين متعدد العوامل" },
-    { id: "composite_candlestick", label: "شمعات مركبة" },
-    { id: "behavioral", label: "تحليل سلوكي" },
-    { id: "fibonacci", label: "فيبوناتشي" },
-    { id: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" }
+    { id: "neural_networks", label: "Neural Networks" },
+    { id: "rnn", label: "Recurrent Neural Networks" },
+    { id: "time_clustering", label: "Time Clustering" },
+    { id: "multi_variance", label: "Multi Variance" },
+    { id: "composite_candlestick", label: "Composite Candlestick" },
+    { id: "behavioral", label: "Behavioral Analysis" },
+    { id: "fibonacci", label: "Fibonacci" },
+    { id: "fibonacci_advanced", label: "Advanced Fibonacci" }
   ];
 
   const handleSelectAll = () => {
@@ -82,7 +82,7 @@ export const CombinedAnalysisDialog = ({
         <DialogHeader>
           <DialogTitle className="text-right flex items-center justify-between">
             <Brain className="w-5 h-5 text-green-600" />
-            <span>اختر أنواع التحليل</span>
+            <span>Select Analysis Types</span>
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-4">
@@ -96,7 +96,7 @@ export const CombinedAnalysisDialog = ({
               htmlFor="select-all"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              تحديد الكل
+              Select All
             </label>
           </div>
           <div className="grid grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-2">
@@ -126,10 +126,10 @@ export const CombinedAnalysisDialog = ({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                جاري التحليل...
+                Analyzing...
               </>
             ) : (
-              'تحليل'
+              'Analyze'
             )}
           </Button>
         </div>

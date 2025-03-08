@@ -7,21 +7,27 @@ import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 export interface AnalysisTypeCellProps {
   analysisType: string;
   pattern?: string;
-  activation_type?: 'تلقائي' | 'يدوي';
+  activation_type?: 'Automatic' | 'Manual' | 'تلقائي' | 'يدوي';
 }
 
 export const AnalysisTypeCell = ({ 
   analysisType, 
   pattern, 
-  activation_type = 'يدوي' 
+  activation_type = 'Manual' 
 }: AnalysisTypeCellProps) => {
-  // تسجيل نوع التحليل للتشخيص
+  // Log analysis type for debugging
   console.log(`AnalysisTypeCell: type=${analysisType}, pattern=${pattern}, activation=${activation_type}`);
   
-  // استخدام الدالة المساعدة للحصول على اسم العرض
+  // Use helper function to get display name
   const displayName = getStrategyName(analysisType);
   
-  // تحديد لون الخلفية بناءً على نوع التحليل
+  // Map activation type to English
+  const activationType = 
+    activation_type === 'تلقائي' ? 'Automatic' : 
+    activation_type === 'يدوي' ? 'Manual' : 
+    activation_type;
+  
+  // Determine background color based on analysis type
   const getBgColor = () => {
     const type = analysisType?.toLowerCase() || '';
     const normalizedType = type.replace(/_/g, '').trim();
@@ -34,7 +40,7 @@ export const AnalysisTypeCell = ({
     if (normalizedType.includes('waves') || normalizedType.includes('تقلبات') || normalizedType.includes('موجات')) return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300';
     if (normalizedType.includes('pattern') || normalizedType.includes('نمطي')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
     if (normalizedType.includes('priceaction') || normalizedType.includes('حركةالسعر')) return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
-    if (normalizedType.includes('ذكي') || normalizedType.includes('smart')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300';
+    if (normalizedType.includes('smart') || normalizedType.includes('ذكي')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300';
     if (normalizedType.includes('scalping') || normalizedType.includes('مضاربة') || normalizedType.includes('سكالبينج')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
     
     // New analysis types
@@ -67,7 +73,7 @@ export const AnalysisTypeCell = ({
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
-                {displayName || 'غير محدد'}
+                {displayName || 'Unknown'}
               </Badge>
               {pattern && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
@@ -75,16 +81,16 @@ export const AnalysisTypeCell = ({
                 </Badge>
               )}
               <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${
-                activation_type === 'تلقائي' 
+                activationType === 'Automatic' || activationType === 'تلقائي'
                   ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' 
                   : 'bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300'
               }`}>
-                {activation_type === 'تلقائي' ? 'اوتوماتيكي' : 'يدوي'}
+                {activationType === 'Automatic' || activationType === 'تلقائي' ? 'Automatic' : 'Manual'}
               </Badge>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{activation_type === 'تلقائي' ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
+            <p>{activationType === 'Automatic' || activationType === 'تلقائي' ? 'Analysis performed automatically' : 'Analysis performed manually'}</p>
             {pattern && <p className="text-xs mt-1">{pattern}</p>}
           </TooltipContent>
         </Tooltip>

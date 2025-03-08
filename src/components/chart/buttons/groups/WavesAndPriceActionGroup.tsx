@@ -26,11 +26,11 @@ export const WavesAndPriceActionGroup = ({
               className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Waves className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل Waves</span>
+              <span className="whitespace-nowrap">Waves Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>تحليل حركة السوق وفق نظرية موجات إليوت لتحديد الاتجاهات وتوقع التحركات السعرية</p>
+            <p>Market movement analysis according to Elliott Wave theory to identify trends and predict price movements</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -45,11 +45,11 @@ export const WavesAndPriceActionGroup = ({
               className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <CandlestickChart className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل Price Action</span>
+              <span className="whitespace-nowrap">Price Action Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>تحليل حركة السعر الخام دون مؤشرات إضافية بالاعتماد على أنماط الشموع وهياكل السوق</p>
+            <p>Analysis of raw price movement without additional indicators, relying on candlestick patterns and market structures</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

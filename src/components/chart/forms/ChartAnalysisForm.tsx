@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
@@ -135,7 +134,7 @@ export const ChartAnalysisForm = ({
       return;
     }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
+    console.log(`Analysis ${currentAnalysis} for symbol ${symbol || defaultSymbol} on timeframe ${timeframe} for ${duration} hours`);
     
     const providedPrice = price ? Number(price) : defaultPrice;
     onSubmit(

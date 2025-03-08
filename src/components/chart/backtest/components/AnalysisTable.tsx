@@ -18,7 +18,7 @@ export const AnalysisTable = ({
   onSelectAll,
   onSelect,
 }: AnalysisTableProps) => {
-  // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
+  // Format numbers to show only 3 decimal places
   const formatNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return "-";
     const num = typeof value === "string" ? parseFloat(value) : value;
@@ -43,15 +43,15 @@ export const AnalysisTable = ({
             onCheckedChange={onSelectAll}
           />
         </div>
-        <div>وقف الخسارة</div>
-        <div>الهدف الأول</div>
-        <div>السعر عند التحليل</div>
-        <div>أفضل نقطة دخول</div>
-        <div>النتيجة</div>
-        <div>الاطار الزمني</div>
-        <div>نوع التحليل</div>
-        <div>الرمز</div>
-        <div>تاريخ النتيجة</div>
+        <div>Stop Loss</div>
+        <div>First Target</div>
+        <div>Entry Price</div>
+        <div>Best Entry</div>
+        <div>Result</div>
+        <div>Timeframe</div>
+        <div>Analysis Type</div>
+        <div>Symbol</div>
+        <div>Result Date</div>
       </div>
       <div className="divide-y text-xs">
         {analyses.map((analysis) => {
@@ -75,7 +75,7 @@ export const AnalysisTable = ({
                     <div className="truncate">{formatNumber(analysis.stop_loss)}</div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>وقف الخسارة: {formatNumber(analysis.stop_loss)}</p>
+                    <p>Stop Loss: {formatNumber(analysis.stop_loss)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -85,7 +85,7 @@ export const AnalysisTable = ({
                     <div className="truncate">{formatNumber(analysis.target_price)}</div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>الهدف الأول: {formatNumber(analysis.target_price)}</p>
+                    <p>First Target: {formatNumber(analysis.target_price)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -95,7 +95,7 @@ export const AnalysisTable = ({
                     <div className="truncate">{formatNumber(analysis.entry_price)}</div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>السعر عند التحليل: {formatNumber(analysis.entry_price)}</p>
+                    <p>Entry Price: {formatNumber(analysis.entry_price)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -105,12 +105,12 @@ export const AnalysisTable = ({
                     <div className="truncate">{formatNumber(analysis.best_entry_price || analysis.entry_price)}</div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>أفضل نقطة دخول: {formatNumber(analysis.best_entry_price || analysis.entry_price)}</p>
+                    <p>Best Entry Point: {formatNumber(analysis.best_entry_price || analysis.entry_price)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
-                {analysis.is_success ? 'ناجح' : 'فاشل'}
+                {analysis.is_success ? 'Success' : 'Failure'}
               </div>
               <div className="truncate">{analysis.timeframe}</div>
               <div className="truncate">{displayedAnalysisType}</div>

@@ -13,21 +13,21 @@ interface AnalysisStatsProps {
 }
 
 export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
-  // حساب إجمالي النجاحات والفشل
+  // Calculate total successes and failures
   const totalSuccess = stats.reduce((acc, stat) => acc + stat.success, 0);
   const totalFail = stats.reduce((acc, stat) => acc + stat.fail, 0);
 
-  // تحديد وجود معلومات تلميح لنوع التحليل
+  // Determine if tooltip information exists for analysis type
   const hasTooltip = (type: string, displayName: string) => {
     return Object.keys(analysisTypeTooltips).includes(displayName);
   };
 
-  // الحصول على نص التلميح
+  // Get tooltip content
   const getTooltipContent = (type: string, displayName: string) => {
-    return analysisTypeTooltips[displayName] || `معلومات عن ${displayName}`;
+    return analysisTypeTooltips[displayName] || `Information about ${displayName}`;
   };
   
-  // طباعة أنواع التحليل المتاحة للتشخيص
+  // Log analysis types for debugging
   console.log("Analysis Stats - Available types:", stats.map(s => 
     `${s.type} -> ${s.display_name || getStrategyName(s.type)}`
   ));
@@ -40,7 +40,7 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
           const displayName = stat.display_name || getStrategyName(stat.type);
           const tooltipContent = getTooltipContent(stat.type, displayName);
           
-          // طباعة تشخيصية لكل نوع تحليل
+          // Diagnostic print for each analysis type
           console.log(`Rendering stats for type: ${stat.type} -> ${displayName}`);
           
           return (
@@ -59,11 +59,11 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
               </div>
               <div className="flex gap-2">
                 <Badge variant="success" className="flex flex-col items-center p-2">
-                  <span>ناجح</span>
+                  <span>Success</span>
                   <span className="text-lg font-bold">{stat.success}</span>
                 </Badge>
                 <Badge variant="destructive" className="flex flex-col items-center p-2">
-                  <span>فاشل</span>
+                  <span>Failure</span>
                   <span className="text-lg font-bold">{stat.fail}</span>
                 </Badge>
               </div>
@@ -72,19 +72,19 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
         })}
       </div>
 
-      {/* المستطيل الجديد لإجمالي النتائج */}
+      {/* Results summary block */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold">إجمالي نتائج التحليلات</h3>
+          <h3 className="text-lg font-semibold">Total Analysis Results</h3>
         </div>
         <div className="flex justify-center gap-8">
           <div className="flex flex-col items-center">
             <span className="text-green-600 font-bold text-2xl">{totalSuccess}</span>
-            <span className="text-sm text-gray-600">عدد التحليلات الناجحة</span>
+            <span className="text-sm text-gray-600">Successful Analyses</span>
           </div>
           <div className="flex flex-col items-center">
             <span className="text-red-600 font-bold text-2xl">{totalFail}</span>
-            <span className="text-sm text-gray-600">عدد التحليلات الفاشلة</span>
+            <span className="text-sm text-gray-600">Failed Analyses</span>
           </div>
         </div>
       </div>

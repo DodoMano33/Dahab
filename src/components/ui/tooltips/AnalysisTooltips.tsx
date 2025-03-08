@@ -28,49 +28,32 @@ export function AnalysisTooltip({ content, children }: AnalysisTooltipProps) {
 
 export const analysisTypeTooltips = {
   // Legacy analysis types
-  "Scalping": "تحليل قصير المدى يركز على تداولات سريعة بأهداف صغيرة",
-  "سكالبينج": "تحليل قصير المدى يركز على تداولات سريعة بأهداف صغيرة",
-  "مضاربة": "تحليل قصير المدى يركز على تداولات سريعة بأهداف صغيرة",
-  "ذكي": "تحليل يعتمد على الذكاء الاصطناعي لدمج عدة أساليب تحليلية",
-  "SMC": "تحليل هيكل السوق (Smart Money Concept) يركز على حركة المال الذكي",
-  "نظرية هيكل السوق": "تحليل هيكل السوق (Smart Money Concept) يركز على حركة المال الذكي",
-  "ICT": "Inner Circle Trader - أسلوب تحليلي يركز على سلوك صناع السوق",
-  "نظرية السوق": "Inner Circle Trader - أسلوب تحليلي يركز على سلوك صناع السوق",
-  "Turtle Soup": "استراتيجية تداول تستهدف الاختراقات الكاذبة",
-  "الحساء السلحفائي": "استراتيجية تداول تستهدف الاختراقات الكاذبة",
-  "Gann": "نظرية غان تعتمد على العلاقة بين السعر والزمن",
-  "جان": "نظرية غان تعتمد على العلاقة بين السعر والزمن",
-  "Waves": "تحليل موجات إليوت لتحديد اتجاهات السوق",
-  "تقلبات": "تحليل موجات إليوت لتحديد اتجاهات السوق",
-  "Patterns": "تحليل الأنماط الفنية على الشارت",
-  "نمطي": "تحليل الأنماط الفنية على الشارت",
-  "Price Action": "تحليل حركة السعر بدون مؤشرات",
-  "حركة السعر": "تحليل حركة السعر بدون مؤشرات",
+  "Scalping": "Short-term analysis focusing on quick trades with small targets",
+  "SMC": "Smart Money Concept analysis focusing on institutional money movements",
+  "ICT": "Inner Circle Trader - analytical approach focusing on market maker behavior",
+  "Turtle Soup": "Trading strategy targeting false breakouts",
+  "Gann": "Gann theory based on the relationship between price and time",
+  "Waves": "Elliott Wave analysis to identify market trends",
+  "Patterns": "Analysis of technical patterns on the chart",
+  "Price Action": "Price movement analysis without indicators",
+  "Smart": "Analysis using artificial intelligence to combine multiple analytical approaches",
   
   // New analysis types
-  "فيبوناتشي": "استراتيجية تعتمد على مستويات فيبوناتشي ريتريسمينت وإكستينشين لتحديد نقاط الدخول والخروج",
-  "Fibonacci": "استراتيجية تعتمد على مستويات فيبوناتشي ريتريسمينت وإكستينشين لتحديد نقاط الدخول والخروج",
-  "تحليل فيبوناتشي متقدم": "تحليل متقدم يستخدم مستويات فيبوناتشي مع أدوات أخرى لاستنتاج نقاط انعكاس وتصحيح دقيقة",
-  "Fibonacci Advanced": "تحليل متقدم يستخدم مستويات فيبوناتشي مع أدوات أخرى لاستنتاج نقاط انعكاس وتصحيح دقيقة",
-  "شبكات عصبية": "استخدام الشبكات العصبية الاصطناعية لتحليل البيانات وتوقع حركة السعر",
-  "Neural Networks": "استخدام الشبكات العصبية الاصطناعية لتحليل البيانات وتوقع حركة السعر",
-  "شبكات عصبية متكررة": "شبكات عصبية متقدمة تستخدم للتنبؤ بالسلاسل الزمنية والأنماط المتكررة",
-  "RNN": "شبكات عصبية متقدمة تستخدم للتنبؤ بالسلاسل الزمنية والأنماط المتكررة",
-  "تصفيق زمني": "تحليل يعتمد على تكرار الأنماط الزمنية وتجمعات السعر في فترات زمنية محددة",
-  "Time Clustering": "تحليل يعتمد على تكرار الأنماط الزمنية وتجمعات السعر في فترات زمنية محددة",
-  "تباين متعدد العوامل": "تحليل يدرس العلاقة بين عدة متغيرات للتنبؤ بحركة السعر",
-  "Multi Variance": "تحليل يدرس العلاقة بين عدة متغيرات للتنبؤ بحركة السعر",
-  "شمعات مركبة": "استراتيجية تحليل تجمع أنماط الشموع المتعددة لاستنتاج إشارات دخول وخروج أكثر دقة",
-  "Composite Candlestick": "استراتيجية تحليل تجمع أنماط الشموع المتعددة لاستنتاج إشارات دخول وخروج أكثر دقة",
-  "تحليل سلوكي": "تحليل سلوك المتداولين ونفسيتهم لتوقع تحركات السوق",
-  "Behavioral": "تحليل سلوك المتداولين ونفسيتهم لتوقع تحركات السوق"
+  "Fibonacci": "Strategy based on Fibonacci retracement and extension levels to determine entry and exit points",
+  "Advanced Fibonacci": "Advanced analysis using Fibonacci levels with other tools to infer precise reversal and correction points",
+  "Neural Networks": "Using artificial neural networks to analyze data and predict price movement",
+  "Recurrent Neural Networks": "Advanced neural networks used to predict time series and recurring patterns",
+  "Time Clustering": "Analysis based on repetition of time patterns and price clusters in specific time periods",
+  "Multi Variance": "Analysis studying the relationship between multiple variables to predict price movement",
+  "Composite Candlestick": "Analysis strategy that combines multiple candle patterns to infer more accurate entry and exit signals",
+  "Behavioral Analysis": "Analysis of trader behavior and psychology to predict market movements"
 };
 
 export const timeframeTooltips = {
-  "1m": "إطار زمني قصير جداً (دقيقة) مناسب للسكالبينج",
-  "5m": "إطار زمني قصير (5 دقائق) مناسب للتداول اليومي القصير",
-  "30m": "إطار زمني متوسط قصير (30 دقيقة) للتداول اليومي",
-  "1h": "إطار زمني متوسط (ساعة) مناسب للتداول اليومي والمتوسط",
-  "4h": "إطار زمني متوسط-طويل (4 ساعات) للتداول المتوسط",
-  "1d": "إطار زمني طويل (يوم) مناسب للتداول طويل المدى"
+  "1m": "Very short timeframe (1 minute) suitable for scalping",
+  "5m": "Short timeframe (5 minutes) suitable for short day trading",
+  "30m": "Medium-short timeframe (30 minutes) for day trading",
+  "1h": "Medium timeframe (1 hour) suitable for day and medium trading",
+  "4h": "Medium-long timeframe (4 hours) for medium trading",
+  "1d": "Long timeframe (1 day) suitable for long-term trading"
 };

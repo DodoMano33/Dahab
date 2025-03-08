@@ -30,11 +30,11 @@ export const TechnicalButtons = ({
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <TrendingUp className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل SMC</span>
+              <span className="whitespace-nowrap">SMC Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>تحليل هيكل السوق للتعرف على المستويات الرئيسية والأنماط السعرية</p>
+            <p>Market structure analysis to identify key levels and price patterns</p>
           </TooltipContent>
         </UITooltip>
       </TooltipProvider>
@@ -49,11 +49,11 @@ export const TechnicalButtons = ({
               className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Building2 className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل ICT</span>
+              <span className="whitespace-nowrap">ICT Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>نهج تداول متقدم يركز على فهم سلوك البنوك والمؤسسات الكبرى في السوق</p>
+            <p>Advanced trading approach focused on understanding the behavior of banks and large institutions in the market</p>
           </TooltipContent>
         </UITooltip>
       </TooltipProvider>
@@ -68,11 +68,11 @@ export const TechnicalButtons = ({
               className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Turtle className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل Turtle Soup</span>
+              <span className="whitespace-nowrap">Turtle Soup Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>استراتيجية تداول تستهدف الانعكاسات السعرية عند كسر الدعم والمقاومة</p>
+            <p>Trading strategy targeting price reversals when support and resistance are broken</p>
           </TooltipContent>
         </UITooltip>
       </TooltipProvider>
@@ -87,11 +87,11 @@ export const TechnicalButtons = ({
               className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Activity className="w-4 h-4" />
-              <span className="whitespace-nowrap">تحليل Gann</span>
+              <span className="whitespace-nowrap">Gann Analysis</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="max-w-sm">
-            <p>نظرية تحليل فنية تربط بين السعر والزمن والهندسة لتوقع حركات السوق المستقبلية</p>
+            <p>Technical analysis theory connecting price, time, and geometry to predict future market movements</p>
           </TooltipContent>
         </UITooltip>
       </TooltipProvider>

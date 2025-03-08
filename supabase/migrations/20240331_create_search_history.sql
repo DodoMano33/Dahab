@@ -11,10 +11,9 @@ CREATE TABLE public.search_history (
   current_price numeric NOT NULL,
   analysis jsonb NOT NULL,
   analysis_type text NOT NULL check (analysis_type in (
-    'عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup', 'Gann', 'Waves', 'Patterns', 
-    'Price Action', 'شبكات عصبية', 'شبكات عصبية متكررة', 'تصفيق زمني', 'تباين متعدد العوامل',
-    'شمعات مركبة', 'تحليل سلوكي', 'نمطي', 'تقلبات', 'جان', 'الحساء السلحفائي',
-    'نظرية السوق', 'نظرية هيكل السوق', 'يومي', 'مضاربة', 'حركة السعر'
+    'Normal', 'Scalping', 'Smart', 'SMC', 'ICT', 'Turtle Soup', 'Gann', 'Waves', 'Patterns', 
+    'Price Action', 'Neural Networks', 'Recurrent Neural Networks', 'Time Clustering', 'Multi Variance',
+    'Composite Candlestick', 'Behavioral Analysis', 'Fibonacci', 'Advanced Fibonacci', 'Daily'
   ))
 );
 
