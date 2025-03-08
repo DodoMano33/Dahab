@@ -34,8 +34,16 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
+  // Map Fibonacci analysis types to valid database values
+  let validAnalysisType = analysisType;
+  if (analysisType === "فيبوناتشي" || analysisType === "فيبوناتشي متقدم" || 
+      analysisType === "fibonacci" || analysisType === "fibonacci_advanced") {
+    validAnalysisType = "فيبوناتشي" as AnalysisType;
+  }
+
   // Ensure analysisType is a valid value for the database
-  console.log("Final analysis type being saved to database:", analysisType);
+  console.log("Original analysis type:", analysisType);
+  console.log("Mapped analysis type being saved to database:", validAnalysisType);
 
   // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
@@ -51,7 +59,7 @@ export const saveAnalysis = async ({
     symbol,
     current_price: currentPrice,
     analysis: analysisResult,
-    analysis_type: analysisType,
+    analysis_type: validAnalysisType,
     timeframe,
     analysis_duration_hours: durationHours
   });
@@ -63,7 +71,7 @@ export const saveAnalysis = async ({
       symbol,
       current_price: currentPrice,
       analysis: analysisResult,
-      analysis_type: analysisType,
+      analysis_type: validAnalysisType,
       timeframe,
       analysis_duration_hours: durationHours
     })
