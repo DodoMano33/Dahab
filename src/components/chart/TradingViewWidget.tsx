@@ -1,5 +1,4 @@
-
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -13,8 +12,6 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
-  const [currentSymbol, setCurrentSymbol] = useState(symbol);
-  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -73,12 +70,10 @@ function TradingViewWidget({
       try {
         if (event.data.name === 'symbol-change') {
           console.log('Symbol changed to:', event.data.symbol);
-          setCurrentSymbol(event.data.symbol);
           onSymbolChange?.(event.data.symbol);
         }
         if (event.data.name === 'price-update') {
           console.log('Price updated to:', event.data.price);
-          setCurrentPrice(event.data.price);
           onPriceUpdate?.(event.data.price);
         }
       } catch (error) {
@@ -96,29 +91,8 @@ function TradingViewWidget({
     };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
-  // Format price with proper decimal places based on symbol type
-  const formattedPrice = currentPrice !== null 
-    ? currentSymbol.includes("GOLD") 
-      ? currentPrice.toFixed(2) 
-      : currentPrice.toFixed(4)
-    : "جاري التحميل...";
-
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-      {/* Info bar to display symbol and price */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-black/70 text-white px-4 py-2 flex justify-between items-center">
-        <div className="font-semibold">
-          <span className="opacity-70 mr-2">الرمز:</span>
-          {currentSymbol}
-        </div>
-        <div className="flex items-center">
-          <span className="opacity-70 ml-2">السعر الحالي:</span>
-          <span className={currentPrice !== null ? (currentPrice > 0 ? "text-green-400" : "text-red-400") : ""}>
-            {formattedPrice}
-          </span>
-        </div>
-      </div>
-      
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
