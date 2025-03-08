@@ -1,13 +1,8 @@
 
-import { useState, useEffect } from "react";
-import { SymbolInput } from "../inputs/SymbolInput";
-import { PriceInput } from "../inputs/PriceInput";
-import { TimeframeInput } from "../inputs/TimeframeInput";
-import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
-import { AnalysisDurationInput } from "../inputs/AnalysisDurationInput";
-import { useFormValidation } from "./validation/useFormValidation";
-import { useCombinedAnalysis } from "./handlers/useCombinedAnalysis";
+import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
+import { ChartFormInputs } from "./components/ChartFormInputs";
+import { useChartAnalysisForm } from "./hooks/useChartAnalysisForm";
 
 interface ChartAnalysisFormProps {
   onSubmit: (
@@ -49,165 +44,49 @@ export const ChartAnalysisForm = ({
   defaultSymbol,
   defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState("");
-  const [price, setPrice] = useState("");
-  const [timeframe, setTimeframe] = useState("1d");
-  const [duration, setDuration] = useState("8");
-  
-  // تتبع تغييرات القيم الافتراضية
   const defaultPriceString = defaultPrice ? defaultPrice.toString() : "";
   
-  // لعرض القيم في الكونسول للتأكد من تدفق البيانات
-  useEffect(() => {
-    console.log("ChartAnalysisForm default values updated:", {
-      defaultSymbol,
-      defaultPrice,
-      defaultPriceString
-    });
-  }, [defaultSymbol, defaultPrice, defaultPriceString]);
-
-  const { validateInputs } = useFormValidation();
-  const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
+  const {
     symbol,
-    defaultSymbol: defaultSymbol || "",
-    price,
-    defaultPrice,
+    setSymbol,
+    price, 
+    setPrice,
     timeframe,
+    setTimeframe,
     duration,
-    onSubmit
+    setDuration,
+    isAIDialogOpen,
+    setIsAIDialogOpen,
+    handleSubmit,
+    handleCombinedAnalysis
+  } = useChartAnalysisForm({
+    onSubmit,
+    defaultSymbol,
+    defaultPrice
   });
-
-  const handleSubmit = (
-    e: React.MouseEvent,
-    isScalping: boolean = false,
-    isAI: boolean = false,
-    isSMC: boolean = false,
-    isICT: boolean = false,
-    isTurtleSoup: boolean = false,
-    isGann: boolean = false,
-    isWaves: boolean = false,
-    isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false,
-    isNeuralNetwork: boolean = false,
-    isRNN: boolean = false,
-    isTimeClustering: boolean = false,
-    isMultiVariance: boolean = false,
-    isCompositeCandlestick: boolean = false,
-    isBehavioral: boolean = false,
-    isFibonacci: boolean = false,
-    isFibonacciAdvanced: boolean = false,
-    selectedTypes: string[] = []
-  ) => {
-    e.preventDefault();
-    
-    // طباعة القيم المستخدمة للتحقق
-    console.log("Form submission values:", {
-      symbol,
-      defaultSymbol,
-      price,
-      defaultPrice,
-      finalSymbol: symbol || defaultSymbol || "",
-      finalPrice: price ? Number(price) : defaultPrice
-    });
-    
-    const isValid = validateInputs({
-      symbol,
-      defaultSymbol,
-      price,
-      defaultPrice,
-      duration
-    });
-
-    if (!isValid) return;
-
-    // If this is an AI analysis but no dialog should be shown (because selectedTypes were provided)
-    if (isAI && selectedTypes.length > 0) {
-      console.log("Smart Analysis with pre-selected types:", selectedTypes);
-      const providedPrice = price ? Number(price) : defaultPrice;
-      onSubmit(
-        symbol || defaultSymbol || "",
-        timeframe,
-        providedPrice,
-        isScalping,
-        isAI,
-        isSMC,
-        isICT,
-        isTurtleSoup,
-        isGann,
-        isWaves,
-        isPatternAnalysis,
-        isPriceAction,
-        isNeuralNetwork,
-        isRNN,
-        isTimeClustering,
-        isMultiVariance,
-        isCompositeCandlestick,
-        isBehavioral,
-        isFibonacci,
-        isFibonacciAdvanced,
-        duration,
-        selectedTypes
-      );
-      return;
-    }
-    
-    // If this is an AI analysis but without pre-selected types, show the dialog
-    if (isAI) {
-      setIsAIDialogOpen(true);
-      return;
-    }
-    
-    console.log(`Analysis ${currentAnalysis} for symbol ${symbol || defaultSymbol} on timeframe ${timeframe} for ${duration} hours`);
-    
-    const providedPrice = price ? Number(price) : defaultPrice;
-    onSubmit(
-      symbol || defaultSymbol || "",
-      timeframe,
-      providedPrice,
-      isScalping,
-      isAI,
-      isSMC,
-      isICT,
-      isTurtleSoup,
-      isGann,
-      isWaves,
-      isPatternAnalysis,
-      isPriceAction,
-      isNeuralNetwork,
-      isRNN,
-      isTimeClustering,
-      isMultiVariance,
-      isCompositeCandlestick,
-      isBehavioral,
-      isFibonacci,
-      isFibonacciAdvanced,
-      duration
-    );
-  };
 
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
-      <SymbolInput 
-        value={symbol} 
-        onChange={setSymbol} 
-        defaultValue={defaultSymbol}
+      <ChartFormInputs 
+        symbol={symbol}
+        setSymbol={setSymbol}
+        price={price}
+        setPrice={setPrice}
+        timeframe={timeframe}
+        setTimeframe={setTimeframe}
+        duration={duration}
+        setDuration={setDuration}
+        defaultSymbol={defaultSymbol}
+        defaultPrice={defaultPriceString}
       />
-      <PriceInput 
-        value={price} 
-        onChange={setPrice}
-        defaultValue={defaultPriceString}
-      />
-      <AnalysisDurationInput
-        value={duration}
-        onChange={setDuration}
-      />
-      <TimeframeInput value={timeframe} onChange={setTimeframe} />
+      
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
         onSubmit={handleSubmit}
         onHistoryClick={onHistoryClick}
         currentAnalysis={currentAnalysis}
       />
+      
       <CombinedAnalysisDialog
         isOpen={isAIDialogOpen}
         onClose={() => setIsAIDialogOpen(false)}
