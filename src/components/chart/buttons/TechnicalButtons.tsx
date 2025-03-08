@@ -19,7 +19,8 @@ export const TechnicalButtons = ({
   onGannClick
 }: TechnicalButtonsProps) => {
   return (
-    <>
+    <div className="grid grid-cols-2 gap-2">
+      {/* SMC and ICT buttons */}
       <TooltipProvider>
         <UITooltip>
           <TooltipTrigger asChild>
@@ -58,6 +59,7 @@ export const TechnicalButtons = ({
         </UITooltip>
       </TooltipProvider>
 
+      {/* Turtle Soup and Gann buttons */}
       <TooltipProvider>
         <UITooltip>
           <TooltipTrigger asChild>
@@ -95,6 +97,6 @@ export const TechnicalButtons = ({
           </TooltipContent>
         </UITooltip>
       </TooltipProvider>
-    </>
+    </div>
   );
 };

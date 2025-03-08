@@ -15,7 +15,7 @@ export const WavesAndPriceActionGroup = ({
   onPriceActionClick
 }: WavesAndPriceActionGroupProps) => {
   return (
-    <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

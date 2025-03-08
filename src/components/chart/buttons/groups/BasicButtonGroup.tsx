@@ -22,7 +22,7 @@ export const BasicButtonGroup = ({
 }: BasicButtonGroupProps) => {
   return (
     <>
-      {/* Smart Analysis Button - Now positioned at the top */}
+      {/* Smart Analysis Button - Top position with full width */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -30,9 +30,9 @@ export const BasicButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onSmartAnalysisClick}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <Brain className="w-6 h-6" />
+              <Brain className="w-5 h-5" />
               <span className="whitespace-nowrap text-base font-medium">Smart Analysis</span>
             </Button>
           </TooltipTrigger>
@@ -42,8 +42,8 @@ export const BasicButtonGroup = ({
         </Tooltip>
       </TooltipProvider>
       
-      {/* Pattern and Scalping buttons moved below */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {/* Pattern and Scalping buttons - side by side */}
+      <div className="grid grid-cols-2 gap-2 mt-2">
         <PatternButton 
           isAnalyzing={isAnalyzing}
           onClick={onPatternClick}
@@ -56,7 +56,7 @@ export const BasicButtonGroup = ({
                 type="button"
                 disabled={isAnalyzing}
                 onClick={onScalpingClick}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md text-white h-12 sm:h-10 text-sm px-3 sm:px-4 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-gradient-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 shadow-md text-white h-12 sm:h-10 text-sm px-3 sm:px-4 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Activity className="w-4 h-4" />
                 <span className="whitespace-nowrap">Scalping</span>

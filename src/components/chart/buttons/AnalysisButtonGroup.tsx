@@ -79,7 +79,7 @@ export const AnalysisButtonGroup = ({
 
   return (
     <div className="space-y-4">
-      {/* Basic Analysis Group */}
+      {/* Smart Analysis Button - Full width */}
       <BasicButtonGroup 
         isAnalyzing={isAnalyzing}
         onPatternClick={(e) => onSubmit(e, false, false, false, false, false, false, false, true)}
@@ -88,22 +88,21 @@ export const AnalysisButtonGroup = ({
         currentAnalysis={currentAnalysis}
       />
 
-      {/* Technical Analysis Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <TechnicalButtons
-          isAnalyzing={isAnalyzing}
-          onSMCClick={(e) => onSubmit(e, false, false, true)}
-          onICTClick={(e) => onSubmit(e, false, false, false, true)}
-          onTurtleSoupClick={(e) => onSubmit(e, false, false, false, false, true)}
-          onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
-        />
-        
-        <WavesAndPriceActionGroup 
-          isAnalyzing={isAnalyzing}
-          onWavesClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
-          onPriceActionClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
-        />
-      </div>
+      {/* Technical Analysis Buttons - SMC & ICT, Turtle Soup & Gann */}
+      <TechnicalButtons
+        isAnalyzing={isAnalyzing}
+        onSMCClick={(e) => onSubmit(e, false, false, true)}
+        onICTClick={(e) => onSubmit(e, false, false, false, true)}
+        onTurtleSoupClick={(e) => onSubmit(e, false, false, false, false, true)}
+        onGannClick={(e) => onSubmit(e, false, false, false, false, false, true)}
+      />
+      
+      {/* Waves and Price Action Group */}
+      <WavesAndPriceActionGroup 
+        isAnalyzing={isAnalyzing}
+        onWavesClick={(e) => onSubmit(e, false, false, false, false, false, false, true)}
+        onPriceActionClick={(e) => onSubmit(e, false, false, false, false, false, false, false, false, true)}
+      />
 
       {/* Fibonacci Analysis Buttons */}
       <FibonacciButtonGroup 
