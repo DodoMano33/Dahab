@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Notification } from "./types";
 import { setupNotificationToast } from "./notification-utils";
 
-type NotificationsUpdateHandler = (notifications: Notification[]) => void;
+type NotificationsUpdateHandler = (updater: (prev: Notification[]) => Notification[]) => void;
 
 export function useRealTimeNotifications(
   userId: string | undefined,
