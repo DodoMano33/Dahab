@@ -36,8 +36,14 @@ export const saveAnalysis = async ({
 
   // Map Fibonacci analysis types to valid database values
   let validAnalysisType = analysisType;
-  if (analysisType === "فيبوناتشي" || analysisType === "فيبوناتشي متقدم" || 
-      analysisType === "fibonacci" || analysisType === "fibonacci_advanced") {
+  const analysisTypeStr = String(analysisType).toLowerCase();
+  
+  if (
+    analysisTypeStr === "فيبوناتشي" || 
+    analysisTypeStr === "فيبوناتشي متقدم" || 
+    analysisTypeStr === "fibonacci" || 
+    analysisTypeStr === "fibonacci_advanced"
+  ) {
     validAnalysisType = "فيبوناتشي" as AnalysisType;
   }
 
