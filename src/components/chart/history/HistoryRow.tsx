@@ -15,7 +15,6 @@ import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { DateCell } from "./cells/DateCell";
 import { SymbolCell } from "./cells/SymbolCell";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface HistoryRowProps {
   id: string;
@@ -46,11 +45,10 @@ export const HistoryRow = ({
   last_checked_price,
   last_checked_at,
 }: HistoryRowProps) => {
-  // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
-  const displayAnalysisType = analysis.pattern;
-  
   // تشخيص وقت آخر فحص
   console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
+  console.log(`Analysis data for ${id}:`, analysis);
+  console.log(`Analysis type for ${id}:`, analysisType);
   
   // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {
@@ -95,7 +93,7 @@ export const HistoryRow = ({
       <CurrentPriceCell price={currentPrice} />
       <AnalysisTypeCell 
         analysisType={analysisType} 
-        pattern={displayAnalysisType}
+        pattern={analysis.pattern}
         activation_type={analysis.activation_type}
       />
       <TimeframeCell timeframe={timeframe} />

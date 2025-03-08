@@ -60,8 +60,8 @@ export const AnalysisTypeCell = ({
     return 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300';
   };
 
-  // Determine if we should use the displayed type name or the pattern
-  const displayText = displayName !== 'يومي' ? displayName : pattern || analysisType;
+  // Use the pattern directly if available, otherwise use the display name
+  const displayText = pattern || displayName;
 
   return (
     <TableCell className="w-[120px] text-center p-1">
@@ -72,9 +72,9 @@ export const AnalysisTypeCell = ({
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
                 {displayText || 'غير محدد'}
               </Badge>
-              {pattern && pattern !== displayText && (
+              {pattern && displayName && pattern !== displayName && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
-                  {pattern}
+                  {displayName}
                 </Badge>
               )}
               <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${
@@ -89,6 +89,7 @@ export const AnalysisTypeCell = ({
           <TooltipContent>
             <p>{(activation_type === 'تلقائي' || activation_type === 'Automatic') ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
             {pattern && <p className="text-xs mt-1">{pattern}</p>}
+            {displayName && displayName !== pattern && <p className="text-xs mt-1">{displayName}</p>}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

@@ -1,4 +1,3 @@
-
 // نقل دالة getStrategyName لتكون قبل استخدامها
 export const getStrategyName = (type: string): string => {
   if (!type) return "تحليل فني";
