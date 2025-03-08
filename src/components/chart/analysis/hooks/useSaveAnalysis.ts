@@ -31,8 +31,18 @@ export const useSaveAnalysis = () => {
       // Log the original analysis type for debugging
       console.log("Original analysis type before mapping:", analysisType);
       
-      // Map the analysis type to a valid database enum value
-      const mappedAnalysisType = mapToAnalysisType(analysisType);
+      // Special case handling for known valid types (direct pass-through)
+      let mappedAnalysisType: ValidAnalysisType;
+      
+      // Handle SMC and Scalping directly to ensure consistency
+      if (analysisType === "SMC" || analysisType === "Scalping") {
+        console.log(`Direct handling for known type: ${analysisType}`);
+        mappedAnalysisType = analysisType as ValidAnalysisType; 
+      } else {
+        // Map other analysis types to valid database enum values
+        mappedAnalysisType = mapToAnalysisType(analysisType);
+      }
+      
       console.log("Mapped analysis type:", mappedAnalysisType);
       
       // Check if the mapped type is valid

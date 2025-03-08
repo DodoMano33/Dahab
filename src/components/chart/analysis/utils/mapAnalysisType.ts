@@ -5,10 +5,22 @@ import { analysisTypeMap, ValidAnalysisType, VALID_ANALYSIS_TYPES } from "./cons
  * Maps analysis type names to valid database enum values
  */
 export const mapToAnalysisType = (analysisType: string): ValidAnalysisType => {
+  // Early exit if the input is empty
+  if (!analysisType) {
+    console.log("Empty analysis type provided, defaulting to Normal");
+    return "Normal";
+  }
+  
   // Log the original analysis type for debugging
   console.log("Mapping analysis type from:", analysisType);
   
-  // Check if it's already a valid type
+  // Special cases - if it's directly one of SMC or Scalping, return immediately
+  if (analysisType === "SMC" || analysisType === "Scalping") {
+    console.log(`Analysis type "${analysisType}" is already valid`);
+    return analysisType as ValidAnalysisType;
+  }
+  
+  // Check if it's already a valid type (array-based approach for exact match)
   if (VALID_ANALYSIS_TYPES.includes(analysisType as ValidAnalysisType)) {
     console.log(`Analysis type "${analysisType}" is already valid`);
     return analysisType as ValidAnalysisType;

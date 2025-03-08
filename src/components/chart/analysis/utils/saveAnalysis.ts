@@ -35,12 +35,22 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Ensure the analysis type is valid according to database constraints
-  let validAnalysisType = analysisType;
-  if (!isValidAnalysisType(analysisType)) {
-    console.warn(`Analysis type "${analysisType}" is not in the allowed list, mapping to a valid type`);
-    validAnalysisType = mapToAnalysisType(analysisType);
-    console.log(`Mapped to valid type: "${validAnalysisType}"`);
+  // Special handling for key analysis types to ensure consistency
+  let validAnalysisType: AnalysisType;
+  
+  // Directly use SMC and Scalping without mapping
+  if (analysisType === "SMC" || analysisType === "Scalping") {
+    console.log(`Using direct analysis type: ${analysisType}`);
+    validAnalysisType = analysisType;
+  } else {
+    // For other types, ensure it's valid according to database constraints
+    if (!isValidAnalysisType(analysisType)) {
+      console.warn(`Analysis type "${analysisType}" is not in the allowed list, mapping to a valid type`);
+      validAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
+      console.log(`Mapped to valid type: "${validAnalysisType}"`);
+    } else {
+      validAnalysisType = analysisType;
+    }
   }
 
   // Also check the analysis type in the result

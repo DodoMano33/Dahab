@@ -55,6 +55,8 @@ export const analysisTypeMap: Record<string, ValidAnalysisType> = {
   "smart": "Smart",
   "daily": "Daily",
   "normal": "Normal",
+  
+  // Direct mappings (exact casing)
   "ICT": "ICT",
   "SMC": "SMC",
   "Turtle Soup": "Turtle Soup",
@@ -71,6 +73,9 @@ export const analysisTypeMap: Record<string, ValidAnalysisType> = {
   "Multi Variance": "Multi Variance",
   "Composite Candlestick": "Composite Candlestick",
   "Behavioral Analysis": "Behavioral Analysis",
+  "Normal": "Normal",
+  "Smart": "Smart",
+  "Daily": "Daily",
   
   // Arabic mappings
   "مضاربة": "Scalping", 
