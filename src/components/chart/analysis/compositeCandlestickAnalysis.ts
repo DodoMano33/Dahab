@@ -79,7 +79,7 @@ export const analyzeCompositeCandlestick = async (
       reason: `Entry based on ${pattern} candlestick pattern`
     },
     analysisType: "شمعات مركبة",
-    activation_type: "تلقائي"
+    activation_type: "تلقائي"  // Always setting to automatic for this analysis type
   };
   
   return result;

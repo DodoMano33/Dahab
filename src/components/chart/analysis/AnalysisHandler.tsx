@@ -105,7 +105,8 @@ export const useAnalysisHandler = () => {
         selectedTypes: selectedTypes || [],
         isAI,
         options,
-        duration
+        duration,
+        isAutomatic: false // Manual by default for direct user analysis
       });
       
       // Store the image and analysis result
