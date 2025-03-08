@@ -23,7 +23,7 @@ export const AdvancedAnalysisGroup = ({
   onBehavioralClick
 }: AdvancedAnalysisGroupProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -31,7 +31,7 @@ export const AdvancedAnalysisGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onNeuralNetworkClick}
-              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-red-500 hover:bg-red-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Network className="w-4 h-4" />
               <span className="whitespace-nowrap">Neural Networks</span>
@@ -50,7 +50,7 @@ export const AdvancedAnalysisGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onRNNClick}
-              className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Cpu className="w-4 h-4" />
               <span className="whitespace-nowrap">Recurrent Neural Networks</span>
@@ -69,7 +69,7 @@ export const AdvancedAnalysisGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onTimeClusteringClick}
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Clock className="w-4 h-4" />
               <span className="whitespace-nowrap">Time Clustering</span>
@@ -88,7 +88,7 @@ export const AdvancedAnalysisGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onMultiVarianceClick}
-              className="bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-600 hover:to-lime-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-lime-500 hover:bg-lime-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Layers className="w-4 h-4" />
               <span className="whitespace-nowrap">Multi Variance</span>
@@ -107,7 +107,7 @@ export const AdvancedAnalysisGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onCompositeCandlestickClick}
-              className="bg-gradient-to-r from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-violet-500 hover:bg-violet-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <BarChart3 className="w-4 h-4" />
               <span className="whitespace-nowrap">Composite Candlestick</span>
@@ -126,7 +126,7 @@ export const AdvancedAnalysisGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onBehavioralClick}
-              className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <User className="w-4 h-4" />
               <span className="whitespace-nowrap">Behavioral Analysis</span>

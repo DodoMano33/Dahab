@@ -1,5 +1,5 @@
 
-import { Waves, CandlestickChart } from "lucide-react";
+import { Waves, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -15,7 +15,7 @@ export const WavesAndPriceActionGroup = ({
   onPriceActionClick
 }: WavesAndPriceActionGroupProps) => {
   return (
-    <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -23,7 +23,7 @@ export const WavesAndPriceActionGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onWavesClick}
-              className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-cyan-500 hover:bg-cyan-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Waves className="w-4 h-4" />
               <span className="whitespace-nowrap">Waves Analysis</span>
@@ -42,9 +42,9 @@ export const WavesAndPriceActionGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onPriceActionClick}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
-              <CandlestickChart className="w-4 h-4" />
+              <BarChart2 className="w-4 h-4" />
               <span className="whitespace-nowrap">Price Action Analysis</span>
             </Button>
           </TooltipTrigger>

@@ -15,7 +15,7 @@ export const FibonacciButtonGroup = ({
   onFibonacciAdvancedClick
 }: FibonacciButtonGroupProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -23,7 +23,7 @@ export const FibonacciButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onFibonacciClick}
-              className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Divide className="w-4 h-4" />
               <span className="whitespace-nowrap">Fibonacci Analysis</span>
@@ -42,7 +42,7 @@ export const FibonacciButtonGroup = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onFibonacciAdvancedClick}
-              className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Target className="w-4 h-4" />
               <span className="whitespace-nowrap">Advanced Fibonacci</span>

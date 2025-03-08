@@ -1,7 +1,6 @@
 
-import { Activity, Brain } from "lucide-react";
+import { Activity, Brain, BarChart2, Triangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PatternButton } from "../PatternButton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,33 +20,49 @@ export const BasicButtonGroup = ({
   currentAnalysis
 }: BasicButtonGroupProps) => {
   return (
-    <>
+    <div className="space-y-2">
       {/* Smart Analysis Button - Now positioned at the top */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              disabled={isAnalyzing}
-              onClick={onSmartAnalysisClick}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Brain className="w-6 h-6" />
-              <span className="whitespace-nowrap text-base font-medium">Smart Analysis</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            <p>Advanced analysis using AI to combine multiple technical analysis methods for a comprehensive view</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="w-full">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onSmartAnalysisClick}
+                className="w-full bg-green-500 hover:bg-green-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
+              >
+                <Brain className="w-5 h-5" />
+                <span className="whitespace-nowrap text-base font-medium">Smart Analysis</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>Advanced analysis using AI to combine multiple technical analysis methods for a comprehensive view</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       
-      {/* Pattern and Scalping buttons moved below */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <PatternButton 
-          isAnalyzing={isAnalyzing}
-          onClick={onPatternClick}
-        />
+      {/* Pattern and Scalping buttons moved below - side by side */}
+      <div className="grid grid-cols-2 gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                disabled={isAnalyzing}
+                onClick={onPatternClick}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
+              >
+                <Triangle className="w-4 h-4" />
+                <span className="whitespace-nowrap">Patterns Analysis</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <p>Analysis of recurring technical patterns on the chart to predict future price movements</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <TooltipProvider>
           <Tooltip>
@@ -56,7 +71,7 @@ export const BasicButtonGroup = ({
                 type="button"
                 disabled={isAnalyzing}
                 onClick={onScalpingClick}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md text-white h-12 sm:h-10 text-sm px-3 sm:px-4 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
               >
                 <Activity className="w-4 h-4" />
                 <span className="whitespace-nowrap">Scalping</span>
@@ -74,6 +89,6 @@ export const BasicButtonGroup = ({
           Analysis Type: {currentAnalysis}
         </Badge>
       )}
-    </>
+    </div>
   );
 };

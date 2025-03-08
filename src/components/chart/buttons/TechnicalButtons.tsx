@@ -19,7 +19,7 @@ export const TechnicalButtons = ({
   onGannClick
 }: TechnicalButtonsProps) => {
   return (
-    <>
+    <div className="grid grid-cols-2 gap-2">
       <TooltipProvider>
         <UITooltip>
           <TooltipTrigger asChild>
@@ -27,7 +27,7 @@ export const TechnicalButtons = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onSMCClick}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <TrendingUp className="w-4 h-4" />
               <span className="whitespace-nowrap">SMC Analysis</span>
@@ -46,7 +46,7 @@ export const TechnicalButtons = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onICTClick}
-              className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Building2 className="w-4 h-4" />
               <span className="whitespace-nowrap">ICT Analysis</span>
@@ -65,7 +65,7 @@ export const TechnicalButtons = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onTurtleSoupClick}
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-green-500 hover:bg-green-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Turtle className="w-4 h-4" />
               <span className="whitespace-nowrap">Turtle Soup Analysis</span>
@@ -84,7 +84,7 @@ export const TechnicalButtons = ({
               type="button"
               disabled={isAnalyzing}
               onClick={onGannClick}
-              className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 shadow-md text-white h-12 sm:h-10 flex items-center justify-center gap-2 text-sm px-3 sm:px-4 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white h-12 sm:h-10 flex items-center justify-center gap-2 rounded-lg transition-all duration-300 ease-in-out"
             >
               <Activity className="w-4 h-4" />
               <span className="whitespace-nowrap">Gann Analysis</span>
@@ -95,6 +95,6 @@ export const TechnicalButtons = ({
           </TooltipContent>
         </UITooltip>
       </TooltipProvider>
-    </>
+    </div>
   );
 };
