@@ -91,7 +91,8 @@ export const analyzeSMCChart = async (
         targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
-        analysisType: "تحليل SMC"
+        analysisType: "تحليل SMC",
+        activation_type: "تلقائي"
       };
 
       console.log("SMC Analysis Results:", analysisResult);

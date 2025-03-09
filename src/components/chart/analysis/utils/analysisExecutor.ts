@@ -81,6 +81,26 @@ export const executeAnalysis = async (
   if (isFibonacci) selectedStrategies.push("Fibonacci");
   if (isFibonacciAdvanced) selectedStrategies.push("Fibonacci Advanced");
 
+  // Map analysis types to standardized database values
+  const analysisTypeMap: Record<string, string> = {
+    "Patterns": "تحليل الأنماط",
+    "Waves": "تحليل الموجات",
+    "Gann": "تحليل جان",
+    "Turtle Soup": "Turtle Soup",
+    "ICT": "تحليل ICT",
+    "SMC": "تحليل SMC",
+    "Scalping": "سكالبينج",
+    "Price Action": "حركة السعر",
+    "Neural Networks": "شبكات عصبية",
+    "RNN": "شبكات RNN",
+    "Time Clustering": "تصفيق زمني",
+    "Multi Variance": "تباين متعدد",
+    "Composite Candlestick": "شمعات مركبة",
+    "Behavioral": "تحليل سلوكي",
+    "Fibonacci": "فيبوناتشي",
+    "Fibonacci Advanced": "فيبوناتشي متقدم"
+  };
+
   let analysis: AnalysisData;
 
   if (selectedStrategies.length > 1) {
@@ -174,6 +194,16 @@ export const executeAnalysis = async (
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
+    }
+    
+    // Make sure we set the standard database-compatible analysis type
+    if (analysis && strategy in analysisTypeMap) {
+      analysis.analysisType = analysisTypeMap[strategy];
+    }
+    
+    // Ensure automatic analyses have the correct activation type
+    if (analysis && !analysis.activation_type) {
+      analysis.activation_type = "تلقائي";
     }
   }
 

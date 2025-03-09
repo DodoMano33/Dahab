@@ -34,20 +34,53 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Map Fibonacci analysis types to valid database values
+  // Define allowed analysis types
+  const allowedTypes = [
+    "فيبوناتشي", "فيبوناتشي متقدم", "تحليل الموجات", "حركة السعر", 
+    "تحليل ICT", "تحليل SMC", "تحليل الأنماط", "سكالبينج", 
+    "تحليل جان", "Turtle Soup", "شبكات عصبية", "شبكات RNN", 
+    "تباين متعدد", "تصفيق زمني", "شمعات مركبة", "تحليل سلوكي", "ذكي"
+  ];
+
+  // Map any legacy or non-standard types to allowed types
+  const typeMapping: Record<string, string> = {
+    "normal": "تحليل الأنماط",
+    "pattern": "تحليل الأنماط",
+    "patterns": "تحليل الأنماط",
+    "fibonacci": "فيبوناتشي",
+    "fibonacci_advanced": "فيبوناتشي متقدم",
+    "waves": "تحليل الموجات",
+    "price_action": "حركة السعر",
+    "ict": "تحليل ICT",
+    "smc": "تحليل SMC",
+    "scalping": "سكالبينج",
+    "gann": "تحليل جان",
+    "turtle_soup": "Turtle Soup",
+    "neural_network": "شبكات عصبية",
+    "rnn": "شبكات RNN",
+    "multi_variance": "تباين متعدد",
+    "time_clustering": "تصفيق زمني",
+    "composite_candlestick": "شمعات مركبة",
+    "behavioral": "تحليل سلوكي",
+    "smart": "ذكي"
+  };
+
+  // Normalize the analysis type 
   let validAnalysisType = analysisType;
   const analysisTypeStr = String(analysisType).toLowerCase();
   
-  if (
-    analysisTypeStr === "فيبوناتشي" || 
-    analysisTypeStr === "فيبوناتشي متقدم" || 
-    analysisTypeStr === "fibonacci" || 
-    analysisTypeStr === "fibonacci_advanced"
-  ) {
-    validAnalysisType = "فيبوناتشي" as AnalysisType;
+  if (typeMapping[analysisTypeStr]) {
+    validAnalysisType = typeMapping[analysisTypeStr] as AnalysisType;
   }
 
-  // Ensure analysisType is a valid value for the database
+  // Check if the normalized type is in our allowed list
+  if (!allowedTypes.includes(validAnalysisType as string)) {
+    console.error("Invalid analysis type after normalization:", validAnalysisType);
+    // Default to pattern analysis if we still don't have a valid type
+    validAnalysisType = "تحليل الأنماط" as AnalysisType;
+  }
+
+  // Log the analysis type transformation
   console.log("Original analysis type:", analysisType);
   console.log("Mapped analysis type being saved to database:", validAnalysisType);
 
@@ -57,11 +90,11 @@ export const saveAnalysis = async ({
     analysisResult.analysisType = validAnalysisType;
   }
 
-  // لا تقم بتغيير activation_type إذا كان محدداً بالفعل
+  // Don't change activation_type if it's already set
   if (!analysisResult.activation_type) {
     console.log("No activation_type provided, setting a default");
     
-    // للتحليلات التي نعرف أنها تلقائية أو يدوية بناءً على أنماط محددة
+    // For analyses we know are automatic or manual based on specific patterns
     if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
       analysisResult.activation_type = "يدوي";
       console.log("Set activation_type to يدوي based on pattern match");
@@ -69,11 +102,11 @@ export const saveAnalysis = async ({
       analysisResult.activation_type = "تلقائي";
       console.log("Set activation_type to تلقائي based on pattern match");
     } else if (analysisResult.analysisType === "ذكي" || analysisResult.analysisType === "شمعات مركبة") {
-      // التحليل الذكي وتحليل الشمعات المركبة دائمًا تلقائي
+      // Smart analysis and composite candlestick analysis are always automatic
       analysisResult.activation_type = "تلقائي";
       console.log("Set activation_type to تلقائي based on analysisType");
     } else {
-      // افتراضيًا يكون يدوي
+      // Default is manual
       analysisResult.activation_type = "يدوي";
       console.log("Set default activation_type to يدوي");
     }

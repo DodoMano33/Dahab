@@ -1,3 +1,4 @@
+
 import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
@@ -30,96 +31,112 @@ export const useSaveAnalysis = () => {
     try {
       console.log("Original analysis type before mapping:", analysisType);
       
-      const isFibonacciAnalysis = String(analysisType).toLowerCase().includes("fibonacci") || 
-                                  String(analysisType).toLowerCase().includes("فيبوناتشي");
+      // Create a mapping for the special analysis types that need normalization
+      const typeMapping: Record<string, string> = {
+        "fibonacci": "فيبوناتشي",
+        "fibonacci_advanced": "فيبوناتشي متقدم",
+        "waves": "تحليل الموجات",
+        "price_action": "حركة السعر",
+        "ict": "تحليل ICT",
+        "smc": "تحليل SMC",
+        "patterns": "تحليل الأنماط",
+        "normal": "تحليل الأنماط",
+        "pattern": "تحليل الأنماط",
+        "scalping": "سكالبينج",
+        "gann": "تحليل جان",
+        "turtle_soup": "Turtle Soup",
+        "neural_network": "شبكات عصبية",
+        "rnn": "شبكات RNN",
+        "multi_variance": "تباين متعدد",
+        "time_clustering": "تصفيق زمني",
+        "composite_candlestick": "شمعات مركبة",
+        "behavioral": "تحليل سلوكي"
+      };
       
-      const isFibonacciAdvanced = String(analysisType).toLowerCase().includes("advanced") || 
-                                  String(analysisType).toLowerCase().includes("متقدم");
+      // Check if a direct mapping exists
+      let mappedAnalysisType = typeMapping[analysisType.toLowerCase()];
       
-      const mappedAnalysisType = isFibonacciAnalysis 
-        ? (isFibonacciAdvanced ? "فيبوناتشي متقدم" : "فيبوناتشي") 
-        : mapToAnalysisType(analysisType);
+      // If no direct mapping, use the more flexible mapToAnalysisType function
+      if (!mappedAnalysisType) {
+        mappedAnalysisType = mapToAnalysisType(analysisType);
+      }
         
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      if (!result.analysisResult.analysisType) {
-        console.log("Setting analysisType as it was missing:", mappedAnalysisType);
-        result.analysisResult.analysisType = mappedAnalysisType;
-      } else if (isFibonacciAnalysis) {
-        const fibType = isFibonacciAdvanced ? "فيبوناتشي متقدم" : "فيبوناتشي";
-        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to", fibType);
-        result.analysisResult.analysisType = fibType;
-      } else {
-        console.log("Ensuring analysis type is one of the 16 specified types");
-        result.analysisResult.analysisType = mappedAnalysisType;
+      // If we have a result.analysisResult, ensure it has the correct analysisType
+      if (result && result.analysisResult) {
+        if (!result.analysisResult.analysisType) {
+          console.log("Setting analysisType as it was missing:", mappedAnalysisType);
+          result.analysisResult.analysisType = mappedAnalysisType;
+        } else {
+          // Check if the result's analysisType needs normalization
+          const lowerCaseType = result.analysisResult.analysisType.toLowerCase();
+          if (typeMapping[lowerCaseType]) {
+            console.log("Normalizing analysis type from", result.analysisResult.analysisType, "to", typeMapping[lowerCaseType]);
+            result.analysisResult.analysisType = typeMapping[lowerCaseType];
+          }
+        }
       }
       
       if (isAutomatic) {
         console.log("Setting activation_type to تلقائي for automatic analysis");
-        result.analysisResult.activation_type = "تلقائي";
-      } else if (!result.analysisResult.activation_type) {
+        if (result && result.analysisResult) {
+          result.analysisResult.activation_type = "تلقائي";
+        }
+      } else if (result && result.analysisResult && !result.analysisResult.activation_type) {
         console.log("Setting default activation_type to يدوي");
         result.analysisResult.activation_type = "يدوي";
-      } else {
+      } else if (result && result.analysisResult) {
         console.log("Keeping existing activation_type:", result.analysisResult.activation_type);
       }
       
-      const analysisResultWithMappedType = {
-        ...result.analysisResult,
-        analysisType: mappedAnalysisType,
-        activation_type: result.analysisResult.activation_type
-      };
+      // Make sure we have a valid analysis type for the save operation
+      const validAnalysisType = (mappedAnalysisType || "تحليل الأنماط") as AnalysisType;
       
-      console.log("Final analysis result with type:", analysisResultWithMappedType);
-      
-      try {
-        console.log("Saving analysis with userId:", userId);
-        console.log("Saving analysis with symbol:", symbol);
-        console.log("Saving analysis with currentPrice:", currentPrice);
-        console.log("Saving analysis with analysisType:", mappedAnalysisType);
-        console.log("Saving analysis with timeframe:", timeframe);
-        console.log("Saving analysis with duration:", duration);
-        console.log("Saving analysis with activation_type:", analysisResultWithMappedType.activation_type);
+      // Log all the details before saving
+      console.log("Final analysis result with type:", result.analysisResult);
+      console.log("Saving analysis with userId:", userId);
+      console.log("Saving analysis with symbol:", symbol);
+      console.log("Saving analysis with currentPrice:", currentPrice);
+      console.log("Saving analysis with analysisType:", validAnalysisType);
+      console.log("Saving analysis with timeframe:", timeframe);
+      console.log("Saving analysis with duration:", duration);
+      console.log("Saving analysis with activation_type:", result.analysisResult.activation_type);
         
-        const savedData = await saveAnalysis({
-          userId,
+      const savedData = await saveAnalysis({
+        userId,
+        symbol,
+        currentPrice,
+        analysisResult: result.analysisResult,
+        analysisType: validAnalysisType,
+        timeframe,
+        durationHours: duration
+      });
+
+      if (savedData && onAnalysisComplete) {
+        const newHistoryEntry: SearchHistoryItem = {
+          id: savedData.id,
+          date: new Date(),
           symbol,
           currentPrice,
-          analysisResult: analysisResultWithMappedType,
-          analysisType: mappedAnalysisType as AnalysisType,
+          analysis: result.analysisResult,
+          targetHit: false,
+          stopLossHit: false,
+          analysisType: validAnalysisType,
           timeframe,
-          durationHours: duration
-        });
-
-        if (savedData && onAnalysisComplete) {
-          const newHistoryEntry: SearchHistoryItem = {
-            id: savedData.id,
-            date: new Date(),
-            symbol,
-            currentPrice,
-            analysis: analysisResultWithMappedType,
-            targetHit: false,
-            stopLossHit: false,
-            analysisType: mappedAnalysisType as AnalysisType,
-            timeframe,
-            analysis_duration_hours: duration
-          };
-          
-          console.log("Adding new analysis to history:", newHistoryEntry);
-          onAnalysisComplete(newHistoryEntry);
-        }
+          analysis_duration_hours: duration
+        };
         
-        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
-          duration: 3000,
-        });
-        
-      } catch (dbError) {
-        console.error("Database error saving analysis:", dbError);
-        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات", {
-          duration: 3000,
-        });
-        throw dbError;
+        console.log("Adding new analysis to history:", newHistoryEntry);
+        onAnalysisComplete(newHistoryEntry);
       }
+      
+      toast.success(`تم إكمال تحليل ${mappedAnalysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+        duration: 3000,
+      });
+      
+      return savedData;
+        
     } catch (error) {
       console.error("Error saving analysis:", error);
       toast.error("حدث خطأ أثناء حفظ التحليل", {
