@@ -91,10 +91,9 @@ export const useAutoAnalysis = () => {
             if (result && result.analysisResult) {
               console.log("Analysis completed successfully:", result);
               
-              // Ensure the activation_type is set to automatic for auto analysis
-              if (!result.analysisResult.activation_type) {
-                result.analysisResult.activation_type = "تلقائي";
-              }
+              // تأكد دائمًا من تعيين القيمة الصحيحة للتحليل التلقائي
+              result.analysisResult.activation_type = "تلقائي";
+              console.log("Explicitly set activation_type to تلقائي for auto analysis");
               
               await saveAnalysisResult({
                 userId: user.id,

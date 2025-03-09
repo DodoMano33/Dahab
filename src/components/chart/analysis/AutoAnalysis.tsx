@@ -73,8 +73,8 @@ export const AutoAnalysis = ({
         onAnalysisComplete: (result) => {
           console.log("Auto analysis result:", result);
           if (result && onAnalysisComplete) {
-            // Make sure the result has the correct activation_type for auto analysis
-            if (result.analysis && !result.analysis.activation_type) {
+            // تأكد دائمًا من تعيين القيمة الصحيحة للتحليل التلقائي
+            if (result.analysis) {
               result.analysis.activation_type = "تلقائي";
             }
             onAnalysisComplete(result);

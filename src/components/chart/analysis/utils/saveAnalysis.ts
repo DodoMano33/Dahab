@@ -57,18 +57,28 @@ export const saveAnalysis = async ({
     analysisResult.analysisType = validAnalysisType;
   }
 
-  // Ensure the activation_type is set properly
+  // لا تقم بتغيير activation_type إذا كان محدداً بالفعل
   if (!analysisResult.activation_type) {
-    console.log("Setting default activation_type as it was not provided");
-    // For certain specific patterns we know are automatic
+    console.log("No activation_type provided, setting a default");
+    
+    // للتحليلات التي نعرف أنها تلقائية أو يدوية بناءً على أنماط محددة
     if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
       analysisResult.activation_type = "يدوي";
+      console.log("Set activation_type to يدوي based on pattern match");
     } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
       analysisResult.activation_type = "تلقائي";
+      console.log("Set activation_type to تلقائي based on pattern match");
+    } else if (analysisResult.analysisType === "ذكي" || analysisResult.analysisType === "شمعات مركبة") {
+      // التحليل الذكي وتحليل الشمعات المركبة دائمًا تلقائي
+      analysisResult.activation_type = "تلقائي";
+      console.log("Set activation_type to تلقائي based on analysisType");
     } else {
-      // Default to manual if nothing else matches
+      // افتراضيًا يكون يدوي
       analysisResult.activation_type = "يدوي";
+      console.log("Set default activation_type to يدوي");
     }
+  } else {
+    console.log("Using provided activation_type:", analysisResult.activation_type);
   }
 
   console.log("Final activation_type before saving:", analysisResult.activation_type);

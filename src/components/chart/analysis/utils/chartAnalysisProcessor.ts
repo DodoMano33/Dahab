@@ -108,11 +108,9 @@ export const processChartAnalysis = async ({
       throw new Error("لم يتم العثور على نتائج التحليل");
     }
 
-    // Set the activation_type based on how the analysis was performed
-    if (!analysisResult.activation_type) {
-      analysisResult.activation_type = isAutomatic ? "تلقائي" : "يدوي";
-      console.log(`Setting activation_type to ${analysisResult.activation_type} based on isAutomatic=${isAutomatic}`);
-    }
+    // تعيين نوع التنشيط بناءً بشكل صريح على كيفية إجراء التحليل
+    analysisResult.activation_type = isAutomatic ? "تلقائي" : "يدوي";
+    console.log(`Setting activation_type explicitly to ${analysisResult.activation_type} based on isAutomatic=${isAutomatic}`);
 
     console.log("Analysis completed successfully:", analysisResult);
     

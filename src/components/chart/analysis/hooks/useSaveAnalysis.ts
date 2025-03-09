@@ -50,13 +50,15 @@ export const useSaveAnalysis = () => {
         result.analysisResult.analysisType = "فيبوناتشي";
       }
       
-      // Set activation_type for automatic analysis
-      if (isAutomatic && !result.analysisResult.activation_type) {
+      // تعيين activation_type بشكل صريح
+      if (isAutomatic) {
         console.log("Setting activation_type to تلقائي for automatic analysis");
         result.analysisResult.activation_type = "تلقائي";
       } else if (!result.analysisResult.activation_type) {
         console.log("Setting default activation_type to يدوي");
         result.analysisResult.activation_type = "يدوي";
+      } else {
+        console.log("Keeping existing activation_type:", result.analysisResult.activation_type);
       }
       
       // Update the analysis result's analysisType to the mapped value
