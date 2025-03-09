@@ -54,7 +54,7 @@ export const useSaveAnalysis = () => {
         console.log("Setting analysisType as it was missing:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
       } else {
-        // Ensure the analysis type is mapped to one of the accepted types
+        // Ensure the analysis type in result matches what we're saving to database
         result.analysisResult.analysisType = mappedAnalysisType;
         console.log("Updated analysis type in result to:", mappedAnalysisType);
       }

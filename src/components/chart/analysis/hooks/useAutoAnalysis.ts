@@ -48,22 +48,45 @@ export const useAutoAnalysis = () => {
             console.log(`Running analysis for ${symbol} on ${timeframe} with type ${analysisType} and duration ${duration}`);
             
             // Map analysis type to boolean flags
-            const isFibonacciAdvanced = analysisType === "fibonacci_advanced" || analysisType === "تحليل فيبوناتشي متقدم";
-            const isFibonacci = analysisType === "fibonacci";
-            const isScalping = analysisType === "scalping";
-            const isSMC = analysisType === "smc";
-            const isICT = analysisType === "ict";
-            const isTurtleSoup = analysisType === "turtle_soup";
-            const isGann = analysisType === "gann";
-            const isWaves = analysisType === "waves";
-            const isPatternAnalysis = analysisType === "patterns";
-            const isPriceAction = analysisType === "price_action";
-            const isNeuralNetwork = analysisType === "neural_network";
-            const isRNN = analysisType === "rnn";
-            const isTimeClustering = analysisType === "time_clustering";
-            const isMultiVariance = analysisType === "multi_variance";
-            const isCompositeCandlestick = analysisType === "composite_candlestick";
-            const isBehavioral = analysisType === "behavioral";
+            // Normalize the analysis type for consistency
+            const normalizedType = analysisType.toLowerCase().replace(/\s+/g, '');
+            
+            const isFibonacciAdvanced = normalizedType.includes("fibonacci_advanced") || 
+                                       normalizedType.includes("فيبوناتشيمتقدم");
+            const isFibonacci = normalizedType.includes("fibonacci") && !isFibonacciAdvanced;
+            const isScalping = normalizedType.includes("scalping") || normalizedType.includes("سكالبينج");
+            const isSMC = normalizedType.includes("smc");
+            const isICT = normalizedType.includes("ict");
+            const isTurtleSoup = normalizedType.includes("turtlesoup") || normalizedType.includes("حساءالسلحفاة");
+            const isGann = normalizedType.includes("gann") || normalizedType.includes("جان");
+            const isWaves = normalizedType.includes("waves") || normalizedType.includes("موجات");
+            const isPatternAnalysis = normalizedType.includes("pattern") || normalizedType.includes("أنماط") || normalizedType.includes("انماط");
+            const isPriceAction = normalizedType.includes("priceaction") || normalizedType.includes("حركةالسعر");
+            const isNeuralNetwork = normalizedType.includes("neuralnetwork") || normalizedType.includes("شبكاتعصبية");
+            const isRNN = normalizedType.includes("rnn");
+            const isTimeClustering = normalizedType.includes("timeclustering") || normalizedType.includes("تصفيقزمني");
+            const isMultiVariance = normalizedType.includes("multivariance") || normalizedType.includes("تباينمتعدد");
+            const isCompositeCandlestick = normalizedType.includes("compositecandlestick") || normalizedType.includes("شمعاتمركبة");
+            const isBehavioral = normalizedType.includes("behavioral") || normalizedType.includes("سلوكي");
+            
+            console.log("Analysis flags:", {
+              isFibonacci, 
+              isFibonacciAdvanced,
+              isScalping,
+              isSMC,
+              isICT,
+              isTurtleSoup,
+              isGann,
+              isWaves,
+              isPatternAnalysis,
+              isPriceAction,
+              isNeuralNetwork,
+              isRNN,
+              isTimeClustering,
+              isMultiVariance,
+              isCompositeCandlestick,
+              isBehavioral
+            });
             
             const result = await handleTradingViewConfig(
               symbol,

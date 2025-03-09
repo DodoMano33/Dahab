@@ -1,97 +1,46 @@
 import { AnalysisData } from "@/types/analysis";
-import { addMinutes, addHours, addDays } from "date-fns";
-import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
+import { calculateTargetDate } from "./utils/dateUtils";
 
 export const analyzeWavesChart = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل Waves للرمز:", timeframe);
-
-  // تعديل النطاق بناءً على الإطار الزمني
-  const multipliers = getTimeframeMultipliers(timeframe);
-  const stopLossMultiplier = getStopLossMultiplier(timeframe);
-  
-  // حساب النطاق المتغير حسب الإطار الزمني
-  const range = currentPrice * multipliers[0];
-  const support = currentPrice - range;
-  const resistance = currentPrice + range;
-
-  // تحديد الاتجاه بناءً على نمط الموجات
   const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
+  const support = currentPrice - (currentPrice * 0.02);
+  const resistance = currentPrice + (currentPrice * 0.02);
+  const stopLoss = currentPrice - (currentPrice * 0.01);
+  const targetOne = currentPrice + (currentPrice * 0.03);
+  const targetTwo = currentPrice + (currentPrice * 0.05);
+  const targetThree = currentPrice + (currentPrice * 0.07);
+  const bestEntryPoint = currentPrice - (currentPrice * 0.005);
 
-  // حساب وقف الخسارة المتغير
-  const stopLoss = direction === "صاعد" 
-    ? currentPrice - (range * stopLossMultiplier)
-    : currentPrice + (range * stopLossMultiplier);
-
-  // حساب نقطة الدخول المثالية
-  const bestEntry = {
-    price: direction === "صاعد" 
-      ? currentPrice - (range * 0.618)
-      : currentPrice + (range * 0.618),
-    reason: direction === "صاعد"
-      ? `نقطة دخول عند تصحيح الموجة بنسبة 61.8% على الإطار الزمني ${timeframe}`
-      : `نقطة دخول عند اكتمال الموجة التصحيحية على الإطار الزمني ${timeframe}`
-  };
-
-  // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
-  const targets = [
-    {
-      price: direction === "صاعد"
-        ? currentPrice + (range * multipliers[0])
-        : currentPrice - (range * multipliers[0]),
-      expectedTime: getExpectedTime(timeframe, 0)
+  return {
+    pattern: "تحليل موجات إليوت",
+    direction: direction,
+    currentPrice: currentPrice,
+    support: support,
+    resistance: resistance,
+    stopLoss: stopLoss,
+    targets: [
+      {
+        price: targetOne,
+        expectedTime: calculateTargetDate(1)
+      },
+      {
+        price: targetTwo,
+        expectedTime: calculateTargetDate(2)
+      },
+      {
+        price: targetThree,
+        expectedTime: calculateTargetDate(3)
+      }
+    ],
+    bestEntryPoint: {
+      price: bestEntryPoint,
+      reason: "نقطة دخول مثالية بناءً على موجات إليوت"
     },
-    {
-      price: direction === "صاعد"
-        ? currentPrice + (range * multipliers[1])
-        : currentPrice - (range * multipliers[1]),
-      expectedTime: getExpectedTime(timeframe, 1)
-    },
-    {
-      price: direction === "صاعد"
-        ? currentPrice + (range * multipliers[2])
-        : currentPrice - (range * multipliers[2]),
-      expectedTime: getExpectedTime(timeframe, 2)
-    }
-  ];
-
-  const analysisResult: AnalysisData = {
-    pattern: `نموذج موجي ${direction} على الإطار الزمني ${timeframe}`,
-    direction,
-    currentPrice,
-    support,
-    resistance,
-    stopLoss,
-    targets,
-    bestEntryPoint: bestEntry,
-    analysisType: "تحليل الموجات"
+    analysisType: "تحليل الموجات", // Fixed valid type
+    activation_type: "يدوي" // Default value, will be overridden if automatic
   };
-
-  console.log("نتائج تحليل Waves:", analysisResult);
-  return analysisResult;
-};
-
-const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
-  const now = new Date();
-  const multiplier = targetIndex + 1;
-
-  switch (timeframe) {
-    case "1m":
-      return addMinutes(now, multiplier * 5);
-    case "5m":
-      return addMinutes(now, multiplier * 15);
-    case "30m":
-      return addMinutes(now, multiplier * 60);
-    case "1h":
-      return addHours(now, multiplier * 2);
-    case "4h":
-      return addHours(now, multiplier * 8);
-    case "1d":
-      return addDays(now, multiplier * 2);
-    default:
-      return addHours(now, multiplier * 8);
-  }
 };

@@ -1,12 +1,13 @@
 
 import { AnalysisData } from "@/types/analysis";
 import { getStrategyName } from "./analysisTypeMap";
-import { executeMultipleAnalyses } from "./analysisExecutor";
+import { executeMultipleAnalyses } from "../../components/chart/analysis/utils/analysisExecutor";
 import { 
   calculateCombinedDirection, 
   combineAndSortTargets,
   calculateWeightedValues 
 } from "./analysisAggregator";
+import { mapToAnalysisType } from "@/components/chart/analysis/utils/analysisTypeMapper";
 
 export const combinedAnalysis = async (
   chartImage: string,
@@ -61,7 +62,7 @@ export const combinedAnalysis = async (
     // Combine and sort targets
     const combinedTargets = combineAndSortTargets(analysisResults);
 
-    // Build the combined result
+    // Build the combined result with a valid analysis type
     const combinedResult: AnalysisData = {
       pattern: `Smart Analysis (${strategyNames.join(', ')})`,
       direction,
@@ -74,7 +75,7 @@ export const combinedAnalysis = async (
         price: weightedValues.entryPrice,
         reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`
       },
-      analysisType: "ذكي",
+      analysisType: "ذكي", // Valid database value
       activation_type: "تلقائي" // دائمًا تعيين التحليل الذكي كتلقائي
     };
 

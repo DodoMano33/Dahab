@@ -35,8 +35,92 @@ export const saveAnalysis = async ({
   }
 
   // Normalize the analysis type to make sure it's one of the valid types for database
-  let validAnalysisType: AnalysisType = analysisType;
+  // This ensures we're using the exact string values accepted by the database
+  let validAnalysisType: AnalysisType;
+  
+  // Normalize to valid database values
+  switch(analysisType.toLowerCase().replace(/\s+/g, '')) {
+    case 'فيبوناتشي':
+    case 'fibonacci':
+      validAnalysisType = 'فيبوناتشي';
+      break;
+    case 'فيبوناتشيمتقدم':
+    case 'advancedfibonacci':
+    case 'fibonacci_advanced':
+      validAnalysisType = 'فيبوناتشي متقدم';
+      break;
+    case 'تحليلجان':
+    case 'جان':
+    case 'gann':
+      validAnalysisType = 'تحليل جان';
+      break;
+    case 'تحليلالموجات':
+    case 'موجات':
+    case 'waves':
+      validAnalysisType = 'تحليل الموجات';
+      break;
+    case 'حركةالسعر':
+    case 'priceaction':
+      validAnalysisType = 'حركة السعر';
+      break;
+    case 'سكالبينج':
+    case 'scalping':
+      validAnalysisType = 'سكالبينج';
+      break;
+    case 'smc':
+    case 'تحليلsmc':
+      validAnalysisType = 'تحليل SMC';
+      break;
+    case 'ict':
+    case 'تحليلict':
+      validAnalysisType = 'تحليل ICT';
+      break;
+    case 'تصفيقزمني':
+    case 'timeclustering':
+      validAnalysisType = 'تصفيق زمني';
+      break;
+    case 'تحليلالأنماط':
+    case 'patterns':
+    case 'تحليلالانماط':
+      validAnalysisType = 'تحليل الأنماط';
+      break;
+    case 'تباينمتعدد':
+    case 'multivariance':
+      validAnalysisType = 'تباين متعدد';
+      break;
+    case 'شبكاتعصبية':
+    case 'neuralnetwork':
+      validAnalysisType = 'شبكات عصبية';
+      break;
+    case 'تحليلسلوكي':
+    case 'behavioral':
+    case 'سلوكي':
+      validAnalysisType = 'تحليل سلوكي';
+      break;
+    case 'turtlesoup':
+    case 'حساءالسلحفاة':
+      validAnalysisType = 'Turtle Soup';
+      break;
+    case 'rnn':
+    case 'شبكاتrnn':
+    case 'شبكاتعصبيةمتكررة':
+      validAnalysisType = 'شبكات RNN';
+      break;
+    case 'شمعاتمركبة':
+    case 'compositecandlestick':
+      validAnalysisType = 'شمعات مركبة';
+      break;
+    case 'ذكي':
+    case 'smart':
+      validAnalysisType = 'ذكي';
+      break;
+    default:
+      console.warn("Unrecognized analysis type:", analysisType, "using default 'تحليل الأنماط'");
+      validAnalysisType = 'تحليل الأنماط';
+  }
 
+  console.log("Normalized analysis type from", analysisType, "to", validAnalysisType);
+  
   // Make sure the analysis result also has the correct analysis type
   analysisResult.analysisType = validAnalysisType;
   

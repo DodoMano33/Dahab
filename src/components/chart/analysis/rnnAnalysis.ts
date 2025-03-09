@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 
 export const analyzeRNN = async (
@@ -21,63 +20,45 @@ export const analyzeRNN = async (
     : Number((resistance + currentPrice * 0.005).toFixed(2));
   
   // مستويات الأهداف
-  const targets = [];
-  if (direction === "صاعد") {
-    const target1Price = Number((currentPrice * (1 + movePercent * 0.5)).toFixed(2));
-    const target2Price = Number((currentPrice * (1 + movePercent)).toFixed(2));
-    const target3Price = Number((currentPrice * (1 + movePercent * 1.5)).toFixed(2));
-    
-    targets.push({
-      price: target1Price,
-      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 ساعة
-    });
-    targets.push({
-      price: target2Price,
-      expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 ساعة
-    });
-    targets.push({
-      price: target3Price,
-      expectedTime: new Date(Date.now() + 72 * 60 * 60 * 1000) // 72 ساعة
-    });
-  } else {
-    const target1Price = Number((currentPrice * (1 - movePercent * 0.5)).toFixed(2));
-    const target2Price = Number((currentPrice * (1 - movePercent)).toFixed(2));
-    const target3Price = Number((currentPrice * (1 - movePercent * 1.5)).toFixed(2));
-    
-    targets.push({
-      price: target1Price,
-      expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 ساعة
-    });
-    targets.push({
-      price: target2Price,
-      expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 ساعة
-    });
-    targets.push({
-      price: target3Price,
-      expectedTime: new Date(Date.now() + 72 * 60 * 60 * 1000) // 72 ساعة
-    });
-  }
+  const targetOne = Number((currentPrice * (1 + movePercent * 0.5)).toFixed(2));
+  const targetTwo = Number((currentPrice * (1 + movePercent)).toFixed(2));
+  const targetThree = Number((currentPrice * (1 + movePercent * 1.5)).toFixed(2));
   
-  // نقطة الدخول المثالية
-  const entryPrice = direction === "صاعد"
+  const bestEntryPoint = direction === "صاعد"
     ? Number((currentPrice * (1 + Math.random() * 0.005)).toFixed(2))
     : Number((currentPrice * (1 - Math.random() * 0.005)).toFixed(2));
   
-  const result: AnalysisData = {
+  const calculateTargetDate = (index: number) => {
+    const hours = index * 24;
+    return new Date(Date.now() + hours * 60 * 60 * 1000);
+  };
+  
+  return {
     pattern: "RNN Pattern Analysis",
-    direction,
-    currentPrice,
-    support,
-    resistance,
-    stopLoss,
-    targets,
+    direction: direction,
+    currentPrice: currentPrice,
+    support: support,
+    resistance: resistance,
+    stopLoss: stopLoss,
+    targets: [
+      {
+        price: targetOne,
+        expectedTime: calculateTargetDate(1)
+      },
+      {
+        price: targetTwo,
+        expectedTime: calculateTargetDate(2)
+      },
+      {
+        price: targetThree,
+        expectedTime: calculateTargetDate(3)
+      }
+    ],
     bestEntryPoint: {
-      price: entryPrice,
+      price: bestEntryPoint,
       reason: "Entry based on RNN analysis of historical patterns"
     },
     analysisType: "شبكات RNN",
     activation_type: "تلقائي"
   };
-  
-  return result;
 };
