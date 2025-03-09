@@ -1,4 +1,3 @@
-
 import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
@@ -29,28 +28,32 @@ export const useSaveAnalysis = () => {
     isAutomatic = false
   }: SaveAnalysisParams) => {
     try {
-      // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
-      // اختبار إذا كان نوع التحليل يتعلق بفيبوناتشي
       const isFibonacciAnalysis = String(analysisType).toLowerCase().includes("fibonacci") || 
                                   String(analysisType).toLowerCase().includes("فيبوناتشي");
       
-      // Map the analysis type to a valid database enum value
-      const mappedAnalysisType = isFibonacciAnalysis ? "فيبوناتشي" : mapToAnalysisType(analysisType);
+      const isFibonacciAdvanced = String(analysisType).toLowerCase().includes("advanced") || 
+                                  String(analysisType).toLowerCase().includes("متقدم");
+      
+      const mappedAnalysisType = isFibonacciAnalysis 
+        ? (isFibonacciAdvanced ? "فيبوناتشي متقدم" : "فيبوناتشي") 
+        : mapToAnalysisType(analysisType);
+        
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // تأكد من أن نوع التحليل موجود في النتيجة وصحيح
       if (!result.analysisResult.analysisType) {
         console.log("Setting analysisType as it was missing:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
       } else if (isFibonacciAnalysis) {
-        // تأكد من أن نوع التحليل لفيبوناتشي صحيح دائمًا
-        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to فيبوناتشي");
-        result.analysisResult.analysisType = "فيبوناتشي";
+        const fibType = isFibonacciAdvanced ? "فيبوناتشي متقدم" : "فيبوناتشي";
+        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to", fibType);
+        result.analysisResult.analysisType = fibType;
+      } else {
+        console.log("Ensuring analysis type is one of the 16 specified types");
+        result.analysisResult.analysisType = mappedAnalysisType;
       }
       
-      // تعيين activation_type بشكل صريح
       if (isAutomatic) {
         console.log("Setting activation_type to تلقائي for automatic analysis");
         result.analysisResult.activation_type = "تلقائي";
@@ -61,7 +64,6 @@ export const useSaveAnalysis = () => {
         console.log("Keeping existing activation_type:", result.analysisResult.activation_type);
       }
       
-      // Update the analysis result's analysisType to the mapped value
       const analysisResultWithMappedType = {
         ...result.analysisResult,
         analysisType: mappedAnalysisType,
@@ -70,7 +72,6 @@ export const useSaveAnalysis = () => {
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
       
-      // Add proper error handling for debugging
       try {
         console.log("Saving analysis with userId:", userId);
         console.log("Saving analysis with symbol:", symbol);
@@ -85,7 +86,7 @@ export const useSaveAnalysis = () => {
           symbol,
           currentPrice,
           analysisResult: analysisResultWithMappedType,
-          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+          analysisType: mappedAnalysisType as AnalysisType,
           timeframe,
           durationHours: duration
         });
@@ -99,7 +100,7 @@ export const useSaveAnalysis = () => {
             analysis: analysisResultWithMappedType,
             targetHit: false,
             stopLossHit: false,
-            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            analysisType: mappedAnalysisType as AnalysisType,
             timeframe,
             analysis_duration_hours: duration
           };
@@ -108,22 +109,21 @@ export const useSaveAnalysis = () => {
           onAnalysisComplete(newHistoryEntry);
         }
         
-        // Show success toast with proper analysis type display and standard duration
         toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
-          duration: 3000, // تغيير من 5000 إلى 3000 (3 ثواني)
+          duration: 3000,
         });
         
       } catch (dbError) {
         console.error("Database error saving analysis:", dbError);
         toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات", {
-          duration: 3000, // إضافة مدة 3 ثواني
+          duration: 3000,
         });
         throw dbError;
       }
     } catch (error) {
       console.error("Error saving analysis:", error);
       toast.error("حدث خطأ أثناء حفظ التحليل", {
-        duration: 3000, // إضافة مدة 3 ثواني
+        duration: 3000,
       });
       throw error;
     }

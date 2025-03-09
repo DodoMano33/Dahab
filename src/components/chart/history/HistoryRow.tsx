@@ -1,4 +1,3 @@
-
 import { TableRow } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
 import { useState, useEffect } from "react";

@@ -1,4 +1,3 @@
-
 // نقل دالة getStrategyName لتكون قبل استخدامها
 export const getStrategyName = (type: string): string => {
   if (!type) return "تحليل فني";
@@ -7,19 +6,19 @@ export const getStrategyName = (type: string): string => {
   const normalizedType = type.toLowerCase().replace(/[_\s-]/g, '');
   
   const strategyMap: Record<string, string> = {
-    // Arabic types
-    "عادي": "تحليل عادي",
-    "يومي": "تحليل يومي",
+    // Arabic types - تحديث الأسماء لتتوافق مع القائمة المطلوبة
+    "عادي": "تحليل الأنماط",
+    "يومي": "تحليل الأنماط",
     "نمطي": "تحليل الأنماط",
     "سكالبينج": "سكالبينج",
-    "مضاربة": "مضاربة",
-    "نظريةهيكلالسوق": "SMC",
-    "نظريةالسوق": "ICT",
+    "مضاربة": "سكالبينج",
+    "نظريةهيكلالسوق": "تحليل SMC",
+    "نظريةالسوق": "تحليل ICT",
     "تقلبات": "تحليل الموجات",
     "حركةالسعر": "حركة السعر",
     "جان": "تحليل جان",
     "الحساءالسلحفائي": "Turtle Soup",
-    "ذكي": "تحليل ذكي",
+    "ذكي": "شبكات عصبية",
     "شبكاتعصبية": "شبكات عصبية",
     "شبكاتعصبيةمتكررة": "شبكات RNN",
     "تصفيقزمني": "تصفيق زمني",
@@ -29,9 +28,9 @@ export const getStrategyName = (type: string): string => {
     "فيبوناتشي": "فيبوناتشي",
     "فيبوناتشيمتقدم": "فيبوناتشي متقدم",
     
-    // English types
-    "normal": "تحليل يومي", // تغيير من "تحليل عادي" إلى "تحليل يومي"
-    "daily": "تحليل يومي",
+    // English types - تحديث أيضاً
+    "normal": "تحليل الأنماط",
+    "daily": "تحليل الأنماط",
     "pattern": "تحليل الأنماط",
     "scalping": "سكالبينج",
     "smc": "تحليل SMC",
@@ -40,7 +39,7 @@ export const getStrategyName = (type: string): string => {
     "price_action": "حركة السعر",
     "gann": "تحليل جان",
     "turtle_soup": "Turtle Soup",
-    "smart": "تحليل ذكي",
+    "smart": "شبكات عصبية",
     "neural_network": "شبكات عصبية",
     "rnn": "شبكات RNN",
     "time_clustering": "تصفيق زمني",
@@ -63,8 +62,8 @@ export const getStrategyName = (type: string): string => {
     }
   }
 
-  // If no match found, return the original type
-  return type;
+  // إذا لم يتم العثور على تطابق، نعيد أحد الأنواع الافتراضية المحددة
+  return "تحليل الأنماط";
 };
 
 // قائمة أنواع التحليل الرئيسية - تم حذف الأنواع غير المطلوبة

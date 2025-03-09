@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,7 +73,7 @@ export function LatestAnalyses({ userId }: LatestAnalysesProps) {
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-sm">
-                    {analysis.analysis?.pattern || getStrategyName(analysis.analysis_type) || analysis.analysis_type} - {analysis.timeframe}
+                    {analysis.analysis?.pattern || getStrategyName(analysis.analysis_type) || "تحليل الأنماط"} - {analysis.timeframe}
                   </span>
                   <div className="flex items-center">
                     <span className={`text-sm ${analysis.target_hit ? 'text-green-500' : ''}`}>

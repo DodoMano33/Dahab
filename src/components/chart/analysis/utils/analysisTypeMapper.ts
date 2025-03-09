@@ -1,4 +1,3 @@
-
 import { AnalysisType } from "@/types/analysis";
 
 // Configuration interface for analysis types
@@ -49,6 +48,10 @@ export const mapAnalysisTypeToConfig = (analysisType: string): AnalysisConfig =>
     case 'نمطي':
     case 'pattern':
     case 'patterns':
+    case 'normal':
+    case 'daily':
+    case 'عادي':
+    case 'يومي':
       config.isPatternAnalysis = true;
       break;
       
@@ -126,25 +129,29 @@ export const mapToAnalysisType = (analysisType: string): AnalysisType => {
     case 'نمطي':
     case 'pattern':
     case 'patterns':
-      return 'نمطي';
+    case 'normal':
+    case 'daily':
+    case 'عادي':
+    case 'يومي':
+      return 'تحليل الأنماط';
       
     case 'سكالبينج':
     case 'مضاربة':
     case 'scalping':
-      return 'مضاربة';
+      return 'سكالبينج';
       
     case 'smc':
     case 'نظريةهيكلالسوق':
-      return 'نظرية هيكل السوق';
+      return 'تحليل SMC';
       
     case 'ict':
     case 'نظريةالسوق':
-      return 'نظرية السوق';
+      return 'تحليل ICT';
       
     case 'تقلبات':
     case 'wave':
     case 'waves':
-      return 'تقلبات';
+      return 'تحليل الموجات';
       
     case 'حركةالسعر':
     case 'priceaction':
@@ -152,32 +159,54 @@ export const mapToAnalysisType = (analysisType: string): AnalysisType => {
       
     case 'جان':
     case 'gann':
-      return 'جان';
+      return 'تحليل جان';
       
     case 'الحساءالسلحفائي':
     case 'turtlesoup':
     case 'turtle':
-      return 'الحساء السلحفائي';
+      return 'Turtle Soup';
       
     case 'ذكي':
     case 'smart':
     case 'ai':
-      return 'ذكي';
+      return 'شبكات عصبية';
       
     case 'شبكاتعصبية':
     case 'neuralnetworks':
     case 'neuralnetwork':
       return 'شبكات عصبية';
       
+    case 'rnn':
+    case 'شبكاتعصبيةمتكررة':
+      return 'شبكات RNN';
+      
+    case 'تصفيقزمني':
+    case 'timeclustering':
+      return 'تصفيق زمني';
+      
+    case 'تباينمتعدد':
+    case 'multivariance':
+      return 'تباين متعدد';
+      
+    case 'شمعاتمركبة':
+    case 'compositecandlesticks':
+      return 'شمعات مركبة';
+      
+    case 'تحليلسلوكي':
+    case 'behavioral':
+      return 'تحليل سلوكي';
+      
     case 'فيبوناتشي':
-    case 'فيبوناتشيمتقدم':
     case 'fibonacci':
-    case 'fibonacci_advanced':
-    case 'fibonacciadvanced':
       return 'فيبوناتشي';
       
+    case 'فيبوناتشيمتقدم':
+    case 'fibonacci_advanced':
+    case 'fibonacciadvanced':
+      return 'فيبوناتشي متقدم';
+      
     default:
-      console.log("Unknown analysis type:", analysisType, "Using default: يومي");
-      return 'يومي';
+      console.log("Unknown analysis type:", analysisType, "Using default: تحليل الأنماط");
+      return 'تحليل الأنماط';
   }
 };

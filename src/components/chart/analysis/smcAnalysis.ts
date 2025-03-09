@@ -90,7 +90,7 @@ export const analyzeSMCChart = async (
         targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
-        analysisType: "SMC"
+        analysisType: "تحليل SMC"
       };
 
       console.log("SMC Analysis Results:", analysisResult);
