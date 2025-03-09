@@ -34,46 +34,24 @@ export const saveAnalysis = async ({
     throw new Error("نتائج التحليل غير صالحة");
   }
 
-  // Map Fibonacci analysis types to valid database values
-  let validAnalysisType = analysisType;
-  const analysisTypeStr = String(analysisType).toLowerCase();
-  
-  if (
-    analysisTypeStr === "فيبوناتشي" || 
-    analysisTypeStr === "فيبوناتشي متقدم" || 
-    analysisTypeStr === "fibonacci" || 
-    analysisTypeStr === "fibonacci_advanced"
-  ) {
-    validAnalysisType = "فيبوناتشي" as AnalysisType;
-  }
-
-  // Ensure analysisType is a valid value for the database
-  console.log("Original analysis type:", analysisType);
-  console.log("Mapped analysis type being saved to database:", validAnalysisType);
+  // Normalize the analysis type to make sure it's one of the valid types for database
+  let validAnalysisType: AnalysisType = analysisType;
 
   // Make sure the analysis result also has the correct analysis type
-  if (analysisResult.analysisType !== validAnalysisType) {
-    console.log("Updating analysis result type from", analysisResult.analysisType, "to", validAnalysisType);
-    analysisResult.analysisType = validAnalysisType;
-  }
-
-  // لا تقم بتغيير activation_type إذا كان محدداً بالفعل
+  analysisResult.analysisType = validAnalysisType;
+  
+  // Don't change activation_type if it's already set
   if (!analysisResult.activation_type) {
     console.log("No activation_type provided, setting a default");
     
-    // للتحليلات التي نعرف أنها تلقائية أو يدوية بناءً على أنماط محددة
-    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
-      analysisResult.activation_type = "يدوي";
-      console.log("Set activation_type to يدوي based on pattern match");
-    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
+    // Set automatic for known automatic analysis types
+    if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" || 
+        validAnalysisType === "ذكي" || 
+        validAnalysisType === "شمعات مركبة") {
       analysisResult.activation_type = "تلقائي";
-      console.log("Set activation_type to تلقائي based on pattern match");
-    } else if (analysisResult.analysisType === "ذكي" || analysisResult.analysisType === "شمعات مركبة") {
-      // التحليل الذكي وتحليل الشمعات المركبة دائمًا تلقائي
-      analysisResult.activation_type = "تلقائي";
-      console.log("Set activation_type to تلقائي based on analysisType");
+      console.log("Set activation_type to تلقائي based on analysis type");
     } else {
-      // افتراضيًا يكون يدوي
+      // Default to manual
       analysisResult.activation_type = "يدوي";
       console.log("Set default activation_type to يدوي");
     }

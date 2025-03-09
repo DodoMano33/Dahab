@@ -91,7 +91,7 @@ export const useAutoAnalysis = () => {
             if (result && result.analysisResult) {
               console.log("Analysis completed successfully:", result);
               
-              // تأكد دائمًا من تعيين القيمة الصحيحة للتحليل التلقائي
+              // Always set automatic activation type for auto analysis
               result.analysisResult.activation_type = "تلقائي";
               console.log("Explicitly set activation_type to تلقائي for auto analysis");
               

@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -113,8 +112,8 @@ export const executeSpecificAnalysis = async (
       console.log("Executing Fibonacci Advanced analysis");
       const advancedResult = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
       if (advancedResult) {
-        // تأكد من تعيين نوع التحليل بشكل صحيح
-        advancedResult.analysisType = "فيبوناتشي";
+        // Ensure correct analysis type
+        advancedResult.analysisType = "فيبوناتشي متقدم";
       }
       return advancedResult;
       
@@ -123,7 +122,7 @@ export const executeSpecificAnalysis = async (
       console.log("Executing Fibonacci analysis");
       const result = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
       if (result) {
-        // تأكد من تعيين نوع التحليل بشكل صحيح
+        // Ensure correct analysis type
         result.analysisType = "فيبوناتشي";
       }
       return result;
@@ -134,8 +133,8 @@ export const executeSpecificAnalysis = async (
       return await analyzeDailyChart(chartImage, currentPrice, timeframe);
       
     default:
-      console.log(`Unknown analysis type "${type}", defaulting to Daily analysis`);
-      return await analyzeDailyChart(chartImage, currentPrice, timeframe);
+      console.log(`Unknown analysis type "${type}", defaulting to Pattern analysis`);
+      return await analyzePattern(chartImage, currentPrice, timeframe);
   }
 };
 
