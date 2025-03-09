@@ -60,7 +60,8 @@ export const AnalysisTable = ({
             ? analysis.analysis_type 
             : 'normal';
           
-          const displayedAnalysisType = getStrategyName(analysisType);
+          // استخدام getStrategyName لعرض اسم التحليل بشكل صحيح
+          const displayedAnalysisType = getStrategyName(analysisType) || analysisType;
           
           return (
             <div
@@ -131,4 +132,4 @@ export const AnalysisTable = ({
       </div>
     </div>
   );
-};
+}

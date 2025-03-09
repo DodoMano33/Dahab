@@ -1,3 +1,4 @@
+
 // نقل دالة getStrategyName لتكون قبل استخدامها
 export const getStrategyName = (type: string): string => {
   if (!type) return "تحليل فني";
@@ -8,7 +9,7 @@ export const getStrategyName = (type: string): string => {
   const strategyMap: Record<string, string> = {
     // Arabic types
     "عادي": "تحليل عادي",
-    "يومي": "تحليل فني",
+    "يومي": "تحليل يومي",
     "نمطي": "تحليل الأنماط",
     "سكالبينج": "سكالبينج",
     "مضاربة": "مضاربة",
@@ -29,7 +30,7 @@ export const getStrategyName = (type: string): string => {
     "فيبوناتشيمتقدم": "فيبوناتشي متقدم",
     
     // English types
-    "normal": "تحليل عادي",
+    "normal": "تحليل يومي", // تغيير من "تحليل عادي" إلى "تحليل يومي"
     "daily": "تحليل يومي",
     "pattern": "تحليل الأنماط",
     "scalping": "سكالبينج",

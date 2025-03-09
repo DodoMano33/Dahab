@@ -60,8 +60,9 @@ export const AnalysisTypeCell = ({
     return 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300';
   };
 
-  // Use the pattern directly if available, otherwise use the display name
-  const displayText = pattern || displayName;
+  // نستخدم النمط المباشر إذا كان متوفراً، وإلا سنعرض اسم نوع التحليل
+  // تعديل: لا نستخدم "تحليل فني" كقيمة افتراضية
+  const displayText = pattern || displayName || analysisType;
 
   return (
     <TableCell className="w-[120px] text-center p-1">
@@ -70,7 +71,7 @@ export const AnalysisTypeCell = ({
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
-                {displayText || 'غير محدد'}
+                {displayText || analysisType}
               </Badge>
               {pattern && displayName && pattern !== displayName && (
                 <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
