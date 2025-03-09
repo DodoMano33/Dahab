@@ -1,5 +1,6 @@
+
 import { AnalysisData } from "@/types/analysis";
-import { calculateFibonacciLevels } from "@/utils/fibonacci";
+import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
 
 const calculateTargetDate = (targetNumber: number): Date => {
   const now = new Date();
