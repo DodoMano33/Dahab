@@ -82,7 +82,7 @@ export const executeAnalysis = async (
   if (isFibonacciAdvanced) selectedStrategies.push("Fibonacci Advanced");
 
   // Map analysis types to standardized database values
-  const analysisTypeMap: Record<string, string> = {
+  const analysisTypeMap: Record<string, AnalysisType> = {
     "Patterns": "تحليل الأنماط",
     "Waves": "تحليل الموجات",
     "Gann": "تحليل جان",
@@ -133,7 +133,7 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "ذكي";
+    analysis.analysisType = "ذكي"; // Using a valid AnalysisType literal
     analysis.activation_type = "تلقائي";
   } else {
     const strategy = selectedStrategies[0] || "Standard";
