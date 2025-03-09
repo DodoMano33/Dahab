@@ -1,5 +1,5 @@
 
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { AnalysisData } from "@/types/analysis";
 import { addHours } from "date-fns";
 
 export const analyzeICTChart = async (
@@ -62,7 +62,7 @@ export const analyzeICTChart = async (
         stopLoss,
         targets,
         bestEntryPoint,
-        analysisType: "تحليل ICT" as AnalysisType,
+        analysisType: "تحليل ICT",
         activation_type: "تلقائي"
       };
 

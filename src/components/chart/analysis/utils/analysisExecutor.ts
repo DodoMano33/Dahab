@@ -133,7 +133,7 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "ذكي" as AnalysisType; // Using a valid AnalysisType literal
+    analysis.analysisType = "ذكي"; // Using a valid AnalysisType literal
     analysis.activation_type = "تلقائي";
   } else {
     const strategy = selectedStrategies[0] || "Standard";
@@ -183,13 +183,13 @@ export const executeAnalysis = async (
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "فيبوناتشي" as AnalysisType;
+          analysis.analysisType = "فيبوناتشي";
         }
         break;
       case "Fibonacci Advanced":
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         if (analysis) {
-          analysis.analysisType = "فيبوناتشي متقدم" as AnalysisType;
+          analysis.analysisType = "فيبوناتشي متقدم";
         }
         break;
       default:
