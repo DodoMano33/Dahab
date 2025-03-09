@@ -1,4 +1,3 @@
-
 import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
@@ -31,35 +30,30 @@ export const useSaveAnalysis = () => {
     try {
       console.log("Original analysis type before mapping:", analysisType);
       
-      // Ensure analysis type is one of the acceptable values for the database
-      let mappedAnalysisType: AnalysisType;
+      const isFibonacciAnalysis = String(analysisType).toLowerCase().includes("fibonacci") || 
+                                  String(analysisType).toLowerCase().includes("فيبوناتشي");
       
-      // Check if it's a Fibonacci analysis (special case)
-      if (String(analysisType).toLowerCase().includes("fibonacci") || 
-          String(analysisType).toLowerCase().includes("فيبوناتشي")) {
+      const isFibonacciAdvanced = String(analysisType).toLowerCase().includes("advanced") || 
+                                  String(analysisType).toLowerCase().includes("متقدم");
+      
+      const mappedAnalysisType = isFibonacciAnalysis 
+        ? (isFibonacciAdvanced ? "فيبوناتشي متقدم" : "فيبوناتشي") 
+        : mapToAnalysisType(analysisType);
         
-        mappedAnalysisType = String(analysisType).toLowerCase().includes("advanced") || 
-                            String(analysisType).toLowerCase().includes("متقدم") 
-                            ? "فيبوناتشي متقدم" as AnalysisType 
-                            : "فيبوناتشي" as AnalysisType;
-      } else {
-        // Process regular analysis type
-        mappedAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
-      }
-      
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // Make sure the analysis result has the correct analysis type
       if (!result.analysisResult.analysisType) {
         console.log("Setting analysisType as it was missing:", mappedAnalysisType);
         result.analysisResult.analysisType = mappedAnalysisType;
+      } else if (isFibonacciAnalysis) {
+        const fibType = isFibonacciAdvanced ? "فيبوناتشي متقدم" : "فيبوناتشي";
+        console.log("Overriding Fibonacci analysis type from", result.analysisResult.analysisType, "to", fibType);
+        result.analysisResult.analysisType = fibType;
       } else {
-        // Ensure the analysis type in result matches what we're saving to database
+        console.log("Ensuring analysis type is one of the 16 specified types");
         result.analysisResult.analysisType = mappedAnalysisType;
-        console.log("Updated analysis type in result to:", mappedAnalysisType);
       }
       
-      // Handle automatic vs manual activation type
       if (isAutomatic) {
         console.log("Setting activation_type to تلقائي for automatic analysis");
         result.analysisResult.activation_type = "تلقائي";
@@ -70,6 +64,14 @@ export const useSaveAnalysis = () => {
         console.log("Keeping existing activation_type:", result.analysisResult.activation_type);
       }
       
+      const analysisResultWithMappedType = {
+        ...result.analysisResult,
+        analysisType: mappedAnalysisType,
+        activation_type: result.analysisResult.activation_type
+      };
+      
+      console.log("Final analysis result with type:", analysisResultWithMappedType);
+      
       try {
         console.log("Saving analysis with userId:", userId);
         console.log("Saving analysis with symbol:", symbol);
@@ -77,14 +79,14 @@ export const useSaveAnalysis = () => {
         console.log("Saving analysis with analysisType:", mappedAnalysisType);
         console.log("Saving analysis with timeframe:", timeframe);
         console.log("Saving analysis with duration:", duration);
-        console.log("Saving analysis with activation_type:", result.analysisResult.activation_type);
+        console.log("Saving analysis with activation_type:", analysisResultWithMappedType.activation_type);
         
         const savedData = await saveAnalysis({
           userId,
           symbol,
           currentPrice,
-          analysisResult: result.analysisResult,
-          analysisType: mappedAnalysisType,
+          analysisResult: analysisResultWithMappedType,
+          analysisType: mappedAnalysisType as AnalysisType,
           timeframe,
           durationHours: duration
         });
@@ -95,10 +97,10 @@ export const useSaveAnalysis = () => {
             date: new Date(),
             symbol,
             currentPrice,
-            analysis: result.analysisResult,
+            analysis: analysisResultWithMappedType,
             targetHit: false,
             stopLossHit: false,
-            analysisType: mappedAnalysisType,
+            analysisType: mappedAnalysisType as AnalysisType,
             timeframe,
             analysis_duration_hours: duration
           };

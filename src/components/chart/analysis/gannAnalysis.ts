@@ -1,55 +1,113 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
-
-const calculateTargetDate = (targetNumber: number): Date => {
-  const now = new Date();
-  const daysToAdd = targetNumber * 30;
-  now.setDate(now.getDate() + daysToAdd);
-  return now;
-};
+import { addDays, addHours, addMinutes } from "date-fns";
+import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
 
 export const analyzeGannChart = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string
 ): Promise<AnalysisData> => {
+  console.log("بدء تحليل Gann للرمز:", timeframe);
+
+  // تعديل النطاق بناءً على الإطار الزمني
+  const multipliers = getTimeframeMultipliers(timeframe);
+  const stopLossMultiplier = getStopLossMultiplier(timeframe);
+  
+  // حساب النطاق المتغير حسب الإطار الزمني
+  const range = currentPrice * multipliers[0];
+  const support = currentPrice - range;
+  const resistance = currentPrice + range;
+
+  // تحديد الاتجاه بناءً على زوايا غان
   const direction = Math.random() > 0.5 ? "صاعد" : "هابط";
-  const support = currentPrice - (currentPrice * (Math.random() * 0.1));
-  const resistance = currentPrice + (currentPrice * (Math.random() * 0.1));
-  const stopLoss = currentPrice - (currentPrice * (Math.random() * 0.05));
-  const bestEntryPoint = currentPrice - (currentPrice * (Math.random() * 0.02));
 
-  const targetOne = currentPrice + (currentPrice * (Math.random() * 0.05));
-  const targetTwo = currentPrice + (currentPrice * (Math.random() * 0.1));
-  const targetThree = currentPrice + (currentPrice * (Math.random() * 0.15));
+  // حساب وقف الخسارة المتغير
+  const stopLoss = direction === "صاعد" 
+    ? currentPrice - (range * stopLossMultiplier)
+    : currentPrice + (range * stopLossMultiplier);
 
-  return {
-    pattern: "تحليل مستويات جان وزوايا الزمن",
-    direction: direction,
-    currentPrice: currentPrice,
-    support: support,
-    resistance: resistance,
-    stopLoss: stopLoss,
-    targets: [
-      {
-        price: targetOne,
-        expectedTime: calculateTargetDate(1)
-      },
-      {
-        price: targetTwo,
-        expectedTime: calculateTargetDate(2)
-      },
-      {
-        price: targetThree,
-        expectedTime: calculateTargetDate(3)
-      }
-    ],
-    bestEntryPoint: {
-      price: bestEntryPoint,
-      reason: "نقطة دخول مثالية بناءً على زوايا جان الزمنية والسعرية"
-    },
-    analysisType: "تحليل جان", // Fixed valid type
-    activation_type: "يدوي" // Default value, will be overridden if automatic
+  // حساب مستويات غان المتغيرة حسب الإطار الزمني
+  const gannLevels = calculateGannLevels(currentPrice, range);
+
+  // حساب نقطة الدخول المثالية
+  const bestEntry = {
+    price: direction === "صاعد" 
+      ? currentPrice - (range * 0.5)
+      : currentPrice + (range * 0.5),
+    reason: direction === "صاعد"
+      ? `نقطة دخول محسوبة على زاوية غان 1x1 للإطار الزمني ${timeframe}`
+      : `نقطة دخول محسوبة على زاوية غان 2x1 للإطار الزمني ${timeframe}`
   };
+
+  // حساب الأهداف مع توقيتات متغيرة حسب الإطار الزمني
+  const targets = [
+    {
+      price: direction === "صاعد"
+        ? currentPrice + (range * multipliers[0])
+        : currentPrice - (range * multipliers[0]),
+      expectedTime: getExpectedTime(timeframe, 0)
+    },
+    {
+      price: direction === "صاعد"
+        ? currentPrice + (range * multipliers[1])
+        : currentPrice - (range * multipliers[1]),
+      expectedTime: getExpectedTime(timeframe, 1)
+    },
+    {
+      price: direction === "صاعد"
+        ? currentPrice + (range * multipliers[2])
+        : currentPrice - (range * multipliers[2]),
+      expectedTime: getExpectedTime(timeframe, 2)
+    }
+  ];
+
+  const analysisResult: AnalysisData = {
+    pattern: `نموذج غان ${direction} على الإطار الزمني ${timeframe}`,
+    direction,
+    currentPrice,
+    support,
+    resistance,
+    stopLoss,
+    targets,
+    bestEntryPoint: bestEntry,
+    fibonacciLevels: gannLevels,
+    analysisType: "تحليل جان",
+    activation_type: "تلقائي"  // Set to automatic for Gann analysis
+  };
+
+  console.log("نتائج تحليل Gann:", analysisResult);
+  return analysisResult;
+};
+
+const calculateGannLevels = (currentPrice: number, range: number) => {
+  return [
+    { level: 0.25, price: currentPrice + (range * 0.25) },
+    { level: 0.382, price: currentPrice + (range * 0.382) },
+    { level: 0.5, price: currentPrice + (range * 0.5) },
+    { level: 0.618, price: currentPrice + (range * 0.618) },
+    { level: 0.75, price: currentPrice + (range * 0.75) }
+  ];
+};
+
+const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
+  const now = new Date();
+  const multiplier = targetIndex + 1;
+
+  switch (timeframe) {
+    case "1m":
+      return addMinutes(now, multiplier * 15);
+    case "5m":
+      return addMinutes(now, multiplier * 45);
+    case "30m":
+      return addHours(now, multiplier * 2);
+    case "1h":
+      return addHours(now, multiplier * 4);
+    case "4h":
+      return addHours(now, multiplier * 12);
+    case "1d":
+      return addDays(now, multiplier * 3);
+    default:
+      return addHours(now, multiplier * 12);
+  }
 };

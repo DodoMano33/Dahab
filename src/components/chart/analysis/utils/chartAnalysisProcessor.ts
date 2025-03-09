@@ -112,14 +112,6 @@ export const processChartAnalysis = async ({
     analysisResult.activation_type = isAutomatic ? "تلقائي" : "يدوي";
     console.log(`Setting activation_type explicitly to ${analysisResult.activation_type} based on isAutomatic=${isAutomatic}`);
 
-    // Double-check the analysis type to ensure it's compatible with the database
-    if (analysisResult.analysisType) {
-      // Use the mapper to ensure valid database format
-      const { mapToAnalysisType } = await import("./analysisTypeMapper");
-      analysisResult.analysisType = mapToAnalysisType(analysisResult.analysisType);
-      console.log("Double-checked and normalized analysis type:", analysisResult.analysisType);
-    }
-
     console.log("Analysis completed successfully:", analysisResult);
     
     // Dismiss all toasts when analysis is completed
