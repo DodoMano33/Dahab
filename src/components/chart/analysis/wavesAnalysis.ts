@@ -67,7 +67,7 @@ export const analyzeWavesChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "Waves"
+    analysisType: "تحليل الموجات"
   };
 
   console.log("نتائج تحليل Waves:", analysisResult);

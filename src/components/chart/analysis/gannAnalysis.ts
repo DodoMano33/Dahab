@@ -72,7 +72,7 @@ export const analyzeGannChart = async (
     targets,
     bestEntryPoint: bestEntry,
     fibonacciLevels: gannLevels,
-    analysisType: "Gann",
+    analysisType: "تحليل جان",
     activation_type: "تلقائي"  // Set to automatic for Gann analysis
   };
 

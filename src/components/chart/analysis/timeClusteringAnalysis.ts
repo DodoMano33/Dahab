@@ -65,7 +65,7 @@ export const analyzeTimeClustering = async (
       price: entryPrice,
       reason: "Entry based on time clustering and seasonal patterns"
     },
-    analysisType: "تصفيق زمني", // تم تحديد نوع التحليل بدقة
+    analysisType: "تصفيق زمني",
     activation_type: "تلقائي"
   };
   

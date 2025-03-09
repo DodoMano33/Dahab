@@ -25,19 +25,19 @@ export const detectAnalysisType = (
 ): AnalysisType => {
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
-  if (isSMC) return "SMC";
-  if (isICT) return "ICT";
+  if (isSMC) return "تحليل SMC";
+  if (isICT) return "تحليل ICT";
   if (isTurtleSoup) return "Turtle Soup";
-  if (isGann) return "Gann";
-  if (isWaves) return "Waves";
-  if (isPatternAnalysis) return "Patterns";
-  if (isPriceAction) return "Price Action";
+  if (isGann) return "تحليل جان";
+  if (isWaves) return "تحليل الموجات";
+  if (isPatternAnalysis) return "تحليل الأنماط";
+  if (isPriceAction) return "حركة السعر";
   if (isFibonacci) return "فيبوناتشي";
-  if (isFibonacciAdvanced) return "تحليل فيبوناتشي متقدم";
+  if (isFibonacciAdvanced) return "فيبوناتشي متقدم";
   if (isNeuralNetwork) return "شبكات عصبية";
-  if (isRNN) return "شبكات عصبية متكررة";
+  if (isRNN) return "شبكات RNN";
   if (isTimeClustering) return "تصفيق زمني";
-  if (isMultiVariance) return "تباين متعدد العوامل";
+  if (isMultiVariance) return "تباين متعدد";
   if (isCompositeCandlestick) return "شمعات مركبة";
   if (isBehavioral) return "تحليل سلوكي";
   return "عادي";

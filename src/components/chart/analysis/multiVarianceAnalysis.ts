@@ -77,7 +77,7 @@ export const analyzeMultiVariance = async (
       price: entryPrice,
       reason: "Entry based on multi-factor variance analysis of market conditions"
     },
-    analysisType: "تباين متعدد العوامل",
+    analysisType: "تباين متعدد",
     activation_type: "تلقائي"
   };
   

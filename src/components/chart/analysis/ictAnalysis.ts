@@ -61,7 +61,7 @@ export const analyzeICTChart = async (
         stopLoss,
         targets,
         bestEntryPoint,
-        analysisType: "ICT"
+        analysisType: "تحليل ICT"
       };
 
       console.log("نتائج تحليل ICT:", analysisResult);
