@@ -81,7 +81,6 @@ export const analyzeSMCChart = async (
         expectedTime: getExpectedTime(index)
       }));
 
-      // Make sure we use the exact string value that matches the database constraint
       const analysisResult: AnalysisData = {
         pattern,
         direction,
@@ -92,8 +91,8 @@ export const analyzeSMCChart = async (
         targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
-        analysisType: "تحليل SMC",  // Ensure this exact string matches the database constraint
-        activation_type: "تلقائي"   // Set explicit activation type
+        analysisType: "تحليل SMC",
+        activation_type: "تلقائي"
       };
 
       console.log("SMC Analysis Results:", analysisResult);

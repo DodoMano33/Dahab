@@ -17,9 +17,7 @@ CREATE TABLE public.search_history (
     'نظرية السوق', 'نظرية هيكل السوق', 'يومي', 'مضاربة', 'حركة السعر', 'فيبوناتشي',
     'normal', 'scalping', 'smart', 'smc', 'ict', 'turtle_soup', 'gann', 'waves', 'patterns',
     'price_action', 'neural_network', 'rnn', 'time_clustering', 'multi_variance',
-    'composite_candlesticks', 'behavioral', 'pattern', 'daily', 'fibonacci', 'fibonacci_advanced',
-    'تحليل SMC', 'تحليل ICT', 'تحليل الموجات', 'تحليل الأنماط', 'تحليل جان', 'تباين متعدد',
-    'شبكات RNN', 'تحليل سلوكي', 'فيبوناتشي متقدم'
+    'composite_candlesticks', 'behavioral', 'pattern', 'daily', 'fibonacci', 'fibonacci_advanced'
   )),
   timeframe text,
   analysis_duration_hours integer DEFAULT 8
