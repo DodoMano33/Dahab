@@ -81,26 +81,6 @@ export const executeAnalysis = async (
   if (isFibonacci) selectedStrategies.push("Fibonacci");
   if (isFibonacciAdvanced) selectedStrategies.push("Fibonacci Advanced");
 
-  // Map analysis types to standardized database values
-  const analysisTypeMap: Record<string, AnalysisType> = {
-    "Patterns": "تحليل الأنماط",
-    "Waves": "تحليل الموجات",
-    "Gann": "تحليل جان",
-    "Turtle Soup": "Turtle Soup",
-    "ICT": "تحليل ICT",
-    "SMC": "تحليل SMC",
-    "Scalping": "سكالبينج",
-    "Price Action": "حركة السعر",
-    "Neural Networks": "شبكات عصبية",
-    "RNN": "شبكات RNN",
-    "Time Clustering": "تصفيق زمني",
-    "Multi Variance": "تباين متعدد",
-    "Composite Candlestick": "شمعات مركبة",
-    "Behavioral": "تحليل سلوكي",
-    "Fibonacci": "فيبوناتشي",
-    "Fibonacci Advanced": "فيبوناتشي متقدم"
-  };
-
   let analysis: AnalysisData;
 
   if (selectedStrategies.length > 1) {
@@ -133,7 +113,7 @@ export const executeAnalysis = async (
       analysis.bestEntryPoint.reason = `Based on combining ${selectedStrategies.length} strategies (${selectedStrategies.join(', ')})`;
     }
     analysis.pattern = `Smart Analysis (${selectedStrategies.join(', ')})`;
-    analysis.analysisType = "ذكي"; // Using a valid AnalysisType literal
+    analysis.analysisType = "ذكي" as AnalysisType;
     analysis.activation_type = "تلقائي";
   } else {
     const strategy = selectedStrategies[0] || "Standard";
@@ -167,43 +147,42 @@ export const executeAnalysis = async (
         break;
       case "RNN":
         analysis = await analyzeRNN(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "شبكات عصبية" as AnalysisType;
+        }
         break;
       case "Time Clustering":
         analysis = await analyzeTimeClustering(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "تقلبات" as AnalysisType;
+        }
         break;
       case "Multi Variance":
         analysis = await analyzeMultiVariance(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "تقلبات" as AnalysisType;
+        }
         break;
       case "Composite Candlestick":
         analysis = await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "نمطي" as AnalysisType;
+        }
         break;
       case "Behavioral":
         analysis = await analyzeBehavioral(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "حركة السعر" as AnalysisType;
+        }
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "فيبوناتشي";
-        }
         break;
       case "Fibonacci Advanced":
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
-        if (analysis) {
-          analysis.analysisType = "فيبوناتشي متقدم";
-        }
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);
-    }
-    
-    // Make sure we set the standard database-compatible analysis type
-    if (analysis && strategy in analysisTypeMap) {
-      analysis.analysisType = analysisTypeMap[strategy];
-    }
-    
-    // Ensure automatic analyses have the correct activation type
-    if (analysis && !analysis.activation_type) {
-      analysis.activation_type = "تلقائي";
     }
   }
 

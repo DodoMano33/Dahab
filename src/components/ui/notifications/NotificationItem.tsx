@@ -2,7 +2,7 @@
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
-import { Notification } from "@/hooks/notifications";
+import { Notification } from "@/hooks/use-notifications";
 
 interface NotificationItemProps {
   notification: Notification;

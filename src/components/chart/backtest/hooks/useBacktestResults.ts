@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { getStrategyName, mainAnalysisTypes } from '@/utils/technicalAnalysis/analysisTypeMap';
+import { getStrategyName } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 const PAGE_SIZE = 500; // Changed from 100 to 500
 
@@ -31,12 +31,11 @@ export const useBacktestResults = () => {
 
       console.log(`Fetched ${data?.length} results`);
       
-      // Process results to normalize analysis types
+      // Process results to enhance analysis types
       const processedResults = data?.map(result => {
         // Make sure analysis_type is properly set
-        if (!result.analysis_type || !mainAnalysisTypes.includes(result.analysis_type)) {
-          // If the analysis type is not in our approved list, default to 'normal'
-          console.warn(`Result with invalid analysis_type (${result.analysis_type}):`, result.id);
+        if (!result.analysis_type) {
+          console.warn(`Result with missing analysis_type:`, result.id);
           result.analysis_type = 'normal';
         }
         

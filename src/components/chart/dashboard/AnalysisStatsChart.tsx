@@ -1,7 +1,6 @@
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { mainAnalysisTypes } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 interface AnalysisStats {
   type: string;
@@ -11,13 +10,9 @@ interface AnalysisStats {
 }
 
 export const AnalysisStatsChart = ({ stats }: { stats: AnalysisStats[] }) => {
-  // تصفية البيانات للتأكد من استخدام أنواع التحليل المعتمدة فقط
-  const filteredStats = stats.filter(stat => 
-    stat.display_name && mainAnalysisTypes.includes(stat.type)
-  );
-  
   // تهيئة بيانات الرسم البياني
-  const chartData = filteredStats
+  const chartData = stats
+    .filter(stat => stat.display_name) // تصفية البيانات للتأكد من وجود أسماء عرض
     .map(stat => ({
       name: stat.display_name || stat.type,
       نجاح: stat.success,
@@ -38,19 +33,19 @@ export const AnalysisStatsChart = ({ stats }: { stats: AnalysisStats[] }) => {
       <CardHeader>
         <CardTitle>أداء أنواع التحليل</CardTitle>
         <CardDescription>
-          مقارنة بين معدلات نجاح وفشل أنواع التحليل المختلفة ({chartData.length} نوع)
+          مقارنة بين معدلات نجاح وفشل أنواع التحليل المختلفة
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[500px] w-full">
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 120 }}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name"
                 angle={-45}
                 textAnchor="end"
-                height={100}
+                height={80}
                 interval={0}
                 fontSize={12}
               />

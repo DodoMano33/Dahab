@@ -111,22 +111,12 @@ export const executeSpecificAnalysis = async (
     case "fibonacciadvanced":
     case "تحليلفيبوناتشيمتقدم":
       console.log("Executing Fibonacci Advanced analysis");
-      const advancedResult = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
-      if (advancedResult) {
-        // تأكد من تعيين نوع التحليل بشكل صحيح
-        advancedResult.analysisType = "فيبوناتشي";
-      }
-      return advancedResult;
+      return await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
       
     case "fibonacci":
     case "فيبوناتشي":
       console.log("Executing Fibonacci analysis");
-      const result = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
-      if (result) {
-        // تأكد من تعيين نوع التحليل بشكل صحيح
-        result.analysisType = "فيبوناتشي";
-      }
-      return result;
+      return await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
       
     case "daily":
     case "يومي":

@@ -9,7 +9,7 @@ export const showLoadingToast = (message: string): string => {
   const toastId = "analysis-loading-" + Date.now();
   toast.loading(message, {
     id: toastId,
-    duration: 1000, // تغيير من 3000 إلى 1000 (1 ثانية)
+    duration: Infinity,
   });
   return toastId;
 };
@@ -25,7 +25,7 @@ export const showSuccessToast = (
 ): void => {
   toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`, {
     description: `${symbol} | السعر: ${price}`,
-    duration: 1000, // تغيير من 3000 إلى 1000 (1 ثانية)
+    duration: 5000,
   });
 };
 
@@ -34,13 +34,9 @@ export const showSuccessToast = (
  */
 export const showErrorToast = (error: unknown): void => {
   if (error instanceof Error) {
-    toast.error(error.message, {
-      duration: 1000, // تغيير من 3000 إلى 1000 (1 ثانية)
-    });
+    toast.error(error.message);
   } else {
-    toast.error("حدث خطأ أثناء التحليل", {
-      duration: 1000, // تغيير من 3000 إلى 1000 (1 ثانية)
-    });
+    toast.error("حدث خطأ أثناء التحليل");
   }
 };
 

@@ -75,7 +75,7 @@ export const combinedAnalysis = async (
         reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`
       },
       analysisType: "ذكي",
-      activation_type: "تلقائي" // Always set smart analysis as automatic
+      activation_type: "تلقائي"
     };
 
     console.log("Combined analysis result:", combinedResult);

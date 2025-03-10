@@ -27,10 +27,6 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
     return analysisTypeTooltips[displayName] || `معلومات عن ${displayName}`;
   };
   
-  // تقسيم الإحصائيات إلى سطرين (9 أنواع في كل سطر)
-  const firstRowStats = stats.slice(0, Math.ceil(stats.length / 2));
-  const secondRowStats = stats.slice(Math.ceil(stats.length / 2));
-  
   // طباعة أنواع التحليل المتاحة للتشخيص
   console.log("Analysis Stats - Available types:", stats.map(s => 
     `${s.type} -> ${s.display_name || getStrategyName(s.type)}`
@@ -39,76 +35,41 @@ export const AnalysisStats = ({ stats }: AnalysisStatsProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        {/* السطر الأول من أنواع التحليل */}
-        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-3">
-          {firstRowStats.map((stat) => {
-            const displayName = stat.display_name || getStrategyName(stat.type);
-            const tooltipContent = getTooltipContent(stat.type, displayName);
-            
-            return (
-              <div
-                key={stat.type}
-                className="flex flex-col items-center text-center bg-white p-3 rounded-lg shadow-sm"
-              >
-                <div className="text-sm font-medium mb-2 h-10 flex items-center">
-                  {hasTooltip(stat.type, displayName) ? (
-                    <AnalysisTooltip content={tooltipContent}>
-                      {displayName}
-                    </AnalysisTooltip>
-                  ) : (
-                    displayName
-                  )}
-                </div>
-                <div className="flex gap-1">
-                  <Badge variant="success" className="flex flex-col items-center p-1">
-                    <span className="text-xs">ناجح</span>
-                    <span className="text-base font-bold">{stat.success}</span>
-                  </Badge>
-                  <Badge variant="destructive" className="flex flex-col items-center p-1">
-                    <span className="text-xs">فاشل</span>
-                    <span className="text-base font-bold">{stat.fail}</span>
-                  </Badge>
-                </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {stats.map((stat) => {
+          const displayName = stat.display_name || getStrategyName(stat.type);
+          const tooltipContent = getTooltipContent(stat.type, displayName);
+          
+          // طباعة تشخيصية لكل نوع تحليل
+          console.log(`Rendering stats for type: ${stat.type} -> ${displayName}`);
+          
+          return (
+            <div
+              key={stat.type}
+              className="flex flex-col items-center text-center bg-white p-4 rounded-lg shadow-sm"
+            >
+              <div className="text-sm font-medium mb-3">
+                {hasTooltip(stat.type, displayName) ? (
+                  <AnalysisTooltip content={tooltipContent}>
+                    {displayName}
+                  </AnalysisTooltip>
+                ) : (
+                  displayName
+                )}
               </div>
-            );
-          })}
-        </div>
-        
-        {/* السطر الثاني من أنواع التحليل */}
-        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-9 gap-3">
-          {secondRowStats.map((stat) => {
-            const displayName = stat.display_name || getStrategyName(stat.type);
-            const tooltipContent = getTooltipContent(stat.type, displayName);
-            
-            return (
-              <div
-                key={stat.type}
-                className="flex flex-col items-center text-center bg-white p-3 rounded-lg shadow-sm"
-              >
-                <div className="text-sm font-medium mb-2 h-10 flex items-center">
-                  {hasTooltip(stat.type, displayName) ? (
-                    <AnalysisTooltip content={tooltipContent}>
-                      {displayName}
-                    </AnalysisTooltip>
-                  ) : (
-                    displayName
-                  )}
-                </div>
-                <div className="flex gap-1">
-                  <Badge variant="success" className="flex flex-col items-center p-1">
-                    <span className="text-xs">ناجح</span>
-                    <span className="text-base font-bold">{stat.success}</span>
-                  </Badge>
-                  <Badge variant="destructive" className="flex flex-col items-center p-1">
-                    <span className="text-xs">فاشل</span>
-                    <span className="text-base font-bold">{stat.fail}</span>
-                  </Badge>
-                </div>
+              <div className="flex gap-2">
+                <Badge variant="success" className="flex flex-col items-center p-2">
+                  <span>ناجح</span>
+                  <span className="text-lg font-bold">{stat.success}</span>
+                </Badge>
+                <Badge variant="destructive" className="flex flex-col items-center p-2">
+                  <span>فاشل</span>
+                  <span className="text-lg font-bold">{stat.fail}</span>
+                </Badge>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* المستطيل الجديد لإجمالي النتائج */}
