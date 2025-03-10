@@ -1,7 +1,7 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NotificationItem } from "./NotificationItem";
-import { Notification } from "@/hooks/notifications";
+import { Notification } from "@/hooks/use-notifications";
 
 interface NotificationListProps {
   notifications: Notification[];

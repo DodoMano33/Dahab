@@ -2,26 +2,50 @@
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { mainAnalysisTypes, getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export type AnalysisTypeValue = 
   | "normal" 
-  | "fibonacci"
-  | "fibonacci_advanced"
+  | "scalping" 
+  | "ict" 
+  | "smc" 
+  | "turtle_soup" 
   | "gann" 
   | "waves" 
+  | "patterns" 
   | "price_action" 
-  | "scalping" 
-  | "smc" 
-  | "ict" 
-  | "time_clustering" 
-  | "pattern" 
-  | "multi_variance" 
-  | "neural_network"
-  | "behaviors"
-  | "turtle_soup"
+  | "neural_networks"
   | "rnn"
-  | "composite_candlesticks";
+  | "time_clustering"
+  | "multi_variance"
+  | "composite_candlestick"
+  | "behavioral"
+  | "fibonacci"
+  | "fibonacci_advanced";
+
+interface AnalysisType {
+  value: AnalysisTypeValue;
+  label: string;
+}
+
+const analysisTypes: AnalysisType[] = [
+  { value: "normal", label: "تحديد الكل" },
+  { value: "scalping", label: "Scalping" },
+  { value: "ict", label: "ICT" },
+  { value: "gann", label: "Gann" },
+  { value: "patterns", label: "Patterns" },
+  { value: "smc", label: "SMC" },
+  { value: "turtle_soup", label: "Turtle Soup" },
+  { value: "waves", label: "Waves" },
+  { value: "price_action", label: "Price Action" },
+  { value: "fibonacci", label: "Fibonacci" },
+  { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
+  { value: "neural_networks", label: "شبكات عصبية" },
+  { value: "rnn", label: "شبكات عصبية متكررة" },
+  { value: "time_clustering", label: "تصفيق زمني" },
+  { value: "multi_variance", label: "تباين متعدد العوامل" },
+  { value: "composite_candlestick", label: "شمعات مركبة" },
+  { value: "behavioral", label: "تحليل سلوكي" },
+];
 
 interface AnalysisTypesProps {
   selectedTypes: string[];
@@ -32,19 +56,6 @@ export const AnalysisTypes = ({
   selectedTypes,
   onTypesChange,
 }: AnalysisTypesProps) => {
-  // إنشاء قائمة أنواع التحليل من mainAnalysisTypes
-  const analysisTypes = [
-    { value: "normal", label: "تحديد الكل" },
-    ...mainAnalysisTypes.filter(type => type !== "normal").map(type => ({
-      value: type,
-      label: getStrategyName(type)
-    }))
-  ];
-  
-  // Log the available types for debugging
-  console.log("Available analysis types:", analysisTypes.map(t => t.value));
-  console.log("Currently selected types:", selectedTypes);
-  
   const handleTypeChange = (type: string) => {
     if (type === "normal") {
       // If "تحديد الكل" is clicked
@@ -84,9 +95,6 @@ export const AnalysisTypes = ({
       <div className="space-y-4">
         <div className="text-center mb-4">
           <h3 className="text-xl font-semibold">أنواع التحليل المراد تنفيذها</h3>
-          <p className="text-sm text-gray-700 mt-1">
-            {selectedTypes.length} من {analysisTypes.length-1} نوع محدد
-          </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {analysisTypes.map((type) => (

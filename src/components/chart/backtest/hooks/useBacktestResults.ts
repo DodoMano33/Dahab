@@ -1,8 +1,6 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { getStrategyName, mainAnalysisTypes } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 const PAGE_SIZE = 500; // Changed from 100 to 500
 
@@ -31,31 +29,10 @@ export const useBacktestResults = () => {
 
       console.log(`Fetched ${data?.length} results`);
       
-      // Process results to normalize analysis types
-      const processedResults = data?.map(result => {
-        // Make sure analysis_type is properly set
-        if (!result.analysis_type || !mainAnalysisTypes.includes(result.analysis_type)) {
-          // If the analysis type is not in our approved list, default to 'normal'
-          console.warn(`Result with invalid analysis_type (${result.analysis_type}):`, result.id);
-          result.analysis_type = 'normal';
-        }
-        
-        // Log the analysis type for debugging
-        console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${getStrategyName(result.analysis_type)}`);
-        
-        return result;
-      }) || [];
-      
-      // Log unique analysis types from this batch
-      if (processedResults.length > 0) {
-        console.log('Unique analysis types in this batch:', 
-          [...new Set(processedResults.map(r => r.analysis_type))]);
-      }
-      
       if (pageNumber === 0) {
-        setResults(processedResults);
+        setResults(data || []);
       } else {
-        setResults(prev => [...prev, ...processedResults]);
+        setResults(prev => [...prev, ...(data || [])]);
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));

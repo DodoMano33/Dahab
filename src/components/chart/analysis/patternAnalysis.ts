@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzePatternWithPrice } from "@/utils/patternRecognition";
 
@@ -22,13 +21,6 @@ export const analyzePattern = async (
 
     // Pass the actual timeframe to the analysis function
     const analysis = analyzePatternWithPrice(chartImage, currentPrice, timeframe);
-    
-    // Ensure the analysis type is set correctly
-    if (analysis) {
-      analysis.analysisType = "تحليل الأنماط";
-      analysis.activation_type = "تلقائي";
-    }
-    
     console.log("تم إكمال تحليل النمط بنجاح:", analysis);
     return analysis;
 

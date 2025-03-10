@@ -4,10 +4,10 @@ import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
 import { ChartDisplay } from "./ChartDisplay";
 import { useSearchHistory } from "./hooks/search-history";
+import { useBackTest } from "./hooks/useBackTest";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
-import { useBackTest } from "./hooks/useBackTest";
 
 export const ChartAnalyzer = () => {
   const {
@@ -30,8 +30,11 @@ export const ChartAnalyzer = () => {
     isRefreshing
   } = useSearchHistory();
 
-  // استخدام هوك فحص التحليلات للتوافق مع الأنواع فقط
-  const { triggerManualCheck, isLoading: isCheckLoading, lastCheckTime } = useBackTest();
+  const {
+    triggerManualCheck,
+    isLoading,
+    lastCheckTime
+  } = useBackTest();
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
@@ -81,6 +84,10 @@ export const ChartAnalyzer = () => {
     setIsHistoryOpen(true);
   }, [addToSearchHistory, setIsHistoryOpen]);
 
+  const handleManualCheck = useCallback(() => {
+    triggerManualCheck();
+  }, [triggerManualCheck]);
+
   // For periodic data updates
   useEffect(() => {
     const interval = setInterval(() => {
@@ -127,8 +134,8 @@ export const ChartAnalyzer = () => {
         setIsHistoryOpen={setIsHistoryOpen}
         onAnalysisComplete={handleAnalysisComplete}
         chartDisplayComponent={chartDisplayComponent}
-        onManualCheck={triggerManualCheck}
-        isCheckLoading={isCheckLoading}
+        onManualCheck={handleManualCheck}
+        isCheckLoading={isLoading}
         lastCheckTime={lastCheckTime}
       />
       

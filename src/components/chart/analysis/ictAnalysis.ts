@@ -1,13 +1,12 @@
-
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { AnalysisData } from "@/types/analysis";
 import { addHours } from "date-fns";
 
 export const analyzeICTChart = async (
   imageData: string,
   currentPrice: number,
-  timeframe: string
+  symbol: string
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل ICT للرمز:", timeframe);
+  console.log("بدء تحليل ICT للرمز:", symbol);
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -62,8 +61,7 @@ export const analyzeICTChart = async (
         stopLoss,
         targets,
         bestEntryPoint,
-        analysisType: "تحليل ICT" as AnalysisType,
-        activation_type: "تلقائي"
+        analysisType: "ICT"
       };
 
       console.log("نتائج تحليل ICT:", analysisResult);

@@ -13,7 +13,6 @@ interface SaveAnalysisParams {
   timeframe: string;
   duration: number;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
-  isAutomatic?: boolean;
 }
 
 export const useSaveAnalysis = () => {
@@ -25,123 +24,72 @@ export const useSaveAnalysis = () => {
     analysisType,
     timeframe,
     duration,
-    onAnalysisComplete,
-    isAutomatic = false
+    onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
+      // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
-      // Create a mapping for the special analysis types that need normalization
-      const typeMapping: Record<string, string> = {
-        "fibonacci": "فيبوناتشي",
-        "fibonacci_advanced": "فيبوناتشي متقدم",
-        "waves": "تحليل الموجات",
-        "price_action": "حركة السعر",
-        "ict": "تحليل ICT",
-        "smc": "تحليل SMC",
-        "patterns": "تحليل الأنماط",
-        "normal": "تحليل الأنماط",
-        "pattern": "تحليل الأنماط",
-        "scalping": "سكالبينج",
-        "gann": "تحليل جان",
-        "turtle_soup": "Turtle Soup",
-        "neural_network": "شبكات عصبية",
-        "rnn": "شبكات RNN",
-        "multi_variance": "تباين متعدد",
-        "time_clustering": "تصفيق زمني",
-        "composite_candlestick": "شمعات مركبة",
-        "behavioral": "تحليل سلوكي"
-      };
-      
-      // Check if a direct mapping exists
-      let mappedAnalysisType = typeMapping[analysisType.toLowerCase()];
-      
-      // If no direct mapping, use the more flexible mapToAnalysisType function
-      if (!mappedAnalysisType) {
-        mappedAnalysisType = mapToAnalysisType(analysisType);
-      }
-        
+      // Map the analysis type to a valid database enum value
+      const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
-      // If we have a result.analysisResult, ensure it has the correct analysisType
-      if (result && result.analysisResult) {
-        if (!result.analysisResult.analysisType) {
-          console.log("Setting analysisType as it was missing:", mappedAnalysisType);
-          result.analysisResult.analysisType = mappedAnalysisType;
-        } else {
-          // Check if the result's analysisType needs normalization
-          const lowerCaseType = result.analysisResult.analysisType.toLowerCase();
-          if (typeMapping[lowerCaseType]) {
-            console.log("Normalizing analysis type from", result.analysisResult.analysisType, "to", typeMapping[lowerCaseType]);
-            result.analysisResult.analysisType = typeMapping[lowerCaseType];
-          }
-        }
+      // تأكد من أن نوع التحليل موجود في النتيجة
+      if (!result.analysisResult.analysisType) {
+        result.analysisResult.analysisType = mappedAnalysisType;
       }
       
-      if (isAutomatic) {
-        console.log("Setting activation_type to تلقائي for automatic analysis");
-        if (result && result.analysisResult) {
-          result.analysisResult.activation_type = "تلقائي";
-        }
-      } else if (result && result.analysisResult && !result.analysisResult.activation_type) {
-        console.log("Setting default activation_type to يدوي");
-        result.analysisResult.activation_type = "يدوي";
-      } else if (result && result.analysisResult) {
-        console.log("Keeping existing activation_type:", result.analysisResult.activation_type);
-      }
+      // Update the analysis result's analysisType to the mapped value
+      const analysisResultWithMappedType = {
+        ...result.analysisResult,
+        analysisType: mappedAnalysisType
+      };
       
-      // Make sure we have a valid analysis type for the save operation
-      const validAnalysisType = (mappedAnalysisType || "تحليل الأنماط") as AnalysisType;
+      console.log("Final analysis result with type:", analysisResultWithMappedType);
       
-      // Log all the details before saving
-      console.log("Final analysis result with type:", result.analysisResult);
-      console.log("Saving analysis with userId:", userId);
-      console.log("Saving analysis with symbol:", symbol);
-      console.log("Saving analysis with currentPrice:", currentPrice);
-      console.log("Saving analysis with analysisType:", validAnalysisType);
-      console.log("Saving analysis with timeframe:", timeframe);
-      console.log("Saving analysis with duration:", duration);
-      console.log("Saving analysis with activation_type:", result.analysisResult.activation_type);
-        
-      const savedData = await saveAnalysis({
-        userId,
-        symbol,
-        currentPrice,
-        analysisResult: result.analysisResult,
-        analysisType: validAnalysisType,
-        timeframe,
-        durationHours: duration
-      });
-
-      if (savedData && onAnalysisComplete) {
-        const newHistoryEntry: SearchHistoryItem = {
-          id: savedData.id,
-          date: new Date(),
+      // Add proper error handling for debugging
+      try {
+        const savedData = await saveAnalysis({
+          userId,
           symbol,
           currentPrice,
-          analysis: result.analysisResult,
-          targetHit: false,
-          stopLossHit: false,
-          analysisType: validAnalysisType,
+          analysisResult: analysisResultWithMappedType,
+          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
           timeframe,
-          analysis_duration_hours: duration
-        };
+          durationHours: duration
+        });
+
+        if (savedData && onAnalysisComplete) {
+          const newHistoryEntry: SearchHistoryItem = {
+            id: savedData.id,
+            date: new Date(),
+            symbol,
+            currentPrice,
+            analysis: analysisResultWithMappedType,
+            targetHit: false,
+            stopLossHit: false,
+            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            timeframe,
+            analysis_duration_hours: duration
+          };
+          
+          console.log("Adding new analysis to history:", newHistoryEntry);
+          onAnalysisComplete(newHistoryEntry);
+        }
         
-        console.log("Adding new analysis to history:", newHistoryEntry);
-        onAnalysisComplete(newHistoryEntry);
+        // Show success toast with proper analysis type display
+        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+          duration: 5000,
+        });
+        
+      } catch (dbError) {
+        console.error("Database error saving analysis:", dbError);
+        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
+        throw dbError;
       }
-      
-      toast.success(`تم إكمال تحليل ${mappedAnalysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
-        duration: 3000,
-      });
-      
-      return savedData;
-        
     } catch (error) {
       console.error("Error saving analysis:", error);
-      toast.error("حدث خطأ أثناء حفظ التحليل", {
-        duration: 3000,
-      });
+      toast.error("حدث خطأ أثناء حفظ التحليل");
       throw error;
     }
   };

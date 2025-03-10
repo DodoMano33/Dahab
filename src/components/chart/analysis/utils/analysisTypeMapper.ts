@@ -1,212 +1,104 @@
-import { AnalysisType } from "@/types/analysis";
 
-// Configuration interface for analysis types
-interface AnalysisConfig {
-  isScalping: boolean;
-  isSMC: boolean;
-  isICT: boolean;
-  isTurtleSoup: boolean;
-  isGann: boolean;
-  isWaves: boolean;
-  isPatternAnalysis: boolean;
-  isPriceAction: boolean;
-  isNeuralNetwork: boolean;
-  isRNN?: boolean;
-  isTimeClustering?: boolean;
-  isMultiVariance?: boolean;
-  isCompositeCandlestick?: boolean;
-  isBehavioral?: boolean;
-  isFibonacci?: boolean;
-  isFibonacciAdvanced?: boolean;
-}
-
-export const mapAnalysisTypeToConfig = (analysisType: string): AnalysisConfig => {
-  // Normalize the string for comparison (lowercase, remove spaces/special chars)
-  const normalizedType = analysisType.toLowerCase().replace(/[\s-_]/g, '');
+/**
+ * Maps the analysis type to the corresponding Supabase enum value
+ * This is necessary because the Supabase enum has specific values that must match
+ */
+export const mapToAnalysisType = (analysisType: string): string => {
+  // اطبع نوع التحليل المرسل للتشخيص
+  console.log("Analysis type before mapping:", analysisType);
   
-  // Map the analysis type to configuration values
-  const config: AnalysisConfig = {
-    isScalping: false,
-    isSMC: false,
-    isICT: false,
-    isTurtleSoup: false,
-    isGann: false,
-    isWaves: false,
-    isPatternAnalysis: false,
-    isPriceAction: false,
-    isNeuralNetwork: false,
-    isRNN: false,
-    isTimeClustering: false,
-    isMultiVariance: false,
-    isCompositeCandlestick: false,
-    isBehavioral: false,
-    isFibonacci: false,
-    isFibonacciAdvanced: false
-  };
-  
-  switch (normalizedType) {
-    case 'نمطي':
-    case 'pattern':
-    case 'patterns':
-    case 'normal':
-    case 'daily':
-    case 'عادي':
-    case 'يومي':
-      config.isPatternAnalysis = true;
-      break;
-      
-    case 'سكالبينج':
-    case 'مضاربة':
-    case 'scalping':
-      config.isScalping = true;
-      break;
-      
-    case 'smc':
-    case 'نظريةهيكلالسوق':
-      config.isSMC = true;
-      break;
-      
-    case 'ict':
-    case 'نظريةالسوق':
-      config.isICT = true;
-      break;
-      
-    case 'تقلبات':
-    case 'wave':
-    case 'waves':
-      config.isWaves = true;
-      break;
-      
-    case 'حركةالسعر':
-    case 'priceaction':
-      config.isPriceAction = true;
-      break;
-      
-    case 'جان':
-    case 'gann':
-      config.isGann = true;
-      break;
-      
-    case 'الحساءالسلحفائي':
-    case 'turtlesoup':
-    case 'turtle':
-      config.isTurtleSoup = true;
-      break;
-      
-    case 'شبكاتعصبية':
-    case 'neuralnetworks':
-    case 'neuralnetwork':
-      config.isNeuralNetwork = true;
-      break;
-      
-    case 'فيبوناتشي':
-    case 'fibonacci':
-      config.isFibonacci = true;
-      break;
-      
-    case 'فيبوناتشيمتقدم':
-    case 'fibonacci_advanced':
-    case 'fibonacciadvanced':
-      config.isFibonacciAdvanced = true;
-      break;
-      
+  // Make sure to match exactly what's expected in the database
+  switch (analysisType.toLowerCase()) {
+    case "نمطي":
+    case "patterns":
+      return "نمطي";
+    case "تقلبات":
+    case "waves":
+      return "تقلبات";
+    case "جان":
+    case "gann":
+      return "جان";
+    case "الحساء السلحفائي":
+    case "turtle_soup":
+    case "turtle soup":
+      return "الحساء السلحفائي";
+    case "نظرية السوق":
+    case "ict":
+      return "نظرية السوق";
+    case "نظرية هيكل السوق":
+    case "smc":
+      return "نظرية هيكل السوق";
+    case "مضاربة":
+    case "scalping":
+    case "سكالبينج":
+      return "مضاربة";
+    case "حركة السعر":
+    case "price_action":
+    case "price action":
+      return "حركة السعر";
+    case "شبكات عصبية":
+    case "neural_networks":
+    case "neural networks":
+      return "شبكات عصبية";
+    case "ذكي":
+    case "smart":
+      return "ذكي";
+    // These are causing the problem - map them to allowed values in the database
+    case "فيبوناتشي":
+    case "fibonacci":
+      return "ذكي"; // Map to a valid value in the database
+    case "تحليل فيبوناتشي متقدم":
+    case "fibonacci_advanced":
+    case "fibonacci advanced":
+      return "ذكي"; // Map to a valid value in the database
+    case "شبكات عصبية متكررة":
+    case "rnn":
+      return "شبكات عصبية متكررة"; 
+    case "تصفيق زمني":
+    case "time_clustering":
+    case "time clustering":
+    case "time cluster pattern":
+      return "تصفيق زمني"; 
+    case "تباين متعدد العوامل":
+    case "multi_variance":
+    case "multi variance":
+      return "تباين متعدد العوامل"; 
+    case "شمعات مركبة":
+    case "composite_candlestick":
+    case "composite candlestick":
+      return "شمعات مركبة"; 
+    case "تحليل سلوكي":
+    case "behavioral":
+      return "تحليل سلوكي"; 
+    case "يومي":
+    case "daily":
+      return "يومي";
     default:
-      // Default to pattern analysis if no type matches
-      config.isPatternAnalysis = true;
+      // أطبع النوع غير المعروف للتشخيص
+      console.log(`Unknown analysis type: "${analysisType}", original type: ${typeof analysisType}`);
+      // إذا كان النوع غير معروف، نستخدم النوع الأصلي بدلاً من الإرجاع الافتراضي
+      return "ذكي"; // Default to a valid type to prevent database errors
   }
-  
-  return config;
 };
 
-export const mapToAnalysisType = (analysisType: string): AnalysisType => {
-  // Normalize the string for comparison (lowercase, remove spaces/special chars)
-  const normalizedType = analysisType.toLowerCase().replace(/[\s-_]/g, '');
-  
-  console.log("Mapping analysis type:", analysisType, "Normalized:", normalizedType);
-  
-  // Map the analysis type to a valid database value
-  switch (normalizedType) {
-    case 'نمطي':
-    case 'pattern':
-    case 'patterns':
-    case 'normal':
-    case 'daily':
-    case 'عادي':
-    case 'يومي':
-      return 'تحليل الأنماط';
-      
-    case 'سكالبينج':
-    case 'مضاربة':
-    case 'scalping':
-      return 'سكالبينج';
-      
-    case 'smc':
-    case 'نظريةهيكلالسوق':
-      return 'تحليل SMC';
-      
-    case 'ict':
-    case 'نظريةالسوق':
-      return 'تحليل ICT';
-      
-    case 'تقلبات':
-    case 'wave':
-    case 'waves':
-      return 'تحليل الموجات';
-      
-    case 'حركةالسعر':
-    case 'priceaction':
-      return 'حركة السعر';
-      
-    case 'جان':
-    case 'gann':
-      return 'تحليل جان';
-      
-    case 'الحساءالسلحفائي':
-    case 'turtlesoup':
-    case 'turtle':
-      return 'Turtle Soup';
-      
-    case 'ذكي':
-    case 'smart':
-    case 'ai':
-      return 'شبكات عصبية';
-      
-    case 'شبكاتعصبية':
-    case 'neuralnetworks':
-    case 'neuralnetwork':
-      return 'شبكات عصبية';
-      
-    case 'rnn':
-    case 'شبكاتعصبيةمتكررة':
-      return 'شبكات RNN';
-      
-    case 'تصفيقزمني':
-    case 'timeclustering':
-      return 'تصفيق زمني';
-      
-    case 'تباينمتعدد':
-    case 'multivariance':
-      return 'تباين متعدد';
-      
-    case 'شمعاتمركبة':
-    case 'compositecandlesticks':
-      return 'شمعات مركبة';
-      
-    case 'تحليلسلوكي':
-    case 'behavioral':
-      return 'تحليل سلوكي';
-      
-    case 'فيبوناتشي':
-    case 'fibonacci':
-      return 'فيبوناتشي';
-      
-    case 'فيبوناتشيمتقدم':
-    case 'fibonacci_advanced':
-    case 'fibonacciadvanced':
-      return 'فيبوناتشي متقدم';
-      
-    default:
-      console.log("Unknown analysis type:", analysisType, "Using default: تحليل الأنماط");
-      return 'تحليل الأنماط';
-  }
+// Add the missing function for AnalysisPerformer
+export const mapAnalysisTypeToConfig = (analysisType: string) => {
+  return {
+    isScalping: analysisType === "Scalping" || analysisType === "مضاربة" || analysisType === "سكالبينج",
+    isSMC: analysisType === "SMC" || analysisType === "نظرية هيكل السوق",
+    isICT: analysisType === "ICT" || analysisType === "نظرية السوق",
+    isTurtleSoup: analysisType === "Turtle Soup" || analysisType === "الحساء السلحفائي",
+    isGann: analysisType === "Gann" || analysisType === "جان",
+    isWaves: analysisType === "Waves" || analysisType === "تقلبات",
+    isPatternAnalysis: analysisType === "Patterns" || analysisType === "نمطي",
+    isPriceAction: analysisType === "Price Action" || analysisType === "حركة السعر",
+    isNeuralNetwork: analysisType === "Neural Networks" || analysisType === "شبكات عصبية",
+    isRNN: analysisType === "RNN" || analysisType === "شبكات عصبية متكررة",
+    isTimeClustering: analysisType === "Time Clustering" || analysisType === "تصفيق زمني",
+    isMultiVariance: analysisType === "Multi Variance" || analysisType === "تباين متعدد العوامل",
+    isCompositeCandlestick: analysisType === "Composite Candlestick" || analysisType === "شمعات مركبة",
+    isBehavioral: analysisType === "Behavioral" || analysisType === "تحليل سلوكي",
+    isFibonacci: analysisType === "Fibonacci" || analysisType === "فيبوناتشي",
+    isFibonacciAdvanced: analysisType === "Fibonacci Advanced" || analysisType === "تحليل فيبوناتشي متقدم"
+  };
 };

@@ -7,7 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, RefreshCw } from "lucide-react";
+import { Copy, Download, RefreshCw, Target } from "lucide-react";
 import { ExportAnalysis } from "./ExportAnalysis";
 
 interface HistoryDialogProps {
@@ -43,16 +43,6 @@ export const HistoryDialog = ({
     });
   };
   
-  const handleSelectAll = (select: boolean) => {
-    if (select) {
-      // تحديد جميع العناصر
-      setSelectedItems(new Set(validHistory.map(item => item.id)));
-    } else {
-      // إلغاء تحديد جميع العناصر
-      setSelectedItems(new Set());
-    }
-  };
-  
   const handleDeleteSelected = async () => {
     try {
       const selectedIds = Array.from(selectedItems);
@@ -82,16 +72,29 @@ export const HistoryDialog = ({
             <ExportAnalysis selectedItems={selectedHistoryItems} />
             
             {refreshHistory && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={refreshHistory}
-                disabled={isRefreshing}
-                className="mr-2"
-              >
-                <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                تحديث
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshHistory}
+                  disabled={isRefreshing}
+                  className="mr-2"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  تحديث
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshHistory}
+                  disabled={isRefreshing}
+                  className="bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300 mr-2"
+                  title="فحص تحقق الأهداف"
+                >
+                  <Target className="h-4 w-4 mr-1" />
+                  فحص التحليلات
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -99,8 +102,7 @@ export const HistoryDialog = ({
           <HistoryActions 
             selectedItems={selectedItems} 
             onDelete={handleDeleteSelected} 
-            history={validHistory}
-            onSelectAll={() => handleSelectAll(!selectedItems.size || selectedItems.size < validHistory.length)}
+            history={validHistory} 
           />
         </div>
         <div className="flex-1 h-full overflow-hidden">
@@ -108,8 +110,7 @@ export const HistoryDialog = ({
             history={validHistory} 
             onDelete={onDelete} 
             selectedItems={selectedItems} 
-            onSelect={handleSelect}
-            onSelectAll={handleSelectAll}
+            onSelect={handleSelect} 
           />
         </div>
       </DialogContent>

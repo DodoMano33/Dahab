@@ -1,23 +1,24 @@
+
 export type AnalysisType = 
   | "سكالبينج" 
   | "ذكي" 
-  | "تحليل SMC" 
-  | "تحليل ICT" 
+  | "SMC" 
+  | "ICT" 
   | "Turtle Soup" 
-  | "تحليل جان" 
-  | "تحليل الموجات" 
+  | "Gann" 
+  | "Waves" 
   | "Patterns" 
   | "Price Action" 
   | "شبكات عصبية" 
-  | "شبكات RNN" 
+  | "شبكات عصبية متكررة" 
   | "تصفيق زمني" 
-  | "تباين متعدد" 
+  | "تباين متعدد العوامل" 
   | "شمعات مركبة" 
   | "تحليل سلوكي" 
   | "فيبوناتشي"
-  | "فيبوناتشي متقدم"
+  | "تحليل فيبوناتشي متقدم"
   | "عادي"
-  | "تحليل الأنماط"
+  | "نمطي"
   | "تقلبات"
   | "جان"
   | "الحساء السلحفائي"
@@ -25,28 +26,7 @@ export type AnalysisType =
   | "نظرية هيكل السوق"
   | "يومي"
   | "مضاربة"
-  | "حركة السعر"
-  // English versions
-  | "scalping"
-  | "smart"
-  | "smc"
-  | "ict"
-  | "turtle_soup"
-  | "gann"
-  | "waves"
-  | "patterns"
-  | "price_action"
-  | "neural_network"
-  | "rnn"
-  | "time_clustering"
-  | "multi_variance"
-  | "composite_candlesticks"
-  | "behavioral"
-  | "pattern"
-  | "daily"
-  | "normal"
-  | "fibonacci"
-  | "fibonacci_advanced";
+  | "حركة السعر";
 
 export interface ImageData {
   height: number;
@@ -56,7 +36,7 @@ export interface ImageData {
 
 export interface AnalysisData {
   pattern: string;
-  direction: "صاعد" | "هابط" | "محايد" | "Up" | "Down" | "Neutral";
+  direction: "صاعد" | "هابط" | "محايد";
   currentPrice: number;
   support: number;
   resistance: number;
@@ -73,7 +53,7 @@ export interface AnalysisData {
     level: number;
     price: number;
   }[];
-  activation_type?: "تلقائي" | "يدوي" | "Automatic" | "Manual";
+  activation_type?: "تلقائي" | "يدوي";
   analysisType: AnalysisType;
 }
 
@@ -89,7 +69,7 @@ export interface SearchHistoryItem {
   timeframe: string;
   analysis_duration_hours?: number;
   last_checked_price?: number;
-  last_checked_at?: Date | string | null;
+  last_checked_at?: Date;
   result_timestamp?: Date;
   is_success?: boolean;
 }
