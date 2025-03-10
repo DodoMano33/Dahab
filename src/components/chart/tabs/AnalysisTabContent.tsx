@@ -22,9 +22,9 @@ interface AnalysisTabContentProps {
   setIsHistoryOpen: (open: boolean) => void;
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
-  onManualCheck: () => void;
-  isCheckLoading: boolean;
-  lastCheckTime: Date | null;
+  onManualCheck?: () => void;
+  isCheckLoading?: boolean;
+  lastCheckTime?: Date | null;
 }
 
 export const AnalysisTabContent = ({
@@ -42,9 +42,6 @@ export const AnalysisTabContent = ({
   setIsHistoryOpen,
   onAnalysisComplete,
   chartDisplayComponent,
-  onManualCheck,
-  isCheckLoading,
-  lastCheckTime
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
@@ -85,12 +82,8 @@ export const AnalysisTabContent = ({
       {/* Manual Analysis Display */}
       {chartDisplayComponent}
       
-      {/* Backtest Check Button */}
-      <BacktestCheckButton 
-        onCheck={onManualCheck}
-        isLoading={isCheckLoading}
-        lastCheckTime={lastCheckTime}
-      />
+      {/* فقط عرض زر فحص التحليلات بدون وظيفة */}
+      <BacktestCheckButton />
     </div>
   );
 };

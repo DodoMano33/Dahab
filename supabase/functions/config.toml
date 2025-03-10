@@ -1,6 +1,2 @@
 
 project_id = "nhvkviofvefwbvditgxo"
-[check_market_status.entrypoint]
-entrypoint = "index.ts"
-[check_analysis_targets.entrypoint]
-entrypoint = "index.ts"

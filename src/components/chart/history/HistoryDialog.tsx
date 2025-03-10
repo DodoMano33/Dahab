@@ -7,7 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, RefreshCw, Target } from "lucide-react";
+import { Copy, Download, RefreshCw } from "lucide-react";
 import { ExportAnalysis } from "./ExportAnalysis";
 
 interface HistoryDialogProps {
@@ -72,29 +72,16 @@ export const HistoryDialog = ({
             <ExportAnalysis selectedItems={selectedHistoryItems} />
             
             {refreshHistory && (
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={refreshHistory}
-                  disabled={isRefreshing}
-                  className="mr-2"
-                >
-                  <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  تحديث
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={refreshHistory}
-                  disabled={isRefreshing}
-                  className="bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300 mr-2"
-                  title="فحص تحقق الأهداف"
-                >
-                  <Target className="h-4 w-4 mr-1" />
-                  فحص التحليلات
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshHistory}
+                disabled={isRefreshing}
+                className="mr-2"
+              >
+                <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+                تحديث
+              </Button>
             )}
           </div>
         </div>

@@ -2,122 +2,83 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-
-interface BackTestConfig {
-  interval: number; // الفاصل الزمني بالدقائق
-  isAutoCheckEnabled: boolean;
-}
 
 export const useBackTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
-  const [autoCheckConfig, setAutoCheckConfig] = useState<BackTestConfig>({
-    interval: 30, // افتراضياً 30 دقيقة
-    isAutoCheckEnabled: false
-  });
-  const { user } = useAuth();
-  
-  // استرجاع الإعدادات من التخزين المحلي
+
+  // جلب آخر وقت فحص عند تحميل المكون
   useEffect(() => {
-    const savedConfig = localStorage.getItem('backTestConfig');
-    if (savedConfig) {
-      try {
-        setAutoCheckConfig(JSON.parse(savedConfig));
-      } catch (e) {
-        console.error("خطأ في قراءة إعدادات الفحص التلقائي:", e);
-      }
-    }
-  }, []);
-  
-  // حفظ الإعدادات عند تغييرها
-  useEffect(() => {
-    localStorage.setItem('backTestConfig', JSON.stringify(autoCheckConfig));
-  }, [autoCheckConfig]);
-  
-  // إعداد الفحص التلقائي الدوري
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    
-    if (user && autoCheckConfig.isAutoCheckEnabled) {
-      intervalId = setInterval(() => {
-        console.log(`تنفيذ الفحص التلقائي كل ${autoCheckConfig.interval} دقيقة`);
-        triggerManualCheck(true); // silent mode
-      }, autoCheckConfig.interval * 60 * 1000);
-    }
-    
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
+    const fetchLastCheckTime = async () => {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('last_checked_at')
+        .order('last_checked_at', { ascending: false })
+        .limit(1);
+
+      if (!error && data && data.length > 0 && data[0].last_checked_at) {
+        console.log("Initial last_checked_at:", data[0].last_checked_at);
+        setLastCheckTime(new Date(data[0].last_checked_at));
       }
     };
-  }, [user, autoCheckConfig.isAutoCheckEnabled, autoCheckConfig.interval]);
 
-  const triggerManualCheck = useCallback(async (isSilent = false) => {
-    if (!user) {
-      if (!isSilent) toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة");
-      return;
-    }
+    fetchLastCheckTime();
+    
+    // الاستماع لحدث تحديث التاريخ
+    const handleHistoryUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.timestamp) {
+        console.log("useBackTest detected history update with timestamp:", customEvent.detail.timestamp);
+        setLastCheckTime(new Date(customEvent.detail.timestamp));
+      }
+    };
+    
+    window.addEventListener('historyUpdated', handleHistoryUpdate);
+    
+    return () => {
+      window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
+  }, []);
 
-    setIsLoading(true);
+  const triggerManualCheck = async () => {
     try {
-      if (!isSilent) toast.info("جاري فحص حالة التحليلات...");
+      setIsLoading(true);
       
-      // فحص حالة السوق أولاً
-      const marketStatusResponse = await supabase.functions.invoke('check-market-status');
+      // استدعاء وظيفة الفحص التلقائي
+      const { data, error } = await supabase.functions.invoke('auto-check-analyses');
       
-      if (!marketStatusResponse.data?.isOpen) {
-        if (!isSilent) toast.warning("السوق مغلق حالياً. بعض التحليلات قد لا تتحدث بشكل صحيح.");
-      }
-      
-      // ثم فحص أهداف التحليل
-      const { data, error } = await supabase.functions.invoke('check-analysis-targets', {
-        body: { forceCheck: true }
-      });
-
       if (error) {
-        console.error("خطأ أثناء فحص التحليلات:", error);
-        if (!isSilent) toast.error("حدث خطأ أثناء فحص التحليلات");
-        return;
+        console.error('Error invoking auto-check function:', error);
+        throw error;
       }
-
-      const { checked, updated } = data;
-      setLastCheckTime(new Date());
-
-      if (!isSilent) {
-        if (updated > 0) {
-          toast.success(`تم تحديث ${updated} تحليل من إجمالي ${checked} تم فحصها`);
-        } else if (checked > 0) {
-          toast.info(`تم فحص ${checked} تحليل، لا توجد تغييرات`);
-        } else {
-          toast.info("لا توجد تحليلات نشطة للفحص");
-        }
+      
+      console.log('Manual check completed:', data);
+      
+      // تحديث وقت آخر فحص في واجهة المستخدم
+      if (data && data.timestamp) {
+        setLastCheckTime(new Date(data.timestamp));
+        
+        // إطلاق حدث لتحديث واجهة المستخدم
+        const event = new CustomEvent('historyUpdated', {
+          detail: { timestamp: data.timestamp }
+        });
+        window.dispatchEvent(event);
+        
+        toast.success(`تم فحص ${data.checked || 'جميع'} التحليلات بنجاح`);
+      } else {
+        toast.info('لا توجد تحليلات نشطة للفحص');
       }
     } catch (error) {
-      console.error("خطأ أثناء فحص التحليلات:", error);
-      if (!isSilent) toast.error("حدث خطأ أثناء فحص التحليلات");
+      console.error('Error in manual check:', error);
+      toast.error('حدث خطأ أثناء فحص التحليلات');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
-  
-  const updateAutoCheckConfig = useCallback((config: Partial<BackTestConfig>) => {
-    setAutoCheckConfig(prev => ({ ...prev, ...config }));
-  }, []);
-  
-  const toggleAutoCheck = useCallback(() => {
-    setAutoCheckConfig(prev => ({ 
-      ...prev, 
-      isAutoCheckEnabled: !prev.isAutoCheckEnabled 
-    }));
-  }, []);
+  };
 
   return {
     triggerManualCheck,
     isLoading,
-    lastCheckTime,
-    autoCheckConfig,
-    updateAutoCheckConfig,
-    toggleAutoCheck
+    lastCheckTime
   };
 };
