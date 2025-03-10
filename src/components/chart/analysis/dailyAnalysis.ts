@@ -77,7 +77,8 @@ export const analyzeDailyChart = async (
         targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
-        analysisType: "Patterns"
+        analysisType: "Patterns",
+        activation_type: "تلقائي"  // Set to automatic for daily analysis
       };
 
       console.log("نتائج التحليل اليومي:", analysisResult);

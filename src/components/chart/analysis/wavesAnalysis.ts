@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { addMinutes, addHours, addDays } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
@@ -67,7 +68,8 @@ export const analyzeWavesChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "Waves"
+    analysisType: "تحليل الموجات",
+    activation_type: "تلقائي"
   };
 
   console.log("نتائج تحليل Waves:", analysisResult);

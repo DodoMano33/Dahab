@@ -1,4 +1,5 @@
-import { AnalysisData } from "@/types/analysis";
+
+import { AnalysisData, AnalysisType } from "@/types/analysis";
 import {
   calculateFibonacciLevels,
   calculateSupportResistance,
@@ -90,7 +91,8 @@ export const analyzeSMCChart = async (
         targets,
         fibonacciLevels: fibLevels,
         bestEntryPoint,
-        analysisType: "SMC"
+        analysisType: "تحليل SMC" as AnalysisType,
+        activation_type: "تلقائي"
       };
 
       console.log("SMC Analysis Results:", analysisResult);

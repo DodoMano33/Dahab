@@ -7,7 +7,7 @@ import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 export interface AnalysisTypeCellProps {
   analysisType: string;
   pattern?: string;
-  activation_type?: 'تلقائي' | 'يدوي';
+  activation_type?: 'تلقائي' | 'يدوي' | 'Automatic' | 'Manual';
 }
 
 export const AnalysisTypeCell = ({ 
@@ -26,7 +26,7 @@ export const AnalysisTypeCell = ({
     const type = analysisType?.toLowerCase() || '';
     const normalizedType = type.replace(/_/g, '').trim();
     
-    // Old analysis types
+    // Analysis types mapping
     if (normalizedType.includes('smc') || normalizedType.includes('نظريةهيكلالسوق')) return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
     if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300';
     if (normalizedType.includes('turtle') || normalizedType.includes('الحساءالسلحفائي')) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
@@ -60,35 +60,46 @@ export const AnalysisTypeCell = ({
     return 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-300';
   };
 
+  // 1. النص الرئيسي (يوضح سبب التحليل)
+  const primaryText = pattern || "سبب غير محدد";
+  
+  // 2. نوع التحليل الأساسي (بخط أكبر ولون أحمر)
+  const analysisTypeText = displayName || analysisType;
+
   return (
     <TableCell className="w-[120px] text-center p-1">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex flex-col items-center">
+              {/* النص الرئيسي - سبب التحليل */}
               <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${getBgColor()} border-0 shadow-sm`}>
-                {displayName || 'غير محدد'}
+                {primaryText}
               </Badge>
-              {pattern && (
-                <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
-                  {pattern}
-                </Badge>
-              )}
+              
+              {/* نوع التحليل الأساسي - بخط أكبر ولون أحمر */}
+              <Badge variant="outline" className="bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300 text-[12px] font-bold px-1.5 py-0.5 mt-1">
+                {analysisTypeText}
+              </Badge>
+              
+              {/* حالة التنشيط - أوتوماتيكي أو يدوي */}
               <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${
-                activation_type === 'تلقائي' 
+                activation_type === 'تلقائي' || activation_type === 'Automatic'
                   ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300' 
                   : 'bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300'
               }`}>
-                {activation_type === 'تلقائي' ? 'اوتوماتيكي' : 'يدوي'}
+                {activation_type === 'تلقائي' || activation_type === 'Automatic' ? 'أوتوماتيكي' : 'يدوي'}
               </Badge>
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{activation_type === 'تلقائي' ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
-            {pattern && <p className="text-xs mt-1">{pattern}</p>}
+            <p>{(activation_type === 'تلقائي' || activation_type === 'Automatic') ? 'تم التحليل بشكل تلقائي' : 'تم التحليل بشكل يدوي'}</p>
+            <p className="text-xs font-bold text-red-600 mt-1">نوع التحليل: {analysisTypeText}</p>
+            <p className="text-xs mt-1">سبب التحليل: {primaryText}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </TableCell>
   );
 };
+

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationsHeader } from "./NotificationsHeader";
 import { NotificationList } from "./NotificationList";
-import { useNotifications } from "@/hooks/use-notifications";
+import { useNotifications } from "@/hooks/notifications";
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false);

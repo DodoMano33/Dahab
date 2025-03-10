@@ -14,8 +14,13 @@ CREATE TABLE public.search_history (
     'عادي', 'سكالبينج', 'ذكي', 'SMC', 'ICT', 'Turtle Soup', 'Gann', 'Waves', 'Patterns', 
     'Price Action', 'شبكات عصبية', 'شبكات عصبية متكررة', 'تصفيق زمني', 'تباين متعدد العوامل',
     'شمعات مركبة', 'تحليل سلوكي', 'نمطي', 'تقلبات', 'جان', 'الحساء السلحفائي',
-    'نظرية السوق', 'نظرية هيكل السوق', 'يومي', 'مضاربة', 'حركة السعر'
-  ))
+    'نظرية السوق', 'نظرية هيكل السوق', 'يومي', 'مضاربة', 'حركة السعر', 'فيبوناتشي',
+    'normal', 'scalping', 'smart', 'smc', 'ict', 'turtle_soup', 'gann', 'waves', 'patterns',
+    'price_action', 'neural_network', 'rnn', 'time_clustering', 'multi_variance',
+    'composite_candlesticks', 'behavioral', 'pattern', 'daily', 'fibonacci', 'fibonacci_advanced'
+  )),
+  timeframe text,
+  analysis_duration_hours integer DEFAULT 8
 );
 
 -- Set up Row Level Security (RLS)

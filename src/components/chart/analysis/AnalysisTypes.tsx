@@ -2,50 +2,26 @@
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { mainAnalysisTypes, getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 export type AnalysisTypeValue = 
   | "normal" 
-  | "scalping" 
-  | "ict" 
-  | "smc" 
-  | "turtle_soup" 
+  | "fibonacci"
+  | "fibonacci_advanced"
   | "gann" 
   | "waves" 
-  | "patterns" 
   | "price_action" 
-  | "neural_networks"
+  | "scalping" 
+  | "smc" 
+  | "ict" 
+  | "time_clustering" 
+  | "pattern" 
+  | "multi_variance" 
+  | "neural_network"
+  | "behaviors"
+  | "turtle_soup"
   | "rnn"
-  | "time_clustering"
-  | "multi_variance"
-  | "composite_candlestick"
-  | "behavioral"
-  | "fibonacci"
-  | "fibonacci_advanced";
-
-interface AnalysisType {
-  value: AnalysisTypeValue;
-  label: string;
-}
-
-const analysisTypes: AnalysisType[] = [
-  { value: "normal", label: "تحديد الكل" },
-  { value: "scalping", label: "مضاربة (Scalping)" },
-  { value: "ict", label: "ICT - نظرية السوق" },
-  { value: "smc", label: "SMC - نظرية هيكل السوق" },
-  { value: "turtle_soup", label: "الحساء السلحفائي" },
-  { value: "gann", label: "جان (Gann)" },
-  { value: "waves", label: "تقلبات (Waves)" },
-  { value: "patterns", label: "نمطي (Patterns)" },
-  { value: "price_action", label: "حركة السعر (Price Action)" },
-  { value: "fibonacci", label: "فيبوناتشي (Fibonacci)" },
-  { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
-  { value: "neural_networks", label: "شبكات عصبية" },
-  { value: "rnn", label: "شبكات عصبية متكررة" },
-  { value: "time_clustering", label: "تصفيق زمني" },
-  { value: "multi_variance", label: "تباين متعدد العوامل" },
-  { value: "composite_candlestick", label: "شمعات مركبة" },
-  { value: "behavioral", label: "تحليل سلوكي" },
-];
+  | "composite_candlesticks";
 
 interface AnalysisTypesProps {
   selectedTypes: string[];
@@ -56,6 +32,15 @@ export const AnalysisTypes = ({
   selectedTypes,
   onTypesChange,
 }: AnalysisTypesProps) => {
+  // إنشاء قائمة أنواع التحليل من mainAnalysisTypes
+  const analysisTypes = [
+    { value: "normal", label: "تحديد الكل" },
+    ...mainAnalysisTypes.filter(type => type !== "normal").map(type => ({
+      value: type,
+      label: getStrategyName(type)
+    }))
+  ];
+  
   // Log the available types for debugging
   console.log("Available analysis types:", analysisTypes.map(t => t.value));
   console.log("Currently selected types:", selectedTypes);

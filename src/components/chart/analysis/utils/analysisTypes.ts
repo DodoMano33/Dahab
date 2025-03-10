@@ -15,13 +15,13 @@ export const getAnalysisType = (
 ): AnalysisType => {
   if (isAI) return "ذكي";
   if (isScalping) return "سكالبينج";
-  if (isSMC) return "SMC";
-  if (isICT) return "ICT";
+  if (isSMC) return "تحليل SMC";
+  if (isICT) return "تحليل ICT";
   if (isTurtleSoup) return "Turtle Soup";
-  if (isGann) return "Gann";
-  if (isWaves) return "Waves";
-  if (isPatternAnalysis) return "Patterns";
-  if (isPriceAction) return "Price Action";
+  if (isGann) return "تحليل جان";
+  if (isWaves) return "تحليل الموجات";
+  if (isPatternAnalysis) return "تحليل الأنماط";
+  if (isPriceAction) return "حركة السعر";
   if (isNeuralNetwork) return "شبكات عصبية";
   return "عادي";
 };

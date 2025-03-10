@@ -43,6 +43,16 @@ export const HistoryDialog = ({
     });
   };
   
+  const handleSelectAll = (select: boolean) => {
+    if (select) {
+      // تحديد جميع العناصر
+      setSelectedItems(new Set(validHistory.map(item => item.id)));
+    } else {
+      // إلغاء تحديد جميع العناصر
+      setSelectedItems(new Set());
+    }
+  };
+  
   const handleDeleteSelected = async () => {
     try {
       const selectedIds = Array.from(selectedItems);
@@ -89,7 +99,8 @@ export const HistoryDialog = ({
           <HistoryActions 
             selectedItems={selectedItems} 
             onDelete={handleDeleteSelected} 
-            history={validHistory} 
+            history={validHistory}
+            onSelectAll={() => handleSelectAll(!selectedItems.size || selectedItems.size < validHistory.length)}
           />
         </div>
         <div className="flex-1 h-full overflow-hidden">
@@ -97,7 +108,8 @@ export const HistoryDialog = ({
             history={validHistory} 
             onDelete={onDelete} 
             selectedItems={selectedItems} 
-            onSelect={handleSelect} 
+            onSelect={handleSelect}
+            onSelectAll={handleSelectAll}
           />
         </div>
       </DialogContent>

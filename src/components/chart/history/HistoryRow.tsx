@@ -1,4 +1,3 @@
-
 import { TableRow } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
 import { useState, useEffect } from "react";
@@ -15,7 +14,6 @@ import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { DateCell } from "./cells/DateCell";
 import { SymbolCell } from "./cells/SymbolCell";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface HistoryRowProps {
   id: string;
@@ -46,15 +44,10 @@ export const HistoryRow = ({
   last_checked_price,
   last_checked_at,
 }: HistoryRowProps) => {
-  // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
-  const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
-    ? "فيبوناتشي" 
-    : analysis.pattern === "تحليل فيبوناتشي متقدم" 
-      ? "تحليل فيبوناتشي متقدم" 
-      : getStrategyName(analysisType);
-  
   // تشخيص وقت آخر فحص
   console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
+  console.log(`Analysis data for ${id}:`, analysis);
+  console.log(`Analysis type for ${id}:`, analysisType);
   
   // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {
@@ -98,7 +91,7 @@ export const HistoryRow = ({
       <DirectionCell direction={analysis.direction} />
       <CurrentPriceCell price={currentPrice} />
       <AnalysisTypeCell 
-        analysisType={displayAnalysisType} 
+        analysisType={analysisType} 
         pattern={analysis.pattern}
         activation_type={analysis.activation_type}
       />

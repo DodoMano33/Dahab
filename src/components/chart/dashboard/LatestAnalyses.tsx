@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface LatestAnalysesProps {
   userId: string;
@@ -72,10 +72,12 @@ export function LatestAnalyses({ userId }: LatestAnalysesProps) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-sm">{analysis.analysis_type} - {analysis.timeframe}</span>
+                  <span className="text-sm">
+                    {analysis.analysis?.pattern || getStrategyName(analysis.analysis_type) || "تحليل الأنماط"} - {analysis.timeframe}
+                  </span>
                   <div className="flex items-center">
                     <span className={`text-sm ${analysis.target_hit ? 'text-green-500' : ''}`}>
-                      {analysis.analysis.direction}
+                      {analysis.analysis?.direction}
                     </span>
                   </div>
                 </div>
