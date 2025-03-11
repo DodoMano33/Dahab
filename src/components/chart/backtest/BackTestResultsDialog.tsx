@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,7 +34,6 @@ export const BackTestResultsDialog = ({
     refresh: refreshResults
   } = useBacktestResults();
 
-  // Debug logging for analysis types
   useEffect(() => {
     if (completedAnalyses.length > 0) {
       console.log("BackTestResultsDialog: Loaded analysis types:", 
@@ -44,7 +42,6 @@ export const BackTestResultsDialog = ({
       console.log("BackTestResultsDialog: Unique analysis types:", 
         [...new Set(completedAnalyses.map(a => a.analysis_type))]);
         
-      // Add more detailed logging to check each item's display name
       console.log("BackTestResultsDialog: Analysis types with display names:", 
         completedAnalyses.slice(0, 20).map(a => ({
           id: a.id,
@@ -60,7 +57,6 @@ export const BackTestResultsDialog = ({
       console.log("BackTestResultsDialog: Unique stats types:", 
         [...new Set(stats.map(s => s.type))]);
       
-      // Add more detailed logging for stats display names
       console.log("BackTestResultsDialog: Stats types with display names:", 
         stats.map(s => ({
           type: s.type,
@@ -93,7 +89,7 @@ export const BackTestResultsDialog = ({
 
   const handleDeleteSelected = async () => {
     if (selectedItems.size === 0) {
-      toast.error("الرجاء تحديد عناصر للحذف");
+      toast.error("الرجاء تحديد عناصر للحذف", { duration: 500 });
       return;
     }
 
@@ -110,19 +106,18 @@ export const BackTestResultsDialog = ({
         throw error;
       }
 
-      toast.success("تم حذف العناصر المحددة بنجاح");
+      toast.success("تم حذف العناصر المحددة بنجاح", { duration: 500 });
       setSelectedItems(new Set());
       await refreshResults();
       await refreshStats();
     } catch (error) {
       console.error('Error deleting items:', error);
-      toast.error("حدث خطأ أثناء حذف العناصر");
+      toast.error("حدث خطأ أثناء حذف العناصر", { duration: 500 });
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Wrap refresh in an async function to ensure it returns a Promise
   const handleRefresh = async () => {
     console.log("Refreshing backtest results and stats...");
     await refreshResults();

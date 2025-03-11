@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,6 +81,7 @@ export function useNotifications() {
             setNotifications(prev => [payload.new as Notification, ...prev]);
             toast(payload.new.title, {
               description: payload.new.message,
+              duration: 500,
               action: {
                 label: "عرض",
                 onClick: () => handleNotificationClick(payload.new as Notification),
