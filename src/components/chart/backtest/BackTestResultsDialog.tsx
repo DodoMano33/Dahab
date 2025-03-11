@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -137,6 +136,7 @@ export const BackTestResultsDialog = ({
           selectedItemsCount={selectedItems.size}
           isDeleting={isDeleting}
           useEntryPoint={useEntryPoint}
+          totalProfitLoss={totalProfitLoss}
         />
 
         <div className="flex-1 overflow-hidden">
@@ -194,3 +194,4 @@ export const BackTestResultsDialog = ({
     </Dialog>
   );
 };
+
