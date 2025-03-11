@@ -1,17 +1,30 @@
 
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface HistoryTableHeaderProps {
   showCheckbox?: boolean;
+  onSelectAll?: (checked: boolean) => void;
+  isAllSelected?: boolean;
 }
 
 export const HistoryTableHeader = ({
-  showCheckbox
+  showCheckbox,
+  onSelectAll,
+  isAllSelected
 }: HistoryTableHeaderProps) => {
   return (
     <TableHeader className="sticky top-0 bg-background z-30 border-b shadow-sm">
       <TableRow>
-        {showCheckbox && <TableHead className="w-10"></TableHead>}
+        {showCheckbox && (
+          <TableHead className="w-10 text-center">
+            <Checkbox 
+              checked={isAllSelected}
+              onCheckedChange={onSelectAll}
+              aria-label="تحديد كل العناصر"
+            />
+          </TableHead>
+        )}
         <TableHead className="w-16">حالة السوق</TableHead>
         <TableHead className="w-24">آخر فحص</TableHead>
         <TableHead className="w-20">الوقت المتبقي</TableHead>

@@ -1,4 +1,3 @@
-
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
@@ -39,16 +38,13 @@ export const HistoryContent = ({
     `${history[0].id}: ${history[0].last_checked_at} (${typeof history[0].last_checked_at})` : 
     "No history items");
   
-  // استخدام حالة محلية لتخزين البيانات المحدثة
   const [localHistory, setLocalHistory] = useState(history);
   
-  // تحديث البيانات المحلية عند تغير البيانات القادمة من المستوى الأعلى
   useEffect(() => {
     console.log("History prop updated, updating local history");
     setLocalHistory(history);
   }, [history]);
   
-  // وظيفة تحديث البيانات من قاعدة البيانات
   const refreshHistoryData = useCallback(async () => {
     try {
       console.log("Manually refreshing history data for displayed items");
@@ -74,13 +70,11 @@ export const HistoryContent = ({
       
       console.log("Received updated history data:", data);
       
-      // تحديث البيانات المحلية بالقيم الجديدة
       setLocalHistory(prev => {
         const updated = [...prev];
         data.forEach(update => {
           const index = updated.findIndex(item => item.id === update.id);
           if (index !== -1) {
-            // تحديث البيانات مع الحفاظ على البيانات الأخرى
             updated[index] = {
               ...updated[index],
               last_checked_at: update.last_checked_at,
@@ -96,7 +90,6 @@ export const HistoryContent = ({
     }
   }, [history]);
   
-  // الاستماع إلى حدث تحديث البيانات
   useEffect(() => {
     const handleHistoryUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -115,7 +108,6 @@ export const HistoryContent = ({
     };
   }, [refreshHistoryData]);
   
-  // استماع إلى التغييرات في الوقت الحقيقي من قاعدة البيانات
   useEffect(() => {
     console.log("Setting up realtime subscription for search_history");
     
@@ -131,13 +123,11 @@ export const HistoryContent = ({
         (payload) => {
           console.log("Realtime update received:", payload);
           
-          // تحديث البيانات المحلية
           setLocalHistory(prev => {
             const updated = [...prev];
             const index = updated.findIndex(item => item.id === payload.new.id);
             
             if (index !== -1) {
-              // تحديث العنصر بالبيانات الجديدة
               updated[index] = {
                 ...updated[index],
                 last_checked_at: payload.new.last_checked_at,
@@ -157,20 +147,35 @@ export const HistoryContent = ({
     };
   }, []);
 
-  // تنفيذ تحديث للبيانات فوراً عند التحميل
   useEffect(() => {
     console.log("Initial data refresh");
     refreshHistoryData();
-    // استدعاء التحديث كل 30 ثانية
     const interval = setInterval(refreshHistoryData, 30000);
     return () => clearInterval(interval);
   }, [refreshHistoryData]);
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = localHistory.map(item => item.id);
+      allIds.forEach(id => onSelect(id));
+    } else {
+      localHistory.forEach(item => {
+        if (selectedItems.has(item.id)) {
+          onSelect(item.id);
+        }
+      });
+    }
+  };
 
   return (
     <div className="relative w-full h-full">
       <ScrollArea className="h-full">
         <Table className="w-full table-fixed">
-          <HistoryTableHeader showCheckbox={true} />
+          <HistoryTableHeader 
+            showCheckbox={true} 
+            onSelectAll={handleSelectAll}
+            isAllSelected={localHistory.length > 0 && selectedItems.size === localHistory.length}
+          />
           <TableBody>
             {localHistory.map((item) => (
               <HistoryRow
