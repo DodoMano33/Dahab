@@ -11,6 +11,7 @@ export const useBacktestResults = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [totalProfitLoss, setTotalProfitLoss] = useState(0);
 
   const fetchResults = async (pageNumber: number) => {
     try {
@@ -57,10 +58,25 @@ export const useBacktestResults = () => {
           [...new Set(processedResults.map(r => r.analysis_type))]);
       }
       
+      // Calculate total profit/loss
+      let total = 0;
+      processedResults.forEach(result => {
+        if (result.profit_loss !== null && result.profit_loss !== undefined) {
+          if (result.is_success) {
+            total += Number(result.profit_loss);
+          } else {
+            total -= Number(result.profit_loss);
+          }
+        }
+      });
+      
+      // If we're on page 0, reset the total, otherwise add to it
       if (pageNumber === 0) {
         setResults(processedResults);
+        setTotalProfitLoss(total);
       } else {
         setResults(prev => [...prev, ...processedResults]);
+        setTotalProfitLoss(prev => prev + total);
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));
@@ -94,6 +110,7 @@ export const useBacktestResults = () => {
     isLoading,
     hasMore,
     loadMore,
-    refresh
+    refresh,
+    totalProfitLoss
   };
 };

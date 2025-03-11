@@ -32,7 +32,8 @@ export const BackTestResultsDialog = ({
     isLoading: isLoadingResults,
     hasMore,
     loadMore,
-    refresh: refreshResults
+    refresh: refreshResults,
+    totalProfitLoss
   } = useBacktestResults();
 
   useEffect(() => {
@@ -158,6 +159,7 @@ export const BackTestResultsDialog = ({
                   selectedItems={selectedItems}
                   onSelectAll={handleSelectAll}
                   onSelect={handleSelect}
+                  totalProfitLoss={totalProfitLoss}
                 />
                 
                 {hasMore && (
