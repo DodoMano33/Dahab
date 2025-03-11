@@ -4,12 +4,14 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
+import { Badge } from "@/components/ui/badge";
 
 interface AnalysisTableProps {
   analyses: any[];
   selectedItems: Set<string>;
   onSelectAll: (checked: boolean) => void;
   onSelect: (id: string) => void;
+  totalProfitLoss?: number;
 }
 
 export const AnalysisTable = ({
@@ -17,6 +19,7 @@ export const AnalysisTable = ({
   selectedItems,
   onSelectAll,
   onSelect,
+  totalProfitLoss = 0
 }: AnalysisTableProps) => {
   // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
   const formatNumber = (value: number | string | null | undefined) => {
@@ -32,6 +35,11 @@ export const AnalysisTable = ({
     // إظهار القيمة المطلقة للتحليلات الناجحة وإضافة إشارة سالب للفاشلة
     const formattedValue = Number(Math.abs(value)).toFixed(3);
     return isSuccess ? formattedValue : `-${formattedValue}`;
+  };
+
+  // دالة لتنسيق إجمالي الربح/الخسارة
+  const formatTotalProfitLoss = (total: number) => {
+    return total >= 0 ? `+${total.toFixed(3)}` : `${total.toFixed(3)}`;
   };
 
   console.log("Rendering analysis table with analyses:", analyses.length);
@@ -56,7 +64,14 @@ export const AnalysisTable = ({
         <div>الهدف الأول</div>
         <div>السعر عند التحليل</div>
         <div>أفضل نقطة دخول</div>
-        <div>الربح/الخسارة</div>
+        <div className="flex items-center justify-end gap-2">
+          <span>الربح/الخسارة</span>
+          {analyses.length > 0 && (
+            <Badge variant={totalProfitLoss >= 0 ? "success" : "destructive"} className="font-bold">
+              {formatTotalProfitLoss(totalProfitLoss)}
+            </Badge>
+          )}
+        </div>
         <div>النتيجة</div>
         <div>الاطار الزمني</div>
         <div>نوع التحليل</div>

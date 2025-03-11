@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +31,8 @@ export const BackTestResultsDialog = ({
     isLoading: isLoadingResults,
     hasMore,
     loadMore,
-    refresh: refreshResults
+    refresh: refreshResults,
+    totalProfitLoss
   } = useBacktestResults();
 
   useEffect(() => {
@@ -136,6 +136,7 @@ export const BackTestResultsDialog = ({
           selectedItemsCount={selectedItems.size}
           isDeleting={isDeleting}
           useEntryPoint={useEntryPoint}
+          totalProfitLoss={totalProfitLoss}
         />
 
         <div className="flex-1 overflow-hidden">
@@ -158,6 +159,7 @@ export const BackTestResultsDialog = ({
                   selectedItems={selectedItems}
                   onSelectAll={handleSelectAll}
                   onSelect={handleSelect}
+                  totalProfitLoss={totalProfitLoss}
                 />
                 
                 {hasMore && (
@@ -192,3 +194,4 @@ export const BackTestResultsDialog = ({
     </Dialog>
   );
 };
+

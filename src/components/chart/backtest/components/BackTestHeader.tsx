@@ -16,6 +16,7 @@ interface BackTestHeaderProps {
   selectedItemsCount: number;
   isDeleting: boolean;
   useEntryPoint?: boolean;
+  totalProfitLoss?: number;
 }
 
 export const BackTestHeader = ({
@@ -25,10 +26,16 @@ export const BackTestHeader = ({
   onDeleteSelected,
   selectedItemsCount,
   isDeleting,
-  useEntryPoint = false
+  useEntryPoint = false,
+  totalProfitLoss = 0
 }: BackTestHeaderProps) => {
   const [analysesCount, setAnalysesCount] = useState(initialAnalysesCount);
   const { user } = useAuth();
+
+  // دالة لتنسيق إجمالي الربح/الخسارة
+  const formatTotalProfitLoss = (total: number) => {
+    return total >= 0 ? `+${total.toFixed(3)}` : `${total.toFixed(3)}`;
+  };
 
   useEffect(() => {
     setAnalysesCount(initialAnalysesCount);
@@ -69,9 +76,16 @@ export const BackTestHeader = ({
         <DialogTitle className="text-xl font-bold text-primary flex items-center gap-2">
           <Scroll className="h-5 w-5" />
           {useEntryPoint ? "نتائج الباك تست (أفضل نقطة دخول)" : "نتائج الباك تست"}
-          <Badge variant="secondary" className="mr-2">
-            {analysesCount} تحليل
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="mr-2">
+              {analysesCount} تحليل
+            </Badge>
+            {analysesCount > 0 && (
+              <Badge variant={totalProfitLoss >= 0 ? "success" : "destructive"} className="font-bold">
+                {formatTotalProfitLoss(totalProfitLoss)}
+              </Badge>
+            )}
+          </div>
         </DialogTitle>
         <div className="flex items-center gap-2">
           <Button
