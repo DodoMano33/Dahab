@@ -8,7 +8,7 @@ export const getStrategyName = (type: string): string => {
     oscillator: "المذبذبات",
     candlestick: "الشموع اليابانية",
     fibonacci: "فيبوناتشي",
-    fibonacci_advanced: "فيبوناتشي المتقدم",
+    fibonacci_advanced: "تحليل فيبوناتشي متقدم",
     gann: "تحليل جان",
     waves: "تحليل الموجات",
     price_action: "حركة السعر",
@@ -67,6 +67,7 @@ export const quickAnalysisTypes = [
   { value: "trend", label: "تحليل الاتجاه" },
   { value: "support_resistance", label: "الدعم والمقاومة" },
   { value: "fibonacci", label: "فيبوناتشي" },
+  { value: "fibonacci_advanced", label: "تحليل فيبوناتشي متقدم" },
   { value: "price_action", label: "حركة السعر" },
   { value: "pattern", label: "تحليل الأنماط" }
 ];
