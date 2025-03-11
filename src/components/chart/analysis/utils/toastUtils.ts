@@ -25,7 +25,7 @@ export const showSuccessToast = (
 ): void => {
   toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe}`, {
     description: `${symbol} | السعر: ${price}`,
-    duration: 1000, // Changed to 1 second
+    duration: 5000,
   });
 };
 
@@ -34,13 +34,9 @@ export const showSuccessToast = (
  */
 export const showErrorToast = (error: unknown): void => {
   if (error instanceof Error) {
-    toast.error(error.message, {
-      duration: 1000, // Changed to 1 second
-    });
+    toast.error(error.message);
   } else {
-    toast.error("حدث خطأ أثناء التحليل", {
-      duration: 1000, // Changed to 1 second
-    });
+    toast.error("حدث خطأ أثناء التحليل");
   }
 };
 
