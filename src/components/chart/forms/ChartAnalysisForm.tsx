@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
@@ -49,7 +48,7 @@ export const ChartAnalysisForm = ({
   defaultSymbol,
   defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState(defaultSymbol || "");
+  const [symbol, setSymbol] = useState(defaultSymbol || "XAUUSD");
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
@@ -98,7 +97,6 @@ export const ChartAnalysisForm = ({
 
     if (!isValid) return;
 
-    // If this is an AI analysis but no dialog should be shown (because selectedTypes were provided)
     if (isAI && selectedTypes.length > 0) {
       console.log("Smart Analysis with pre-selected types:", selectedTypes);
       const providedPrice = price ? Number(price) : defaultPrice;
@@ -129,7 +127,6 @@ export const ChartAnalysisForm = ({
       return;
     }
     
-    // If this is an AI analysis but without pre-selected types, show the dialog
     if (isAI) {
       setIsAIDialogOpen(true);
       return;
@@ -168,7 +165,7 @@ export const ChartAnalysisForm = ({
       <SymbolInput 
         value={symbol} 
         onChange={setSymbol} 
-        defaultValue={defaultSymbol}
+        defaultValue="XAUUSD"
       />
       <PriceInput 
         value={price} 
