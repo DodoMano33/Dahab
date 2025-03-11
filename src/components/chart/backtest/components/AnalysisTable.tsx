@@ -25,6 +25,15 @@ export const AnalysisTable = ({
     return Number(num).toFixed(3);
   };
 
+  // دالة لتنسيق الربح/الخسارة بحيث تظهر إشارة سالب للخسارة فقط
+  const formatProfitLoss = (value: number | null | undefined, isSuccess: boolean) => {
+    if (value === null || value === undefined) return "-";
+    
+    // إظهار القيمة المطلقة للتحليلات الناجحة وإضافة إشارة سالب للفاشلة
+    const formattedValue = Number(Math.abs(value)).toFixed(3);
+    return isSuccess ? formattedValue : `-${formattedValue}`;
+  };
+
   console.log("Rendering analysis table with analyses:", analyses.length);
   if (analyses.length > 0) {
     console.log("Sample analysis types from items:", analyses.slice(0, 5).map(a => 
@@ -36,7 +45,7 @@ export const AnalysisTable = ({
 
   return (
     <div className="border rounded-lg bg-white shadow-sm">
-      <div className="grid grid-cols-10 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
+      <div className="grid grid-cols-11 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
         <div className="text-center flex items-center justify-center">
           <Checkbox 
             checked={selectedItems.size === analyses.length && analyses.length > 0}
@@ -47,6 +56,7 @@ export const AnalysisTable = ({
         <div>الهدف الأول</div>
         <div>السعر عند التحليل</div>
         <div>أفضل نقطة دخول</div>
+        <div>الربح/الخسارة</div>
         <div>النتيجة</div>
         <div>الاطار الزمني</div>
         <div>نوع التحليل</div>
@@ -59,7 +69,7 @@ export const AnalysisTable = ({
           return (
             <div
               key={analysis.id}
-              className={`grid grid-cols-10 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+              className={`grid grid-cols-11 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
                 analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
               }`}
             >
@@ -106,6 +116,18 @@ export const AnalysisTable = ({
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>أفضل نقطة دخول: {formatNumber(analysis.best_entry_price || analysis.entry_price)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
+                      {formatProfitLoss(analysis.profit_loss, analysis.is_success)}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>الربح/الخسارة: {formatProfitLoss(analysis.profit_loss, analysis.is_success)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

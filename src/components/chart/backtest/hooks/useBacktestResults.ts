@@ -39,6 +39,12 @@ export const useBacktestResults = () => {
           result.analysis_type = 'normal';
         }
         
+        // Make sure profit_loss is correctly formatted
+        if (result.profit_loss !== null && result.profit_loss !== undefined) {
+          // Store the absolute value - we'll format it with the sign later based on is_success
+          result.profit_loss = Math.abs(Number(result.profit_loss));
+        }
+        
         // Log the analysis type for debugging
         console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${getStrategyName(result.analysis_type)}`);
         
