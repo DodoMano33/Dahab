@@ -37,7 +37,7 @@ export const saveAnalysis = async ({
   // Ensure analysisType is a valid value for the database
   console.log("Final analysis type being saved to database:", analysisType);
 
-  // Set automatic activation type for Fibonacci Analysis
+  // Set automatic activation type for Fibonacci Advanced Analysis
   if (!analysisResult.activation_type) {
     if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
       analysisResult.activation_type = "يدوي";
@@ -46,7 +46,6 @@ export const saveAnalysis = async ({
     }
   }
 
-  // Add verbose logging
   console.log("Inserting analysis data with duration:", durationHours, {
     user_id: userId,
     symbol,
@@ -57,35 +56,24 @@ export const saveAnalysis = async ({
     analysis_duration_hours: durationHours
   });
 
-  try {
-    const { data, error } = await supabase
-      .from('search_history')
-      .insert({
-        user_id: userId,
-        symbol,
-        current_price: currentPrice,
-        analysis: analysisResult,
-        analysis_type: analysisType,
-        timeframe,
-        analysis_duration_hours: durationHours
-      })
-      .select()
-      .maybeSingle();
+  const { data, error } = await supabase
+    .from('search_history')
+    .insert({
+      user_id: userId,
+      symbol,
+      current_price: currentPrice,
+      analysis: analysisResult,
+      analysis_type: analysisType,
+      timeframe,
+      analysis_duration_hours: durationHours
+    })
+    .select()
+    .maybeSingle();
 
-    if (error) {
-      console.error("Error saving to Supabase:", error);
-      if (error.message.includes("violates check constraint")) {
-        toast.error(`خطأ في حفظ التحليل: نوع التحليل "${analysisType}" غير صالح`);
-      } else {
-        toast.error(`خطأ في حفظ التحليل: ${error.message}`);
-      }
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Exception in saveAnalysis:", error);
-    toast.error("حدث خطأ أثناء حفظ التحليل");
+  if (error) {
+    console.error("Error saving to Supabase:", error);
     throw error;
   }
+
+  return data;
 };
