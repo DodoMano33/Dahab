@@ -33,8 +33,9 @@ export const mapToAnalysisType = (analysisType: string): string => {
   
   // Fibonacci analysis - check advanced first
   if (normalizedType.includes('فيبوناتشيمتقدم') || normalizedType.includes('تحليلفيبوناتشيمتقدم') || 
-     normalizedType.includes('fibonacciadvanced') || normalizedType.includes('advancedfibonacci')) {
-    return "تحليل فيبوناتشي متقدم";
+     normalizedType.includes('fibonacciadvanced') || normalizedType.includes('advancedfibonacci') ||
+     normalizedType.includes('fibonacci_advanced')) {
+    return "فيبوناتشي متقدم";
   }
   
   if (normalizedType.includes('فيبوناتشي') || normalizedType.includes('fibonacci')) {
@@ -75,8 +76,11 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
     isMultiVariance: normalizedType.includes('multivariance') || normalizedType.includes('تباينمتعدد'),
     isCompositeCandlestick: normalizedType.includes('compositecandlestick') || normalizedType.includes('شمعاتمركبة'),
     isBehavioral: normalizedType.includes('behavioral') || normalizedType.includes('تحليلسلوكي'),
-    isFibonacci: normalizedType.includes('fibonacci') && !normalizedType.includes('advanced') || 
-                normalizedType.includes('فيبوناتشي') && !normalizedType.includes('متقدم'),
-    isFibonacciAdvanced: normalizedType.includes('fibonacciadvanced') || normalizedType.includes('تحليلفيبوناتشيمتقدم')
+    isFibonacci: (normalizedType.includes('fibonacci') && !normalizedType.includes('advanced')) || 
+                (normalizedType.includes('فيبوناتشي') && !normalizedType.includes('متقدم')),
+    isFibonacciAdvanced: normalizedType.includes('fibonacciadvanced') || 
+                        normalizedType.includes('تحليلفيبوناتشيمتقدم') || 
+                        normalizedType.includes('فيبوناتشيمتقدم') || 
+                        normalizedType.includes('fibonacci_advanced')
   };
 };

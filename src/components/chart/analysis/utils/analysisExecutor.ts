@@ -177,9 +177,15 @@ export const executeAnalysis = async (
         break;
       case "Fibonacci":
         analysis = await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "فيبوناتشي" as AnalysisType;
+        }
         break;
       case "Fibonacci Advanced":
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "فيبوناتشي متقدم" as AnalysisType;
+        }
         break;
       default:
         analysis = await analyzeDailyChart(chartImage, currentPrice, timeframe);

@@ -30,6 +30,13 @@ export const useSaveAnalysis = () => {
       // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
+      // Fix for Fibonacci Advanced analysis
+      if (analysisType === "fibonacci_advanced" || 
+          analysisType.includes("fibonacci advanced") ||
+          analysisType.includes("فيبوناتشي متقدم")) {
+        console.log("Detected Fibonacci Advanced analysis, ensuring proper mapping");
+      }
+      
       // Map the analysis type to a valid database enum value
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
@@ -82,14 +89,21 @@ export const useSaveAnalysis = () => {
           duration: 5000,
         });
         
-      } catch (dbError) {
+      } catch (dbError: any) {
         console.error("Database error saving analysis:", dbError);
-        toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات");
+        
+        // Provide more helpful error message for constraint violations
+        if (dbError.message && dbError.message.includes('search_history_analysis_type_check')) {
+          toast.error(`نوع التحليل "${mappedAnalysisType}" غير مسموح به في قاعدة البيانات. يرجى التواصل مع المسؤول.`);
+        } else {
+          toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات: " + (dbError.message || ''));
+        }
+        
         throw dbError;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving analysis:", error);
-      toast.error("حدث خطأ أثناء حفظ التحليل");
+      toast.error("حدث خطأ أثناء حفظ التحليل: " + (error.message || ''));
       throw error;
     }
   };

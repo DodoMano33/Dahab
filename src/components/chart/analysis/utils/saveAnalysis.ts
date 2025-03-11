@@ -37,11 +37,11 @@ export const saveAnalysis = async ({
   // Ensure analysisType is a valid value for the database
   console.log("Final analysis type being saved to database:", analysisType);
 
-  // Set automatic activation type for Fibonacci Advanced Analysis
+  // Set automatic activation type for Fibonacci analysis types
   if (!analysisResult.activation_type) {
-    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم") {
+    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم" || analysisType === "فيبوناتشي متقدم") {
       analysisResult.activation_type = "يدوي";
-    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين") {
+    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" || analysisType === "فيبوناتشي") {
       analysisResult.activation_type = "تلقائي";
     }
   }
@@ -56,24 +56,35 @@ export const saveAnalysis = async ({
     analysis_duration_hours: durationHours
   });
 
-  const { data, error } = await supabase
-    .from('search_history')
-    .insert({
-      user_id: userId,
-      symbol,
-      current_price: currentPrice,
-      analysis: analysisResult,
-      analysis_type: analysisType,
-      timeframe,
-      analysis_duration_hours: durationHours
-    })
-    .select()
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('search_history')
+      .insert({
+        user_id: userId,
+        symbol,
+        current_price: currentPrice,
+        analysis: analysisResult,
+        analysis_type: analysisType,
+        timeframe,
+        analysis_duration_hours: durationHours
+      })
+      .select()
+      .maybeSingle();
 
-  if (error) {
-    console.error("Error saving to Supabase:", error);
+    if (error) {
+      console.error("Error saving to Supabase:", error);
+      
+      // Add specific error handling for analysis_type constraint violations
+      if (error.code === '23514' && error.message.includes('search_history_analysis_type_check')) {
+        throw new Error(`نوع التحليل "${analysisType}" غير مسموح به في قاعدة البيانات`);
+      }
+      
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error in saveAnalysis:", error);
     throw error;
   }
-
-  return data;
 };
