@@ -33,7 +33,7 @@ export const detectAnalysisType = (
   if (isPatternAnalysis) return "Patterns";
   if (isPriceAction) return "Price Action";
   if (isFibonacci) return "فيبوناتشي";
-  if (isFibonacciAdvanced) return "تحليل فيبوناتشي متقدم";
+  if (isFibonacciAdvanced) return "فيبوناتشي متقدم";
   if (isNeuralNetwork) return "شبكات عصبية";
   if (isRNN) return "شبكات عصبية متكررة";
   if (isTimeClustering) return "تصفيق زمني";

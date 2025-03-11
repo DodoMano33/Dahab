@@ -31,7 +31,7 @@ export const mapToAnalysisType = (analysisType: string): string => {
   if (normalizedType.includes('شمعاتمركبة') || normalizedType.includes('composite')) return "شمعات مركبة"; 
   if (normalizedType.includes('تحليلسلوكي') || normalizedType.includes('behavioral')) return "تحليل سلوكي";
   
-  // Fibonacci analysis - check advanced first
+  // Fibonacci advanced analysis - check advanced first
   if (normalizedType.includes('فيبوناتشيمتقدم') || normalizedType.includes('تحليلفيبوناتشيمتقدم') || 
      normalizedType.includes('fibonacciadvanced') || normalizedType.includes('advancedfibonacci') ||
      normalizedType.includes('fibonacci_advanced')) {
