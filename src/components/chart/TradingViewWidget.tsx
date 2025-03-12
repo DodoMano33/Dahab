@@ -1,5 +1,8 @@
 
 import React, { useEffect, useRef } from 'react';
+import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
+import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
+import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -14,7 +17,17 @@ function TradingViewWidget({
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
-  const priceUpdateCountRef = useRef<number>(0);
+
+  const { currentPrice } = useTradingViewMessages({
+    symbol,
+    onSymbolChange,
+    onPriceUpdate
+  });
+
+  useAnalysisChecker({
+    symbol,
+    currentPriceRef
+  });
 
   useEffect(() => {
     console.log('TradingViewWidget mounted with symbol:', symbol);
@@ -65,38 +78,6 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed to:', event.data.symbol);
-          onSymbolChange?.(event.data.symbol);
-        }
-        if (event.data.name === 'price-update') {
-          const price = event.data.price;
-          if (price === null || price === undefined || isNaN(price)) {
-            console.warn('Received invalid price from TradingView:', price);
-            return;
-          }
-          
-          priceUpdateCountRef.current += 1;
-          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for symbol:', symbol);
-          
-          currentPriceRef.current = price;
-          onPriceUpdate?.(price);
-          
-          window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price, symbol }
-          }));
-          
-          console.log('Current price saved in ref:', currentPriceRef.current);
-        }
-      } catch (error) {
-        console.error('Error handling TradingView message:', error);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-
     const attemptInitialPriceRequest = () => {
       try {
         window.postMessage({ method: 'getCurrentPrice', symbol }, '*');
@@ -108,118 +89,13 @@ function TradingViewWidget({
     
     const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
 
-    const handleManualCheck = () => {
-      console.log('Manual check requested, current price:', currentPriceRef.current);
-      const price = currentPriceRef.current;
-      if (price !== null) {
-        console.log('Executing manual check with price:', price);
-        checkActiveAnalysesWithCurrentPrice(price);
-      } else {
-        console.warn('Manual check requested but current price is null');
-        checkActiveAnalysesWithCurrentPrice(null);
-      }
-    };
-    
-    window.addEventListener('manual-check-analyses', handleManualCheck);
-
-    const handleRequestCurrentPrice = () => {
-      console.log('Current price requested, value:', currentPriceRef.current);
-      if (currentPriceRef.current !== null) {
-        window.dispatchEvent(new CustomEvent('current-price-response', { 
-          detail: { price: currentPriceRef.current, symbol } 
-        }));
-      } else {
-        console.warn('Current price requested but value is null');
-        attemptInitialPriceRequest();
-      }
-    };
-    
-    window.addEventListener('request-current-price', handleRequestCurrentPrice);
-
-    const checkActiveAnalysesWithCurrentPrice = async (price: number | null) => {
-      try {
-        console.log('Triggering check for active analyses with current price:', price);
-        
-        const requestBody: Record<string, any> = { 
-          symbol,
-          requestedAt: new Date().toISOString()
-        };
-        
-        if (price !== null) {
-          requestBody.currentPrice = price;
-        }
-
-        // استخدام عنوان URL كامل مع domain للوصول إلى وظيفة Edge Function
-        const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
-        
-        const { data, error } = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }).then(response => {
-          if (!response.ok) {
-            throw new Error(`Error status: ${response.status} ${response.statusText}`);
-          }
-          return response.json().then(data => ({ data, error: null }));
-        }).catch(error => {
-          console.error('Fetch error:', error);
-          return { data: null, error };
-        });
-        
-        if (error) {
-          console.error('Error checking analyses:', error);
-          window.dispatchEvent(new CustomEvent('analyses-check-failed', { 
-            detail: { error: String(error) }
-          }));
-          return;
-        }
-        
-        console.log('Analyses check result:', data);
-        
-        window.dispatchEvent(new CustomEvent('analyses-checked', { 
-          detail: { 
-            timestamp: data.timestamp, 
-            checkedCount: data.checked, 
-            symbol: data.symbol 
-          }
-        }));
-        
-        window.dispatchEvent(new CustomEvent('historyUpdated', { 
-          detail: { timestamp: data.timestamp }
-        }));
-      } catch (error) {
-        console.error('Failed to check active analyses:', error);
-        
-        window.dispatchEvent(new CustomEvent('analyses-check-failed', { 
-          detail: { error: error instanceof Error ? error.message : String(error) }
-        }));
-      }
-    };
-
-    const autoCheckInterval = setInterval(() => {
-      const price = currentPriceRef.current;
-      if (price !== null) {
-        console.log('Auto check triggered with price:', price);
-        checkActiveAnalysesWithCurrentPrice(price);
-      } else {
-        console.warn('Auto check skipped, current price is null');
-        checkActiveAnalysesWithCurrentPrice(null);
-      }
-    }, 10000);
-
     return () => {
-      window.removeEventListener('message', handleMessage);
-      window.removeEventListener('manual-check-analyses', handleManualCheck);
-      window.removeEventListener('request-current-price', handleRequestCurrentPrice);
-      clearInterval(autoCheckInterval);
       clearTimeout(initialPriceTimer);
       if (container.current) {
         container.current.innerHTML = '';
       }
     };
-  }, [symbol, onSymbolChange, onPriceUpdate]);
+  }, [symbol]);
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -227,12 +103,7 @@ function TradingViewWidget({
         ref={container}
         style={{ height: "100%", width: "100%" }}
       />
-      <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2 text-center">
-        {currentPriceRef.current ? 
-          `السعر الحالي: ${currentPriceRef.current}` : 
-          'بانتظار السعر... (قد يستغرق التحميل بضع ثوانٍ)'
-        }
-      </div>
+      <CurrentPriceDisplay price={currentPrice} />
     </div>
   );
 }
