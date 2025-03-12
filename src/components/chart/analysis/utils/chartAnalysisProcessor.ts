@@ -64,17 +64,26 @@ export const processChartAnalysis = async ({
       console.error("Error showing analysis message:", messageError);
     }
 
+    // التحقق من وجود سعر محدث من TradingView عن طريق مناداة حدث
+    let finalPrice = providedPrice;
+    
+    // إرسال حدث للحصول على السعر الحالي من TradingView
+    window.dispatchEvent(new CustomEvent('request-current-price'));
+    
+    // طباعة السعر النهائي المستخدم للتحليل
+    console.log("Analysis using price:", finalPrice);
+
     // Get the chart image
     console.log("Getting TradingView chart image for:", { 
       symbol, 
       timeframe, 
-      providedPrice,
+      price: finalPrice,
       analysisType,
       selectedTypes,
       duration
     });
 
-    const chartImage = await getTradingViewChartImage(symbol, timeframe, providedPrice);
+    const chartImage = await getTradingViewChartImage(symbol, timeframe, finalPrice);
     console.log("Chart image received successfully");
 
     // Perform the analysis
@@ -84,7 +93,7 @@ export const processChartAnalysis = async ({
       console.log("Starting AI combined analysis with selected types:", selectedTypes);
       analysisResult = await combinedAnalysis(
         chartImage,
-        providedPrice,
+        finalPrice,
         timeframe,
         selectedTypes
       );
@@ -93,7 +102,7 @@ export const processChartAnalysis = async ({
       console.log("Starting regular analysis with options:", options);
       analysisResult = await executeAnalysis(
         chartImage,
-        providedPrice,
+        finalPrice,
         timeframe,
         options
       );
@@ -111,11 +120,11 @@ export const processChartAnalysis = async ({
     dismissToasts(loadingToastId, messageToastId);
     
     // Show success toast
-    showSuccessToast(analysisType, timeframe, symbol, providedPrice);
+    showSuccessToast(analysisType, timeframe, symbol, finalPrice);
     
     return { 
       analysisResult, 
-      currentPrice: providedPrice, 
+      currentPrice: finalPrice, 
       symbol 
     };
     

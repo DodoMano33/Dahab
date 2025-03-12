@@ -13,7 +13,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log('Starting automatic analyses check...')
+    // استخراج السعر المرسل من الطلب (من TradingView)
+    let tradingViewPrice: number | null = null;
+    
+    if (req.method === 'POST') {
+      const body = await req.json();
+      tradingViewPrice = body.currentPrice || null;
+      console.log('Received current TradingView price:', tradingViewPrice);
+    }
+    
+    console.log('Starting automatic analyses check with TradingView price:', tradingViewPrice);
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -62,9 +71,15 @@ Deno.serve(async (req) => {
     // معالجة كل تحليل
     for (const analysis of analyses) {
       try {
+        // استخدام السعر من TradingView إذا كان متاحًا، وإلا استخدام السعر المخزن سابقًا
+        const currentPrice = tradingViewPrice !== null
+          ? tradingViewPrice
+          : analysis.last_checked_price || analysis.current_price;
+          
+        console.log(`Checking analysis ${analysis.id} with price:`, currentPrice);
+        
         // تحقق من وجود نقطة دخول مثالية
         const hasBestEntryPoint = analysis.analysis.bestEntryPoint?.price
-        const currentPrice = analysis.last_checked_price || analysis.current_price
         
         // تحديث حالة التحليل مع نقطة الدخول المثالية
         if (hasBestEntryPoint) {
@@ -90,7 +105,8 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         message: 'Automatic check completed successfully',
         timestamp: currentTime,
-        checked: analyses.length
+        checked: analyses.length,
+        tradingViewPriceUsed: tradingViewPrice !== null
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

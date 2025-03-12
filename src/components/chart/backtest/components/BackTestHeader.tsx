@@ -17,6 +17,7 @@ interface BackTestHeaderProps {
   isDeleting: boolean;
   useEntryPoint?: boolean;
   totalProfitLoss?: number;
+  currentTradingViewPrice?: number | null;
 }
 
 export const BackTestHeader = ({
@@ -27,7 +28,8 @@ export const BackTestHeader = ({
   selectedItemsCount,
   isDeleting,
   useEntryPoint = false,
-  totalProfitLoss = 0
+  totalProfitLoss = 0,
+  currentTradingViewPrice = null
 }: BackTestHeaderProps) => {
   const [analysesCount, setAnalysesCount] = useState(initialAnalysesCount);
   const { user } = useAuth();
@@ -83,6 +85,11 @@ export const BackTestHeader = ({
             {analysesCount > 0 && (
               <Badge variant={totalProfitLoss >= 0 ? "success" : "destructive"} className="font-bold">
                 {formatTotalProfitLoss(totalProfitLoss)}
+              </Badge>
+            )}
+            {currentTradingViewPrice !== null && (
+              <Badge variant="outline" className="ml-2 font-mono">
+                السعر الحالي: {currentTradingViewPrice.toFixed(3)}
               </Badge>
             )}
           </div>

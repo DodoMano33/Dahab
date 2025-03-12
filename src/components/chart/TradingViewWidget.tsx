@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
@@ -12,6 +13,7 @@ function TradingViewWidget({
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
+  const currentPriceRef = useRef<number | null>(null);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -73,8 +75,22 @@ function TradingViewWidget({
           onSymbolChange?.(event.data.symbol);
         }
         if (event.data.name === 'price-update') {
-          console.log('Price updated to:', event.data.price);
-          onPriceUpdate?.(event.data.price);
+          const price = event.data.price;
+          console.log('Price updated to:', price);
+          
+          // تخزين السعر الحالي في مرجع
+          currentPriceRef.current = price;
+          
+          // استدعاء دالة تحديث السعر
+          onPriceUpdate?.(price);
+          
+          // نشر حدث عام لإعلام جميع المكونات بتحديث السعر
+          window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+            detail: { price }
+          }));
+          
+          // إرسال السعر إلى وظيفة فحص التحليلات التلقائي إذا كانت هناك تحليلات نشطة
+          checkActiveAnalysesWithCurrentPrice(price);
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
@@ -83,8 +99,47 @@ function TradingViewWidget({
 
     window.addEventListener('message', handleMessage);
 
+    // إنشاء مستمع للفحص اليدوي لفحص التحليلات
+    const handleManualCheck = (event: CustomEvent) => {
+      const price = currentPriceRef.current;
+      if (price !== null) {
+        checkActiveAnalysesWithCurrentPrice(price);
+      }
+    };
+    
+    window.addEventListener('manual-check-analyses', handleManualCheck as EventListener);
+
+    // دالة لفحص التحليلات النشطة باستخدام السعر الحالي
+    const checkActiveAnalysesWithCurrentPrice = async (price: number) => {
+      try {
+        console.log('Triggering check for active analyses with current price:', price);
+        const response = await fetch('/functions/v1/auto-check-analyses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ currentPrice: price }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error checking analyses: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Analyses check result:', result);
+        
+        // إرسال حدث لتحديث واجهة المستخدم
+        window.dispatchEvent(new CustomEvent('analyses-checked', { 
+          detail: { timestamp: result.timestamp, checkedCount: result.checked }
+        }));
+      } catch (error) {
+        console.error('Failed to check active analyses:', error);
+      }
+    };
+
     return () => {
       window.removeEventListener('message', handleMessage);
+      window.removeEventListener('manual-check-analyses', handleManualCheck as EventListener);
       if (container.current) {
         container.current.innerHTML = '';
       }

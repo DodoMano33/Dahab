@@ -12,6 +12,26 @@ export const useBacktestResults = () => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [totalProfitLoss, setTotalProfitLoss] = useState(0);
+  const [currentTradingViewPrice, setCurrentTradingViewPrice] = useState<number | null>(null);
+
+  // استمع لتحديثات السعر من TradingView
+  useEffect(() => {
+    const handleTradingViewPriceUpdate = (event: MessageEvent) => {
+      try {
+        if (event.data && event.data.name === 'price-update' && event.data.price) {
+          console.log('TradingView price updated:', event.data.price);
+          setCurrentTradingViewPrice(event.data.price);
+        }
+      } catch (error) {
+        console.error('Error handling TradingView price update:', error);
+      }
+    };
+
+    window.addEventListener('message', handleTradingViewPriceUpdate);
+    return () => {
+      window.removeEventListener('message', handleTradingViewPriceUpdate);
+    };
+  }, []);
 
   const fetchResults = async (pageNumber: number) => {
     try {
@@ -111,6 +131,7 @@ export const useBacktestResults = () => {
     hasMore,
     loadMore,
     refresh,
-    totalProfitLoss
+    totalProfitLoss,
+    currentTradingViewPrice
   };
 };
