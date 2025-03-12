@@ -1,13 +1,25 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+
+interface FetchDiagnostics {
+  startTime: Date;
+  endTime: Date | null;
+  status: 'pending' | 'success' | 'error';
+  responseStatus?: number;
+  responseTime?: number;
+  error?: string;
+  retryCount: number;
+}
 
 export const useBackTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [diagnostics, setDiagnostics] = useState<FetchDiagnostics[]>([]);
   const maxRetries = 3;
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const fetchLastCheckTime = async () => {
@@ -63,9 +75,30 @@ export const useBackTest = () => {
   }, []);
 
   const doFetchRequest = async (retry = 0): Promise<any> => {
+    // إلغاء أي طلب سابق معلق
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // إنشاء controller جديد للطلب الحالي
+    abortControllerRef.current = new AbortController();
+    
+    const diagnosticEntry: FetchDiagnostics = {
+      startTime: new Date(),
+      endTime: null,
+      status: 'pending',
+      retryCount: retry
+    };
+    
+    setDiagnostics(prev => [...prev.slice(Math.max(0, prev.length - 9)), diagnosticEntry]);
+    
     try {
+      console.log(`Executing fetch request (retry ${retry}/${maxRetries})`);
+      
       const { data: authSession } = await supabase.auth.getSession();
       const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
+      
+      const startTime = performance.now();
       
       const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
         method: 'POST',
@@ -80,15 +113,72 @@ export const useBackTest = () => {
           requestedAt: new Date().toISOString(),
           fallbackPrice: null
         }),
+        signal: abortControllerRef.current.signal
       });
       
+      const endTime = performance.now();
+      const responseTime = endTime - startTime;
+      
+      console.log(`Response received in ${responseTime.toFixed(2)}ms with status ${response.status}`);
+      
       if (!response.ok) {
-        throw new Error(`Error status: ${response.status} ${response.statusText}`);
+        const responseText = await response.text();
+        const errorMessage = `Error status: ${response.status} ${response.statusText}, Response: ${responseText}`;
+        console.error(errorMessage);
+        
+        // تحديث التشخيص
+        setDiagnostics(prev => prev.map(d => 
+          d.startTime === diagnosticEntry.startTime 
+            ? { ...d, endTime: new Date(), status: 'error', responseStatus: response.status, responseTime, error: errorMessage }
+            : d
+        ));
+        
+        throw new Error(errorMessage);
       }
       
-      return await response.json();
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+        
+        // تحديث التشخيص
+        setDiagnostics(prev => prev.map(d => 
+          d.startTime === diagnosticEntry.startTime 
+            ? { ...d, endTime: new Date(), status: 'success', responseStatus: response.status, responseTime }
+            : d
+        ));
+        
+        return responseData;
+      } catch (jsonError) {
+        const errorMessage = `JSON parse error: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}, Raw response: ${responseText}`;
+        console.error(errorMessage);
+        
+        // تحديث التشخيص
+        setDiagnostics(prev => prev.map(d => 
+          d.startTime === diagnosticEntry.startTime 
+            ? { ...d, endTime: new Date(), status: 'error', responseStatus: response.status, responseTime, error: errorMessage }
+            : d
+        ));
+        
+        throw new Error(errorMessage);
+      }
     } catch (error) {
+      // تحديث التشخيص للخطأ
+      setDiagnostics(prev => prev.map(d => 
+        d.startTime === diagnosticEntry.startTime 
+          ? { ...d, endTime: new Date(), status: 'error', error: error instanceof Error ? error.message : String(error) }
+          : d
+      ));
+      
       console.error('Network error in fetch request:', error);
+      
+      // فحص ما إذا كان الخطأ بسبب إلغاء الطلب
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        console.log('Request was aborted');
+        throw error;
+      }
       
       if (retry < maxRetries) {
         // Exponential backoff for retries
@@ -97,8 +187,15 @@ export const useBackTest = () => {
         
         return new Promise(resolve => {
           setTimeout(async () => {
-            const result = await doFetchRequest(retry + 1);
-            resolve(result);
+            try {
+              const result = await doFetchRequest(retry + 1);
+              resolve(result);
+            } catch (retryError) {
+              // إذا فشلت جميع المحاولات
+              if (retry + 1 >= maxRetries) {
+                throw retryError;
+              }
+            }
           }, delay);
         });
       }
@@ -118,7 +215,10 @@ export const useBackTest = () => {
       setIsLoading(true);
       setRetryCount(0);
       
+      // طلب سعر محدث
       window.dispatchEvent(new Event('request-current-price'));
+      
+      // إطلاق حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
       
       try {
@@ -126,11 +226,11 @@ export const useBackTest = () => {
         
         console.log('Manual check completed:', data);
         
-        if (data && data.timestamp) {
-          setLastCheckTime(new Date(data.timestamp));
+        if (data && (data.timestamp || data.currentTime)) {
+          setLastCheckTime(new Date(data.timestamp || data.currentTime));
           
           const event = new CustomEvent('historyUpdated', {
-            detail: { timestamp: data.timestamp }
+            detail: { timestamp: data.timestamp || data.currentTime }
           });
           window.dispatchEvent(event);
           
@@ -146,22 +246,40 @@ export const useBackTest = () => {
       } catch (error) {
         console.error('Error in manual check:', error);
         const errorMessage = error instanceof Error ? error.message : 'خطأ غير معروف';
-        toast.error(`حدث خطأ أثناء فحص التحليلات: ${errorMessage}`);
         
-        // Try to use the local event as fallback
-        window.dispatchEvent(new CustomEvent('analyses-check-failed', { 
-          detail: { error: errorMessage }
-        }));
+        // تجنب عرض رسالة خطأ AbortError
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          toast.error(`حدث خطأ أثناء فحص التحليلات: ${errorMessage}`);
+          
+          // محاولة استخدام الحدث المحلي كخطة بديلة
+          window.dispatchEvent(new CustomEvent('analyses-check-failed', { 
+            detail: { error: errorMessage }
+          }));
+        } else {
+          console.log('Manual check was aborted');
+        }
       }
     } finally {
       setIsLoading(false);
     }
   };
 
+  // وظيفة لإلغاء الطلب الحالي إذا كان هناك طلب جاري
+  const cancelCurrentRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      console.log('Aborting current request');
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     triggerManualCheck,
+    cancelCurrentRequest,
     isLoading,
     lastCheckTime,
-    retryCount
+    retryCount,
+    diagnostics
   };
 };
