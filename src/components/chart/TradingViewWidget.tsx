@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
@@ -21,7 +20,6 @@ function TradingViewWidget({
     script.type = 'text/javascript';
     script.async = true;
 
-    // Create the configuration object
     const config = {
       autosize: true,
       symbol: symbol,
@@ -38,10 +36,8 @@ function TradingViewWidget({
       support_host: "https://www.tradingview.com"
     };
 
-    // Set the script content
     script.innerHTML = JSON.stringify(config);
 
-    // Create widget container structure
     const widgetContainer = document.createElement('div');
     widgetContainer.className = 'tradingview-widget-container';
     widgetContainer.style.height = '100%';
@@ -56,18 +52,15 @@ function TradingViewWidget({
     copyright.className = 'tradingview-widget-copyright';
     copyright.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
 
-    // Append elements in the correct order
     widgetContainer.appendChild(widgetDiv);
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
 
-    // Clear existing content and append new widget
     if (container.current) {
       container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
     }
 
-    // Add event listeners for symbol and price updates
     const handleMessage = (event: MessageEvent) => {
       try {
         if (event.data.name === 'symbol-change') {
@@ -78,18 +71,13 @@ function TradingViewWidget({
           const price = event.data.price;
           console.log('Price updated to:', price);
           
-          // تخزين السعر الحالي في مرجع
           currentPriceRef.current = price;
-          
-          // استدعاء دالة تحديث السعر
           onPriceUpdate?.(price);
           
-          // نشر حدث عام لإعلام جميع المكونات بتحديث السعر
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
             detail: { price }
           }));
           
-          // إرسال السعر إلى وظيفة فحص التحليلات التلقائي إذا كانت هناك تحليلات نشطة
           checkActiveAnalysesWithCurrentPrice(price);
         }
       } catch (error) {
@@ -99,7 +87,6 @@ function TradingViewWidget({
 
     window.addEventListener('message', handleMessage);
 
-    // إنشاء مستمع للفحص اليدوي لفحص التحليلات
     const handleManualCheck = (event: CustomEvent) => {
       const price = currentPriceRef.current;
       if (price !== null) {
@@ -109,7 +96,6 @@ function TradingViewWidget({
     
     window.addEventListener('manual-check-analyses', handleManualCheck as EventListener);
 
-    // دالة لفحص التحليلات النشطة باستخدام السعر الحالي
     const checkActiveAnalysesWithCurrentPrice = async (price: number) => {
       try {
         console.log('Triggering check for active analyses with current price:', price);
@@ -128,7 +114,6 @@ function TradingViewWidget({
         const result = await response.json();
         console.log('Analyses check result:', result);
         
-        // إرسال حدث لتحديث واجهة المستخدم
         window.dispatchEvent(new CustomEvent('analyses-checked', { 
           detail: { timestamp: result.timestamp, checkedCount: result.checked }
         }));
@@ -137,9 +122,17 @@ function TradingViewWidget({
       }
     };
 
+    const autoCheckInterval = setInterval(() => {
+      const price = currentPriceRef.current;
+      if (price !== null) {
+        checkActiveAnalysesWithCurrentPrice(price);
+      }
+    }, 10000);
+
     return () => {
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('manual-check-analyses', handleManualCheck as EventListener);
+      clearInterval(autoCheckInterval);
       if (container.current) {
         container.current.innerHTML = '';
       }

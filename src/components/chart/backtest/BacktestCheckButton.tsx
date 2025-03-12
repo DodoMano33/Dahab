@@ -1,4 +1,3 @@
-
 import { memo, useEffect, useState } from "react";
 import { useBackTest } from "@/components/hooks/useBackTest";
 import { formatDistanceToNow } from "date-fns";
@@ -9,7 +8,6 @@ export const BacktestCheckButton = memo(() => {
   const [formattedTime, setFormattedTime] = useState<string>("");
   const [nextAutoCheck, setNextAutoCheck] = useState<string>("");
 
-  // تحديث تنسيق الوقت عندما يتغير lastCheckTime
   useEffect(() => {
     if (!lastCheckTime) return;
     
@@ -25,11 +23,10 @@ export const BacktestCheckButton = memo(() => {
           addSuffix: true, 
           locale: ar 
         });
-        console.log("Formatted time:", formatted);
         setFormattedTime(formatted);
         
-        // حساب الوقت المتبقي للفحص التلقائي التالي
-        const nextCheckTime = new Date(lastCheckTime.getTime() + 5 * 60 * 1000); // إضافة 5 دقائق
+        // تحديث الوقت المتبقي للفحص التلقائي التالي (10 ثوانٍ)
+        const nextCheckTime = new Date(lastCheckTime.getTime() + 10 * 1000);
         const timeUntilNextCheck = formatDistanceToNow(nextCheckTime, { 
           addSuffix: false, 
           locale: ar 
@@ -42,12 +39,11 @@ export const BacktestCheckButton = memo(() => {
     
     updateFormattedTime();
     
-    // تحديث الوقت كل دقيقة
-    const interval = setInterval(updateFormattedTime, 60 * 1000);
+    // تحديث الوقت كل ثانية
+    const interval = setInterval(updateFormattedTime, 1000);
     return () => clearInterval(interval);
   }, [lastCheckTime]);
 
-  // الاستماع إلى حدث تحديث التاريخ
   useEffect(() => {
     const handleHistoryUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
