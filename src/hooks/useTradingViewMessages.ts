@@ -18,10 +18,12 @@ export const useTradingViewMessages = ({
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
+        // تحديد الرمز ليكون XAUUSD دائمًا
         if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed to:', event.data.symbol);
-          onSymbolChange?.(event.data.symbol);
+          console.log('Symbol changed, but keeping XAUUSD as the only symbol');
+          onSymbolChange?.('XAUUSD');
         }
+        
         if (event.data.name === 'price-update') {
           const price = event.data.price;
           if (price === null || price === undefined || isNaN(price)) {
@@ -30,14 +32,24 @@ export const useTradingViewMessages = ({
           }
           
           priceUpdateCountRef.current += 1;
-          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for symbol:', symbol);
+          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for XAUUSD');
           
           currentPriceRef.current = price;
           onPriceUpdate?.(price);
           
+          // يرسل حدث تحديث السعر للمكونات الأخرى
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price, symbol }
+            detail: { price, symbol: 'XAUUSD' }
           }));
+          
+          // استجابة لطلب السعر الحالي
+          window.addEventListener('request-current-price', () => {
+            if (currentPriceRef.current !== null) {
+              window.dispatchEvent(new CustomEvent('current-price-response', {
+                detail: { price: currentPriceRef.current }
+              }));
+            }
+          });
           
           console.log('Current price saved in ref:', currentPriceRef.current);
         }
@@ -47,6 +59,14 @@ export const useTradingViewMessages = ({
     };
 
     window.addEventListener('message', handleMessage);
+    
+    // عند التركيب، تأكد من أن TradingView يعرض XAUUSD
+    const forcedSymbol = 'XAUUSD';
+    if (symbol !== forcedSymbol) {
+      console.log(`Forcing symbol to be ${forcedSymbol} instead of ${symbol}`);
+      onSymbolChange?.(forcedSymbol);
+    }
+
     return () => window.removeEventListener('message', handleMessage);
   }, [symbol, onSymbolChange, onPriceUpdate]);
 

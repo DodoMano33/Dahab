@@ -16,26 +16,49 @@ export const PriceInput = ({
   defaultValue,
   tradingViewPrice
 }: PriceInputProps) => {
-  const [useAutoPrice, setUseAutoPrice] = useState(false);
+  const [useAutoPrice, setUseAutoPrice] = useState(true); // تفعيل السعر التلقائي افتراضيًا
+  const [livePrice, setLivePrice] = useState<number | null>(tradingViewPrice);
   
   // استخدام السعر من TradingView تلقائيًا
   useEffect(() => {
-    if (useAutoPrice && tradingViewPrice !== null && tradingViewPrice !== undefined) {
-      onChange(tradingViewPrice.toString());
+    if (useAutoPrice && livePrice !== null && livePrice !== undefined) {
+      onChange(livePrice.toString());
     }
-  }, [tradingViewPrice, useAutoPrice, onChange]);
+  }, [livePrice, useAutoPrice, onChange]);
 
   // استمع للتحديثات المباشرة من TradingView
   useEffect(() => {
     const handleTradingViewPriceUpdate = (event: CustomEvent) => {
-      if (useAutoPrice && event.detail && event.detail.price) {
-        onChange(event.detail.price.toString());
+      if (event.detail && event.detail.price) {
+        console.log('PriceInput received price update:', event.detail.price);
+        setLivePrice(event.detail.price);
+        if (useAutoPrice) {
+          onChange(event.detail.price.toString());
+        }
       }
     };
 
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    
+    // طلب السعر الحالي عند تحميل المكون
+    window.dispatchEvent(new Event('request-current-price'));
+    
+    // استمع لاستجابة السعر الحالي
+    const handleCurrentPriceResponse = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        console.log('PriceInput received current price response:', event.detail.price);
+        setLivePrice(event.detail.price);
+        if (useAutoPrice) {
+          onChange(event.detail.price.toString());
+        }
+      }
+    };
+    
+    window.addEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+    
     return () => {
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+      window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     };
   }, [useAutoPrice, onChange]);
 
@@ -43,13 +66,13 @@ export const PriceInput = ({
     const newMode = !useAutoPrice;
     setUseAutoPrice(newMode);
     
-    if (newMode && tradingViewPrice !== null && tradingViewPrice !== undefined) {
-      onChange(tradingViewPrice.toString());
+    if (newMode && livePrice !== null && livePrice !== undefined) {
+      onChange(livePrice.toString());
     }
   };
 
-  const displayPrice = tradingViewPrice !== null && tradingViewPrice !== undefined
-    ? tradingViewPrice.toFixed(5)
+  const displayPrice = livePrice !== null && livePrice !== undefined
+    ? livePrice.toFixed(2)
     : defaultValue || "السعر غير متاح";
 
   return (
@@ -82,7 +105,7 @@ export const PriceInput = ({
           السعر المباشر من TradingView: {displayPrice}
         </p>
       )}
-      {!useAutoPrice && tradingViewPrice !== null && (
+      {!useAutoPrice && livePrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
           السعر المتاح من TradingView: {displayPrice}
         </p>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
@@ -48,15 +49,17 @@ export const ChartAnalysisForm = ({
   defaultSymbol,
   defaultPrice
 }: ChartAnalysisFormProps) => {
-  const [symbol, setSymbol] = useState(defaultSymbol || "XAUUSD");
+  // تثبيت رمز الذهب كقيمة افتراضية
+  const fixedSymbol = "XAUUSD";
+  const [symbol, setSymbol] = useState(fixedSymbol);
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
-    symbol,
-    defaultSymbol: defaultSymbol || "",
+    symbol: fixedSymbol,
+    defaultSymbol: fixedSymbol,
     price,
     defaultPrice,
     timeframe,
@@ -88,8 +91,8 @@ export const ChartAnalysisForm = ({
     e.preventDefault();
     
     const isValid = validateInputs({
-      symbol,
-      defaultSymbol,
+      symbol: fixedSymbol,
+      defaultSymbol: fixedSymbol,
       price,
       defaultPrice,
       duration
@@ -101,7 +104,7 @@ export const ChartAnalysisForm = ({
       console.log("Smart Analysis with pre-selected types:", selectedTypes);
       const providedPrice = price ? Number(price) : defaultPrice;
       onSubmit(
-        symbol || defaultSymbol || "",
+        fixedSymbol,
         timeframe,
         providedPrice,
         isScalping,
@@ -132,11 +135,11 @@ export const ChartAnalysisForm = ({
       return;
     }
     
-    console.log(`تحليل ${currentAnalysis} للرمز ${symbol || defaultSymbol} على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
+    console.log(`تحليل ${currentAnalysis} للذهب على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
     
     const providedPrice = price ? Number(price) : defaultPrice;
     onSubmit(
-      symbol || defaultSymbol || "",
+      fixedSymbol,
       timeframe,
       providedPrice,
       isScalping,
@@ -162,27 +165,40 @@ export const ChartAnalysisForm = ({
 
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-yellow-50 border border-yellow-100 rounded-md p-3 mb-4">
+        <p className="text-sm font-medium text-yellow-800">
+          هذا التطبيق مخصص لتحليل الذهب (XAUUSD) فقط
+        </p>
+      </div>
+      
       <SymbolInput 
-        value={symbol} 
-        onChange={setSymbol} 
-        defaultValue="XAUUSD"
+        value={fixedSymbol} 
+        onChange={() => {}} // لا نسمح بتغيير الرمز
+        defaultValue={fixedSymbol}
+        disabled={true}
       />
+      
       <PriceInput 
         value={price} 
         onChange={setPrice}
         defaultValue={defaultPrice?.toString()}
+        tradingViewPrice={defaultPrice}
       />
+      
       <AnalysisDurationInput
         value={duration}
         onChange={setDuration}
       />
+      
       <TimeframeInput value={timeframe} onChange={setTimeframe} />
+      
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
         onSubmit={handleSubmit}
         onHistoryClick={onHistoryClick}
         currentAnalysis={currentAnalysis}
       />
+      
       <CombinedAnalysisDialog
         isOpen={isAIDialogOpen}
         onClose={() => setIsAIDialogOpen(false)}

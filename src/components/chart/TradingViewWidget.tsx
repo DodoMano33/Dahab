@@ -11,26 +11,35 @@ interface TradingViewWidgetProps {
 }
 
 function TradingViewWidget({ 
-  symbol = "CAPITALCOM:GOLD",
+  symbol = "XAUUSD",
   onSymbolChange,
   onPriceUpdate 
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
+  const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
 
   const { currentPrice } = useTradingViewMessages({
-    symbol,
+    symbol: forcedSymbol,
     onSymbolChange,
     onPriceUpdate
   });
 
+  // تحديث السعر المرجعي
+  useEffect(() => {
+    if (currentPrice !== null) {
+      currentPriceRef.current = currentPrice;
+      console.log('Current price updated in TradingViewWidget:', currentPrice);
+    }
+  }, [currentPrice]);
+
   useAnalysisChecker({
-    symbol,
+    symbol: forcedSymbol,
     currentPriceRef
   });
 
   useEffect(() => {
-    console.log('TradingViewWidget mounted with symbol:', symbol);
+    console.log('TradingViewWidget mounted with symbol:', forcedSymbol);
     
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
@@ -39,18 +48,23 @@ function TradingViewWidget({
 
     const config = {
       autosize: true,
-      symbol: symbol,
+      symbol: forcedSymbol,
       interval: "1",
       timezone: "Asia/Jerusalem",
       theme: "dark",
       style: "1",
       locale: "en",
       hide_legend: true,
-      allow_symbol_change: true,
+      allow_symbol_change: false, // تعطيل تغيير الرمز
       save_image: false,
       calendar: false,
       hide_volume: true,
-      support_host: "https://www.tradingview.com"
+      support_host: "https://www.tradingview.com",
+      enabled_features: ["chart_property_page_trading"],
+      charts_storage_url: "https://saveload.tradingview.com",
+      charts_storage_api_version: "1.1",
+      client_id: "tradingview.com",
+      custom_css_url: ""
     };
 
     script.innerHTML = JSON.stringify(config);
@@ -78,24 +92,30 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
+    // طلب السعر الأولي
     const attemptInitialPriceRequest = () => {
       try {
-        window.postMessage({ method: 'getCurrentPrice', symbol }, '*');
+        window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
         console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
       } catch (e) {
         console.warn('Failed to request initial price from TradingView', e);
       }
     };
     
+    // جدولة عدة طلبات متتالية للتأكد من الحصول على السعر
     const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
+    const secondPriceTimer = setTimeout(attemptInitialPriceRequest, 5000);
+    const thirdPriceTimer = setTimeout(attemptInitialPriceRequest, 8000);
 
     return () => {
       clearTimeout(initialPriceTimer);
+      clearTimeout(secondPriceTimer);
+      clearTimeout(thirdPriceTimer);
       if (container.current) {
         container.current.innerHTML = '';
       }
     };
-  }, [symbol]);
+  }, [forcedSymbol]);
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">

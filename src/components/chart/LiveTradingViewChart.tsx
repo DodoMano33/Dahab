@@ -1,3 +1,4 @@
+
 import React from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
@@ -8,14 +9,15 @@ interface LiveTradingViewChartProps {
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
-  symbol = "CAPITALCOM:GOLD",
+  symbol = "XAUUSD", // تثبيت القيمة الافتراضية على XAUUSD
   onSymbolChange,
   onPriceUpdate
 }) => {
+  // تجاهل symbol المستلمة واستخدام XAUUSD دائمًا
   return (
     <div className="w-full h-full">
       <TradingViewWidget 
-        symbol={symbol}
+        symbol="XAUUSD"
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />

@@ -6,8 +6,11 @@ export const fetchAnalysesWithCurrentPrice = async (
   symbol: string,
   controller: AbortController
 ): Promise<any> => {
+  // تثبيت الرمز على XAUUSD
+  const fixedSymbol = "XAUUSD";
+  
   const requestBody: Record<string, any> = { 
-    symbol,
+    symbol: fixedSymbol,
     requestedAt: new Date().toISOString()
   };
   
@@ -33,6 +36,7 @@ export const fetchAnalysesWithCurrentPrice = async (
   };
 
   try {
+    console.log(`Sending request to check analyses for XAUUSD with price: ${price}`);
     const response = await fetch(`${supabaseUrl}/functions/v1/auto-check-analyses`, requestOptions);
     
     if (!response.ok) {
@@ -42,6 +46,7 @@ export const fetchAnalysesWithCurrentPrice = async (
     }
     
     const responseText = await response.text();
+    console.log('Response received from server:', responseText.substring(0, 200) + '...');
     
     try {
       return JSON.parse(responseText);
@@ -51,8 +56,10 @@ export const fetchAnalysesWithCurrentPrice = async (
     }
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      console.error('Network error: Failed to fetch. Check internet connection.');
       throw new Error('فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت الخاص بك.');
     }
+    console.error('Error in fetchAnalysesWithCurrentPrice:', error);
     throw error;
   }
 };
