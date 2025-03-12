@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
@@ -23,13 +22,12 @@ export const useAnalysisChecker = ({ symbol, currentPriceRef }: UseAnalysisCheck
 
       const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
       const { data: authSession } = await supabase.auth.getSession();
-      const apiKey = supabase.supabaseKey;
       
       const { data, error } = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': apiKey,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
           'Authorization': authSession?.session?.access_token 
             ? `Bearer ${authSession.session.access_token}` 
             : ''

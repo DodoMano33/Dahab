@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -7,7 +6,6 @@ export const useBackTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
 
-  // جلب آخر وقت فحص عند تحميل المكون
   useEffect(() => {
     const fetchLastCheckTime = async () => {
       try {
@@ -36,7 +34,6 @@ export const useBackTest = () => {
 
     fetchLastCheckTime();
     
-    // الاستماع لحدث تحديث التاريخ
     const handleHistoryUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail?.timestamp) {
@@ -45,7 +42,6 @@ export const useBackTest = () => {
       }
     };
     
-    // الاستماع لحدث اكتمال فحص التحليلات
     const handleAnalysesChecked = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail?.timestamp) {
@@ -68,25 +64,19 @@ export const useBackTest = () => {
       console.log("Triggering manual check...");
       setIsLoading(true);
       
-      // طلب السعر الحالي
       window.dispatchEvent(new Event('request-current-price'));
-      
-      // استدعاء حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
       
-      // استخدام عنوان URL كامل مع domain للوصول إلى وظيفة Edge Function
       const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
       
       try {
-        // الحصول على جلسة المستخدم ومفاتيح API
         const { data: authSession } = await supabase.auth.getSession();
-        const apiKey = supabase.supabaseKey;
         
         const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': apiKey,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
             'Authorization': authSession?.session?.access_token 
               ? `Bearer ${authSession.session.access_token}` 
               : ''
