@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
@@ -15,6 +16,8 @@ function TradingViewWidget({
   const currentPriceRef = useRef<number | null>(null);
 
   useEffect(() => {
+    console.log('TradingViewWidget mounted with symbol:', symbol);
+    
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
@@ -69,15 +72,17 @@ function TradingViewWidget({
         }
         if (event.data.name === 'price-update') {
           const price = event.data.price;
-          console.log('Price updated to:', price);
+          console.log('★★★ Price updated from TradingView:', price, 'for symbol:', symbol);
           
           currentPriceRef.current = price;
           onPriceUpdate?.(price);
           
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price }
+            detail: { price, symbol }
           }));
           
+          // تشخيص إضافي
+          console.log('Current price saved in ref:', currentPriceRef.current);
           checkActiveAnalysesWithCurrentPrice(price);
         }
       } catch (error) {
@@ -87,14 +92,31 @@ function TradingViewWidget({
 
     window.addEventListener('message', handleMessage);
 
+    // إضافة مستمع للتحقق اليدوي
     const handleManualCheck = (event: CustomEvent) => {
+      console.log('Manual check requested, current price:', currentPriceRef.current);
       const price = currentPriceRef.current;
       if (price !== null) {
+        console.log('Executing manual check with price:', price);
         checkActiveAnalysesWithCurrentPrice(price);
+      } else {
+        console.warn('Manual check requested but current price is null');
       }
     };
     
     window.addEventListener('manual-check-analyses', handleManualCheck as EventListener);
+
+    // إضافة مستمع للاستعلام عن السعر الحالي
+    const handleRequestCurrentPrice = () => {
+      console.log('Current price requested, value:', currentPriceRef.current);
+      if (currentPriceRef.current !== null) {
+        window.dispatchEvent(new CustomEvent('current-price-response', { 
+          detail: { price: currentPriceRef.current, symbol } 
+        }));
+      }
+    };
+    
+    window.addEventListener('request-current-price', handleRequestCurrentPrice);
 
     const checkActiveAnalysesWithCurrentPrice = async (price: number) => {
       try {
@@ -104,10 +126,11 @@ function TradingViewWidget({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ currentPrice: price }),
+          body: JSON.stringify({ currentPrice: price, symbol }),
         });
         
         if (!response.ok) {
+          console.error(`Error checking analyses: ${response.status} ${response.statusText}`);
           throw new Error(`Error checking analyses: ${response.statusText}`);
         }
         
@@ -115,23 +138,38 @@ function TradingViewWidget({
         console.log('Analyses check result:', result);
         
         window.dispatchEvent(new CustomEvent('analyses-checked', { 
-          detail: { timestamp: result.timestamp, checkedCount: result.checked }
+          detail: { timestamp: result.timestamp, checkedCount: result.checked, symbol: result.symbol }
+        }));
+        
+        // تحديث UI بعد نجاح الفحص
+        window.dispatchEvent(new CustomEvent('historyUpdated', { 
+          detail: { timestamp: result.timestamp }
         }));
       } catch (error) {
         console.error('Failed to check active analyses:', error);
+        
+        // إطلاق حدث فشل الفحص للتعامل معه في واجهة المستخدم
+        window.dispatchEvent(new CustomEvent('analyses-check-failed', { 
+          detail: { error: error instanceof Error ? error.message : String(error) }
+        }));
       }
     };
 
+    // تعديل الفترة الزمنية للفحص التلقائي
     const autoCheckInterval = setInterval(() => {
       const price = currentPriceRef.current;
       if (price !== null) {
+        console.log('Auto check triggered with price:', price);
         checkActiveAnalysesWithCurrentPrice(price);
+      } else {
+        console.warn('Auto check skipped, current price is null');
       }
-    }, 10000);
+    }, 10000); // الفحص كل 10 ثواني
 
     return () => {
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('manual-check-analyses', handleManualCheck as EventListener);
+      window.removeEventListener('request-current-price', handleRequestCurrentPrice);
       clearInterval(autoCheckInterval);
       if (container.current) {
         container.current.innerHTML = '';
@@ -145,6 +183,9 @@ function TradingViewWidget({
         ref={container}
         style={{ height: "100%", width: "100%" }}
       />
+      <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2 text-center">
+        {currentPriceRef.current ? `السعر الحالي: ${currentPriceRef.current}` : 'بانتظار السعر...'}
+      </div>
     </div>
   );
 }
