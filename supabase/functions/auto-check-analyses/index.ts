@@ -1,10 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -54,7 +50,16 @@ Deno.serve(async (req) => {
     
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing Supabase credentials');
-      throw new Error('Missing Supabase credentials')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing Supabase credentials',
+          timestamp: new Date().toISOString(),
+          status: 'error' 
+        }), {
+          status: 200,  // Return 200 to prevent client retry loops
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey)
@@ -92,7 +97,17 @@ Deno.serve(async (req) => {
 
     if (fetchError) {
       console.error('Error fetching analyses:', fetchError);
-      throw fetchError
+      return new Response(
+        JSON.stringify({ 
+          error: fetchError.message,
+          details: fetchError,
+          timestamp: new Date().toISOString(),
+          status: 'error'
+        }), {
+          status: 200,  // Return 200 to prevent client retry loops
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     console.log(`Found ${analyses?.length || 0} active analyses to check`);
@@ -130,6 +145,7 @@ Deno.serve(async (req) => {
     }
     
     let processedCount = 0;
+    let errors = [];
     
     // معالجة كل تحليل
     for (const analysis of analyses) {
@@ -169,10 +185,18 @@ Deno.serve(async (req) => {
           console.log(`Successfully processed analysis ${analysis.id}`);
           processedCount++;
         } catch (rpcError) {
+          errors.push({
+            analysis_id: analysis.id,
+            error: rpcError instanceof Error ? rpcError.message : String(rpcError)
+          });
           console.error(`RPC error processing analysis ${analysis.id}:`, rpcError);
           // استمرار المعالجة مع التحليل التالي
         }
       } catch (analysisError) {
+        errors.push({
+          analysis_id: analysis.id,
+          error: analysisError instanceof Error ? analysisError.message : String(analysisError)
+        });
         console.error(`Error processing analysis ${analysis.id}:`, analysisError)
         // استمرار المعالجة مع التحليل التالي
       }
@@ -187,6 +211,7 @@ Deno.serve(async (req) => {
         checked: processedCount,
         totalAnalyses: analyses.length,
         tradingViewPriceUsed: tradingViewPrice !== null,
+        errors: errors.length > 0 ? errors : undefined,
         symbol
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -199,8 +224,7 @@ Deno.serve(async (req) => {
     // إرجاع رد مع تفاصيل الخطأ ولكن بحالة نجاح لمنع فشل الاستدعاء
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Unknown error',
-        errorDetails: String(error),
+        error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
         status: 'error but continuing'
       }), {
