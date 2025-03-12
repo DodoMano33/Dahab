@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -79,10 +78,18 @@ export const useBackTest = () => {
       const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
       
       try {
+        // الحصول على جلسة المستخدم ومفاتيح API
+        const { data: authSession } = await supabase.auth.getSession();
+        const apiKey = supabase.supabaseKey;
+        
         const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'apikey': apiKey,
+            'Authorization': authSession?.session?.access_token 
+              ? `Bearer ${authSession.session.access_token}` 
+              : ''
           },
           body: JSON.stringify({
             requestedAt: new Date().toISOString(),
