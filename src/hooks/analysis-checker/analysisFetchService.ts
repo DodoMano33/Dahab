@@ -18,14 +18,8 @@ export const fetchAnalysesWithCurrentPrice = async (
   const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
   const { data: authSession } = await supabase.auth.getSession();
   
-  console.log('Sending fetch request to:', `${supabaseUrl}/functions/auto-check-analyses`);
-  console.log('With headers:', {
-    'Content-Type': 'application/json',
-    'Authorization': authSession?.session?.access_token ? 'Bearer [hidden]' : 'No token'
-  });
-  console.log('With body:', JSON.stringify(requestBody));
-  
-  const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
+  // تحسين المعلومات التشخيصية
+  const requestOptions = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -36,21 +30,29 @@ export const fetchAnalysesWithCurrentPrice = async (
     },
     body: JSON.stringify(requestBody),
     signal: controller.signal
-  });
-  
-  if (!response.ok) {
-    const responseText = await response.text();
-    console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
-    throw new Error(`Error status: ${response.status} ${response.statusText}, Server response: ${responseText}`);
-  }
-  
-  const responseText = await response.text();
-  console.log('Response text:', responseText);
-  
+  };
+
   try {
-    return JSON.parse(responseText);
-  } catch (jsonError) {
-    console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
-    throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+    const response = await fetch(`${supabaseUrl}/functions/v1/auto-check-analyses`, requestOptions);
+    
+    if (!response.ok) {
+      const responseText = await response.text();
+      console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
+      throw new Error(`Error status: ${response.status} ${response.statusText}, Server response: ${responseText}`);
+    }
+    
+    const responseText = await response.text();
+    
+    try {
+      return JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
+      throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+    }
+  } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت الخاص بك.');
+    }
+    throw error;
   }
 };
