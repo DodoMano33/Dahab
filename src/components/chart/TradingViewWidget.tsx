@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
@@ -147,8 +148,11 @@ function TradingViewWidget({
         if (price !== null) {
           requestBody.currentPrice = price;
         }
+
+        // استخدام عنوان URL كامل مع domain للوصول إلى وظيفة Edge Function
+        const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
         
-        const { data, error } = await fetch('/functions/v1/auto-check-analyses', {
+        const { data, error } = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

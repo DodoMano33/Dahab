@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -74,55 +75,52 @@ export const useBackTest = () => {
       // استدعاء حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
       
-      // طلب فحص التحليلات من الخادم بطريقة محسنة
-      const { data, error } = await supabase.functions.invoke('auto-check-analyses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          // إرسال الوقت الحالي كإشارة لتحديث آخر فحص
-          requestedAt: new Date().toISOString(),
-          // يمكن استخدام قيمة افتراضية للسعر في حالة عدم توفره
-          fallbackPrice: null
-        }
-      });
+      // استخدام عنوان URL كامل مع domain للوصول إلى وظيفة Edge Function
+      const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
       
-      if (error) {
-        console.error('Error invoking auto-check function:', error);
-        // تحسين رسالة الخطأ للمستخدم
-        toast.error(`فشل في فحص التحليلات: ${error.message || 'خطأ في الاتصال'}`);
+      try {
+        const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            requestedAt: new Date().toISOString(),
+            fallbackPrice: null
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error status: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        console.log('Manual check completed:', data);
+        
+        if (data && data.timestamp) {
+          setLastCheckTime(new Date(data.timestamp));
+          
+          const event = new CustomEvent('historyUpdated', {
+            detail: { timestamp: data.timestamp }
+          });
+          window.dispatchEvent(event);
+          
+          const checkedCount = data.checked || 0;
+          if (checkedCount > 0) {
+            toast.success(`تم فحص ${checkedCount} تحليل بنجاح`);
+          } else {
+            toast.info('لا توجد تحليلات نشطة للفحص');
+          }
+        } else {
+          toast.info('تم الفحص ولكن لا توجد تحليلات نشطة');
+        }
+      } catch (error) {
+        console.error('Error in manual check:', error);
+        const errorMessage = error instanceof Error ? error.message : 'خطأ غير معروف';
+        toast.error(`حدث خطأ أثناء فحص التحليلات: ${errorMessage}`);
         throw error;
       }
-      
-      console.log('Manual check completed:', data);
-      
-      // تحديث وقت آخر فحص في واجهة المستخدم
-      if (data && data.timestamp) {
-        setLastCheckTime(new Date(data.timestamp));
-        
-        // إطلاق حدث لتحديث واجهة المستخدم
-        const event = new CustomEvent('historyUpdated', {
-          detail: { timestamp: data.timestamp }
-        });
-        window.dispatchEvent(event);
-        
-        // تحسين رسالة النجاح للمستخدم
-        const checkedCount = data.checked || 0;
-        if (checkedCount > 0) {
-          toast.success(`تم فحص ${checkedCount} تحليل بنجاح`);
-        } else {
-          toast.info('لا توجد تحليلات نشطة للفحص');
-        }
-      } else {
-        // إضافة رسالة توضيحية في حالة عدم وجود بيانات
-        toast.info('تم الفحص ولكن لا توجد تحليلات نشطة');
-      }
-    } catch (error) {
-      console.error('Error in manual check:', error);
-      // تفصيل أكثر في حالة الخطأ
-      const errorMessage = error instanceof Error ? error.message : 'خطأ غير معروف';
-      toast.error(`حدث خطأ أثناء فحص التحليلات: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
