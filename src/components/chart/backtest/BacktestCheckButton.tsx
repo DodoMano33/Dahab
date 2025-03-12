@@ -10,6 +10,7 @@ export const BacktestCheckButton = memo(() => {
   const [formattedTime, setFormattedTime] = useState<string>("");
   const [nextAutoCheck, setNextAutoCheck] = useState<string>("");
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
 
   // الاستماع إلى تحديثات السعر من TradingView
   useEffect(() => {
@@ -17,6 +18,7 @@ export const BacktestCheckButton = memo(() => {
       if (event.detail && event.detail.price) {
         console.log('BacktestCheckButton: Price updated to', event.detail.price);
         setCurrentPrice(event.detail.price);
+        setPriceUpdateCount(prev => prev + 1);
       }
     };
 
@@ -30,6 +32,7 @@ export const BacktestCheckButton = memo(() => {
       if (event.detail && event.detail.price) {
         console.log('BacktestCheckButton: Received current price', event.detail.price);
         setCurrentPrice(event.detail.price);
+        setPriceUpdateCount(prev => prev + 1);
       }
     };
     
@@ -42,10 +45,16 @@ export const BacktestCheckButton = memo(() => {
     
     window.addEventListener('analyses-check-failed', handleCheckFailure as EventListener);
     
+    // إعادة طلب السعر الحالي كل 30 ثانية كإجراء احتياطي
+    const priceRefreshInterval = setInterval(() => {
+      window.dispatchEvent(new Event('request-current-price'));
+    }, 30000);
+    
     return () => {
       window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
       window.removeEventListener('analyses-check-failed', handleCheckFailure as EventListener);
+      clearInterval(priceRefreshInterval);
     };
   }, []);
 
@@ -68,11 +77,18 @@ export const BacktestCheckButton = memo(() => {
         
         // تحديث الوقت المتبقي للفحص التلقائي التالي (10 ثوانٍ)
         const nextCheckTime = new Date(lastCheckTime.getTime() + 10 * 1000);
-        const timeUntilNextCheck = formatDistanceToNow(nextCheckTime, { 
-          addSuffix: false, 
-          locale: ar 
-        });
-        setNextAutoCheck(timeUntilNextCheck);
+        const now = new Date();
+        
+        // التحقق مما إذا كان الوقت المتبقي سالبًا (تم تجاوزه)
+        if (nextCheckTime > now) {
+          const timeUntilNextCheck = formatDistanceToNow(nextCheckTime, { 
+            addSuffix: false, 
+            locale: ar 
+          });
+          setNextAutoCheck(timeUntilNextCheck);
+        } else {
+          setNextAutoCheck("جاري التنفيذ...");
+        }
       } catch (error) {
         console.error("Error formatting last check time:", error, lastCheckTime);
       }
@@ -121,9 +137,13 @@ export const BacktestCheckButton = memo(() => {
             الفحص التلقائي التالي بعد: {nextAutoCheck}
           </p>
         )}
-        {currentPrice && (
+        {currentPrice ? (
           <p className="text-xs font-semibold text-green-600 mt-1">
-            السعر الحالي: {currentPrice}
+            السعر الحالي: {currentPrice} (تم التحديث {priceUpdateCount} مرة)
+          </p>
+        ) : (
+          <p className="text-xs font-semibold text-yellow-600 mt-1">
+            بانتظار السعر... (سيتم المحاولة مجددًا)
           </p>
         )}
       </div>

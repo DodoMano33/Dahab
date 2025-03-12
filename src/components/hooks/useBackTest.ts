@@ -74,12 +74,24 @@ export const useBackTest = () => {
       // استدعاء حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
       
-      // طلب فحص التحليلات من الخادم
-      const { data, error } = await supabase.functions.invoke('auto-check-analyses');
+      // طلب فحص التحليلات من الخادم بطريقة محسنة
+      const { data, error } = await supabase.functions.invoke('auto-check-analyses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: {
+          // إرسال الوقت الحالي كإشارة لتحديث آخر فحص
+          requestedAt: new Date().toISOString(),
+          // يمكن استخدام قيمة افتراضية للسعر في حالة عدم توفره
+          fallbackPrice: null
+        }
+      });
       
       if (error) {
         console.error('Error invoking auto-check function:', error);
-        toast.error(`فشل في فحص التحليلات: ${error.message}`);
+        // تحسين رسالة الخطأ للمستخدم
+        toast.error(`فشل في فحص التحليلات: ${error.message || 'خطأ في الاتصال'}`);
         throw error;
       }
       
@@ -95,13 +107,22 @@ export const useBackTest = () => {
         });
         window.dispatchEvent(event);
         
-        toast.success(`تم فحص ${data.checked || 'جميع'} التحليلات بنجاح`);
+        // تحسين رسالة النجاح للمستخدم
+        const checkedCount = data.checked || 0;
+        if (checkedCount > 0) {
+          toast.success(`تم فحص ${checkedCount} تحليل بنجاح`);
+        } else {
+          toast.info('لا توجد تحليلات نشطة للفحص');
+        }
       } else {
-        toast.info('لا توجد تحليلات نشطة للفحص');
+        // إضافة رسالة توضيحية في حالة عدم وجود بيانات
+        toast.info('تم الفحص ولكن لا توجد تحليلات نشطة');
       }
     } catch (error) {
       console.error('Error in manual check:', error);
-      toast.error('حدث خطأ أثناء فحص التحليلات');
+      // تفصيل أكثر في حالة الخطأ
+      const errorMessage = error instanceof Error ? error.message : 'خطأ غير معروف';
+      toast.error(`حدث خطأ أثناء فحص التحليلات: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
