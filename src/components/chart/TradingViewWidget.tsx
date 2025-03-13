@@ -18,6 +18,7 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
   const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
+  const priceRequestIntervals = useRef<NodeJS.Timeout[]>([]);
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -30,13 +31,29 @@ function TradingViewWidget({
     if (currentPrice !== null) {
       currentPriceRef.current = currentPrice;
       console.log('Current price updated in TradingViewWidget:', currentPrice);
+      
+      // نقوم بنشر حدث عام لتمكين جميع أجزاء التطبيق من معرفة السعر الحالي
+      window.dispatchEvent(new CustomEvent('global-price-update', { 
+        detail: { price: currentPrice, symbol: forcedSymbol }
+      }));
     }
-  }, [currentPrice]);
+  }, [currentPrice, forcedSymbol]);
 
   useAnalysisChecker({
     symbol: forcedSymbol,
     currentPriceRef
   });
+
+  // وظيفة جديدة تطلب السعر من TradingView
+  const requestPriceFromTradingView = () => {
+    try {
+      // إرسال رسالة لطلب السعر الحالي
+      window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
+      console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
+    } catch (e) {
+      console.warn('Failed to request price from TradingView', e);
+    }
+  };
 
   useEffect(() => {
     console.log('TradingViewWidget mounted with symbol:', forcedSymbol);
@@ -92,25 +109,43 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
-    // طلب السعر الأولي
-    const attemptInitialPriceRequest = () => {
-      try {
-        window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
-        console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
-      } catch (e) {
-        console.warn('Failed to request initial price from TradingView', e);
+    // إنشاء جدول زمني متعدد لطلب السعر بشكل متكرر
+    // نبدأ بطلبات متقاربة ثم نقلل التكرار بمرور الوقت
+    const scheduleInitialPriceRequests = () => {
+      // مسح أي طلبات سابقة
+      priceRequestIntervals.current.forEach(clearTimeout);
+      priceRequestIntervals.current = [];
+      
+      // طلبات سريعة في البداية (كل ثانية لمدة 10 ثوانٍ)
+      for (let i = 1; i <= 10; i++) {
+        const timeoutId = setTimeout(requestPriceFromTradingView, i * 1000);
+        priceRequestIntervals.current.push(timeoutId);
+      }
+      
+      // طلبات متوسطة (كل 3 ثوانٍ لمدة 30 ثانية إضافية)
+      for (let i = 1; i <= 10; i++) {
+        const timeoutId = setTimeout(requestPriceFromTradingView, 10000 + i * 3000);
+        priceRequestIntervals.current.push(timeoutId);
+      }
+      
+      // طلبات أبطأ (كل 10 ثوانٍ لمدة دقيقة إضافية)
+      for (let i = 1; i <= 6; i++) {
+        const timeoutId = setTimeout(requestPriceFromTradingView, 40000 + i * 10000);
+        priceRequestIntervals.current.push(timeoutId);
       }
     };
     
-    // جدولة عدة طلبات متتالية للتأكد من الحصول على السعر
-    const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
-    const secondPriceTimer = setTimeout(attemptInitialPriceRequest, 5000);
-    const thirdPriceTimer = setTimeout(attemptInitialPriceRequest, 8000);
+    // جدولة الطلبات الأولية
+    scheduleInitialPriceRequests();
+    
+    // إعداد فاصل زمني لطلب السعر كل 20 ثانية بشكل مستمر
+    const regularPriceInterval = setInterval(requestPriceFromTradingView, 20000);
 
     return () => {
-      clearTimeout(initialPriceTimer);
-      clearTimeout(secondPriceTimer);
-      clearTimeout(thirdPriceTimer);
+      // تنظيف جميع الفواصل الزمنية عند إزالة المكون
+      priceRequestIntervals.current.forEach(clearTimeout);
+      clearInterval(regularPriceInterval);
+      
       if (container.current) {
         container.current.innerHTML = '';
       }

@@ -2,7 +2,7 @@
 /**
  * Gets the last stored price from the database as fallback
  */
-export async function getLastStoredPrice(supabase: any): Promise<number> {
+export async function getLastStoredPrice(supabase: any): Promise<number | null> {
   try {
     console.log('Trying to get last stored price from database as fallback');
     
@@ -22,14 +22,12 @@ export async function getLastStoredPrice(supabase: any): Promise<number> {
       } else {
         console.warn('No previous price records found in database');
       }
-      console.warn('Could not retrieve last stored price, using default');
-      // استخدام قيمة افتراضية معقولة في أسوأ الحالات
-      return 2000; // قيمة افتراضية للذهب
+      console.warn('Could not retrieve last stored price, returning null');
+      return null;
     }
   } catch (lastPriceErr) {
     console.error('Exception in getLastStoredPrice:', lastPriceErr);
-    // استخدام قيمة افتراضية
-    return 2000;
+    return null;
   }
 }
 
@@ -43,7 +41,7 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
       const tradingViewPrice = requestData?.currentPrice || null;
       
       if (tradingViewPrice !== null && !isNaN(tradingViewPrice)) {
-        console.log('Using price from request:', tradingViewPrice);
+        console.log('Using real-time price from request:', tradingViewPrice);
         resolve(tradingViewPrice);
         return;
       }
@@ -53,10 +51,15 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
       // استخدام آخر سعر محفوظ كخطة بديلة
       try {
         const lastPrice = await getLastStoredPrice(supabase);
-        console.log('Retrieved fallback price:', lastPrice);
-        resolve(lastPrice);
+        if (lastPrice !== null) {
+          console.log('Retrieved fallback price from database:', lastPrice);
+          resolve(lastPrice);
+        } else {
+          console.warn('No fallback price available, returning null');
+          resolve(null);
+        }
       } catch (err) {
-        console.error('Failed to get last stored price, using null:', err);
+        console.error('Failed to get last stored price:', err);
         resolve(null);
       }
     } catch (err) {

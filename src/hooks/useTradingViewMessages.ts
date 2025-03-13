@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UseTradingViewMessagesProps {
   symbol: string;
@@ -12,53 +12,71 @@ export const useTradingViewMessages = ({
   onSymbolChange,
   onPriceUpdate
 }: UseTradingViewMessagesProps) => {
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const currentPriceRef = useRef<number | null>(null);
   const priceUpdateCountRef = useRef<number>(0);
+  const lastPriceUpdateTimeRef = useRef<Date | null>(null);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
         // تحديد الرمز ليكون XAUUSD دائمًا
-        if (event.data.name === 'symbol-change') {
+        if (event.data && event.data.name === 'symbol-change') {
           console.log('Symbol changed, but keeping XAUUSD as the only symbol');
           onSymbolChange?.('XAUUSD');
         }
         
-        if (event.data.name === 'price-update') {
-          const price = event.data.price;
-          if (price === null || price === undefined || isNaN(price)) {
-            console.warn('Received invalid price from TradingView:', price);
+        if (event.data && event.data.name === 'price-update' && 
+            event.data.price !== undefined && event.data.price !== null) {
+          
+          const price = Number(event.data.price);
+          if (isNaN(price)) {
+            console.warn('Received invalid price from TradingView:', event.data.price);
             return;
           }
           
           priceUpdateCountRef.current += 1;
-          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for XAUUSD');
+          lastPriceUpdateTimeRef.current = new Date();
           
+          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, 
+                      price, 'for XAUUSD at', lastPriceUpdateTimeRef.current.toISOString());
+          
+          // تحديث السعر في الحالة والمرجع
+          setCurrentPrice(price);
           currentPriceRef.current = price;
+          
+          // استدعاء معالج التحديث إذا تم توفيره
           onPriceUpdate?.(price);
           
-          // يرسل حدث تحديث السعر للمكونات الأخرى
+          // نشر حدث تحديث السعر للمكونات الأخرى
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price, symbol: 'XAUUSD' }
+            detail: { price, symbol: 'XAUUSD', timestamp: new Date().toISOString() }
           }));
-          
-          // استجابة لطلب السعر الحالي
-          window.addEventListener('request-current-price', () => {
-            if (currentPriceRef.current !== null) {
-              window.dispatchEvent(new CustomEvent('current-price-response', {
-                detail: { price: currentPriceRef.current }
-              }));
-            }
-          });
-          
-          console.log('Current price saved in ref:', currentPriceRef.current);
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
       }
     };
 
+    // إضافة مستمع رسائل global
     window.addEventListener('message', handleMessage);
+    
+    // إضافة مستمع لطلبات السعر الحالي
+    const handleCurrentPriceRequest = () => {
+      if (currentPriceRef.current !== null) {
+        console.log('Responding to current-price request with:', currentPriceRef.current);
+        window.dispatchEvent(new CustomEvent('current-price-response', {
+          detail: { 
+            price: currentPriceRef.current,
+            timestamp: lastPriceUpdateTimeRef.current?.toISOString() || new Date().toISOString()
+          }
+        }));
+      } else {
+        console.log('Received price request but no price is available yet');
+      }
+    };
+    
+    window.addEventListener('request-current-price', handleCurrentPriceRequest);
     
     // عند التركيب، تأكد من أن TradingView يعرض XAUUSD
     const forcedSymbol = 'XAUUSD';
@@ -67,11 +85,15 @@ export const useTradingViewMessages = ({
       onSymbolChange?.(forcedSymbol);
     }
 
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('request-current-price', handleCurrentPriceRequest);
+    };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return {
-    currentPrice: currentPriceRef.current,
-    priceUpdateCount: priceUpdateCountRef.current
+    currentPrice,
+    priceUpdateCount: priceUpdateCountRef.current,
+    lastPriceUpdateTime: lastPriceUpdateTimeRef.current
   };
 };
