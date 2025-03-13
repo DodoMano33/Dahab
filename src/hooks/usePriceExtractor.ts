@@ -1,22 +1,37 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+interface PriceRecord {
+  price: number;
+  timestamp: Date;
+  source: string;
+}
+
 interface PriceExtractionResult {
   price: number | null;
   lastUpdated: Date | null;
   source: string;
   isExtracting: boolean;
+  priceHistory: PriceRecord[];
+  clearHistory: () => void;
+  extractPriceFromDOM: () => number | null;
 }
 
 export const usePriceExtractor = (
   interval: number = 10000, // الفاصل الزمني بالمللي ثانية (10 ثوانٍ افتراضيًا)
-  enabled: boolean = true
+  enabled: boolean = true,
+  maxHistorySize: number = 1000 // الحد الأقصى لعدد السجلات
 ): PriceExtractionResult => {
   const [price, setPrice] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [source, setSource] = useState<string>('DOM Extraction');
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
+  const [priceHistory, setPriceHistory] = useState<PriceRecord[]>([]);
   const extractionTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearHistory = () => {
+    setPriceHistory([]);
+  };
 
   // وظيفة استخراج السعر من DOM
   const extractPriceFromDOM = () => {
@@ -79,6 +94,19 @@ export const usePriceExtractor = (
           setLastUpdated(new Date());
           setSource(`DOM Extraction (${foundSelector})`);
           
+          // إضافة السعر الجديد إلى سجل الأسعار
+          const newRecord: PriceRecord = {
+            price: extractedPrice,
+            timestamp: new Date(),
+            source: `DOM Extraction (${foundSelector})`
+          };
+          
+          setPriceHistory(prevHistory => {
+            // حذف أقدم السجلات إذا تجاوز العدد الحد الأقصى
+            const updatedHistory = [newRecord, ...prevHistory];
+            return updatedHistory.slice(0, maxHistorySize);
+          });
+          
           // إرسال حدث بالسعر المستخرج
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
             detail: { 
@@ -127,6 +155,9 @@ export const usePriceExtractor = (
     price,
     lastUpdated,
     source,
-    isExtracting
+    isExtracting,
+    priceHistory,
+    clearHistory,
+    extractPriceFromDOM
   };
 };
