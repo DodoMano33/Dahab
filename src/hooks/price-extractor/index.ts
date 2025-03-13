@@ -6,7 +6,8 @@ import { extractPriceFromDOM } from './domExtractor';
 import { useExtractionTimer } from './hooks/useExtractionTimer';
 
 /**
- * هوك رئيسي لاستخراج السعر
+ * هوك محسن لاستخراج السعر
+ * يتضمن عدة طرق للتحقق من صحة السعر
  */
 export const usePriceExtractor = (
   options: PriceExtractorOptions = {}
@@ -30,6 +31,9 @@ export const usePriceExtractor = (
     ...DEFAULT_PRICE_SELECTORS,
     ...customSelectors
   ]);
+  
+  // إضافة مرجع للقيمة الأخيرة الصالحة للسعر للمساعدة في تصفية الأسعار غير المنطقية
+  const lastValidPriceRef = useRef<number | null>(null);
 
   // وظيفة لتحديث المحددات المخصصة
   const setCustomSelectors = useCallback((selectors: string[]) => {
@@ -52,23 +56,32 @@ export const usePriceExtractor = (
     });
   }, [maxHistorySize]);
 
-  // معالج العثور على سعر
+  // معالج محسن للعثور على سعر
   const handlePriceFound = useCallback((foundPrice: number, foundSource: string) => {
+    // تحديث قيمة السعر الصالحة الأخيرة للمقارنات المستقبلية
+    lastValidPriceRef.current = foundPrice;
+    
     setPrice(foundPrice);
     setLastUpdated(new Date());
     setSource(foundSource);
-  }, []);
+    
+    if (debugMode) {
+      console.log(`Price updated to ${foundPrice} from ${foundSource}`);
+    }
+  }, [debugMode]);
 
-  // وظيفة استخراج السعر الرئيسية
+  // وظيفة استخراج السعر الرئيسية المحسنة
   const extractPriceWrapper = useCallback(() => {
     setIsExtracting(true);
     
+    // إضافة آخر سعر صالح للمساعدة في التحقق من صحة الأسعار الجديدة
     const result = extractPriceFromDOM({
       priceSelectors,
       debugMode,
       onPriceFound: handlePriceFound,
       maxHistorySize,
-      onHistoryUpdate: handleHistoryUpdate
+      onHistoryUpdate: handleHistoryUpdate,
+      lastValidPrice: lastValidPriceRef.current
     });
     
     setIsExtracting(false);

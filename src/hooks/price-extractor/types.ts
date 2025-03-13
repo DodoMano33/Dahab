@@ -21,30 +21,43 @@ export interface PriceExtractorOptions {
   debugMode?: boolean;
 }
 
-// القيم المنطقية لسعر الذهب (XAUUSD)
-export const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
-export const MAX_VALID_GOLD_PRICE = 5000;  // أعلى سعر منطقي للذهب (بالدولار)
+// القيم المنطقية لسعر الذهب (XAUUSD) - قيم محدثة ومحسنة
+export const MIN_VALID_GOLD_PRICE = 1500;  // أقل سعر منطقي للذهب حسب الأسعار الحالية (بالدولار)
+export const MAX_VALID_GOLD_PRICE = 3000;  // أعلى سعر منطقي للذهب حسب الأسعار الحالية (بالدولار)
 
 // محددات لاستخراج السعر من DOM
 export const DEFAULT_PRICE_SELECTORS = [
-  // سعر كبير في الزاوية اليمنى
+  // محددات أساسية للسعر - أعلى أولوية
   '.tv-symbol-price-quote__value',
   '.js-symbol-last',
   '.chart-page-price',
   '.pane-legend-line__value',
   '.onchart-info-top-right',
+  
   // تحديد أكثر تفصيلًا بناءً على الموقع في الشاشة
   'div[data-name="legend-source-item"] .js-symbol-last',
   'div[data-name="legend-series-item"] .js-symbol-last',
+  
   // العناصر الخاصة بمنطقة السعر المحاطة بدائرة
   '.chart-status-wrapper .price',
   '.chart-info-price-text',
   '.chart-container .price-value',
   '.chart-container .big-price',
-  // محددات إضافية للعناصر التي قد تحتوي على السعر
+  
+  // محددات العناصر التي تعرض أسعار حالية
   '.price-value', 
   '.price-display',
   '.current-price',
   '.chart-overlay-price',
-  '.price-indicator'
+  '.price-indicator',
+  
+  // محددات إضافية ذات أولوية منخفضة
+  '.last-price',
+  '.market-price',
+  '.gold-price',
+  '.xauusd-price',
+  '.live-price',
+  'div[data-field="last"]',
+  'span[data-symbol="XAUUSD"]',
+  'span[data-field="last"]'
 ];

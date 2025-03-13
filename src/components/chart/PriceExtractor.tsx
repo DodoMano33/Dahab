@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePriceExtractor } from '@/hooks/usePriceExtractor';
+import { usePriceExtractor } from '@/hooks/price-extractor';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +56,7 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     : 'لم يتم التحديث بعد';
   
   const formattedPrice = price !== null ? price.toFixed(3) : '-';
-
+  
   const exportToCSV = () => {
     if (priceHistory.length === 0) return;
     
