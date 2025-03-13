@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { usePriceExtractor } from '@/hooks/usePriceExtractor';
+import { usePriceExtractor } from '@/hooks/price-extractor';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,19 +34,16 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     debugMode: false
   });
   
-  // تعيين المحددات المخصصة عند تغييرها
   useEffect(() => {
     setCustomSelectors(userSelectors);
   }, [userSelectors, setCustomSelectors]);
   
-  // تنفيذ معالج السعر المستخرج عند الحصول على سعر جديد
   useEffect(() => {
     if (price !== null && onPriceExtracted) {
       onPriceExtracted(price);
     }
   }, [price, onPriceExtracted]);
   
-  // تحديث الفاصل الزمني
   const handleIntervalChange = () => {
     const newInterval = parseFloat(customInterval) * 1000;
     if (!isNaN(newInterval) && newInterval >= 1000) {
@@ -60,7 +56,7 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     : 'لم يتم التحديث بعد';
   
   const formattedPrice = price !== null ? price.toFixed(3) : '-';
-
+  
   return (
     <Card className="p-4 bg-white shadow-md rounded-lg">
       <Tabs defaultValue="main">
