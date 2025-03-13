@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
+import { useTradingViewMessages } from '@/hooks/trading-view';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 import { PriceExtractor } from './PriceExtractor';
