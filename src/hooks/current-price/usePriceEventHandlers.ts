@@ -1,5 +1,15 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PriceUpdateEvent, CurrentPriceResponseEvent } from './types';
+
+// القيم المنطقية لسعر الذهب (XAUUSD)
+const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
+const MAX_VALID_GOLD_PRICE = 5000;  // أعلى سعر منطقي للذهب (بالدولار)
+
+// التحقق من أن السعر في النطاق المنطقي
+const isValidGoldPrice = (price: number): boolean => {
+  return !isNaN(price) && price >= MIN_VALID_GOLD_PRICE && price <= MAX_VALID_GOLD_PRICE;
+};
 
 export const usePriceEventHandlers = () => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
@@ -27,10 +37,17 @@ export const usePriceEventHandlers = () => {
 
   const handlePriceUpdate = useCallback((event: PriceUpdateEvent) => {
     if (event.detail && event.detail.price) {
+      // التحقق من صحة السعر قبل قبوله
+      const price = Number(event.detail.price);
+      if (!isValidGoldPrice(price)) {
+        console.warn('Received invalid price update:', price);
+        return;
+      }
+      
       const source = event.detail.source || 'TradingView';
-      console.log('usePriceEventHandlers: Price updated to', event.detail.price, 
+      console.log('usePriceEventHandlers: Price updated to', price, 
                  'from', source);
-      setCurrentPrice(event.detail.price);
+      setCurrentPrice(price);
       setPriceSource(source);
       setPriceUpdateCount(prev => prev + 1);
     }
@@ -38,10 +55,17 @@ export const usePriceEventHandlers = () => {
 
   const handleCurrentPriceResponse = useCallback((event: CurrentPriceResponseEvent) => {
     if (event.detail && event.detail.price) {
+      // التحقق من صحة السعر قبل قبوله
+      const price = Number(event.detail.price);
+      if (!isValidGoldPrice(price)) {
+        console.warn('Received invalid price response:', price);
+        return;
+      }
+      
       const source = event.detail.source || 'API Response';
-      console.log('usePriceEventHandlers: Received current price', event.detail.price,
+      console.log('usePriceEventHandlers: Received current price', price,
                  'from', source);
-      setCurrentPrice(event.detail.price);
+      setCurrentPrice(price);
       setPriceSource(source);
       setPriceUpdateCount(prev => prev + 1);
     }

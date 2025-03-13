@@ -37,6 +37,10 @@ const DEFAULT_PRICE_SELECTORS = [
   '.price-indicator'
 ];
 
+// القيم المنطقية لسعر الذهب (XAUUSD)
+const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
+const MAX_VALID_GOLD_PRICE = 5000;  // أعلى سعر منطقي للذهب (بالدولار)
+
 export const usePriceExtractor = (
   options: PriceExtractorOptions = {}
 ): PriceExtractionResult => {
@@ -82,18 +86,34 @@ export const usePriceExtractor = (
       // استبدال الفواصل بنقاط للحصول على رقم صالح
       cleanedText = cleanedText.replace(/,/g, '.');
       
-      // الحصول على الرقم الأول في النص (في حالة وجود أكثر من رقم)
-      const match = cleanedText.match(/\d+\.\d+/);
+      // البحث عن نمط رقم بعلامة عشرية
+      const match = cleanedText.match(/\d+(?:\.\d+)?/);
       if (match) {
         const extractedPrice = parseFloat(match[0]);
-        if (!isNaN(extractedPrice) && extractedPrice > 0) {
+        
+        // التحقق من أن السعر منطقي لسعر الذهب
+        if (!isNaN(extractedPrice) && 
+            extractedPrice >= MIN_VALID_GOLD_PRICE && 
+            extractedPrice <= MAX_VALID_GOLD_PRICE) {
           return extractedPrice;
+        } else {
+          if (debugMode) {
+            console.warn(`تم استخراج سعر خارج النطاق المنطقي: ${extractedPrice}`);
+          }
         }
       } else {
-        // محاولة تحويل النص بالكامل إلى رقم إذا لم يكن هناك تطابق
+        // محاولة تحويل النص بالكامل إلى رقم
         const fullNumber = parseFloat(cleanedText);
-        if (!isNaN(fullNumber) && fullNumber > 0) {
+        
+        // التحقق من أن السعر منطقي لسعر الذهب
+        if (!isNaN(fullNumber) && 
+            fullNumber >= MIN_VALID_GOLD_PRICE && 
+            fullNumber <= MAX_VALID_GOLD_PRICE) {
           return fullNumber;
+        } else {
+          if (debugMode) {
+            console.warn(`تم استخراج سعر كامل خارج النطاق المنطقي: ${fullNumber}`);
+          }
         }
       }
     } catch (error) {
@@ -117,6 +137,7 @@ export const usePriceExtractor = (
       let priceElement: Element | null = null;
       let foundSelector = '';
       let highestPriority = -1;
+      let extractedPrice: number | null = null;
 
       // أولاً نجرب المحددات ذات الأولوية
       for (let priority = 0; priority < priceSelectors.length; priority++) {
@@ -126,19 +147,18 @@ export const usePriceExtractor = (
         for (const element of Array.from(elements)) {
           const text = element.textContent;
           if (text && /\d+[,.]?\d*/.test(text)) {
-            const extractedPrice = cleanPriceText(text);
-            if (extractedPrice !== null) {
+            const tempPrice = cleanPriceText(text);
+            if (tempPrice !== null) {
               // تحديث أعلى أولوية فقط إذا كانت الأولوية الحالية أعلى
               if (priority > highestPriority) {
                 priceElement = element;
                 foundSelector = selector;
                 highestPriority = priority;
+                extractedPrice = tempPrice;
                 
                 if (debugMode) {
-                  console.log(`Found price element with selector: ${selector}, priority: ${priority}, price: ${extractedPrice}`);
+                  console.log(`Found price element with selector: ${selector}, priority: ${priority}, price: ${tempPrice}`);
                 }
-                
-                // لا نقوم بالخروج فوراً، بل نواصل البحث عن محدد ذو أولوية أعلى
               }
             }
           }
@@ -146,43 +166,39 @@ export const usePriceExtractor = (
       }
 
       // استخراج السعر من نص العنصر
-      if (priceElement && priceElement.textContent) {
-        const extractedPrice = cleanPriceText(priceElement.textContent);
-        
-        if (extractedPrice !== null) {
-          if (debugMode) {
-            console.log(`Successfully extracted price: ${extractedPrice} from selector: ${foundSelector}`);
-          }
-          
-          setPrice(extractedPrice);
-          setLastUpdated(new Date());
-          setSource(`DOM Extraction (${foundSelector})`);
-          
-          // إضافة السعر الجديد إلى سجل الأسعار
-          const newRecord: PriceRecord = {
-            price: extractedPrice,
-            timestamp: new Date(),
-            source: `DOM Extraction (${foundSelector})`
-          };
-          
-          setPriceHistory(prevHistory => {
-            // حذف أقدم السجلات إذا تجاوز العدد الحد الأقصى
-            const updatedHistory = [newRecord, ...prevHistory];
-            return updatedHistory.slice(0, maxHistorySize);
-          });
-          
-          // إرسال حدث بالسعر المستخرج
-          window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { 
-              price: extractedPrice, 
-              symbol: 'XAUUSD',
-              source: `DOM Extraction (${foundSelector})`
-            }
-          }));
-          
-          setIsExtracting(false);
-          return extractedPrice;
+      if (priceElement && extractedPrice !== null) {
+        if (debugMode) {
+          console.log(`Successfully extracted price: ${extractedPrice} from selector: ${foundSelector}`);
         }
+        
+        setPrice(extractedPrice);
+        setLastUpdated(new Date());
+        setSource(`DOM Extraction (${foundSelector})`);
+        
+        // إضافة السعر الجديد إلى سجل الأسعار
+        const newRecord: PriceRecord = {
+          price: extractedPrice,
+          timestamp: new Date(),
+          source: `DOM Extraction (${foundSelector})`
+        };
+        
+        setPriceHistory(prevHistory => {
+          // حذف أقدم السجلات إذا تجاوز العدد الحد الأقصى
+          const updatedHistory = [newRecord, ...prevHistory];
+          return updatedHistory.slice(0, maxHistorySize);
+        });
+        
+        // إرسال حدث بالسعر المستخرج
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+          detail: { 
+            price: extractedPrice, 
+            symbol: 'XAUUSD',
+            source: `DOM Extraction (${foundSelector})`
+          }
+        }));
+        
+        setIsExtracting(false);
+        return extractedPrice;
       }
 
       // محاولة استخراج السعر من العناصر المرئية في الصفحة
@@ -194,25 +210,26 @@ export const usePriceExtractor = (
                    style.visibility !== 'hidden' && 
                    style.opacity !== '0' &&
                    el.textContent && 
-                   /\d+[,.]?\d*/.test(el.textContent);
+                   /\d+[,.]?\d*/.test(el.textContent) &&
+                   el.textContent.length < 30; // تجنب النصوص الطويلة
           });
         
         for (const element of visibleElements) {
           const text = element.textContent;
           if (text) {
-            const extractedPrice = cleanPriceText(text);
-            if (extractedPrice !== null) {
+            const tempPrice = cleanPriceText(text);
+            if (tempPrice !== null) {
               if (debugMode) {
-                console.log(`Found price in visible element: ${element.tagName}, price: ${extractedPrice}`);
+                console.log(`Found price in visible element: ${element.tagName}, price: ${tempPrice}`);
               }
               
-              setPrice(extractedPrice);
+              setPrice(tempPrice);
               setLastUpdated(new Date());
               setSource(`DOM Extraction (visible element)`);
               
               // إضافة السعر الجديد إلى سجل الأسعار
               const newRecord: PriceRecord = {
-                price: extractedPrice,
+                price: tempPrice,
                 timestamp: new Date(),
                 source: `DOM Extraction (visible element)`
               };
@@ -224,14 +241,14 @@ export const usePriceExtractor = (
               
               window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
                 detail: { 
-                  price: extractedPrice, 
+                  price: tempPrice, 
                   symbol: 'XAUUSD',
                   source: `DOM Extraction (visible element)`
                 }
               }));
               
               setIsExtracting(false);
-              return extractedPrice;
+              return tempPrice;
             }
           }
         }

@@ -1,6 +1,15 @@
 
 import { useCallback } from 'react';
 
+// القيم المنطقية لسعر الذهب (XAUUSD)
+const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
+const MAX_VALID_GOLD_PRICE = 5000;  // أعلى سعر منطقي للذهب (بالدولار)
+
+// التحقق من أن السعر في النطاق المنطقي
+const isValidGoldPrice = (price: number): boolean => {
+  return !isNaN(price) && price >= MIN_VALID_GOLD_PRICE && price <= MAX_VALID_GOLD_PRICE;
+};
+
 /**
  * مدير أحداث TradingView
  */
@@ -24,7 +33,7 @@ export const useTradingViewEvents = (
           event.data.price !== undefined && event.data.price !== null) {
         
         const price = Number(event.data.price);
-        if (isNaN(price) || price <= 0) {
+        if (!isValidGoldPrice(price)) {
           console.warn('Received invalid price from TradingView:', event.data.price);
           return;
         }
@@ -66,33 +75,36 @@ export const useTradingViewEvents = (
           event.data.result !== undefined && event.data.result !== null) {
         
         const price = Number(event.data.result);
-        if (!isNaN(price) && price > 0) {
-          priceUpdateCountRef.current += 1;
-          lastPriceUpdateTimeRef.current = new Date();
-          extractionMethodsRef.current.push('getCurrentPrice-response');
-          
-          console.log(`Price from getCurrentPrice response: ${price}`);
-          
-          currentPriceRef.current = price;
-          
-          window.lastPriceEvent = {
-            price,
-            timestamp: new Date().toISOString(),
-            source: 'TradingView API',
-            method: 'getCurrentPrice'
-          };
-          
-          onPriceUpdate?.(price);
-          
-          window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { 
-              price, 
-              symbol: 'XAUUSD', 
-              timestamp: new Date().toISOString(),
-              source: 'TradingView API'
-            }
-          }));
+        if (!isValidGoldPrice(price)) {
+          console.warn('Received invalid price from getCurrentPrice response:', event.data.result);
+          return;
         }
+        
+        priceUpdateCountRef.current += 1;
+        lastPriceUpdateTimeRef.current = new Date();
+        extractionMethodsRef.current.push('getCurrentPrice-response');
+        
+        console.log(`Price from getCurrentPrice response: ${price}`);
+        
+        currentPriceRef.current = price;
+        
+        window.lastPriceEvent = {
+          price,
+          timestamp: new Date().toISOString(),
+          source: 'TradingView API',
+          method: 'getCurrentPrice'
+        };
+        
+        onPriceUpdate?.(price);
+        
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+          detail: { 
+            price, 
+            symbol: 'XAUUSD', 
+            timestamp: new Date().toISOString(),
+            source: 'TradingView API'
+          }
+        }));
       }
     } catch (error) {
       console.error('Error handling TradingView message:', error);
@@ -107,7 +119,7 @@ export const useTradingViewEvents = (
     lastPriceUpdateTimeRef: React.MutableRefObject<Date | null>,
     extractPriceFromChartObject: () => number | null
   ) => {
-    if (currentPriceRef.current !== null) {
+    if (currentPriceRef.current !== null && isValidGoldPrice(currentPriceRef.current)) {
       console.log('Responding to current-price request with:', currentPriceRef.current);
       window.dispatchEvent(new CustomEvent('current-price-response', {
         detail: { 
@@ -119,7 +131,7 @@ export const useTradingViewEvents = (
     } else {
       console.log('Received price request but no price is available yet, trying direct extraction');
       const extractedPrice = extractPriceFromChartObject();
-      if (extractedPrice !== null) {
+      if (extractedPrice !== null && isValidGoldPrice(extractedPrice)) {
         console.log('Got price via direct extraction for request:', extractedPrice);
         currentPriceRef.current = extractedPrice;
         

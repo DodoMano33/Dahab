@@ -1,18 +1,27 @@
 
 import { useRef } from 'react';
 
+// القيم المنطقية لسعر الذهب (XAUUSD)
+const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
+const MAX_VALID_GOLD_PRICE = 5000;  // أعلى سعر منطقي للذهب (بالدولار)
+
 /**
  * استخراج السعر من مخطط TradingView بعدة طرق
  */
 export const usePriceExtractors = () => {
   const extractionMethodsRef = useRef<string[]>([]);
 
+  // التحقق من أن السعر في النطاق المنطقي
+  const isValidGoldPrice = (price: number): boolean => {
+    return !isNaN(price) && price >= MIN_VALID_GOLD_PRICE && price <= MAX_VALID_GOLD_PRICE;
+  };
+
   const extractPriceFromChartObject = (): number | null => {
     try {
       // Method 1: Direct chart access
       if (window.TradingView && window.TradingView.activeChart) {
         const price = window.TradingView.activeChart.crosshairPrice();
-        if (price && !isNaN(price)) {
+        if (price && isValidGoldPrice(price)) {
           extractionMethodsRef.current.push('activeChart.crosshairPrice');
           return price;
         }
@@ -37,7 +46,7 @@ export const usePriceExtractors = () => {
         const priceText = element.textContent;
         if (priceText) {
           const price = parseFloat(priceText.replace(',', ''));
-          if (!isNaN(price)) {
+          if (isValidGoldPrice(price)) {
             extractionMethodsRef.current.push('DOM-Quote');
             return price;
           }
