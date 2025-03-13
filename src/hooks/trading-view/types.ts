@@ -24,6 +24,6 @@ declare global {
     lastPriceEvent?: PriceEvent;
     TradingView?: any;
     tvWidget?: any;
-    activeChart?: any;
   }
 }
+
