@@ -16,6 +16,7 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
   const [isEnabled, setIsEnabled] = useState<boolean>(true);
   const [interval, setInterval] = useState<number>(defaultInterval);
   const [customInterval, setCustomInterval] = useState<string>(String(defaultInterval / 1000));
+  const [userSelectors, setUserSelectors] = useState<string[]>(customSelectors);
   
   const { 
     price, 
@@ -29,15 +30,15 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
   } = usePriceExtractor({
     interval,
     enabled: isEnabled,
-    customSelectors,
+    customSelectors: userSelectors,
     extractOnMount: true,
     debugMode: false
   });
   
   // تعيين المحددات المخصصة عند تغييرها
   useEffect(() => {
-    setCustomSelectors(customSelectors);
-  }, [customSelectors, setCustomSelectors]);
+    setCustomSelectors(userSelectors);
+  }, [userSelectors, setCustomSelectors]);
   
   // تنفيذ معالج السعر المستخرج عند الحصول على سعر جديد
   useEffect(() => {
@@ -85,6 +86,8 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
             setCustomInterval={setCustomInterval}
             handleIntervalChange={handleIntervalChange}
             extractPriceFromDOM={extractPriceFromDOM}
+            customSelectors={userSelectors}
+            onCustomSelectorsChange={setUserSelectors}
           />
         </TabsContent>
         

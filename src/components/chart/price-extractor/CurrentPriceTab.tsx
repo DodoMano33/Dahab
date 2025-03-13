@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RotateCwIcon } from 'lucide-react';
+import { CustomSelectorsInput } from './CustomSelectorsInput';
 
 interface CurrentPriceTabProps {
   isEnabled: boolean;
@@ -18,6 +19,8 @@ interface CurrentPriceTabProps {
   setCustomInterval: (value: string) => void;
   handleIntervalChange: () => void;
   extractPriceFromDOM: () => void;
+  customSelectors: string[];
+  onCustomSelectorsChange: (selectors: string[]) => void;
 }
 
 export const CurrentPriceTab: React.FC<CurrentPriceTabProps> = ({
@@ -30,7 +33,9 @@ export const CurrentPriceTab: React.FC<CurrentPriceTabProps> = ({
   customInterval,
   setCustomInterval,
   handleIntervalChange,
-  extractPriceFromDOM
+  extractPriceFromDOM,
+  customSelectors,
+  onCustomSelectorsChange
 }) => {
   return (
     <div className="space-y-4">
@@ -101,6 +106,13 @@ export const CurrentPriceTab: React.FC<CurrentPriceTabProps> = ({
           <RotateCwIcon className="ml-2 h-4 w-4" />
           {isExtracting ? 'جاري القراءة...' : 'قراءة السعر الآن'}
         </Button>
+
+        <div className="pt-3 mt-3 border-t">
+          <CustomSelectorsInput 
+            selectors={customSelectors} 
+            onChange={onCustomSelectorsChange} 
+          />
+        </div>
       </div>
     </div>
   );
