@@ -138,7 +138,8 @@ export const useTradingViewEvents = (
         window.lastPriceEvent = {
           price: extractedPrice,
           timestamp: new Date().toISOString(),
-          source: 'Direct Extraction on Request'
+          source: 'Direct Extraction on Request',
+          method: 'Direct Extraction'
         };
         
         window.dispatchEvent(new CustomEvent('current-price-response', {
