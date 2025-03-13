@@ -6,6 +6,20 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
   let processedCount = 0;
   let errors: { analysis_id: string; error: string }[] = [];
   
+  // التحقق من توفر السعر الحالي
+  if (currentPrice === null) {
+    console.error(`Cannot process analyses because current price is null`);
+    return { 
+      processedCount: 0, 
+      errors: [{ 
+        analysis_id: 'global', 
+        error: 'Cannot process analyses because current price is null' 
+      }]
+    };
+  }
+  
+  console.log(`Processing ${analyses.length} analyses with current price: ${currentPrice}`);
+  
   // معالجة كل تحليل
   for (const analysis of analyses) {
     try {
@@ -14,16 +28,6 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
       // تخطي التحليلات التي لا تخص الرمز الحالي إذا تم تحديد رمز
       if (symbol !== 'XAUUSD' && analysis.symbol !== symbol) {
         console.log(`Skipping analysis ${analysis.id} because symbol ${analysis.symbol} doesn't match current ${symbol}`);
-        continue;
-      }
-      
-      // تحقق من توفر السعر الحالي
-      if (currentPrice === null) {
-        console.error(`Cannot process analysis ${analysis.id} because current price is null`);
-        errors.push({
-          analysis_id: analysis.id,
-          error: 'Current price is unavailable'
-        });
         continue;
       }
       

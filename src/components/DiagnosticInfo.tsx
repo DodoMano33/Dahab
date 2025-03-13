@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Server, RefreshCw, WifiOff } from "lucide-react";
+import { Server, RefreshCw, WifiOff, TrendingUp, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 type DiagnosticProps = {
@@ -8,13 +8,19 @@ type DiagnosticProps = {
   retryCount: number;
   onRetry: () => void;
   diagnosticInfo: any;
+  currentPrice: number | null;
+  priceSource?: string;
+  lastUpdated?: Date | null;
 };
 
 export const DiagnosticInfo = ({ 
   networkStatus, 
   retryCount, 
   onRetry,
-  diagnosticInfo
+  diagnosticInfo,
+  currentPrice,
+  priceSource,
+  lastUpdated
 }: DiagnosticProps) => {
   return (
     <div className="bg-muted/30 p-4 rounded-lg space-y-2">
@@ -28,6 +34,26 @@ export const DiagnosticInfo = ({
         
         {networkStatus !== 'online' && (
           <WifiOff size={16} className="text-red-500" />
+        )}
+      </div>
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <TrendingUp size={16} className={currentPrice ? "text-green-500" : "text-yellow-500"} />
+          <span className="text-sm">
+            {currentPrice 
+              ? `السعر الحالي: ${currentPrice} (${priceSource || 'TradingView'})` 
+              : 'لم يتم الحصول على السعر بعد'}
+          </span>
+        </div>
+        
+        {lastUpdated && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Clock size={12} />
+            <span>
+              {lastUpdated.toLocaleTimeString('ar-SA')}
+            </span>
+          </div>
         )}
       </div>
 
@@ -49,14 +75,19 @@ export const DiagnosticInfo = ({
           onRetry();
         }}
       >
-        إعادة المحاولة
+        إعادة المحاولة والتحقق من السعر
       </Button>
 
       <button
         className="text-xs text-blue-600 hover:underline mt-2 cursor-pointer w-full text-right"
         onClick={() => {
           toast.info('معلومات تشخيصية', {
-            description: Object.entries(diagnosticInfo)
+            description: Object.entries({
+              ...diagnosticInfo,
+              currentPrice,
+              priceSource,
+              lastUpdated: lastUpdated?.toISOString() || 'غير متوفر'
+            })
               .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
               .join('\n')
           });

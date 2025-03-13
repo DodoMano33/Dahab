@@ -1,5 +1,5 @@
 
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useBackTest } from "@/components/hooks/useBackTest";
 import { Server } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -10,19 +10,36 @@ import { useTimeFormatting } from "@/hooks/useTimeFormatting";
 import { DiagnosticInfo } from "@/components/DiagnosticInfo";
 import { TimeInfo } from "./components/TimeInfo";
 import { PriceDisplay } from "./components/PriceDisplay";
+import { ErrorDisplay } from "./components/ErrorDisplay";
+import { toast } from "sonner";
 
 export const BacktestCheckButton = memo(() => {
   const { triggerManualCheck, isLoading, lastCheckTime, retryCount, diagnostics } = useBackTest();
   const networkStatus = useNetworkStatus();
   const diagnosticInfo = useDiagnosticInfo();
-  const { currentPrice, priceUpdateCount } = useCurrentPrice();
+  const { currentPrice, priceUpdateCount, priceSource } = useCurrentPrice();
   const { hasNetworkError, errorDetails, resetErrors } = useAnalysisErrors();
   const { formattedTime, nextAutoCheck } = useTimeFormatting(lastCheckTime);
+  const [lastPriceUpdateTime, setLastPriceUpdateTime] = useState<Date | null>(null);
+
+  // استماع إلى أحداث تحديث السعر
+  useEffect(() => {
+    if (currentPrice !== null) {
+      setLastPriceUpdateTime(new Date());
+    }
+  }, [currentPrice]);
 
   const handleTriggerManualCheck = () => {
+    if (!currentPrice) {
+      toast.warning('يرجى الانتظار حتى يتم الحصول على السعر الحالي');
+      // محاولة طلب السعر مرة أخرى
+      window.dispatchEvent(new Event('request-current-price'));
+      return;
+    }
+    
     console.log('Manual check triggered with current price:', currentPrice);
-    triggerManualCheck();
     resetErrors();
+    triggerManualCheck();
   };
 
   return (
@@ -36,10 +53,12 @@ export const BacktestCheckButton = memo(() => {
         diagnosticInfo={{
           ...diagnosticInfo,
           lastError: errorDetails,
-          currentPrice,
           priceUpdateCount,
           diagnostics
         }}
+        currentPrice={currentPrice}
+        priceSource={priceSource}
+        lastUpdated={lastPriceUpdateTime}
       />
       
       <TimeInfo 
@@ -51,6 +70,19 @@ export const BacktestCheckButton = memo(() => {
       <PriceDisplay 
         currentPrice={currentPrice} 
         priceUpdateCount={priceUpdateCount} 
+        priceSource={priceSource}
+      />
+      
+      <ErrorDisplay 
+        hasNetworkError={hasNetworkError} 
+        errorDetails={errorDetails}
+        diagnosticInfo={{
+          currentPrice,
+          priceUpdateCount,
+          networkStatus,
+          lastCheckTime: lastCheckTime?.toISOString()
+        }}
+        networkStatus={networkStatus}
       />
     </div>
   );
