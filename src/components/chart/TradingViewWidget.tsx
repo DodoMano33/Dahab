@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useCallback } from 'react';
 import { useTradingViewMessages } from '@/hooks/trading-view';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';

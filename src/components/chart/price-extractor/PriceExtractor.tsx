@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { usePriceExtractor } from '@/hooks/price-extractor';
 import { Card } from '@/components/ui/card';
