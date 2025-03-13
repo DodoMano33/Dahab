@@ -56,6 +56,7 @@ export const usePriceEventHandlers = () => {
     window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
     window.addEventListener('global-price-update', handlePriceUpdate as EventListener);
     window.addEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+    window.addEventListener('dom-extracted-price', handlePriceUpdate as EventListener);
     
     // طلب السعر الحالي عند تحميل المكون
     requestCurrentPrice();
@@ -67,6 +68,7 @@ export const usePriceEventHandlers = () => {
       window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('global-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+      window.removeEventListener('dom-extracted-price', handlePriceUpdate as EventListener);
       
       if (priceRequestIntervalRef.current) {
         clearInterval(priceRequestIntervalRef.current);

@@ -1,8 +1,8 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
+import { PriceExtractor } from './PriceExtractor';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -30,13 +30,11 @@ function TradingViewWidget({
     onPriceUpdate
   });
 
-  // تحديث السعر المرجعي
   useEffect(() => {
     if (currentPrice !== null) {
       currentPriceRef.current = currentPrice;
       console.log('Current price updated in TradingViewWidget:', currentPrice, 'Methods:', extractionMethods);
       
-      // نقوم بنشر حدث عام لتمكين جميع أجزاء التطبيق من معرفة السعر الحالي
       window.dispatchEvent(new CustomEvent('global-price-update', { 
         detail: { 
           price: currentPrice, 
@@ -53,14 +51,11 @@ function TradingViewWidget({
     currentPriceRef
   });
 
-  // وظائف مساعدة للحصول على السعر
   const requestPriceFromTradingView = () => {
     try {
-      // إرسال رسالة لطلب السعر الحالي
       window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
       console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
       
-      // محاولة الوصول المباشر إلى السعر عبر widget API
       if (window.tvWidget && window.tvWidget.chart) {
         try {
           const chartPrice = window.tvWidget.chart().crosshairPrice();
@@ -81,7 +76,6 @@ function TradingViewWidget({
         }
       }
       
-      // طريقة بديلة - البحث في DOM عن عنصر السعر
       try {
         const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
         if (priceElements.length > 0) {
@@ -126,7 +120,6 @@ function TradingViewWidget({
     document.head.appendChild(script);
     
     return () => {
-      // تنظيف
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
@@ -165,7 +158,6 @@ function TradingViewWidget({
     };
     
     try {
-      // تنظيف الحاوية قبل إنشاء widget جديد
       if (container.current) {
         container.current.innerHTML = '';
       }
@@ -178,16 +170,13 @@ function TradingViewWidget({
         console.log('TradingView chart is ready');
         chartReadyRef.current = true;
         
-        // جدولة طلبات السعر عند جاهزية الرسم البياني
         scheduleInitialPriceRequests();
         
-        // إضافة محاولة الحصول على السعر عن طريق API الرسم البياني
         try {
           const chart = widget.chart();
           const symbolInfo = chart.symbol();
           console.log('Current symbol:', symbolInfo);
           
-          // استخراج السعر مباشرة من الرسم البياني
           const directPrice = chart.crosshairPrice();
           if (directPrice && !isNaN(directPrice)) {
             console.log('Extracted price directly from chart:', directPrice);
@@ -214,50 +203,49 @@ function TradingViewWidget({
     return () => {
       priceRequestIntervals.current.forEach(clearTimeout);
       
-      // تنظيف الحاوية عند إزالة المكون
       if (container.current) {
         container.current.innerHTML = '';
       }
     };
   }, [isWidgetLoaded, forcedSymbol, onPriceUpdate]);
 
-  // إنشاء جدول زمني متعدد لطلب السعر بشكل متكرر
   const scheduleInitialPriceRequests = () => {
-    // مسح أي طلبات سابقة
     priceRequestIntervals.current.forEach(clearTimeout);
     priceRequestIntervals.current = [];
     
-    // طلبات سريعة في البداية (كل ثانية لمدة 10 ثوانٍ)
     for (let i = 1; i <= 10; i++) {
       const timeoutId = setTimeout(requestPriceFromTradingView, i * 1000);
       priceRequestIntervals.current.push(timeoutId);
     }
     
-    // طلبات متوسطة (كل 3 ثوانٍ لمدة 30 ثانية إضافية)
     for (let i = 1; i <= 10; i++) {
       const timeoutId = setTimeout(requestPriceFromTradingView, 10000 + i * 3000);
       priceRequestIntervals.current.push(timeoutId);
     }
     
-    // طلبات أبطأ (كل 10 ثوانٍ لمدة دقيقة إضافية)
     for (let i = 1; i <= 6; i++) {
       const timeoutId = setTimeout(requestPriceFromTradingView, 40000 + i * 10000);
       priceRequestIntervals.current.push(timeoutId);
     }
     
-    // إعداد فاصل زمني لطلب السعر كل 20 ثانية بشكل مستمر
     const regularPriceInterval = setInterval(requestPriceFromTradingView, 20000);
     priceRequestIntervals.current.push(regularPriceInterval as unknown as NodeJS.Timeout);
   };
   
   useEffect(() => {
-    // جدولة طلبات السعر بغض النظر عن حالة الرسم البياني بعد تأخير قصير
     const initialDelayTimer = setTimeout(() => {
       scheduleInitialPriceRequests();
     }, 3000);
     
     return () => clearTimeout(initialDelayTimer);
   }, []);
+
+  const handleExtractedPrice = (extractedPrice: number) => {
+    console.log(`Price extracted from DOM: ${extractedPrice}`);
+    if (onPriceUpdate) {
+      onPriceUpdate(extractedPrice);
+    }
+  };
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -267,6 +255,13 @@ function TradingViewWidget({
         style={{ height: "100%", width: "100%" }}
       />
       <CurrentPriceDisplay price={currentPrice} />
+      
+      <div className="absolute top-2 left-2 z-10" style={{ width: '300px' }}>
+        <PriceExtractor 
+          defaultInterval={10000} 
+          onPriceExtracted={handleExtractedPrice}
+        />
+      </div>
     </div>
   );
 }
