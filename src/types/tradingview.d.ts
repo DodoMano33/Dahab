@@ -1,22 +1,6 @@
+
 interface TradingViewWidget {
-  widget: (config: {
-    container_id: string;
-    width?: string | number;
-    height?: string | number;
-    symbol: string;
-    interval?: string;
-    timezone?: string;
-    theme?: string;
-    style?: string;
-    locale?: string;
-    toolbar_bg?: string;
-    enable_publishing?: boolean;
-    hide_side_toolbar?: boolean;
-    allow_symbol_change?: boolean;
-    save_image?: boolean;
-    studies?: string[];
-    autosize?: boolean;
-  }) => any;
+  widget: (config: any) => any;
   onChartReady: () => void;
   chart: () => {
     symbolExt: () => { last?: number };
@@ -29,8 +13,13 @@ interface TradingViewWidget {
 
 declare global {
   interface Window {
-    TradingView: {
-      widget: new (config: any) => TradingViewWidget;
+    TradingView: any;
+    tvWidget: any;
+    lastPriceEvent?: {
+      price: number;
+      timestamp: string;
+      source: string;
+      method: string;
     };
   }
 }

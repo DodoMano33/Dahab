@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 
 interface TradingViewChartControllerProps {
@@ -7,14 +8,7 @@ interface TradingViewChartControllerProps {
   onSymbolChange: (symbol: string) => void;
 }
 
-declare global {
-  interface Window {
-    TradingView: {
-      widget: new (config: any) => any;
-    };
-  }
-}
-
+// نستخدم التعريف العالمي من ملف types/tradingview.d.ts
 export const TradingViewChartController = ({
   symbol,
   onReady,

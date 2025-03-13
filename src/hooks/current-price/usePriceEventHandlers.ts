@@ -31,20 +31,22 @@ export const usePriceEventHandlers = () => {
 
   const handlePriceUpdate = useCallback((event: PriceUpdateEvent) => {
     if (event.detail && event.detail.price) {
+      const source = event.detail.source || 'TradingView';
       console.log('usePriceEventHandlers: Price updated to', event.detail.price, 
-                 'from', event.detail.source || 'unknown source');
+                 'from', source);
       setCurrentPrice(event.detail.price);
-      setPriceSource(event.detail.source || 'TradingView');
+      setPriceSource(source);
       setPriceUpdateCount(prev => prev + 1);
     }
   }, []);
 
   const handleCurrentPriceResponse = useCallback((event: CurrentPriceResponseEvent) => {
     if (event.detail && event.detail.price) {
+      const source = event.detail.source || 'API Response';
       console.log('usePriceEventHandlers: Received current price', event.detail.price,
-                 'from', event.detail.source || 'unknown source');
+                 'from', source);
       setCurrentPrice(event.detail.price);
-      setPriceSource(event.detail.source || 'API Response');
+      setPriceSource(source);
       setPriceUpdateCount(prev => prev + 1);
     }
   }, []);

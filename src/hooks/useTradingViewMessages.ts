@@ -35,8 +35,9 @@ export const useTradingViewMessages = ({
         const tradingviewIframes = document.querySelectorAll('iframe[src*="tradingview.com"]');
         for (const iframe of Array.from(tradingviewIframes)) {
           try {
-            if (iframe.contentWindow) {
-              iframe.contentWindow.postMessage({ method: 'getCurrentPrice' }, '*');
+            const typedIframe = iframe as HTMLIFrameElement;
+            if (typedIframe.contentWindow) {
+              typedIframe.contentWindow.postMessage({ method: 'getCurrentPrice' }, '*');
             }
           } catch (iframeError) {
             console.warn('Failed to extract price from iframe:', iframeError);
@@ -251,16 +252,3 @@ export const useTradingViewMessages = ({
     extractionMethods: extractionMethodsRef.current
   };
 };
-
-// إضافة النوع المخصص للنافذة لتخزين آخر حدث سعر
-declare global {
-  interface Window {
-    lastPriceEvent?: {
-      price: number;
-      timestamp: string;
-      source: string;
-      method: string;
-    };
-    TradingView?: any;
-  }
-}

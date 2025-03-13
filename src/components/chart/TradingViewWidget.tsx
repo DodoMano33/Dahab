@@ -10,14 +10,7 @@ interface TradingViewWidgetProps {
   onPriceUpdate?: (price: number) => void;
 }
 
-// حق الوصول العالمي إلى كائن TradingView
-declare global {
-  interface Window {
-    TradingView: any;
-    tvWidget: any;
-  }
-}
-
+// نستخدم التعريف العالمي من ملف types/tradingview.d.ts
 function TradingViewWidget({ 
   symbol = "XAUUSD",
   onSymbolChange,
@@ -48,7 +41,8 @@ function TradingViewWidget({
         detail: { 
           price: currentPrice, 
           symbol: forcedSymbol,
-          methods: extractionMethods
+          methods: extractionMethods,
+          source: 'TradingViewWidget'
         }
       }));
     }
