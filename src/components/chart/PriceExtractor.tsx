@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePriceExtractor } from '@/hooks/usePriceExtractor';
 import { Button } from '@/components/ui/button';
@@ -34,16 +33,17 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     priceHistory, 
     clearHistory, 
     extractPriceFromDOM 
-  } = usePriceExtractor(interval, isEnabled);
+  } = usePriceExtractor({
+    interval: interval,
+    enabled: isEnabled
+  });
   
-  // تنفيذ معالج السعر المستخرج عند الحصول على سعر جديد
   useEffect(() => {
     if (price !== null && onPriceExtracted) {
       onPriceExtracted(price);
     }
   }, [price, onPriceExtracted]);
   
-  // تحديث الفاصل الزمني
   const handleIntervalChange = () => {
     const newInterval = parseFloat(customInterval) * 1000;
     if (!isNaN(newInterval) && newInterval >= 1000) {
@@ -57,11 +57,9 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
   
   const formattedPrice = price !== null ? price.toFixed(3) : '-';
 
-  // تصدير البيانات كملف CSV
   const exportToCSV = () => {
     if (priceHistory.length === 0) return;
     
-    // تحويل البيانات إلى صيغة CSV
     const headers = 'Price,Timestamp,Source\n';
     const csvData = priceHistory.map(record => 
       `${record.price},${record.timestamp.toISOString()},"${record.source}"`
@@ -69,7 +67,6 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     
     const csvContent = headers + csvData;
     
-    // إنشاء ملف Blob وتحميله
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -83,18 +80,15 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     document.body.removeChild(link);
   };
   
-  // تصدير البيانات كملف JSON
   const exportToJSON = () => {
     if (priceHistory.length === 0) return;
     
-    // تحويل البيانات إلى صيغة JSON
     const jsonData = JSON.stringify(priceHistory.map(record => ({
       price: record.price,
       timestamp: record.timestamp.toISOString(),
       source: record.source
     })), null, 2);
     
-    // إنشاء ملف Blob وتحميله
     const blob = new Blob([jsonData], { type: 'application/json;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

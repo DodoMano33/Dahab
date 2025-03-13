@@ -19,11 +19,5 @@ export interface PriceEvent {
   method?: string;
 }
 
-// Use declare global to avoid TypeScript error with duplicates
-declare global {
-  interface Window {
-    lastPriceEvent?: PriceEvent;
-    TradingView?: any;
-    tvWidget?: any;
-  }
-}
+// Remove the declare global block to avoid duplicate declarations
+// These are already declared in src/types/tradingview.d.ts

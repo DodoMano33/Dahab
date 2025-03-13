@@ -10,7 +10,6 @@ interface TradingViewWidgetProps {
   onPriceUpdate?: (price: number) => void;
 }
 
-// نستخدم التعريف العالمي من ملف types/tradingview.d.ts
 function TradingViewWidget({ 
   symbol = "XAUUSD",
   onSymbolChange,
@@ -260,6 +259,7 @@ function TradingViewWidget({
         <PriceExtractor 
           defaultInterval={10000} 
           onPriceExtracted={handleExtractedPrice}
+          customSelectors={[]}
         />
       </div>
     </div>
