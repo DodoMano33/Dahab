@@ -10,7 +10,8 @@ import { PriceExtractorProps } from './types';
 
 export const PriceExtractor: React.FC<PriceExtractorProps> = ({
   defaultInterval = 10000,
-  onPriceExtracted
+  onPriceExtracted,
+  customSelectors = []
 }) => {
   const [isEnabled, setIsEnabled] = useState<boolean>(true);
   const [interval, setInterval] = useState<number>(defaultInterval);
@@ -23,8 +24,20 @@ export const PriceExtractor: React.FC<PriceExtractorProps> = ({
     isExtracting, 
     priceHistory, 
     clearHistory, 
-    extractPriceFromDOM 
-  } = usePriceExtractor(interval, isEnabled);
+    extractPriceFromDOM,
+    setCustomSelectors
+  } = usePriceExtractor({
+    interval,
+    enabled: isEnabled,
+    customSelectors,
+    extractOnMount: true,
+    debugMode: false
+  });
+  
+  // تعيين المحددات المخصصة عند تغييرها
+  useEffect(() => {
+    setCustomSelectors(customSelectors);
+  }, [customSelectors, setCustomSelectors]);
   
   // تنفيذ معالج السعر المستخرج عند الحصول على سعر جديد
   useEffect(() => {

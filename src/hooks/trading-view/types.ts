@@ -19,6 +19,7 @@ export interface PriceEvent {
   method?: string;
 }
 
+// Use declare global to avoid TypeScript error with duplicates
 declare global {
   interface Window {
     lastPriceEvent?: PriceEvent;
@@ -26,4 +27,3 @@ declare global {
     tvWidget?: any;
   }
 }
-
