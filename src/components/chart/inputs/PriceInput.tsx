@@ -113,12 +113,12 @@ export const PriceInput = ({
       />
       {useAutoPrice && (
         <p className="text-sm text-green-500 mt-1">
-          {livePrice !== null 
+          {livePrice !== null && livePrice !== undefined 
             ? `السعر المباشر: ${livePrice.toFixed(2)}` 
             : "جاري تحميل السعر المباشر..."}
         </p>
       )}
-      {!useAutoPrice && livePrice !== null && (
+      {!useAutoPrice && livePrice !== null && livePrice !== undefined && (
         <p className="text-sm text-gray-500 mt-1">
           السعر المتاح حاليًا: {livePrice.toFixed(2)}
         </p>
