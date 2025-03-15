@@ -13,7 +13,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   const { currentPrice, marketData } = useCurrentPrice();
   const isMobile = useIsMobile();
   
-  // نحدد قيم افتراضية لنطاقات السعر والتوصية الفنية
+  // قيم افتراضية فقط في حالة عدم توفر البيانات
   const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
   const dayHigh = marketData?.dayHigh || (currentPrice ? Math.round(currentPrice * 1.003) : 3005);
   const weekLow = marketData?.weekLow || 2146;
@@ -60,7 +60,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
           <span className="text-yellow-500 mr-1">CFI:</span>XAUUSD
         </div>
         <div className="flex items-center">
-          <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
+          <span className="text-4xl font-bold" id="stats-price-display">{currentPrice?.toFixed(2) || '2984.91'}</span>
           <span className="ml-1 text-lg">USD</span>
         </div>
         <div className={changeColor}>

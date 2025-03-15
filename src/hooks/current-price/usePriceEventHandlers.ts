@@ -12,6 +12,18 @@ export const usePriceEventHandlers = () => {
       console.log('useCurrentPrice: Price updated to', event.detail.price);
       setCurrentPrice(event.detail.price);
       setPriceUpdateCount(prev => prev + 1);
+
+      // تحديث عنصر عرض السعر مباشرة إن وجد
+      const priceDisplayElement = document.getElementById('tradingview-price-display');
+      if (priceDisplayElement) {
+        priceDisplayElement.textContent = `السعر الحالي: ${event.detail.price.toFixed(2)}`;
+      }
+      
+      // تحديث عنصر السعر في الإحصائيات إن وجد
+      const statsDisplayElement = document.getElementById('stats-price-display');
+      if (statsDisplayElement) {
+        statsDisplayElement.textContent = event.detail.price.toFixed(2);
+      }
     }
   }, []);
 
@@ -35,10 +47,23 @@ export const usePriceEventHandlers = () => {
       
       setMarketData(newMarketData);
       console.log('useCurrentPrice: Updated market data', newMarketData);
+
+      // تحديث عنصر عرض السعر مباشرة إن وجد
+      const priceDisplayElement = document.getElementById('tradingview-price-display');
+      if (priceDisplayElement) {
+        priceDisplayElement.textContent = `السعر الحالي: ${event.detail.price.toFixed(2)}`;
+      }
+      
+      // تحديث عنصر السعر في الإحصائيات إن وجد
+      const statsDisplayElement = document.getElementById('stats-price-display');
+      if (statsDisplayElement) {
+        statsDisplayElement.textContent = event.detail.price.toFixed(2);
+      }
     }
   }, []);
 
   const requestCurrentPrice = useCallback(() => {
+    console.log('Requesting current price...');
     window.dispatchEvent(new Event('request-current-price'));
   }, []);
 

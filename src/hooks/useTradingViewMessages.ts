@@ -34,24 +34,45 @@ export const useTradingViewMessages = ({
           priceUpdateCountRef.current += 1;
           console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for CFI:XAUUSD');
           
+          // تحديث الإشارة المرجعية للسعر
           currentPriceRef.current = price;
           onPriceUpdate?.(price);
           
-          // يرسل حدث تحديث السعر للمكونات الأخرى
+          // تحديث عنصر عرض السعر مباشرة في الواجهة إن وجد
+          const priceDisplayElement = document.getElementById('tradingview-price-display');
+          if (priceDisplayElement) {
+            priceDisplayElement.textContent = `السعر الحالي: ${price.toFixed(2)}`;
+          }
+          
+          // تحديث عنصر السعر في الإحصائيات إن وجد
+          const statsDisplayElement = document.getElementById('stats-price-display');
+          if (statsDisplayElement) {
+            statsDisplayElement.textContent = price.toFixed(2);
+          }
+          
+          // يرسل حدث تحديث السعر للمكونات الأخرى مع معلومات إضافية
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price, symbol: 'CFI:XAUUSD' }
+            detail: { 
+              price, 
+              symbol: 'CFI:XAUUSD',
+              timestamp: Date.now()
+            }
           }));
           
           // استجابة لطلب السعر الحالي
           window.addEventListener('request-current-price', () => {
             if (currentPriceRef.current !== null) {
               window.dispatchEvent(new CustomEvent('current-price-response', {
-                detail: { price: currentPriceRef.current }
+                detail: { 
+                  price: currentPriceRef.current,
+                  timestamp: Date.now(),
+                  symbol: 'CFI:XAUUSD'
+                }
               }));
             }
           });
           
-          console.log('Current price saved in ref:', currentPriceRef.current);
+          console.log('Current price saved in ref and updated in UI:', currentPriceRef.current);
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);

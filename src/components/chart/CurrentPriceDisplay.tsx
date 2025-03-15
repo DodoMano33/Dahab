@@ -15,9 +15,9 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price 
             <span className="text-yellow-500 mr-1">CFI:</span>
             XAUUSD (الذهب)
           </div>
-          <div className="text-sm">
+          <div className="text-sm" id="tradingview-price-display">
             {price ? 
-              `السعر الحالي: ${price}` : 
+              `السعر الحالي: ${price.toFixed(2)}` : 
               'بانتظار السعر... (قد يستغرق التحميل بضع ثوانٍ)'
             }
           </div>

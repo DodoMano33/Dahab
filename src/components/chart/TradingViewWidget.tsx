@@ -22,16 +22,20 @@ function TradingViewWidget({
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
     onSymbolChange,
-    onPriceUpdate
-  });
-
-  // تحديث السعر المرجعي
-  useEffect(() => {
-    if (currentPrice !== null) {
-      currentPriceRef.current = currentPrice;
-      console.log('Current price updated in TradingViewWidget:', currentPrice);
+    onPriceUpdate: (price) => {
+      currentPriceRef.current = price;
+      onPriceUpdate?.(price);
+      
+      // إرسال تحديث السعر إلى جميع مكونات التطبيق
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { 
+          price, 
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now()
+        }
+      }));
     }
-  }, [currentPrice]);
+  });
 
   useAnalysisChecker({
     symbol: forcedSymbol,
@@ -92,10 +96,15 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
-    // طلب السعر الأولي
-    const attemptInitialPriceRequest = () => {
+    // طلب السعر المبدئي عدة مرات للتأكد من تحميله
+    const requestInitialPrice = () => {
       try {
+        // إرسال طلب السعر الحالي
+        window.dispatchEvent(new Event('request-current-price'));
+        
+        // مباشرة عبر postMessage
         window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
+        
         console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
       } catch (e) {
         console.warn('Failed to request initial price from TradingView', e);
@@ -103,14 +112,24 @@ function TradingViewWidget({
     };
     
     // جدولة عدة طلبات متتالية للتأكد من الحصول على السعر
-    const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
-    const secondPriceTimer = setTimeout(attemptInitialPriceRequest, 5000);
-    const thirdPriceTimer = setTimeout(attemptInitialPriceRequest, 8000);
+    const initialPriceTimer = setTimeout(requestInitialPrice, 3000);
+    const secondPriceTimer = setTimeout(requestInitialPrice, 5000);
+    const thirdPriceTimer = setTimeout(requestInitialPrice, 8000);
+    
+    // إعداد مراقبة دورية للتأكد من استمرار تحديث السعر
+    const priceUpdateChecker = setInterval(() => {
+      // إذا لم يكن هناك سعر حالي، أطلب السعر
+      if (currentPriceRef.current === null) {
+        requestInitialPrice();
+      }
+    }, 10000);
 
     return () => {
       clearTimeout(initialPriceTimer);
       clearTimeout(secondPriceTimer);
       clearTimeout(thirdPriceTimer);
+      clearInterval(priceUpdateChecker);
+      
       if (container.current) {
         container.current.innerHTML = '';
       }
