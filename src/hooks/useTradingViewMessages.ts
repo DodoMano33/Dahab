@@ -38,7 +38,7 @@ export const useTradingViewMessages = ({
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
-        // تحديد الرمز ليكون XAUUSD دائمًا
+        // تحديد الرمز ليكون XAUUSD دائمًا، بغض النظر عن استخدام CFI:XAUUSD داخليًا
         if (event.data.name === 'symbol-change') {
           console.log('Symbol changed, but keeping XAUUSD as the only symbol');
           onSymbolChange?.('XAUUSD');

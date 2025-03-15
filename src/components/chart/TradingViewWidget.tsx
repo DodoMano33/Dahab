@@ -70,7 +70,7 @@ function TradingViewWidget({
 
     const config = {
       autosize: true,
-      symbol: forcedSymbol,
+      symbol: "CFI:XAUUSD", // تغيير الرمز لاستخدام مصدر CFI للذهب
       interval: "1",
       timezone: "Asia/Jerusalem",
       theme: "dark",
