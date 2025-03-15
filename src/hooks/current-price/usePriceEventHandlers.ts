@@ -7,6 +7,7 @@ import { priceUpdater } from '@/utils/price/priceUpdater';
 // القيم المنطقية لسعر الذهب (XAUUSD)
 const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
 const MAX_VALID_GOLD_PRICE = 5000;  // أعلى سعر منطقي للذهب (بالدولار)
+const DEFAULT_GOLD_PRICE = 2147.50; // سعر افتراضي للذهب عندما لا تتوفر بيانات حقيقية
 
 // التحقق من أن السعر في النطاق المنطقي
 const isValidGoldPrice = (price: number): boolean => {
@@ -14,9 +15,9 @@ const isValidGoldPrice = (price: number): boolean => {
 };
 
 export const usePriceEventHandlers = () => {
-  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(DEFAULT_GOLD_PRICE); // ابدأ بالسعر الافتراضي
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
-  const [priceSource, setPriceSource] = useState<string>('');
+  const [priceSource, setPriceSource] = useState<string>('Default Value');
   const lastRequestTimeRef = useRef<number>(0);
   const priceRequestIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const externalApiAttemptedRef = useRef<boolean>(false);
@@ -37,7 +38,7 @@ export const usePriceEventHandlers = () => {
       
       // إذا لم يتم العثور على سعر بعد 1 ثانية، حاول استخدام Alpha Vantage API
       setTimeout(async () => {
-        if (currentPrice === null && !externalApiAttemptedRef.current) {
+        if ((currentPrice === null || currentPrice === DEFAULT_GOLD_PRICE) && !externalApiAttemptedRef.current) {
           console.log('No price received from DOM, trying Alpha Vantage API');
           externalApiAttemptedRef.current = true;
           const price = await fetchExternalGoldPrice();

@@ -2,6 +2,9 @@
 import { fetchCryptoPrice, fetchForexPrice, fetchGoldPrice } from './api';
 import { POLLING_INTERVAL } from './config';
 
+// سعر الذهب الافتراضي للحالات التي يفشل فيها الحصول على السعر
+const DEFAULT_GOLD_PRICE = 2147.50;
+
 export class PriceUpdater {
   private rateLimitHit: boolean = false;
   private lastRateLimitTime: number = 0;
@@ -48,8 +51,8 @@ export class PriceUpdater {
 
   async fetchGoldPrice(): Promise<number | null> {
     if (this.isRateLimited()) {
-      console.warn('API rate limit has been reached. Waiting...');
-      return null;
+      console.warn('API rate limit has been reached. Using default gold price.');
+      return DEFAULT_GOLD_PRICE;
     }
 
     try {
@@ -64,6 +67,17 @@ export class PriceUpdater {
               source: 'Alpha Vantage API'
             }
           }));
+        } else {
+          // إذا فشل الحصول على سعر، استخدم السعر الافتراضي
+          console.log(`Failed to fetch price, using default: ${DEFAULT_GOLD_PRICE}`);
+          window.dispatchEvent(new CustomEvent('global-price-update', { 
+            detail: { 
+              price: DEFAULT_GOLD_PRICE, 
+              symbol: 'XAUUSD',
+              source: 'Default Fallback'
+            }
+          }));
+          return DEFAULT_GOLD_PRICE;
         }
         return price;
       });
@@ -73,12 +87,26 @@ export class PriceUpdater {
         this.lastRateLimitTime = Date.now();
       }
       console.error('Failed to fetch gold price:', error);
-      return null;
+      
+      // استخدام السعر الافتراضي في حالة الخطأ
+      console.log(`Error fetching gold price, using default: ${DEFAULT_GOLD_PRICE}`);
+      window.dispatchEvent(new CustomEvent('global-price-update', { 
+        detail: { 
+          price: DEFAULT_GOLD_PRICE, 
+          symbol: 'XAUUSD',
+          source: 'Default Fallback (Error)'
+        }
+      }));
+      return DEFAULT_GOLD_PRICE;
     }
   }
 
   async fetchPrice(symbol: string): Promise<number | null> {
     if (this.isRateLimited()) {
+      if (symbol === 'XAUUSD') {
+        console.log(`Rate limited for XAUUSD, using default: ${DEFAULT_GOLD_PRICE}`);
+        return DEFAULT_GOLD_PRICE;
+      }
       throw new Error('API rate limit reached');
     }
 
@@ -107,12 +135,24 @@ export class PriceUpdater {
         return forexPrice;
       } catch (error) {
         console.log('No valid price found for', symbol);
+        
+        // إذا كان الرمز هو الذهب، استخدم السعر الافتراضي
+        if (symbol === 'XAUUSD') {
+          console.log(`No valid price found for XAUUSD, using default: ${DEFAULT_GOLD_PRICE}`);
+          return DEFAULT_GOLD_PRICE;
+        }
         return null;
       }
     } catch (error) {
       if (error instanceof Error && error.message.includes('rate limit')) {
         this.rateLimitHit = true;
         this.lastRateLimitTime = Date.now();
+      }
+      
+      // إذا كان الرمز هو الذهب، استخدم السعر الافتراضي
+      if (symbol === 'XAUUSD') {
+        console.log(`Error fetching XAUUSD, using default: ${DEFAULT_GOLD_PRICE}`);
+        return DEFAULT_GOLD_PRICE;
       }
       throw error;
     }

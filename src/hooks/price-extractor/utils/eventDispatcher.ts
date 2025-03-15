@@ -2,6 +2,9 @@
 import { PriceRecord } from '@/components/chart/price-extractor/types';
 import { priceUpdater } from '@/utils/price/priceUpdater';
 
+// سعر الذهب الافتراضي للحالات التي يفشل فيها الحصول على السعر
+const DEFAULT_GOLD_PRICE = 2147.50;
+
 /**
  * إرسال حدث عند العثور على سعر جديد
  */
@@ -45,10 +48,18 @@ export const fetchExternalGoldPrice = async (): Promise<number | null> => {
       dispatchPriceEvent(price, 'Alpha Vantage API');
       return price;
     }
-    return null;
+    
+    // إذا فشل الحصول على السعر، استخدم السعر الافتراضي
+    console.log(`Failed to get price from API, using default: ${DEFAULT_GOLD_PRICE}`);
+    dispatchPriceEvent(DEFAULT_GOLD_PRICE, 'Default Fallback');
+    return DEFAULT_GOLD_PRICE;
   } catch (error) {
     console.error('Error fetching gold price from external API:', error);
-    return null;
+    
+    // في حالة الخطأ، استخدم السعر الافتراضي
+    console.log(`Error in external API, using default: ${DEFAULT_GOLD_PRICE}`);
+    dispatchPriceEvent(DEFAULT_GOLD_PRICE, 'Default Fallback');
+    return DEFAULT_GOLD_PRICE;
   }
 };
 
