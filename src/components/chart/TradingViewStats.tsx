@@ -13,6 +13,27 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   const { currentPrice, marketData } = useCurrentPrice();
   const isMobile = useIsMobile();
   
+  // إرسال حدث بالسعر الحالي للمكونات الأخرى
+  React.useEffect(() => {
+    if (currentPrice !== null) {
+      // إرسال حدث تحديث السعر مع بيانات السوق الكاملة
+      window.dispatchEvent(new CustomEvent('current-price-response', {
+        detail: {
+          price: currentPrice,
+          symbol: symbol,
+          dayLow: marketData?.dayLow,
+          dayHigh: marketData?.dayHigh,
+          weekLow: marketData?.weekLow,
+          weekHigh: marketData?.weekHigh,
+          change: marketData?.change,
+          changePercent: marketData?.changePercent,
+          recommendation: marketData?.recommendation
+        }
+      }));
+      console.log('TradingViewStats dispatched price update event:', currentPrice);
+    }
+  }, [currentPrice, symbol, marketData]);
+  
   // نحدد قيم افتراضية لنطاقات السعر والتوصية الفنية
   const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
   const dayHigh = marketData?.dayHigh || (currentPrice ? Math.round(currentPrice * 1.003) : 3005);

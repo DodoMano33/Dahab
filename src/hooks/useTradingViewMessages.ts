@@ -41,17 +41,6 @@ export const useTradingViewMessages = ({
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
             detail: { price, symbol: 'XAUUSD' }
           }));
-          
-          // استجابة لطلب السعر الحالي
-          window.addEventListener('request-current-price', () => {
-            if (currentPriceRef.current !== null) {
-              window.dispatchEvent(new CustomEvent('current-price-response', {
-                detail: { price: currentPriceRef.current }
-              }));
-            }
-          });
-          
-          console.log('Current price saved in ref:', currentPriceRef.current);
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
@@ -67,7 +56,27 @@ export const useTradingViewMessages = ({
       onSymbolChange?.(forcedSymbol);
     }
 
-    return () => window.removeEventListener('message', handleMessage);
+    // معالج لطلبات السعر الحالي
+    const handleCurrentPriceRequest = () => {
+      if (currentPriceRef.current !== null) {
+        console.log('Responding to current price request with:', currentPriceRef.current);
+        window.dispatchEvent(new CustomEvent('current-price-response', {
+          detail: { 
+            price: currentPriceRef.current,
+            symbol: 'XAUUSD'
+          }
+        }));
+      } else {
+        console.log('No current price available to respond to request');
+      }
+    };
+
+    window.addEventListener('request-current-price', handleCurrentPriceRequest);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('request-current-price', handleCurrentPriceRequest);
+    };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return {
