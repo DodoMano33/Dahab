@@ -52,10 +52,83 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
     ? Math.min(100, Math.max(0, ((currentPrice - weekLow) / (weekHigh - weekLow)) * 100)) 
     : 95;
 
+  // تكييف العرض بناءً على حجم الشاشة
+  if (isMobile) {
+    return (
+      <div className="w-full text-white text-xs space-y-3">
+        {/* قسم معلومات السعر مركزة للموبايل */}
+        <div className="flex flex-col items-center">
+          <div className="text-lg font-bold">{symbol}</div>
+          <div className="flex items-center">
+            <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 rounded-lg px-3 py-1 shadow-lg">
+              <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
+              <span className="ml-1 text-lg">USD</span>
+            </div>
+          </div>
+          <div className={changeColor}>
+            {change.toFixed(3)} {changePercent.toFixed(2)}%
+          </div>
+          <div className="text-gray-400">Market closed</div>
+        </div>
+
+        {/* قسم نطاقات السعر */}
+        <div className="flex flex-col justify-center">
+          <div className="text-gray-400 mb-1">DAY'S RANGE</div>
+          <div className="flex items-center justify-between mb-1">
+            <span>{dayLow}</span>
+            <span>{dayHigh}</span>
+          </div>
+          <div className="relative h-1 bg-gray-700 rounded-full mb-3">
+            <div className="absolute h-full w-1 bg-teal-400" style={{ left: `${dayRangePercentage}%`, transform: 'translateX(-50%)' }}></div>
+            <div className="absolute top-1 h-0 w-0 border-l-[6px] border-r-[6px] border-b-[8px] border-l-transparent border-r-transparent border-b-white" style={{ left: `${dayRangePercentage}%`, transform: 'translateX(-50%)' }}></div>
+          </div>
+          
+          <div className="text-gray-400 mb-1">52WK RANGE</div>
+          <div className="flex items-center justify-between mb-1">
+            <span>{weekLow}</span>
+            <span>{weekHigh}</span>
+          </div>
+          <div className="relative h-1 bg-gray-700 rounded-full">
+            <div className="absolute h-full w-1 bg-teal-400" style={{ left: `${weekRangePercentage}%`, transform: 'translateX(-50%)' }}></div>
+            <div className="absolute top-1 h-0 w-0 border-l-[6px] border-r-[6px] border-b-[8px] border-l-transparent border-r-transparent border-b-white" style={{ left: `${weekRangePercentage}%`, transform: 'translateX(-50%)' }}></div>
+          </div>
+        </div>
+
+        {/* قسم المؤشرات الفنية */}
+        <div className="flex flex-col justify-start mb-1">
+          <div className="text-gray-300 mb-2 font-medium">Technicals</div>
+          
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-gray-400">Sell</span>
+            <span className="text-gray-400">Neutral</span>
+            <span className="text-gray-400">Buy</span>
+          </div>
+          
+          {/* شريط المؤشرات متدرج اللون من الأحمر إلى الأزرق */}
+          <div className="relative h-2 rounded-full overflow-hidden mb-1">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500"></div>
+            {/* مؤشر الموضع - كرة بيضاء فوق الشريط */}
+            <div className="absolute h-4 w-4 bg-white rounded-full top-1/2 transform -translate-y-1/2 shadow-md" 
+                 style={{ left: `${technicalPosition}%` }}></div>
+          </div>
+          
+          {/* عرض التوصية بشكل بارز */}
+          <div className="text-center font-bold text-white text-base mt-1 mb-2">{technicalRecommendation}</div>
+          
+          {/* زر المزيد من التحليلات الفنية */}
+          <button className="bg-gray-800 hover:bg-gray-700 rounded-full py-1 px-3 text-xs self-center text-gray-300">
+            More technicals
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // تكوين العرض المعتاد لشاشات سطح المكتب
   return (
-    <div className={`w-full text-white text-xs ${isMobile ? 'flex flex-col space-y-3' : 'grid grid-cols-3 gap-2'}`}>
+    <div className="w-full text-white text-xs grid grid-cols-3 gap-2">
       {/* قسم معلومات السعر */}
-      <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
+      <div className="flex flex-col items-end">
         <div className="text-lg font-bold">{symbol}</div>
         <div className="flex items-center">
           <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 rounded-lg px-3 py-1 shadow-lg">
