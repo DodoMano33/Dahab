@@ -18,10 +18,10 @@ export const useTradingViewMessages = ({
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       try {
-        // تحديد الرمز ليكون XAUUSD دائمًا
+        // تحديد الرمز ليكون CFI:XAUUSD دائمًا
         if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed, but keeping XAUUSD as the only symbol');
-          onSymbolChange?.('XAUUSD');
+          console.log('Symbol changed, but keeping CFI:XAUUSD as the only symbol');
+          onSymbolChange?.('XAUUSD'); // نستخدم XAUUSD للواجهة ولكن داخليًا نستخدم CFI:XAUUSD
         }
         
         if (event.data.name === 'price-update') {
@@ -32,14 +32,14 @@ export const useTradingViewMessages = ({
           }
           
           priceUpdateCountRef.current += 1;
-          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for XAUUSD');
+          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for CFI:XAUUSD');
           
           currentPriceRef.current = price;
           onPriceUpdate?.(price);
           
           // يرسل حدث تحديث السعر للمكونات الأخرى
           window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price, symbol: 'XAUUSD' }
+            detail: { price, symbol: 'CFI:XAUUSD' }
           }));
           
           // استجابة لطلب السعر الحالي
@@ -60,10 +60,10 @@ export const useTradingViewMessages = ({
 
     window.addEventListener('message', handleMessage);
     
-    // عند التركيب، تأكد من أن TradingView يعرض XAUUSD
+    // عند التركيب، تأكد من أن TradingView يعرض CFI:XAUUSD
     const forcedSymbol = 'XAUUSD';
     if (symbol !== forcedSymbol) {
-      console.log(`Forcing symbol to be ${forcedSymbol} instead of ${symbol}`);
+      console.log(`Forcing symbol to be ${forcedSymbol} internally (CFI:XAUUSD)`);
       onSymbolChange?.(forcedSymbol);
     }
 

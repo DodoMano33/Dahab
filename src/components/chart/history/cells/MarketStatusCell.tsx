@@ -43,6 +43,7 @@ export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
           </TooltipTrigger>
           <TooltipContent>
             <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً' : 'السوق مغلق حالياً'}</p>
+            <p className="text-xs mt-1">المصدر: CFI</p>
             {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
           </TooltipContent>
         </Tooltip>

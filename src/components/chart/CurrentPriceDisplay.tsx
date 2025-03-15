@@ -11,7 +11,10 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price 
     <div className="absolute bottom-0 left-0 right-0 bg-black/95 text-white py-4 px-3">
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          <div className="font-bold text-xs">XAUUSD (الذهب)</div>
+          <div className="font-bold text-xs">
+            <span className="text-yellow-500 mr-1">CFI:</span>
+            XAUUSD (الذهب)
+          </div>
           <div className="text-sm">
             {price ? 
               `السعر الحالي: ${price}` : 
@@ -20,8 +23,8 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price 
           </div>
         </div>
         
-        {/* إضافة المكون الجديد */}
-        <TradingViewStats />
+        {/* عرض مكون المؤشرات */}
+        <TradingViewStats symbol="CFI:XAUUSD" />
       </div>
     </div>
   );

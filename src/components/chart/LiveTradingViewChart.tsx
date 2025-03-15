@@ -13,11 +13,11 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
-  // تجاهل symbol المستلمة واستخدام XAUUSD دائمًا
+  // استخدام الرمز المثبت XAUUSD دائمًا
   return (
     <div className="w-full h-full">
       <TradingViewWidget 
-        symbol="XAUUSD"
+        symbol="XAUUSD" // سيتم تطبيق "CFI:XAUUSD" داخل المكون
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />

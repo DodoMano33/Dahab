@@ -8,7 +8,7 @@ interface TradingViewStatsProps {
 }
 
 export const TradingViewStats: React.FC<TradingViewStatsProps> = ({ 
-  symbol = "XAUUSD" 
+  symbol = "CFI:XAUUSD" 
 }) => {
   const { currentPrice, marketData } = useCurrentPrice();
   const isMobile = useIsMobile();
@@ -56,7 +56,9 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
     <div className={`w-full text-white text-xs ${isMobile ? 'space-y-4' : 'grid grid-cols-3 gap-2'}`}>
       {/* قسم معلومات السعر */}
       <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
-        <div className="text-lg font-bold">{symbol}</div>
+        <div className="text-lg font-bold">
+          <span className="text-yellow-500 mr-1">CFI:</span>XAUUSD
+        </div>
         <div className="flex items-center">
           <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
           <span className="ml-1 text-lg">USD</span>
@@ -64,7 +66,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
         <div className={changeColor}>
           {change.toFixed(3)} {changePercent.toFixed(2)}%
         </div>
-        <div className="text-gray-400">Market closed</div>
+        <div className="text-gray-400">GOLD VS US DOLLAR</div>
       </div>
 
       {/* قسم نطاقات السعر */}
