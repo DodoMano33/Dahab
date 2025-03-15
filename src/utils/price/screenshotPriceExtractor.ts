@@ -14,5 +14,11 @@ export {
   getLastExtractedPrice
 } from './capture/state';
 
+// تصدير وظائف استخراج السعر والبث
+export {
+  extractAndBroadcastPrice,
+  requestImmediatePriceUpdate
+} from './capture/priceExtractor';
+
 // تصدير أنواع البيانات إذا كانت مطلوبة
 export type { } from './types';

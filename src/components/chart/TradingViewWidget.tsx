@@ -2,7 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
-import { startPriceCapture, stopPriceCapture, cleanupPriceCapture } from '@/utils/price/screenshotPriceExtractor';
+import { 
+  startPriceCapture, 
+  stopPriceCapture, 
+  cleanupPriceCapture,
+  requestImmediatePriceUpdate 
+} from '@/utils/price/screenshotPriceExtractor';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -112,9 +117,12 @@ function TradingViewWidget({
         // مباشرة عبر postMessage
         window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
         
-        console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
+        // طلب تحديث فوري من نظام استخراج السعر
+        requestImmediatePriceUpdate();
+        
+        console.log('تم إرسال طلب الحصول على السعر الحالي بجميع الطرق المتاحة');
       } catch (e) {
-        console.warn('Failed to request initial price from TradingView', e);
+        console.warn('فشل في طلب السعر المبدئي من TradingView', e);
       }
     };
     

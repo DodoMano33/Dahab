@@ -7,7 +7,7 @@ import { getPriceElementOrFind } from './elementFinder';
 import { isCapturingActive, getLastExtractedPrice } from './state';
 import { extractPriceFromDirectText } from './directTextExtractor';
 import { extractPriceUsingOCR } from './ocrExtractor';
-import { broadcastPrice } from './priceBroadcaster';
+import { broadcastPrice, requestPriceUpdate } from './priceBroadcaster';
 
 /**
  * استخراج السعر من عنصر الشارت
@@ -50,18 +50,7 @@ export const extractAndBroadcastPrice = async () => {
     console.log('بدء عملية استخراج السعر...');
     const price = await extractPriceFromChart();
     if (price !== null) {
-      const lastPrice = getLastExtractedPrice();
-      
-      // نشر السعر فقط إذا تغير بشكل ملحوظ أو كان هذا أول سعر
-      // استخدام نسبة مئوية للتغيير بدلاً من قيمة ثابتة (0.01٪ من السعر)
-      const minChangeThreshold = price * 0.0001;
-      
-      if (lastPrice === null || Math.abs(price - lastPrice) > minChangeThreshold) {
-        console.log('تم اكتشاف تغيير في السعر، جاري البث...');
-        broadcastPrice(price);
-      } else {
-        console.log('لم يتغير السعر بشكل كافٍ للبث:', price, 'آخر سعر:', lastPrice);
-      }
+      broadcastPrice(price);
     } else {
       console.log('لم يتم استخراج سعر صالح');
     }
@@ -70,5 +59,26 @@ export const extractAndBroadcastPrice = async () => {
   }
 };
 
+/**
+ * طلب تحديث فوري للسعر الحالي
+ */
+export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
+  // محاولة بث السعر المخزن أولاً
+  if (requestPriceUpdate()) {
+    return true;
+  }
+  
+  // إذا لم يكن هناك سعر مخزن، حاول استخراج سعر جديد
+  console.log('محاولة استخراج سعر جديد للتحديث الفوري...');
+  const price = await extractPriceFromChart();
+  
+  if (price !== null) {
+    broadcastPrice(price, true);
+    return true;
+  }
+  
+  return false;
+};
+
 // تصدير الوظائف الرئيسية للاستخدام من قبل ملفات أخرى
-export { broadcastPrice } from './priceBroadcaster';
+export { broadcastPrice, requestPriceUpdate } from './priceBroadcaster';
