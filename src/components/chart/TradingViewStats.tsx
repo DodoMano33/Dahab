@@ -67,20 +67,29 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
         </div>
       </div>
 
-      {/* قسم المؤشرات الفنية */}
+      {/* قسم المؤشرات الفنية - تحديث التصميم ليطابق الصورة */}
       <div className="flex flex-col justify-start">
-        <div className="text-gray-400 mb-2">Technicals</div>
-        <div className="flex justify-between text-gray-400 mb-1">
-          <span>Sell</span>
-          <span className="text-center">Neutral</span>
-          <span>Buy</span>
+        <div className="text-gray-300 mb-2 font-medium">Technicals</div>
+        
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-gray-400">Sell</span>
+          <span className="text-gray-400">Neutral</span>
+          <span className="text-gray-400">Buy</span>
         </div>
+        
+        {/* تحديث شريط المؤشرات ليكون متدرج اللون من الأحمر إلى الأزرق */}
         <div className="relative h-2 rounded-full overflow-hidden mb-1">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-purple-500 to-green-500"></div>
-          <div className="absolute h-4 w-4 bg-white rounded-full top-1/2 transform -translate-y-1/2" style={{ left: `${technicalPosition}%` }}></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500"></div>
+          {/* مؤشر الموضع - كرة بيضاء فوق الشريط */}
+          <div className="absolute h-4 w-4 bg-white rounded-full top-1/2 transform -translate-y-1/2 shadow-md" 
+               style={{ left: `${technicalPosition}%` }}></div>
         </div>
-        <div className="text-center font-bold text-sm mb-2">{technicalRecommendation}</div>
-        <button className="bg-gray-700 hover:bg-gray-600 rounded-full py-1 px-3 text-xs self-center">
+        
+        {/* عرض التوصية بشكل بارز */}
+        <div className="text-center font-bold text-white text-base mt-1 mb-2">{technicalRecommendation}</div>
+        
+        {/* زر المزيد من التحليلات الفنية */}
+        <button className="bg-gray-800 hover:bg-gray-700 rounded-full py-1 px-3 text-xs self-center text-gray-300">
           More technicals
         </button>
       </div>
