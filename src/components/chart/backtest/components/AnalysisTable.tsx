@@ -5,6 +5,7 @@ import { ar } from "date-fns/locale";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 
 interface AnalysisTableProps {
   analyses: any[];
@@ -21,6 +22,29 @@ export const AnalysisTable = ({
   onSelect,
   totalProfitLoss = 0
 }: AnalysisTableProps) => {
+  // إضافة حالة لتخزين السعر الحالي
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  
+  // الاستماع لتحديثات السعر
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        setCurrentPrice(event.detail.price);
+      }
+    };
+    
+    window.addEventListener('chart-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    
+    // طلب السعر الحالي عند تحميل المكون
+    window.dispatchEvent(new Event('request-current-price'));
+    
+    return () => {
+      window.removeEventListener('chart-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    };
+  }, []);
+
   // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
   const formatNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return "-";
@@ -53,7 +77,7 @@ export const AnalysisTable = ({
 
   return (
     <div className="border rounded-lg bg-white shadow-sm">
-      <div className="grid grid-cols-11 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
+      <div className="grid grid-cols-12 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
         <div className="text-center flex items-center justify-center">
           <Checkbox 
             checked={selectedItems.size === analyses.length && analyses.length > 0}
@@ -77,6 +101,7 @@ export const AnalysisTable = ({
         <div>نوع التحليل</div>
         <div>الرمز</div>
         <div>تاريخ النتيجة</div>
+        <div className="text-center font-semibold text-primary">السعر الحالي</div>
       </div>
       <div className="divide-y text-xs">
         {analyses.map((analysis) => {
@@ -84,7 +109,7 @@ export const AnalysisTable = ({
           return (
             <div
               key={analysis.id}
-              className={`grid grid-cols-11 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+              className={`grid grid-cols-12 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
                 analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
               }`}
             >
@@ -155,6 +180,9 @@ export const AnalysisTable = ({
               <div className="truncate">
                 {analysis.result_timestamp && 
                   format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
+              </div>
+              <div className="text-center font-bold text-primary">
+                {currentPrice ? formatNumber(currentPrice) : "-"}
               </div>
             </div>
           );

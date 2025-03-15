@@ -2,6 +2,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useEffect, useState } from "react";
 
 interface BestEntryPointTableProps {
   results: any[];
@@ -16,9 +17,38 @@ export const BestEntryPointTable = ({
   onSelectAll,
   onSelect,
 }: BestEntryPointTableProps) => {
+  // إضافة حالة لتخزين السعر الحالي
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  
+  // الاستماع لتحديثات السعر
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        setCurrentPrice(event.detail.price);
+      }
+    };
+    
+    window.addEventListener('chart-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    
+    // طلب السعر الحالي عند تحميل المكون
+    window.dispatchEvent(new Event('request-current-price'));
+    
+    return () => {
+      window.removeEventListener('chart-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    };
+  }, []);
+  
+  // دالة لتنسيق الأرقام
+  const formatNumber = (value: number | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    return Number(value).toFixed(3);
+  };
+  
   return (
     <div className="border rounded-lg bg-white shadow-sm">
-      <div className="grid grid-cols-10 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
+      <div className="grid grid-cols-11 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
         <div className="text-center flex items-center justify-center">
           <Checkbox 
             checked={selectedItems.size === results.length && results.length > 0}
@@ -34,12 +64,13 @@ export const BestEntryPointTable = ({
         <div>نوع التحليل</div>
         <div>الرمز</div>
         <div>تاريخ النتيجة</div>
+        <div className="text-center font-semibold text-primary">السعر الحالي</div>
       </div>
       <div className="divide-y">
         {results.map((result) => (
           <div
             key={result.id}
-            className={`grid grid-cols-10 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors bg-success/10`}
+            className={`grid grid-cols-11 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors bg-success/10`}
           >
             <div className="flex justify-center">
               <Checkbox 
@@ -60,6 +91,9 @@ export const BestEntryPointTable = ({
             <div>
               {result.result_timestamp && 
                 format(new Date(result.result_timestamp), 'PPpp', { locale: ar })}
+            </div>
+            <div className="text-center font-bold text-primary">
+              {currentPrice ? formatNumber(currentPrice) : "-"}
             </div>
           </div>
         ))}
