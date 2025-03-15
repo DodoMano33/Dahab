@@ -49,6 +49,17 @@ export const broadcastPrice = (price: number, force: boolean = false, source: st
       provider: 'CFI'  // تحديد المزود بوضوح
     }
   }));
+
+  // إرسال حدث آخر للتأكد من تحديث العرض في المستطيل السفلي
+  window.dispatchEvent(new CustomEvent('chart-price-update', {
+    detail: {
+      price,
+      symbol: source,
+      timestamp: Date.now(),
+      source: 'broadcaster',
+      provider: 'CFI'
+    }
+  }));
   
   console.log(`تم نشر تحديث السعر (${source}):`, price);
 };
@@ -69,4 +80,3 @@ export const requestPriceUpdate = (source: string = 'CFI:XAUUSD') => {
   console.log('لا يوجد سعر محفوظ للإرسال الفوري');
   return false;
 };
-

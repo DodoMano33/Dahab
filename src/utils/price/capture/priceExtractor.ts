@@ -30,11 +30,36 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     
     if (price !== null) {
       console.log(`تم استخراج سعر ${isCFIPrice ? 'CFI' : ''} بقيمة: ${price}`);
+      
+      // إرسال تحديث السعر مباشرة من الشارت
+      window.dispatchEvent(new CustomEvent('chart-price-update', { 
+        detail: { 
+          price,
+          source: 'chart',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
       return price;
     }
     
     // استخدام OCR كخطة احتياطية
-    return await extractPriceUsingOCR(priceElement);
+    const ocrPrice = await extractPriceUsingOCR(priceElement);
+    
+    if (ocrPrice !== null) {
+      // إرسال تحديث السعر عند نجاح استخراجه عبر OCR
+      window.dispatchEvent(new CustomEvent('chart-price-update', { 
+        detail: { 
+          price: ocrPrice,
+          source: 'ocr',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+    }
+    
+    return ocrPrice;
   } catch (error) {
     console.error('فشل في استخراج السعر من الشارت:', error);
     return null;
@@ -122,4 +147,3 @@ export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
 
 // تصدير الوظائف الرئيسية للاستخدام من قبل ملفات أخرى
 export { broadcastPrice, requestPriceUpdate } from './priceBroadcaster';
-

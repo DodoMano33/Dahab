@@ -12,7 +12,8 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
   const { onPriceChange, defaultPrice } = options;
   
   const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
-  const [priceSource, setPriceSource] = useState<'extracted' | 'tradingview' | 'default' | 'alphavantage' | 'none'>('none');
+  const [chartPrice, setChartPrice] = useState<number | null>(null);
+  const [priceSource, setPriceSource] = useState<'extracted' | 'tradingview' | 'default' | 'alphavantage' | 'chart' | 'none'>('none');
   
   // استخراج آخر سعر عند التحميل
   useEffect(() => {
@@ -58,9 +59,20 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
         onPriceChange?.(event.detail.price);
       }
     };
+    
+    // الاستماع للسعر مباشرة من الشارت
+    const handleChartPrice = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        console.log('useExtractedPrice: تم استلام سعر مباشر من الشارت:', event.detail.price);
+        setChartPrice(event.detail.price);
+        // لا نغير مصدر السعر هنا لاستخدام chart-price كأولوية أعلى دائمًا
+        onPriceChange?.(event.detail.price);
+      }
+    };
 
     window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
     window.addEventListener('current-price-response', handleTradingViewPrice as EventListener);
+    window.addEventListener('chart-price-update', handleChartPrice as EventListener);
     
     // طلب السعر الحالي عند تحميل المكون
     window.dispatchEvent(new Event('request-current-price'));
@@ -68,13 +80,17 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
     return () => {
       window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleTradingViewPrice as EventListener);
+      window.removeEventListener('chart-price-update', handleChartPrice as EventListener);
     };
   }, [onPriceChange, priceSource]);
 
+  // استخدام السعر من الشارت كأولوية عليا
+  const price = chartPrice !== null ? chartPrice : extractedPrice;
+
   return {
-    price: extractedPrice,
-    priceSource,
-    hasPrice: extractedPrice !== null,
+    price,
+    priceSource: chartPrice !== null ? 'chart' : priceSource,
+    hasPrice: price !== null,
     isExtractedPrice: priceSource === 'extracted' || priceSource === 'alphavantage',
     isAlphaVantagePrice: priceSource === 'alphavantage'
   };

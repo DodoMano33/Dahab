@@ -43,6 +43,17 @@ function TradingViewWidget({
           provider: priceProvider
         }
       }));
+      
+      // إضافة حدث مخصص لتحديثات سعر الشارت مباشرة
+      window.dispatchEvent(new CustomEvent('chart-price-update', { 
+        detail: { 
+          price, 
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          provider: priceProvider,
+          source: 'tradingview'
+        }
+      }));
     }
   });
 
@@ -126,6 +137,24 @@ function TradingViewWidget({
         // طلب تحديث فوري من نظام استخراج السعر
         requestImmediatePriceUpdate();
         
+        // تحقق من السعر المعروض في الشارت وأرسله كتحديث
+        const chartPriceElement = document.querySelector('.chart-price-display');
+        if (chartPriceElement && chartPriceElement.textContent) {
+          const priceText = chartPriceElement.textContent.trim();
+          const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+          if (!isNaN(price) && price > 0) {
+            window.dispatchEvent(new CustomEvent('chart-price-update', {
+              detail: {
+                price,
+                symbol: 'CFI:XAUUSD',
+                timestamp: Date.now(),
+                provider: 'CFI',
+                source: 'direct-chart'
+              }
+            }));
+          }
+        }
+        
         console.log('تم إرسال طلب الحصول على السعر الحالي من CFI بجميع الطرق المتاحة');
       } catch (e) {
         console.warn('فشل في طلب السعر المبدئي من TradingView', e);
@@ -142,6 +171,17 @@ function TradingViewWidget({
       // إذا لم يكن هناك سعر حالي، أطلب السعر
       if (currentPriceRef.current === null) {
         requestInitialPrice();
+      } else {
+        // تحديث السعر الحالي دوريًا حتى لو لم يتغير
+        window.dispatchEvent(new CustomEvent('chart-price-update', { 
+          detail: { 
+            price: currentPriceRef.current, 
+            symbol: 'CFI:XAUUSD',
+            timestamp: Date.now(),
+            provider: priceProvider,
+            source: 'periodic-update'
+          }
+        }));
       }
     }, 10000);
 

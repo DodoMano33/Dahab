@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TradingViewStats } from './TradingViewStats';
 import { useExtractedPrice } from '@/hooks/useExtractedPrice';
 
@@ -14,7 +14,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
 }) => {
   // استخدام الهوك الجديد للحصول على السعر المستخرج
   const { 
-    price: displayPrice, 
+    price: extractedPrice, 
     priceSource, 
     hasPrice, 
     isAlphaVantagePrice 
@@ -22,16 +22,41 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
     defaultPrice: propPrice
   });
 
+  // إضافة متغير لتخزين السعر المعروض على الشارت
+  const [chartPrice, setChartPrice] = useState<number | null>(null);
+
+  // الاستماع لتحديثات السعر المباشرة من الشارت
+  useEffect(() => {
+    const updateChartPrice = (event: any) => {
+      if (event.detail && event.detail.price) {
+        // تحديث السعر من الشارت مباشرة
+        setChartPrice(event.detail.price);
+      }
+    };
+
+    // الاستماع لحدث السعر من الشارت مباشرة
+    window.addEventListener('chart-price-update', updateChartPrice);
+    
+    return () => {
+      window.removeEventListener('chart-price-update', updateChartPrice);
+    };
+  }, []);
+
+  // اختيار السعر المناسب للعرض (الأفضلية للسعر من الشارت مباشرة)
+  const displayPrice = chartPrice || extractedPrice || propPrice;
+
   // تحديد نص مصدر السعر
   const getPriceSourceText = () => {
-    if (isAlphaVantagePrice) {
+    if (chartPrice !== null) {
+      return ` (${provider} - مباشر)`;
+    } else if (isAlphaVantagePrice) {
       return ' (Alpha Vantage API)';
     } else if (priceSource === 'extracted') {
       return ` (${provider})`;
     } else if (priceSource === 'tradingview') {
       return ` (${provider})`;
     }
-    return ` (${provider})`;  // عرض المزود دائماً
+    return ` (${provider})`;
   };
 
   return (
@@ -43,7 +68,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
             XAUUSD (الذهب)
           </div>
           <div className="text-sm" id="tradingview-price-display">
-            {hasPrice ? 
+            {hasPrice || chartPrice ? 
               `السعر الحالي: ${displayPrice!.toFixed(2)}${getPriceSourceText()}` : 
               'بانتظار السعر... (قد يستغرق التحميل بضع ثوانٍ)'
             }
