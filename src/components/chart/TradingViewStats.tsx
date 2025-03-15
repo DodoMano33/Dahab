@@ -53,7 +53,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
     : 95;
 
   return (
-    <div className={`w-full text-white text-xs ${isMobile ? 'space-y-4' : 'grid grid-cols-3 gap-2'}`}>
+    <div className={`w-full text-white text-xs ${isMobile ? 'flex flex-col space-y-3' : 'grid grid-cols-3 gap-2'}`}>
       {/* قسم معلومات السعر */}
       <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
         <div className="text-lg font-bold">{symbol}</div>
