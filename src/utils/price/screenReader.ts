@@ -1,7 +1,7 @@
-
 // خدمة استخراج السعر من صورة الشاشة
 import { toast } from "sonner";
 import Tesseract from 'tesseract.js';
+import html2canvas from 'html2canvas';
 
 // واجهة لتحديثات السعر
 export interface PriceUpdate {
@@ -231,19 +231,10 @@ export class ScreenPriceReader {
 
       // التقاط صورة للعنصر
       try {
-        // استخدام html2canvas إذا كان متاحًا
-        if (typeof html2canvas !== 'undefined') {
-          const canvas = await html2canvas(element);
-          return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        } else {
-          // استخدام آلية رسم متصفح الويب المدمجة
-          this.ctx.drawImage(
-            element as unknown as CanvasImageSource,
-            0, 0, rect.width, rect.height,
-            0, 0, this.canvas.width, this.canvas.height
-          );
-          return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        }
+        // استخدام html2canvas للتقاط الصورة
+        const canvas = await html2canvas(element);
+        this.ctx.drawImage(canvas, 0, 0);
+        return this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
       } catch (error) {
         console.error("فشل في التقاط صورة للعنصر:", error);
         return null;
