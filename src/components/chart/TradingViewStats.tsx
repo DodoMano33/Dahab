@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TradingViewStatsProps {
   symbol?: string;
@@ -10,6 +11,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   symbol = "XAUUSD" 
 }) => {
   const { currentPrice, marketData } = useCurrentPrice();
+  const isMobile = useIsMobile();
   
   // نحدد قيم افتراضية لنطاقات السعر والتوصية الفنية
   const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
@@ -51,9 +53,9 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
     : 95;
 
   return (
-    <div className="w-full grid grid-cols-3 gap-2 text-white text-xs">
+    <div className={`w-full text-white text-xs ${isMobile ? 'space-y-4' : 'grid grid-cols-3 gap-2'}`}>
       {/* قسم معلومات السعر */}
-      <div className="flex flex-col items-end">
+      <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
         <div className="text-lg font-bold">{symbol}</div>
         <div className="flex items-center">
           <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
