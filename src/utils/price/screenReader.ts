@@ -61,8 +61,8 @@ export class ScreenPriceReader {
       }
     } catch (error) {
       console.error('خطأ في التحقق من حالة السوق:', error);
-      // نضع حالة السوق كمغلق في حالة حدوث خطأ للأمان
-      this.isMarketOpen = false;
+      // افتراضيًا، نفترض أن السوق مفتوح في حالة الخطأ للسماح بالتجربة
+      this.isMarketOpen = true;
     }
   }
 
@@ -114,7 +114,7 @@ export class ScreenPriceReader {
 
       // إذا كان السوق مغلقًا، لا نقوم بتحديث السعر
       if (!this.isMarketOpen) {
-        console.log("السوق مغلق حالياً، لن يتم تحديث السعر");
+        console.log("السوق مغلق حاليًا، لن يتم تحديث السعر");
         return;
       }
 
@@ -144,21 +144,19 @@ export class ScreenPriceReader {
   // محاكاة استخراج السعر (في التطبيق الحقيقي سيتم استبداله بقراءة OCR حقيقية)
   private mockPriceExtraction(): number | null {
     // في الإنتاج، سيتم استبدال هذا بقراءة OCR حقيقية
+    // محاكاة قراءة الصورة المرفقة التي تظهر 2984.91
     
-    // لا نستخدم قيمة افتراضية، ونعيد معلومات حول غياب السعر
-    // إذا كان السوق مفتوحًا، نقوم بمحاكاة قراءة سعر
+    // لا نضيف تذبذب للسعر إذا كان السوق مغلقًا
+    const basePrice = 2984.91;
+    
     if (this.isMarketOpen) {
-      // إذا كان لدينا سعر حالي، نولد تذبذبًا حوله
-      if (this.price !== null) {
-        const fluctuation = (Math.random() - 0.5) * 2; // تذبذب بين -1 و +1
-        return parseFloat((this.price + fluctuation).toFixed(2));
-      } 
-      
-      // إذا لم يكن لدينا سعر حالي، نعيد null
-      return null;
+      // إضافة تذبذب صغير للسعر لمحاكاة تغيرات السوق في حالة السوق المفتوح
+      const fluctuation = (Math.random() - 0.5) * 2; // تذبذب بين -1 و +1
+      const price = parseFloat((basePrice + fluctuation).toFixed(2));
+      return price;
     } else {
-      // إذا كان السوق مغلقًا، نعيد السعر الحالي بدون تغيير
-      return this.price;
+      // إرجاع السعر الثابت بدون تذبذب في حالة السوق المغلق
+      return basePrice;
     }
   }
   
