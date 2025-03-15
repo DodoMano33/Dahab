@@ -1,13 +1,10 @@
 
 import { useState } from "react";
-import { SymbolInput } from "../inputs/SymbolInput";
-import { PriceInput } from "../inputs/PriceInput";
-import { TimeframeInput } from "../inputs/TimeframeInput";
 import { AnalysisButtonGroup } from "../buttons/AnalysisButtonGroup";
 import { CombinedAnalysisDialog } from "../analysis/CombinedAnalysisDialog";
-import { AnalysisDurationInput } from "../inputs/AnalysisDurationInput";
-import { useFormValidation } from "./validation/useFormValidation";
-import { useCombinedAnalysis } from "./handlers/useCombinedAnalysis";
+import { FormHeader } from "./components/FormHeader";
+import { FormInputs } from "./components/FormInputs";
+import { useFormSubmit } from "./hooks/useFormSubmit";
 
 interface ChartAnalysisFormProps {
   onSubmit: (
@@ -56,8 +53,12 @@ export const ChartAnalysisForm = ({
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
 
-  const { validateInputs } = useFormValidation();
-  const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({
+  const {
+    isAIDialogOpen, 
+    setIsAIDialogOpen, 
+    handleSubmit,
+    handleCombinedAnalysis
+  } = useFormSubmit({
     symbol: fixedSymbol,
     defaultSymbol: fixedSymbol,
     price,
@@ -67,130 +68,21 @@ export const ChartAnalysisForm = ({
     onSubmit
   });
 
-  const handleSubmit = (
-    e: React.MouseEvent,
-    isScalping: boolean = false,
-    isAI: boolean = false,
-    isSMC: boolean = false,
-    isICT: boolean = false,
-    isTurtleSoup: boolean = false,
-    isGann: boolean = false,
-    isWaves: boolean = false,
-    isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false,
-    isNeuralNetwork: boolean = false,
-    isRNN: boolean = false,
-    isTimeClustering: boolean = false,
-    isMultiVariance: boolean = false,
-    isCompositeCandlestick: boolean = false,
-    isBehavioral: boolean = false,
-    isFibonacci: boolean = false,
-    isFibonacciAdvanced: boolean = false,
-    selectedTypes: string[] = []
-  ) => {
-    e.preventDefault();
-    
-    const isValid = validateInputs({
-      symbol: fixedSymbol,
-      defaultSymbol: fixedSymbol,
-      price,
-      defaultPrice,
-      duration
-    });
-
-    if (!isValid) return;
-
-    if (isAI && selectedTypes.length > 0) {
-      console.log("Smart Analysis with pre-selected types:", selectedTypes);
-      const providedPrice = price ? Number(price) : defaultPrice;
-      onSubmit(
-        fixedSymbol,
-        timeframe,
-        providedPrice,
-        isScalping,
-        isAI,
-        isSMC,
-        isICT,
-        isTurtleSoup,
-        isGann,
-        isWaves,
-        isPatternAnalysis,
-        isPriceAction,
-        isNeuralNetwork,
-        isRNN,
-        isTimeClustering,
-        isMultiVariance,
-        isCompositeCandlestick,
-        isBehavioral,
-        isFibonacci,
-        isFibonacciAdvanced,
-        duration,
-        selectedTypes
-      );
-      return;
-    }
-    
-    if (isAI) {
-      setIsAIDialogOpen(true);
-      return;
-    }
-    
-    console.log(`تحليل ${currentAnalysis} للذهب على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
-    
-    const providedPrice = price ? Number(price) : defaultPrice;
-    onSubmit(
-      fixedSymbol,
-      timeframe,
-      providedPrice,
-      isScalping,
-      isAI,
-      isSMC,
-      isICT,
-      isTurtleSoup,
-      isGann,
-      isWaves,
-      isPatternAnalysis,
-      isPriceAction,
-      isNeuralNetwork,
-      isRNN,
-      isTimeClustering,
-      isMultiVariance,
-      isCompositeCandlestick,
-      isBehavioral,
-      isFibonacci,
-      isFibonacciAdvanced,
-      duration
-    );
-  };
-
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
-      <div className="bg-yellow-50 border border-yellow-100 rounded-md p-3 mb-4">
-        <p className="text-sm font-medium text-yellow-800">
-          هذا التطبيق مخصص لتحليل الذهب (XAUUSD) فقط
-        </p>
-      </div>
+      <FormHeader />
       
-      <SymbolInput 
-        value={fixedSymbol} 
-        onChange={() => {}} // لا نسمح بتغيير الرمز
-        defaultValue={fixedSymbol}
-        disabled={true}
+      <FormInputs
+        symbol={fixedSymbol}
+        setSymbol={setSymbol}
+        price={price}
+        setPrice={setPrice}
+        timeframe={timeframe}
+        setTimeframe={setTimeframe}
+        duration={duration}
+        setDuration={setDuration}
+        defaultPrice={defaultPrice}
       />
-      
-      <PriceInput 
-        value={price} 
-        onChange={setPrice}
-        defaultValue={defaultPrice?.toString()}
-        tradingViewPrice={defaultPrice}
-      />
-      
-      <AnalysisDurationInput
-        value={duration}
-        onChange={setDuration}
-      />
-      
-      <TimeframeInput value={timeframe} onChange={setTimeframe} />
       
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
