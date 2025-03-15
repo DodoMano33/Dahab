@@ -6,6 +6,7 @@ import { AnalysisForm } from "../analysis/AnalysisForm";
 import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
+import { Separator } from "@/components/ui/separator";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -59,6 +60,8 @@ export const AnalysisTabContent = ({
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />
+
+      <Separator className="my-6 bg-gray-200" />
 
       {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm
