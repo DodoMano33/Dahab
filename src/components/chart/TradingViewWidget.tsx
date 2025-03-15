@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
@@ -150,11 +149,20 @@ function TradingViewWidget({
 
   return (
     <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+      {/* الرسم البياني */}
       <div 
         ref={container}
-        style={{ height: "100%", width: "100%" }}
+        style={{ height: "calc(100% - 80px)", width: "100%" }}
+        className="border-b border-gray-200 dark:border-gray-700"
       />
-      <CurrentPriceDisplay price={currentPrice} />
+      
+      {/* فاصل بين الرسم البياني ومستطيل السعر */}
+      <div className="h-3 bg-gray-100 dark:bg-gray-900 w-full"></div>
+      
+      {/* مستطيل معلومات السعر */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <CurrentPriceDisplay price={currentPrice} />
+      </div>
     </div>
   );
 }
