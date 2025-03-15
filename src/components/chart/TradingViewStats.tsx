@@ -9,13 +9,36 @@ interface TradingViewStatsProps {
 export const TradingViewStats: React.FC<TradingViewStatsProps> = ({ 
   symbol = "XAUUSD" 
 }) => {
-  const { currentPrice } = useCurrentPrice();
+  const { currentPrice, marketData } = useCurrentPrice();
   
   // نحدد قيم افتراضية لنطاقات السعر والتوصية الفنية
-  const dayLow = currentPrice ? Math.round(currentPrice * 0.997) : 2978;
-  const dayHigh = currentPrice ? Math.round(currentPrice * 1.003) : 3005;
-  const weekLow = 2146;
-  const weekHigh = 3005;
+  const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
+  const dayHigh = marketData?.dayHigh || (currentPrice ? Math.round(currentPrice * 1.003) : 3005);
+  const weekLow = marketData?.weekLow || 2146;
+  const weekHigh = marketData?.weekHigh || 3005;
+  
+  // استخدام توصية السوق إذا كانت متوفرة أو استخدام القيمة الافتراضية
+  const technicalRecommendation = marketData?.recommendation || "Strong buy";
+  
+  // تحديد موقع المؤشر بناءً على قوة التوصية
+  let technicalPosition = 85; // القيمة الافتراضية
+  
+  // تعديل قيمة المؤشر بناءً على التوصية
+  if (marketData?.recommendation) {
+    switch (marketData.recommendation.toLowerCase()) {
+      case "strong sell": technicalPosition = 10; break;
+      case "sell": technicalPosition = 30; break;
+      case "neutral": technicalPosition = 50; break;
+      case "buy": technicalPosition = 70; break;
+      case "strong buy": technicalPosition = 90; break;
+      default: technicalPosition = 50;
+    }
+  }
+  
+  // استخدام التغير والنسبة من البيانات أو القيم الافتراضية
+  const change = marketData?.change !== undefined ? marketData.change : -3.785;
+  const changePercent = marketData?.changePercent !== undefined ? marketData.changePercent : -0.13;
+  const changeColor = change >= 0 ? "text-green-500" : "text-red-500";
   
   // احتساب نسبة موقع السعر الحالي ضمن النطاق اليومي
   const dayRangePercentage = currentPrice 
@@ -27,10 +50,6 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
     ? Math.min(100, Math.max(0, ((currentPrice - weekLow) / (weekHigh - weekLow)) * 100)) 
     : 95;
 
-  // تحديد التوصية الفنية (افتراضياً Strong buy)
-  const technicalRecommendation = "Strong buy";
-  const technicalPosition = 85; // قيمة تمثل موقع المؤشر (0-100)
-
   return (
     <div className="w-full grid grid-cols-3 gap-2 text-white text-xs">
       {/* قسم معلومات السعر */}
@@ -40,7 +59,9 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
           <span className="text-2xl font-bold">{currentPrice || 2984.91}</span>
           <span className="ml-1">USD</span>
         </div>
-        <div className="text-red-500">-3.785 -0.13%</div>
+        <div className={changeColor}>
+          {change.toFixed(3)} {changePercent.toFixed(2)}%
+        </div>
         <div className="text-gray-400">Market closed</div>
       </div>
 
@@ -67,7 +88,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
         </div>
       </div>
 
-      {/* قسم المؤشرات الفنية - تحديث التصميم ليطابق الصورة */}
+      {/* قسم المؤشرات الفنية */}
       <div className="flex flex-col justify-start">
         <div className="text-gray-300 mb-2 font-medium">Technicals</div>
         
@@ -77,7 +98,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
           <span className="text-gray-400">Buy</span>
         </div>
         
-        {/* تحديث شريط المؤشرات ليكون متدرج اللون من الأحمر إلى الأزرق */}
+        {/* شريط المؤشرات متدرج اللون من الأحمر إلى الأزرق */}
         <div className="relative h-2 rounded-full overflow-hidden mb-1">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500"></div>
           {/* مؤشر الموضع - كرة بيضاء فوق الشريط */}

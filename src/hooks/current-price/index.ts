@@ -7,6 +7,7 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
   const {
     currentPrice,
     priceUpdateCount,
+    marketData,
     handlePriceUpdate,
     handleCurrentPriceResponse,
     requestCurrentPrice
@@ -33,5 +34,5 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
     };
   }, [handlePriceUpdate, handleCurrentPriceResponse, requestCurrentPrice]);
 
-  return { currentPrice, priceUpdateCount };
+  return { currentPrice, priceUpdateCount, marketData };
 };

@@ -1,10 +1,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { PriceUpdateEvent, CurrentPriceResponseEvent } from './types';
+import { PriceUpdateEvent, CurrentPriceResponseEvent, MarketData } from './types';
 
 export const usePriceEventHandlers = () => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
+  const [marketData, setMarketData] = useState<MarketData | undefined>(undefined);
 
   const handlePriceUpdate = useCallback((event: PriceUpdateEvent) => {
     if (event.detail && event.detail.price) {
@@ -19,6 +20,21 @@ export const usePriceEventHandlers = () => {
       console.log('useCurrentPrice: Received current price', event.detail.price);
       setCurrentPrice(event.detail.price);
       setPriceUpdateCount(prev => prev + 1);
+      
+      // تحديث بيانات السوق
+      const newMarketData: MarketData = {
+        symbol: event.detail.symbol,
+        dayLow: event.detail.dayLow,
+        dayHigh: event.detail.dayHigh,
+        weekLow: event.detail.weekLow,
+        weekHigh: event.detail.weekHigh,
+        change: event.detail.change,
+        changePercent: event.detail.changePercent,
+        recommendation: event.detail.recommendation
+      };
+      
+      setMarketData(newMarketData);
+      console.log('useCurrentPrice: Updated market data', newMarketData);
     }
   }, []);
 
@@ -29,6 +45,7 @@ export const usePriceEventHandlers = () => {
   return {
     currentPrice,
     priceUpdateCount,
+    marketData,
     handlePriceUpdate,
     handleCurrentPriceResponse,
     requestCurrentPrice
