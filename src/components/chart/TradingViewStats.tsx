@@ -58,8 +58,10 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
       <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
         <div className="text-lg font-bold">{symbol}</div>
         <div className="flex items-center">
-          <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
-          <span className="ml-1 text-lg">USD</span>
+          <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 rounded-lg px-3 py-1 shadow-lg">
+            <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
+            <span className="ml-1 text-lg">USD</span>
+          </div>
         </div>
         <div className={changeColor}>
           {change.toFixed(3)} {changePercent.toFixed(2)}%
