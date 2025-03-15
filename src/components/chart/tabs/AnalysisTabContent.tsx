@@ -61,7 +61,9 @@ export const AnalysisTabContent = ({
         onPriceUpdate={onPriceUpdate}
       />
 
-      <Separator className="my-6 bg-gray-200" />
+      <div className="py-4">
+        <Separator className="h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
+      </div>
 
       {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm
