@@ -8,18 +8,50 @@ import { toast } from "sonner";
  */
 export class PriceExtractor {
   private lastExtractedPrice: number | null = null;
+  private tvPriceSource: number | null = null;
   
   constructor(private defaultPrice: number = 2900.00) {
     this.lastExtractedPrice = defaultPrice;
+    this.setupTradingViewListener();
   }
   
   /**
-   * محاكاة استخراج السعر (في التطبيق الحقيقي سيتم استبداله بقراءة OCR حقيقية)
+   * إعداد المستمع لأسعار TradingView
+   */
+  private setupTradingViewListener(): void {
+    // الاستماع للأسعار المباشرة من TradingView
+    window.addEventListener('tradingview-direct-price', (event: any) => {
+      if (event.detail && typeof event.detail.price === 'number') {
+        this.tvPriceSource = event.detail.price;
+        console.log("✅ تم استلام سعر مباشر من TradingView:", this.tvPriceSource);
+      }
+    });
+    
+    // طلب السعر الحالي من TradingView
+    this.requestTradingViewPrice();
+    
+    // إعداد طلب دوري للسعر من TradingView
+    setInterval(() => this.requestTradingViewPrice(), 1000);
+  }
+  
+  /**
+   * طلب السعر الحالي من TradingView
+   */
+  private requestTradingViewPrice(): void {
+    window.dispatchEvent(new CustomEvent('request-tradingview-price'));
+  }
+  
+  /**
+   * محاكاة استخراج السعر (في حالة عدم توفر سعر من TradingView)
    */
   public mockPriceExtraction(isMarketOpen: boolean): number | null {
-    // في الإنتاج، سيتم استبدال هذا بقراءة OCR حقيقية
+    // استخدام السعر من TradingView إذا كان متاحًا
+    if (this.tvPriceSource !== null) {
+      this.lastExtractedPrice = this.tvPriceSource;
+      return this.tvPriceSource;
+    }
     
-    // في بيئة التطوير، نستخدم سعرًا افتراضيًا مع تذبذب
+    // في بيئة التطوير، نستخدم سعرًا افتراضيًا مع تذبذب في حالة عدم توفر سعر TradingView
     if (isMarketOpen) {
       // إذا كان لدينا سعر حالي، نولد تذبذبًا حوله
       if (this.lastExtractedPrice !== null) {
@@ -38,19 +70,26 @@ export class PriceExtractor {
   }
   
   /**
-   * استخراج السعر من الصورة (واجهة للاستخدام الخارجي)
+   * استخراج السعر (واجهة للاستخدام الخارجي)
    */
   public extractPrice(isMarketOpen: boolean): number | null {
     try {
-      console.log("محاولة التقاط سعر XAUUSD...");
+      console.log("محاولة الحصول على سعر XAUUSD...");
       
-      // محاكاة استخراج السعر من الصورة
+      // استخدام السعر من TradingView مباشرة إذا كان متاحًا
+      if (this.tvPriceSource !== null) {
+        this.lastExtractedPrice = this.tvPriceSource;
+        console.log("✅ تم استخدام سعر TradingView المباشر:", this.tvPriceSource);
+        return this.tvPriceSource;
+      }
+      
+      // احتياطيًا: محاكاة استخراج السعر من الصورة
       const extractedPrice = this.mockPriceExtraction(isMarketOpen);
       
       if (extractedPrice !== null) {
         console.log("✅ تم استخراج السعر بنجاح:", extractedPrice);
       } else {
-        console.warn("⚠️ فشل في قراءة السعر من الصورة، استخدام القيمة الافتراضية");
+        console.warn("⚠️ فشل في قراءة السعر، استخدام القيمة الافتراضية");
       }
       
       return extractedPrice;

@@ -17,6 +17,33 @@ export const useTradingViewMessages = ({
   const priceUpdateCountRef = useRef<number>(0);
   const { price: screenPrice } = usePriceReader(1000);
 
+  // إضافة مستمع للسعر المباشر من TradingView
+  useEffect(() => {
+    const handleDirectTVPrice = (event: CustomEvent) => {
+      if (event.detail && typeof event.detail.price === 'number') {
+        const directPrice = event.detail.price;
+        currentPriceRef.current = directPrice;
+        priceUpdateCountRef.current += 1;
+        console.log(`★★★ Direct price from TradingView (${priceUpdateCountRef.current}):`, directPrice, 'for XAUUSD');
+        
+        if (onPriceUpdate) {
+          onPriceUpdate(directPrice);
+        }
+        
+        // إرسال حدث تحديث السعر
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+          detail: { price: directPrice, symbol: 'XAUUSD' }
+        }));
+      }
+    };
+    
+    window.addEventListener('tradingview-direct-price', handleDirectTVPrice as EventListener);
+    return () => {
+      window.removeEventListener('tradingview-direct-price', handleDirectTVPrice as EventListener);
+    };
+  }, [onPriceUpdate]);
+
+  // استماع لتحديثات السعر من قارئ الشاشة كاحتياط
   useEffect(() => {
     // تحديث السعر من قارئ الشاشة إذا كان متاحًا
     if (screenPrice !== null) {

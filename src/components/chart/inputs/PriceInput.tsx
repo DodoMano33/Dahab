@@ -20,6 +20,31 @@ export const PriceInput = ({
   const [livePrice, setLivePrice] = useState<number | null>(tradingViewPrice);
   const [retryCount, setRetryCount] = useState(0);
   
+  // استماع لسعر TradingView المباشر
+  useEffect(() => {
+    const handleDirectTVPrice = (event: CustomEvent) => {
+      if (event.detail && typeof event.detail.price === 'number') {
+        const directPrice = event.detail.price;
+        console.log('PriceInput received direct TradingView price:', directPrice);
+        setLivePrice(directPrice);
+        
+        if (useAutoPrice) {
+          console.log('Auto-updating price with direct TradingView price:', directPrice);
+          onChange(directPrice.toString());
+        }
+        
+        // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
+        setRetryCount(0);
+      }
+    };
+    
+    window.addEventListener('tradingview-direct-price', handleDirectTVPrice as EventListener);
+    
+    return () => {
+      window.removeEventListener('tradingview-direct-price', handleDirectTVPrice as EventListener);
+    };
+  }, [useAutoPrice, onChange]);
+  
   // استخدام السعر من TradingView تلقائيًا عند التغيير
   useEffect(() => {
     if (useAutoPrice && livePrice !== null && livePrice !== undefined) {
@@ -60,6 +85,8 @@ export const PriceInput = ({
     
     // طلب السعر الحالي عند تحميل المكون
     window.dispatchEvent(new Event('request-current-price'));
+    // طلب السعر المباشر من TradingView
+    window.dispatchEvent(new Event('request-tradingview-price'));
     
     // استمع لاستجابة السعر الحالي
     const handleCurrentPriceResponse = (event: CustomEvent) => {
@@ -80,11 +107,14 @@ export const PriceInput = ({
     // إضافة محاولات متكررة لطلب السعر في حالة عدم الاستجابة الأولى
     const requestInterval = setInterval(() => {
       if (livePrice === null || livePrice === undefined) {
+        // طلب السعر من مصدرين
         window.dispatchEvent(new Event('request-current-price'));
+        window.dispatchEvent(new Event('request-tradingview-price'));
+        
         setRetryCount(prev => prev + 1);
         console.log(`PriceInput requesting price again (attempt ${retryCount + 1})...`);
       }
-    }, 2000); // محاولة كل 2 ثانية
+    }, 1000); // محاولة كل ثانية
     
     return () => {
       clearInterval(requestInterval);

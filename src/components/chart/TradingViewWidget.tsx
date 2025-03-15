@@ -49,12 +49,49 @@ function TradingViewWidget({
     currentPriceRef
   });
 
-  // بدء قارئ الشاشة عند تحميل المكون
+  // إضافة مستمع للأحداث لطلب السعر من TradingView
   useEffect(() => {
+    const handleRequestTradingViewPrice = () => {
+      try {
+        const iframe = container.current?.querySelector('iframe');
+        if (iframe) {
+          // إرسال رسالة إلى إطار TradingView لطلب السعر الحالي
+          iframe.contentWindow?.postMessage({ command: 'get-current-price' }, '*');
+        }
+      } catch (error) {
+        console.error('Error requesting price from TradingView:', error);
+      }
+    };
+    
+    window.addEventListener('request-tradingview-price', handleRequestTradingViewPrice);
+    
+    // إعداد مستمع للرسائل من إطار TradingView
+    const handleTVMessage = (event: MessageEvent) => {
+      try {
+        if (event.data && event.data.type === 'current-price-response') {
+          const price = event.data.price;
+          if (typeof price === 'number' && !isNaN(price)) {
+            console.log('Received direct price from TradingView:', price);
+            
+            // نشر حدث بالسعر المباشر من TradingView
+            window.dispatchEvent(new CustomEvent('tradingview-direct-price', {
+              detail: { price }
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error processing TradingView message:', error);
+      }
+    };
+    
+    window.addEventListener('message', handleTVMessage);
+    
     // بدء قراءة السعر من الشاشة كل ثانية
     screenPriceReader.start(1000);
     
     return () => {
+      window.removeEventListener('request-tradingview-price', handleRequestTradingViewPrice);
+      window.removeEventListener('message', handleTVMessage);
       // إيقاف قراءة السعر عند إلغاء المكون
       screenPriceReader.stop();
     };
@@ -67,6 +104,29 @@ function TradingViewWidget({
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = 'text/javascript';
     script.async = true;
+
+    // إضافة كود جافاسكريبت للوصول إلى السعر المباشر
+    const injectScript = document.createElement('script');
+    injectScript.innerHTML = `
+      // إضافة مستمع للرسائل من التطبيق الرئيسي
+      window.addEventListener('message', function(event) {
+        if (event.data && event.data.command === 'get-current-price') {
+          try {
+            // محاولة الوصول إلى كائن TradingView
+            if (window.TradingView && window.TradingView.activeChart) {
+              const price = window.TradingView.activeChart().crosshairPrice();
+              // إرسال السعر للتطبيق الرئيسي
+              window.parent.postMessage({
+                type: 'current-price-response',
+                price: price
+              }, '*');
+            }
+          } catch(e) {
+            console.error('Error getting TradingView price:', e);
+          }
+        }
+      });
+    `;
 
     const config = {
       autosize: true,
@@ -114,6 +174,7 @@ function TradingViewWidget({
     widgetContainer.appendChild(widgetDiv);
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
+    widgetContainer.appendChild(injectScript); // إضافة السكريبت المخصص
 
     if (container.current) {
       container.current.innerHTML = '';
