@@ -23,13 +23,13 @@ export async function getLastStoredPrice(supabase: any): Promise<number | null> 
         console.warn('No previous price records found in database');
       }
       console.warn('Could not retrieve last stored price, returning null');
-      // لا نستخدم قيمة افتراضية الآن
-      return null;
+      // استخدام قيمة افتراضية للأمان (2900)
+      return 2900;
     }
   } catch (lastPriceErr) {
     console.error('Exception in getLastStoredPrice:', lastPriceErr);
-    // لا نستخدم قيمة افتراضية
-    return null;
+    // استخدام قيمة افتراضية للأمان (2900)
+    return 2900;
   }
 }
 
@@ -56,12 +56,12 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
         console.log('Retrieved fallback price:', lastPrice);
         resolve(lastPrice);
       } catch (err) {
-        console.error('Failed to get last stored price, using null:', err);
-        resolve(null);
+        console.error('Failed to get last stored price, using default:', err);
+        resolve(2900);
       }
     } catch (err) {
       console.error('Exception in getEffectivePrice:', err);
-      resolve(null);
+      resolve(2900);
     }
   });
 }

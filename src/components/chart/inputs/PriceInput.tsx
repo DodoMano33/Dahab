@@ -20,12 +20,26 @@ export const PriceInput = ({
   const [livePrice, setLivePrice] = useState<number | null>(tradingViewPrice);
   const [retryCount, setRetryCount] = useState(0);
   
-  // استخدام السعر من TradingView تلقائيًا
+  // استخدام السعر من TradingView تلقائيًا عند التغيير
   useEffect(() => {
     if (useAutoPrice && livePrice !== null && livePrice !== undefined) {
+      console.log('Updating price input with live price:', livePrice);
       onChange(livePrice.toString());
     }
   }, [livePrice, useAutoPrice, onChange]);
+
+  // تطبيق السعر الأولي من tradingViewPrice إذا كان متاحًا
+  useEffect(() => {
+    if (tradingViewPrice !== null && tradingViewPrice !== undefined) {
+      console.log('Received initial TradingView price:', tradingViewPrice);
+      setLivePrice(tradingViewPrice);
+      
+      if (useAutoPrice) {
+        console.log('Setting initial auto price:', tradingViewPrice);
+        onChange(tradingViewPrice.toString());
+      }
+    }
+  }, [tradingViewPrice, useAutoPrice, onChange]);
 
   // استمع للتحديثات المباشرة من TradingView وقارئ الشاشة
   useEffect(() => {
@@ -34,6 +48,7 @@ export const PriceInput = ({
         console.log('PriceInput received price update:', event.detail.price);
         setLivePrice(event.detail.price);
         if (useAutoPrice) {
+          console.log('Auto-updating price to:', event.detail.price);
           onChange(event.detail.price.toString());
         }
         // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
@@ -52,6 +67,7 @@ export const PriceInput = ({
         console.log('PriceInput received current price response:', event.detail.price);
         setLivePrice(event.detail.price);
         if (useAutoPrice) {
+          console.log('Auto-updating price to (from response):', event.detail.price);
           onChange(event.detail.price.toString());
         }
         // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
@@ -82,6 +98,7 @@ export const PriceInput = ({
     setUseAutoPrice(newMode);
     
     if (newMode && livePrice !== null && livePrice !== undefined) {
+      console.log('Toggle auto price mode ON with price:', livePrice);
       onChange(livePrice.toString());
     }
   };
