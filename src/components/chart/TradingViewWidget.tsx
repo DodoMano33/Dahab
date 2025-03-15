@@ -48,7 +48,6 @@ function TradingViewWidget({
     script.type = 'text/javascript';
     script.async = true;
 
-    // تخصيص إعدادات المخطط بناءً على حجم الشاشة
     const config = {
       autosize: true,
       symbol: forcedSymbol,
@@ -62,9 +61,6 @@ function TradingViewWidget({
       save_image: false,
       calendar: false,
       hide_volume: true,
-      toolbar_bg: isMobile ? "#000000" : undefined, // خلفية داكنة للموبايل
-      hide_top_toolbar: isMobile, // إخفاء الشريط العلوي على الموبايل
-      hide_side_toolbar: isMobile, // إخفاء شريط الأدوات الجانبي على الموبايل
       support_host: "https://www.tradingview.com",
       enabled_features: ["chart_property_page_trading"],
       charts_storage_url: "https://saveload.tradingview.com",
@@ -121,13 +117,10 @@ function TradingViewWidget({
         container.current.innerHTML = '';
       }
     };
-  }, [forcedSymbol, isMobile]);
-
-  // تحديد ارتفاع الحاوية بناءً على حجم الشاشة
-  const containerHeight = isMobile ? 'h-[500px]' : 'h-[600px]';
+  }, [forcedSymbol]);
 
   return (
-    <div className={`relative w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg ${containerHeight}`}>
+    <div className={`relative w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg ${isMobile ? 'h-[500px]' : 'h-[600px]'}`}>
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
