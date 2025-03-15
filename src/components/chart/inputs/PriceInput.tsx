@@ -19,10 +19,11 @@ export const PriceInput = ({
   const [useAutoPrice, setUseAutoPrice] = useState(true); // تفعيل السعر التلقائي افتراضيًا
   const [livePrice, setLivePrice] = useState<number | null>(tradingViewPrice);
   
-  // استخدام السعر من TradingView تلقائيًا
+  // استخدام السعر من TradingView تلقائيًا عند تغييره
   useEffect(() => {
     if (useAutoPrice && livePrice !== null && livePrice !== undefined) {
       onChange(livePrice.toString());
+      console.log('Setting auto price from livePrice:', livePrice);
     }
   }, [livePrice, useAutoPrice, onChange]);
 
@@ -41,6 +42,7 @@ export const PriceInput = ({
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     
     // طلب السعر الحالي عند تحميل المكون
+    console.log('PriceInput requesting initial price');
     window.dispatchEvent(new Event('request-current-price'));
     
     // استمع لاستجابة السعر الحالي
@@ -56,12 +58,24 @@ export const PriceInput = ({
     
     window.addEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     
+    // إنشاء مؤقت لإعادة طلب السعر كل ثانيتين في حالة عدم استجابة الطلب الأول
+    const priceRequestTimer = setInterval(() => {
+      if (!livePrice && useAutoPrice) {
+        console.log('Retrying price request...');
+        window.dispatchEvent(new Event('request-current-price'));
+      } else {
+        clearInterval(priceRequestTimer);
+      }
+    }, 2000);
+    
     return () => {
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+      clearInterval(priceRequestTimer);
     };
-  }, [useAutoPrice, onChange]);
+  }, [useAutoPrice, onChange, livePrice]);
 
+  // عند تغيير وضع السعر (تلقائي/يدوي)
   const toggleAutoPriceMode = () => {
     const newMode = !useAutoPrice;
     setUseAutoPrice(newMode);
