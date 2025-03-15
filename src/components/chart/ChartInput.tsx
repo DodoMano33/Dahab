@@ -24,22 +24,32 @@ interface ChartInputProps {
     isBehavioral?: boolean,
     isFibonacci?: boolean,
     isFibonacciAdvanced?: boolean,
-    duration?: string
+    duration?: string,
+    selectedTypes?: string[]
   ) => void;
   onHistoryClick?: () => void;
   isAnalyzing: boolean;
+  currentAnalysis?: string;
+  defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 export const ChartInput = ({
   onTradingViewConfig,
   onHistoryClick,
-  isAnalyzing
+  isAnalyzing,
+  currentAnalysis,
+  defaultSymbol,
+  defaultPrice
 }: ChartInputProps) => {
   return (
     <ChartAnalysisForm
       onSubmit={onTradingViewConfig}
       isAnalyzing={isAnalyzing}
       onHistoryClick={onHistoryClick || (() => {})}
+      currentAnalysis={currentAnalysis}
+      defaultSymbol={defaultSymbol}
+      defaultPrice={defaultPrice}
     />
   );
 };
