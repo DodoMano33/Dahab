@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
@@ -25,28 +24,10 @@ export const TradingViewSelector = ({
   const [symbol, setSymbol] = useState(defaultSymbol || "");
   const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
   const [customHours, setCustomHours] = useState<string>("24");
-  const [tradingViewPrice, setTradingViewPrice] = useState<number | null>(null);
 
   useEffect(() => {
     if (defaultSymbol) setSymbol(defaultSymbol);
     if (defaultPrice) setCurrentPrice(defaultPrice.toString());
-    
-    // استمع لتحديثات أسعار TradingView
-    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
-      if (event.detail && event.detail.price) {
-        console.log('TradingViewSelector received price update:', event.detail.price);
-        setTradingViewPrice(event.detail.price);
-      }
-    };
-    
-    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
-    
-    // طلب السعر الحالي عند التحميل
-    window.dispatchEvent(new Event('request-current-price'));
-    
-    return () => {
-      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
-    };
   }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,7 +83,6 @@ export const TradingViewSelector = ({
         value={currentPrice}
         onChange={setCurrentPrice}
         defaultValue={defaultPrice?.toString()}
-        tradingViewPrice={tradingViewPrice}
       />
 
       <AnalysisDurationInput
