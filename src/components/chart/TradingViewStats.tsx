@@ -54,19 +54,21 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
 
   return (
     <div className={`w-full text-white text-xs ${isMobile ? 'space-y-4' : 'grid grid-cols-3 gap-2'}`}>
-      {/* قسم معلومات السعر */}
-      <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
-        <div className="text-lg font-bold">{symbol}</div>
-        <div className="flex items-center">
-          <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 rounded-lg px-3 py-1 shadow-lg">
-            <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
-            <span className="ml-1 text-lg">USD</span>
+      {/* قسم معلومات السعر - تصميم محسّن للموبايل */}
+      <div className={`${isMobile ? 'flex justify-center' : 'flex flex-col items-end'} mb-2`}>
+        <div className="flex flex-col items-center">
+          <div className="text-lg font-bold mb-1">{symbol}</div>
+          <div className="flex items-center mb-1">
+            <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 rounded-lg px-3 py-1 shadow-lg">
+              <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
+              <span className="ml-1 text-lg">USD</span>
+            </div>
           </div>
+          <div className={`${changeColor} mt-1`}>
+            {change.toFixed(3)} ({changePercent.toFixed(2)}%)
+          </div>
+          <div className="text-gray-400 text-xs mt-1">Market closed</div>
         </div>
-        <div className={changeColor}>
-          {change.toFixed(3)} {changePercent.toFixed(2)}%
-        </div>
-        <div className="text-gray-400">Market closed</div>
       </div>
 
       {/* قسم نطاقات السعر */}

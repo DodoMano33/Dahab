@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -18,6 +19,7 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
   const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
+  const isMobile = useIsMobile();
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -64,7 +66,10 @@ function TradingViewWidget({
       charts_storage_url: "https://saveload.tradingview.com",
       charts_storage_api_version: "1.1",
       client_id: "tradingview.com",
-      custom_css_url: ""
+      custom_css_url: "",
+      hide_top_toolbar: isMobile, // إخفاء شريط الأدوات العلوي في وضع الموبايل
+      hide_side_toolbar: isMobile, // إخفاء شريط الأدوات الجانبي في وضع الموبايل
+      toolbar_bg: "#000000", // خلفية داكنة للشريط
     };
 
     script.innerHTML = JSON.stringify(config);
@@ -115,14 +120,21 @@ function TradingViewWidget({
         container.current.innerHTML = '';
       }
     };
-  }, [forcedSymbol]);
+  }, [forcedSymbol, isMobile]);
+
+  // ضبط ارتفاع الشارت حسب حجم الشاشة
+  const chartHeight = isMobile ? '350px' : '600px';
 
   return (
-    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div className="flex flex-col w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+      {/* عرض الشارت بحجم أصغر على الموبايل */}
       <div 
         ref={container}
-        style={{ height: "100%", width: "100%" }}
+        className="w-full border-b border-gray-700"
+        style={{ height: chartHeight }}
       />
+      
+      {/* عرض معلومات السعر بشكل منفصل أسفل الشارت */}
       <CurrentPriceDisplay price={currentPrice} />
     </div>
   );

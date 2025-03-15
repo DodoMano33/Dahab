@@ -1,14 +1,17 @@
 
 import React from 'react';
 import { TradingViewStats } from './TradingViewStats';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CurrentPriceDisplayProps {
   price: number | null;
 }
 
 export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-black/95 text-white py-4 px-3">
+    <div className="bg-black/95 text-white py-4 px-3 w-full">
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <div className="font-bold text-xs">XAUUSD (الذهب)</div>
@@ -20,7 +23,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price 
           </div>
         </div>
         
-        {/* إضافة المكون الجديد */}
+        {/* إضافة المكون الجديد مع تمرير حالة عرض الموبايل */}
         <TradingViewStats />
       </div>
     </div>
