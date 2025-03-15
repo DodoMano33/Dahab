@@ -5,9 +5,13 @@ import { useExtractedPrice } from '@/hooks/useExtractedPrice';
 
 interface CurrentPriceDisplayProps {
   price: number | null;
+  provider?: string;
 }
 
-export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price: propPrice }) => {
+export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ 
+  price: propPrice, 
+  provider = 'CFI' 
+}) => {
   // استخدام الهوك الجديد للحصول على السعر المستخرج
   const { 
     price: displayPrice, 
@@ -23,11 +27,11 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
     if (isAlphaVantagePrice) {
       return ' (Alpha Vantage API)';
     } else if (priceSource === 'extracted') {
-      return ' (من الشارت)';
+      return ` (${provider})`;
     } else if (priceSource === 'tradingview') {
-      return ' (TradingView)';
+      return ` (${provider})`;
     }
-    return '';
+    return ` (${provider})`;  // عرض المزود دائماً
   };
 
   return (
@@ -35,7 +39,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <div className="font-bold text-xs">
-            <span className="text-yellow-500 mr-1">CFI:</span>
+            <span className="text-yellow-500 mr-1">{provider}:</span>
             XAUUSD (الذهب)
           </div>
           <div className="text-sm" id="tradingview-price-display">
@@ -46,7 +50,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
           </div>
         </div>
         
-        <TradingViewStats symbol="CFI:XAUUSD" />
+        <TradingViewStats symbol={`${provider}:XAUUSD`} />
       </div>
     </div>
   );

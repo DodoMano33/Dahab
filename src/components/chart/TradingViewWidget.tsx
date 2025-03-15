@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
@@ -22,7 +23,9 @@ function TradingViewWidget({
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
-  const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
+  // تثبيت رمز العملة وإضافة مزود السعر بوضوح
+  const forcedSymbol = "XAUUSD"; 
+  const priceProvider = "CFI";
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -31,12 +34,13 @@ function TradingViewWidget({
       currentPriceRef.current = price;
       onPriceUpdate?.(price);
       
-      // إرسال تحديث السعر إلى جميع مكونات التطبيق
+      // إرسال تحديث السعر إلى جميع مكونات التطبيق مع تحديد المزود
       window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
         detail: { 
           price, 
           symbol: 'CFI:XAUUSD',
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          provider: priceProvider
         }
       }));
     }
@@ -48,7 +52,7 @@ function TradingViewWidget({
   });
 
   useEffect(() => {
-    console.log('TradingViewWidget mounted with symbol:', forcedSymbol);
+    console.log('TradingViewWidget mounted with symbol:', forcedSymbol, 'provider:', priceProvider);
     
     const script = document.createElement('script');
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
@@ -57,7 +61,7 @@ function TradingViewWidget({
 
     const config = {
       autosize: true,
-      symbol: "CFI:XAUUSD", // تغيير الرمز لاستخدام CFI كمصدر
+      symbol: "CFI:XAUUSD", // تحديد مزود CFI بوضوح
       interval: "1",
       timezone: "Asia/Jerusalem",
       theme: "dark",
@@ -88,6 +92,8 @@ function TradingViewWidget({
     widgetDiv.style.height = 'calc(100% - 32px)';
     widgetDiv.style.width = '100%';
     widgetDiv.id = 'tv_chart_container'; // إضافة معرف للعثور عليه لاحقًا
+    // إضافة سمة data للمصدر
+    widgetDiv.setAttribute('data-provider', 'CFI');
 
     const copyright = document.createElement('div');
     copyright.className = 'tradingview-widget-copyright';
@@ -104,7 +110,7 @@ function TradingViewWidget({
 
     // بدء التقاط السعر بعد تحميل الشارت
     const startCapture = setTimeout(() => {
-      console.log('بدء التقاط السعر من الشارت...');
+      console.log('بدء التقاط السعر من الشارت CFI...');
       startPriceCapture();
     }, 5000);
 
@@ -115,12 +121,12 @@ function TradingViewWidget({
         window.dispatchEvent(new Event('request-current-price'));
         
         // مباشرة عبر postMessage
-        window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
+        window.postMessage({ method: 'getCurrentPrice', symbol: 'CFI:XAUUSD', provider: 'CFI' }, '*');
         
         // طلب تحديث فوري من نظام استخراج السعر
         requestImmediatePriceUpdate();
         
-        console.log('تم إرسال طلب الحصول على السعر الحالي بجميع الطرق المتاحة');
+        console.log('تم إرسال طلب الحصول على السعر الحالي من CFI بجميع الطرق المتاحة');
       } catch (e) {
         console.warn('فشل في طلب السعر المبدئي من TradingView', e);
       }
@@ -162,12 +168,13 @@ function TradingViewWidget({
         <div 
           ref={container}
           style={{ height: "100%", width: "100%" }}
+          data-provider="CFI" // تحديد المزود بوضوح
         />
       </div>
       
       {/* مستطيل معلومات السعر - منفصل تمامًا عن الشارت */}
       <div className="w-full">
-        <CurrentPriceDisplay price={currentPrice} />
+        <CurrentPriceDisplay price={currentPrice} provider="CFI" />
       </div>
     </div>
   );
