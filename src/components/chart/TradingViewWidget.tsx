@@ -6,6 +6,7 @@ import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePriceReader } from '@/hooks/usePriceReader';
 import { screenPriceReader } from '@/utils/price/screenReader';
+import { toast } from 'sonner';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -22,7 +23,7 @@ function TradingViewWidget({
   const currentPriceRef = useRef<number | null>(null);
   const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
   const isMobile = useIsMobile();
-  const { price: screenPrice } = usePriceReader(1000);
+  const { price: screenPrice } = usePriceReader(500); // تحديث أسرع (500ms)
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -57,6 +58,8 @@ function TradingViewWidget({
         if (iframe) {
           // إرسال رسالة إلى إطار TradingView لطلب السعر الحالي
           iframe.contentWindow?.postMessage({ command: 'get-current-price' }, '*');
+        } else {
+          console.warn('No TradingView iframe found when requesting price');
         }
       } catch (error) {
         console.error('Error requesting price from TradingView:', error);
@@ -86,12 +89,18 @@ function TradingViewWidget({
     
     window.addEventListener('message', handleTVMessage);
     
-    // بدء قراءة السعر من الشاشة كل ثانية
-    screenPriceReader.start(1000);
+    // بدء قراءة السعر من الشاشة كل نصف ثانية
+    screenPriceReader.start(500);
+    
+    // إعداد طلب متكرر للسعر من TradingView
+    const priceRequestInterval = setInterval(() => {
+      handleRequestTradingViewPrice();
+    }, 500);
     
     return () => {
       window.removeEventListener('request-tradingview-price', handleRequestTradingViewPrice);
       window.removeEventListener('message', handleTVMessage);
+      clearInterval(priceRequestInterval);
       // إيقاف قراءة السعر عند إلغاء المكون
       screenPriceReader.stop();
     };
@@ -108,7 +117,7 @@ function TradingViewWidget({
     // إضافة كود جافاسكريبت للوصول إلى السعر المباشر
     const injectScript = document.createElement('script');
     injectScript.innerHTML = `
-      // إضافة مستمع للرسائل من التطبيق الرئيسي
+      // مستمع لطلبات السعر الحالي من التطبيق الرئيسي
       window.addEventListener('message', function(event) {
         if (event.data && event.data.command === 'get-current-price') {
           try {
@@ -120,12 +129,31 @@ function TradingViewWidget({
                 type: 'current-price-response',
                 price: price
               }, '*');
+            } else {
+              console.log('TradingView chart not accessible yet');
             }
           } catch(e) {
             console.error('Error getting TradingView price:', e);
           }
         }
       });
+      
+      // محاولة إعداد مراقب للسعر
+      try {
+        setInterval(function() {
+          if (window.TradingView && window.TradingView.activeChart) {
+            const price = window.TradingView.activeChart().crosshairPrice();
+            if (price) {
+              window.parent.postMessage({
+                type: 'current-price-response',
+                price: price
+              }, '*');
+            }
+          }
+        }, 500);
+      } catch(e) {
+        console.error('Error setting up price monitor:', e);
+      }
     `;
 
     const config = {
@@ -180,6 +208,12 @@ function TradingViewWidget({
       container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
     }
+
+    // إظهار إشعار عند تحميل الشارت
+    toast.success("تم تحميل شارت TradingView", {
+      duration: 3000,
+      position: "bottom-center"
+    });
 
     return () => {
       if (container.current) {

@@ -9,6 +9,8 @@ import { toast } from "sonner";
 export class PriceExtractor {
   private lastExtractedPrice: number | null = null;
   private tvPriceSource: number | null = null;
+  private tvPriceTimestamp: number = 0;
+  private readonly MAX_PRICE_AGE = 5000; // 5 ثوانٍ
   
   constructor(private defaultPrice: number = 2900.00) {
     this.lastExtractedPrice = defaultPrice;
@@ -23,15 +25,28 @@ export class PriceExtractor {
     window.addEventListener('tradingview-direct-price', (event: any) => {
       if (event.detail && typeof event.detail.price === 'number') {
         this.tvPriceSource = event.detail.price;
+        this.tvPriceTimestamp = Date.now();
         console.log("✅ تم استلام سعر مباشر من TradingView:", this.tvPriceSource);
+        
+        // تحديث السعر المستخرج أيضًا
+        this.lastExtractedPrice = this.tvPriceSource;
+        
+        // إعادة نشر الحدث بالسعر بدون تعديل للتأكد من انتشاره
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+          detail: { 
+            price: this.tvPriceSource, 
+            symbol: 'XAUUSD',
+            isMarketOpen: true
+          }
+        }));
       }
     });
     
     // طلب السعر الحالي من TradingView
     this.requestTradingViewPrice();
     
-    // إعداد طلب دوري للسعر من TradingView
-    setInterval(() => this.requestTradingViewPrice(), 1000);
+    // إعداد طلب دوري للسعر من TradingView كل 500 مللي ثانية للحصول على تحديثات أكثر
+    setInterval(() => this.requestTradingViewPrice(), 500);
   }
   
   /**
@@ -42,12 +57,21 @@ export class PriceExtractor {
   }
   
   /**
+   * التحقق من صلاحية سعر TradingView
+   */
+  private isTVPriceValid(): boolean {
+    return (
+      this.tvPriceSource !== null && 
+      Date.now() - this.tvPriceTimestamp < this.MAX_PRICE_AGE
+    );
+  }
+  
+  /**
    * محاكاة استخراج السعر (في حالة عدم توفر سعر من TradingView)
    */
   public mockPriceExtraction(isMarketOpen: boolean): number | null {
     // استخدام السعر من TradingView إذا كان متاحًا
-    if (this.tvPriceSource !== null) {
-      this.lastExtractedPrice = this.tvPriceSource;
+    if (this.isTVPriceValid()) {
       return this.tvPriceSource;
     }
     
@@ -55,7 +79,7 @@ export class PriceExtractor {
     if (isMarketOpen) {
       // إذا كان لدينا سعر حالي، نولد تذبذبًا حوله
       if (this.lastExtractedPrice !== null) {
-        const fluctuation = (Math.random() - 0.5) * 2; // تذبذب بين -1 و +1
+        const fluctuation = (Math.random() - 0.5) * 0.5; // تذبذب أقل للتقارب مع السعر الحقيقي
         this.lastExtractedPrice = parseFloat((this.lastExtractedPrice + fluctuation).toFixed(2));
         return this.lastExtractedPrice;
       } 
@@ -76,9 +100,8 @@ export class PriceExtractor {
     try {
       console.log("محاولة الحصول على سعر XAUUSD...");
       
-      // استخدام السعر من TradingView مباشرة إذا كان متاحًا
-      if (this.tvPriceSource !== null) {
-        this.lastExtractedPrice = this.tvPriceSource;
+      // استخدام السعر من TradingView مباشرة إذا كان متاحًا ومحدثًا
+      if (this.isTVPriceValid()) {
         console.log("✅ تم استخدام سعر TradingView المباشر:", this.tvPriceSource);
         return this.tvPriceSource;
       }
@@ -97,5 +120,12 @@ export class PriceExtractor {
       console.error("❌ خطأ أثناء التقاط السعر:", error);
       return this.lastExtractedPrice || this.defaultPrice;
     }
+  }
+  
+  /**
+   * الحصول على آخر سعر من TradingView
+   */
+  public getLastTVPrice(): number | null {
+    return this.tvPriceSource;
   }
 }

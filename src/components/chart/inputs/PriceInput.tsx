@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface PriceInputProps {
   value: string;
@@ -26,6 +27,8 @@ export const PriceInput = ({
       if (event.detail && typeof event.detail.price === 'number') {
         const directPrice = event.detail.price;
         console.log('PriceInput received direct TradingView price:', directPrice);
+        
+        // تأكد من تحديث السعر بالقيمة الدقيقة من TradingView
         setLivePrice(directPrice);
         
         if (useAutoPrice) {
@@ -70,12 +73,15 @@ export const PriceInput = ({
   useEffect(() => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
-        console.log('PriceInput received price update:', event.detail.price);
-        setLivePrice(event.detail.price);
+        const updatedPrice = event.detail.price;
+        console.log('PriceInput received price update:', updatedPrice);
+        setLivePrice(updatedPrice);
+        
         if (useAutoPrice) {
-          console.log('Auto-updating price to:', event.detail.price);
-          onChange(event.detail.price.toString());
+          console.log('Auto-updating price to:', updatedPrice);
+          onChange(updatedPrice.toString());
         }
+        
         // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
         setRetryCount(0);
       }
@@ -91,12 +97,15 @@ export const PriceInput = ({
     // استمع لاستجابة السعر الحالي
     const handleCurrentPriceResponse = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
-        console.log('PriceInput received current price response:', event.detail.price);
-        setLivePrice(event.detail.price);
+        const responsePrice = event.detail.price;
+        console.log('PriceInput received current price response:', responsePrice);
+        setLivePrice(responsePrice);
+        
         if (useAutoPrice) {
-          console.log('Auto-updating price to (from response):', event.detail.price);
-          onChange(event.detail.price.toString());
+          console.log('Auto-updating price to (from response):', responsePrice);
+          onChange(responsePrice.toString());
         }
+        
         // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
         setRetryCount(0);
       }
@@ -107,14 +116,19 @@ export const PriceInput = ({
     // إضافة محاولات متكررة لطلب السعر في حالة عدم الاستجابة الأولى
     const requestInterval = setInterval(() => {
       if (livePrice === null || livePrice === undefined) {
-        // طلب السعر من مصدرين
+        // طلب السعر من مصدرين بشكل متكرر
         window.dispatchEvent(new Event('request-current-price'));
         window.dispatchEvent(new Event('request-tradingview-price'));
         
         setRetryCount(prev => prev + 1);
         console.log(`PriceInput requesting price again (attempt ${retryCount + 1})...`);
+        
+        // عرض إشعار إذا استمرت محاولات الاسترداد لفترة طويلة
+        if (retryCount > 10 && retryCount % 5 === 0) {
+          toast.info("جارِ محاولة استرداد السعر المباشر...", { duration: 3000 });
+        }
       }
-    }, 1000); // محاولة كل ثانية
+    }, 500); // محاولة كل نصف ثانية
     
     return () => {
       clearInterval(requestInterval);
@@ -130,6 +144,9 @@ export const PriceInput = ({
     if (newMode && livePrice !== null && livePrice !== undefined) {
       console.log('Toggle auto price mode ON with price:', livePrice);
       onChange(livePrice.toString());
+      toast.success("تم تفعيل السعر التلقائي");
+    } else if (!newMode) {
+      toast.info("تم تفعيل الإدخال اليدوي للسعر");
     }
   };
 

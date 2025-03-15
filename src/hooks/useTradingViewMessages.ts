@@ -15,7 +15,7 @@ export const useTradingViewMessages = ({
 }: UseTradingViewMessagesProps) => {
   const currentPriceRef = useRef<number | null>(null);
   const priceUpdateCountRef = useRef<number>(0);
-  const { price: screenPrice } = usePriceReader(1000);
+  const { price: screenPrice } = usePriceReader(500); // تحديث كل نصف ثانية لزيادة الدقة
 
   // إضافة مستمع للسعر المباشر من TradingView
   useEffect(() => {
@@ -30,7 +30,7 @@ export const useTradingViewMessages = ({
           onPriceUpdate(directPrice);
         }
         
-        // إرسال حدث تحديث السعر
+        // إرسال حدث تحديث السعر - نقل السعر دون تعديل للحفاظ على الدقة
         window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
           detail: { price: directPrice, symbol: 'XAUUSD' }
         }));

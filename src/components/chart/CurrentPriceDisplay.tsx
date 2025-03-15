@@ -10,8 +10,8 @@ interface CurrentPriceDisplayProps {
 
 export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price: initialPrice }) => {
   const isMobile = useIsMobile();
-  // استخدام قارئ السعر من الشاشة
-  const { price: screenPrice, isActive, isMarketOpen } = usePriceReader(1000); // تحديث كل ثانية
+  // استخدام قارئ السعر من الشاشة مع تحديث أسرع
+  const { price: screenPrice, isActive, isMarketOpen } = usePriceReader(500); // تحديث كل نصف ثانية
   
   // استخدام السعر المقروء من الشاشة إذا كان متاحًا، وإلا استخدم السعر الأولي
   const displayPrice = screenPrice !== null ? screenPrice : initialPrice;
@@ -19,7 +19,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
   // إرسال حدث تحديث السعر للمكونات الأخرى
   useEffect(() => {
     if (displayPrice !== null) {
-      // نرسل حدثًا بالسعر الحالي
+      // إرسال حدث تحديث السعر
       window.dispatchEvent(new CustomEvent('tradingview-price-update', {
         detail: {
           price: displayPrice,
@@ -27,6 +27,15 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
           isMarketOpen: isMarketOpen
         }
       }));
+      
+      // إرسال حدث السعر المباشر أيضًا
+      window.dispatchEvent(new CustomEvent('tradingview-direct-price', {
+        detail: { 
+          price: displayPrice,
+          symbol: 'XAUUSD'
+        }
+      }));
+      
       console.log('CurrentPriceDisplay dispatched price update:', displayPrice);
     }
   }, [displayPrice, isMarketOpen]);
