@@ -2,7 +2,7 @@
 /**
  * Gets the last stored price from the database as fallback
  */
-export async function getLastStoredPrice(supabase: any): Promise<number> {
+export async function getLastStoredPrice(supabase: any): Promise<number | null> {
   try {
     console.log('Trying to get last stored price from database as fallback');
     
@@ -22,14 +22,14 @@ export async function getLastStoredPrice(supabase: any): Promise<number> {
       } else {
         console.warn('No previous price records found in database');
       }
-      console.warn('Could not retrieve last stored price, using default');
-      // استخدام قيمة افتراضية معقولة في أسوأ الحالات
-      return 2000; // قيمة افتراضية للذهب
+      console.warn('Could not retrieve last stored price, returning null');
+      // لا نستخدم قيمة افتراضية الآن
+      return null;
     }
   } catch (lastPriceErr) {
     console.error('Exception in getLastStoredPrice:', lastPriceErr);
-    // استخدام قيمة افتراضية
-    return 2000;
+    // لا نستخدم قيمة افتراضية
+    return null;
   }
 }
 

@@ -67,15 +67,6 @@ export const PriceInput = ({
         window.dispatchEvent(new Event('request-current-price'));
         setRetryCount(prev => prev + 1);
         console.log(`PriceInput requesting price again (attempt ${retryCount + 1})...`);
-        
-        // بعد عدة محاولات، نستخدم السعر الافتراضي إذا كان متاحًا
-        if (retryCount > 3 && defaultValue) {
-          console.log('Using default price after multiple retry attempts:', defaultValue);
-          setLivePrice(Number(defaultValue));
-          if (useAutoPrice) {
-            onChange(defaultValue);
-          }
-        }
       }
     }, 2000); // محاولة كل 2 ثانية
     
@@ -84,7 +75,7 @@ export const PriceInput = ({
       window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     };
-  }, [useAutoPrice, onChange, defaultValue, livePrice, retryCount]);
+  }, [useAutoPrice, onChange, livePrice, retryCount]);
 
   const toggleAutoPriceMode = () => {
     const newMode = !useAutoPrice;
@@ -94,10 +85,6 @@ export const PriceInput = ({
       onChange(livePrice.toString());
     }
   };
-
-  const displayPrice = livePrice !== null && livePrice !== undefined
-    ? livePrice.toFixed(2)
-    : defaultValue || "السعر غير متاح";
 
   return (
     <div>
@@ -127,13 +114,13 @@ export const PriceInput = ({
       {useAutoPrice && (
         <p className="text-sm text-green-500 mt-1">
           {livePrice !== null 
-            ? `السعر المباشر: ${displayPrice}` 
+            ? `السعر المباشر: ${livePrice.toFixed(2)}` 
             : "جاري تحميل السعر المباشر..."}
         </p>
       )}
       {!useAutoPrice && livePrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
-          السعر المتاح حاليًا: {displayPrice}
+          السعر المتاح حاليًا: {livePrice.toFixed(2)}
         </p>
       )}
     </div>
