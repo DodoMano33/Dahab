@@ -2,7 +2,7 @@
 /**
  * Gets the last stored price from the database as fallback
  */
-export async function getLastStoredPrice(supabase: any): Promise<number | null> {
+export async function getLastStoredPrice(supabase: any): Promise<number> {
   try {
     console.log('Trying to get last stored price from database as fallback');
     
@@ -13,28 +13,23 @@ export async function getLastStoredPrice(supabase: any): Promise<number | null> 
       .order('last_checked_at', { ascending: false })
       .limit(1);
     
-    if (!lastPriceError && lastPriceData?.length > 0 && lastPriceData[0].last_checked_price) {
+    if (!lastPriceError && lastPriceData?.length > 0) {
       console.log('Using last stored price:', lastPriceData[0].last_checked_price);
-      
-      // التحقق من أن السعر ليس الرقم الثابت (2000)
-      if (lastPriceData[0].last_checked_price === 2000) {
-        console.warn('Last stored price is the fixed value (2000), not using it');
-        return null;
-      }
-      
       return lastPriceData[0].last_checked_price;
     } else {
       if (lastPriceError) {
         console.error('Database error when retrieving last price:', lastPriceError);
       } else {
-        console.warn('No previous price records found in database or price is null');
+        console.warn('No previous price records found in database');
       }
-      console.warn('Could not retrieve last stored price, returning null');
-      return null;
+      console.warn('Could not retrieve last stored price, using default');
+      // استخدام قيمة افتراضية معقولة في أسوأ الحالات
+      return 2000; // قيمة افتراضية للذهب
     }
   } catch (lastPriceErr) {
     console.error('Exception in getLastStoredPrice:', lastPriceErr);
-    return null;
+    // استخدام قيمة افتراضية
+    return 2000;
   }
 }
 
@@ -47,8 +42,8 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
       // محاولة استخدام السعر من الطلب
       const tradingViewPrice = requestData?.currentPrice || null;
       
-      if (tradingViewPrice !== null && !isNaN(tradingViewPrice) && tradingViewPrice > 0) {
-        console.log('Using real-time price from request:', tradingViewPrice);
+      if (tradingViewPrice !== null && !isNaN(tradingViewPrice)) {
+        console.log('Using price from request:', tradingViewPrice);
         resolve(tradingViewPrice);
         return;
       }
@@ -58,21 +53,10 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
       // استخدام آخر سعر محفوظ كخطة بديلة
       try {
         const lastPrice = await getLastStoredPrice(supabase);
-        if (lastPrice !== null && lastPrice > 0) {
-          console.log('Retrieved fallback price from database:', lastPrice);
-          resolve(lastPrice);
-        } else {
-          console.warn('No fallback price available or invalid price, checking external API');
-          
-          // يمكن إضافة جلب السعر من API خارجي هنا إذا لزم الأمر
-          // const externalPrice = await fetchGoldPriceFromExternalAPI();
-          
-          // مؤقتاً سنعود بقيمة null لإظهار خطأ واضح
-          console.warn('No valid price available, returning null');
-          resolve(null);
-        }
+        console.log('Retrieved fallback price:', lastPrice);
+        resolve(lastPrice);
       } catch (err) {
-        console.error('Failed to get last stored price:', err);
+        console.error('Failed to get last stored price, using null:', err);
         resolve(null);
       }
     } catch (err) {

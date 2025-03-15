@@ -9,18 +9,14 @@ export const fetchAnalysesWithCurrentPrice = async (
   // تثبيت الرمز على XAUUSD
   const fixedSymbol = "XAUUSD";
   
-  if (price === null) {
-    console.error('No price provided to fetchAnalysesWithCurrentPrice');
-    throw new Error('لا يمكن التحقق من التحليلات: السعر غير متاح. يرجى التأكد من أن الرسم البياني يعمل بشكل صحيح.');
-  }
-  
   const requestBody: Record<string, any> = { 
     symbol: fixedSymbol,
-    requestedAt: new Date().toISOString(),
-    currentPrice: price
+    requestedAt: new Date().toISOString()
   };
   
-  console.log('Sending analysis check request with price:', price);
+  if (price !== null) {
+    requestBody.currentPrice = price;
+  }
 
   const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
   const { data: authSession } = await supabase.auth.getSession();
@@ -53,12 +49,7 @@ export const fetchAnalysesWithCurrentPrice = async (
     console.log('Response received from server:', responseText.substring(0, 200) + '...');
     
     try {
-      const parsedResponse = JSON.parse(responseText);
-      // إضافة السعر للاستجابة إذا لم يكن موجوداً بالفعل
-      if (!parsedResponse.price && price) {
-        parsedResponse.price = price;
-      }
-      return parsedResponse;
+      return JSON.parse(responseText);
     } catch (jsonError) {
       console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
       throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);

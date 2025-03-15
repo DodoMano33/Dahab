@@ -13,60 +13,24 @@ export const useBacktestResults = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalProfitLoss, setTotalProfitLoss] = useState(0);
   const [currentTradingViewPrice, setCurrentTradingViewPrice] = useState<number | null>(null);
-  const [lastPriceUpdateTime, setLastPriceUpdateTime] = useState<Date | null>(null);
 
-  // استمع لتحديثات السعر من TradingView ومن أحداث التطبيق المختلفة
+  // استمع لتحديثات السعر من TradingView
   useEffect(() => {
-    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
+    const handleTradingViewPriceUpdate = (event: MessageEvent) => {
       try {
-        if (event.detail && event.detail.price !== undefined && event.detail.price !== null) {
-          console.log('Backtest results received price update:', event.detail.price);
-          setCurrentTradingViewPrice(event.detail.price);
-          setLastPriceUpdateTime(new Date());
-        }
-      } catch (error) {
-        console.error('Error handling price update in Backtest results:', error);
-      }
-    };
-
-    // استمع لجميع أحداث تحديث السعر المحتملة
-    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
-    window.addEventListener('global-price-update', handleTradingViewPriceUpdate as EventListener);
-    window.addEventListener('current-price-response', handleTradingViewPriceUpdate as EventListener);
-    
-    // طلب السعر الحالي عند تحميل المكون
-    window.dispatchEvent(new Event('request-current-price'));
-    
-    // استمع لرسائل TradingView المباشرة
-    const handleTradingViewMessages = (event: MessageEvent) => {
-      try {
-        if (event.data && event.data.name === 'price-update' && 
-            event.data.price !== undefined && event.data.price !== null) {
+        if (event.data && event.data.name === 'price-update' && event.data.price) {
+          console.log('TradingView price updated:', event.data.price);
           setCurrentTradingViewPrice(event.data.price);
-          setLastPriceUpdateTime(new Date());
         }
       } catch (error) {
-        console.error('Error handling TradingView message in Backtest results:', error);
+        console.error('Error handling TradingView price update:', error);
       }
     };
-    
-    window.addEventListener('message', handleTradingViewMessages);
-    
-    return () => {
-      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
-      window.removeEventListener('global-price-update', handleTradingViewPriceUpdate as EventListener);
-      window.removeEventListener('current-price-response', handleTradingViewPriceUpdate as EventListener);
-      window.removeEventListener('message', handleTradingViewMessages);
-    };
-  }, []);
 
-  // تنفيذ طلب السعر بشكل متكرر
-  useEffect(() => {
-    const requestPriceInterval = setInterval(() => {
-      window.dispatchEvent(new Event('request-current-price'));
-    }, 30000); // طلب تحديث كل 30 ثانية
-    
-    return () => clearInterval(requestPriceInterval);
+    window.addEventListener('message', handleTradingViewPriceUpdate);
+    return () => {
+      window.removeEventListener('message', handleTradingViewPriceUpdate);
+    };
   }, []);
 
   const fetchResults = async (pageNumber: number) => {
@@ -168,7 +132,6 @@ export const useBacktestResults = () => {
     loadMore,
     refresh,
     totalProfitLoss,
-    currentTradingViewPrice,
-    lastPriceUpdateTime
+    currentTradingViewPrice
   };
 };

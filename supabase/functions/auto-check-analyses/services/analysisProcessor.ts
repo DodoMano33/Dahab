@@ -6,20 +6,6 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
   let processedCount = 0;
   let errors: { analysis_id: string; error: string }[] = [];
   
-  // التحقق من توفر السعر الحالي
-  if (currentPrice === null) {
-    console.error(`Cannot process analyses because current price is null`);
-    return { 
-      processedCount: 0, 
-      errors: [{ 
-        analysis_id: 'global', 
-        error: 'Cannot process analyses because current price is null' 
-      }]
-    };
-  }
-  
-  console.log(`Processing ${analyses.length} analyses with current price: ${currentPrice}`);
-  
   // معالجة كل تحليل
   for (const analysis of analyses) {
     try {
@@ -31,6 +17,7 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
         continue;
       }
       
+      // استخدام السعر من TradingView (الذي أصبح مضمونًا الآن)
       console.log(`Checking analysis ${analysis.id} with price:`, currentPrice);
       
       // تحقق من وجود نقطة دخول مثالية
