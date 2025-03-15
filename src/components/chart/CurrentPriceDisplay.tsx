@@ -11,7 +11,7 @@ interface CurrentPriceDisplayProps {
 export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price: initialPrice }) => {
   const isMobile = useIsMobile();
   // استخدام قارئ السعر من الشاشة
-  const { price: screenPrice } = usePriceReader(1000); // تحديث كل ثانية
+  const { price: screenPrice, isActive, isMarketOpen } = usePriceReader(1000); // تحديث كل ثانية
   
   // استخدام السعر المقروء من الشاشة إذا كان متاحًا، وإلا استخدم السعر الأولي
   const displayPrice = screenPrice !== null ? screenPrice : initialPrice;
@@ -23,23 +23,32 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
       window.dispatchEvent(new CustomEvent('tradingview-price-update', {
         detail: {
           price: displayPrice,
-          symbol: 'XAUUSD'
+          symbol: 'XAUUSD',
+          isMarketOpen: isMarketOpen
         }
       }));
       console.log('CurrentPriceDisplay dispatched price update:', displayPrice);
     }
-  }, [displayPrice]);
+  }, [displayPrice, isMarketOpen]);
   
   return (
     <div className="bg-black/95 text-white py-4 px-3 w-full">
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <div className="font-bold text-xs">XAUUSD (الذهب)</div>
-          <div className="text-sm">
-            {displayPrice ? 
-              `السعر الحالي: ${displayPrice}` : 
-              'بانتظار السعر... (قد يستغرق التحميل بضع ثوانٍ)'
-            }
+          <div className="text-sm flex items-center gap-2">
+            {/* عرض حالة السوق */}
+            <div className={`px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center w-14 ${isMarketOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {isMarketOpen ? 'مفتوح' : 'مغلق'}
+            </div>
+            
+            {/* عرض السعر */}
+            <div>
+              {displayPrice ? 
+                `السعر الحالي: ${displayPrice}` : 
+                'بانتظار السعر... (قد يستغرق التحميل بضع ثوانٍ)'
+              }
+            </div>
           </div>
         </div>
         

@@ -16,6 +16,8 @@ export class ScreenPriceReader {
   private price: number | null = null;
   private lastUpdateTime: number = 0;
   private isCapturing: boolean = false;
+  private isMarketOpen: boolean = false;
+  private lastMarketStatusCheck: number = 0;
   private readonly targetCoordinates = { x: 340, y: 240, width: 120, height: 30 }; // إحداثيات منطقة السعر - ستحتاج للتعديل
 
   // نمط المفرد للحصول على نسخة واحدة من القارئ
@@ -24,6 +26,44 @@ export class ScreenPriceReader {
       ScreenPriceReader.instance = new ScreenPriceReader();
     }
     return ScreenPriceReader.instance;
+  }
+
+  constructor() {
+    // التحقق من حالة السوق عند التهيئة
+    this.checkMarketStatus();
+  }
+
+  // التحقق من حالة السوق
+  private async checkMarketStatus(): Promise<void> {
+    try {
+      const now = Date.now();
+      
+      // التحقق من حالة السوق مرة كل 5 دقائق فقط
+      if (now - this.lastMarketStatusCheck < 5 * 60 * 1000) {
+        return;
+      }
+      
+      this.lastMarketStatusCheck = now;
+      
+      const response = await fetch('/api/check-market-status');
+      if (!response.ok) {
+        throw new Error('فشل في التحقق من حالة السوق');
+      }
+      
+      const data = await response.json();
+      this.isMarketOpen = data.isOpen;
+      
+      console.log('حالة السوق:', this.isMarketOpen ? 'مفتوح' : 'مغلق');
+      
+      // إذا كان السوق مغلقًا، لا نعدل السعر
+      if (!this.isMarketOpen && this.price !== null) {
+        console.log('السوق مغلق، توقف عن تحديث السعر');
+      }
+    } catch (error) {
+      console.error('خطأ في التحقق من حالة السوق:', error);
+      // افتراضيًا، نفترض أن السوق مفتوح في حالة الخطأ للسماح بالتجربة
+      this.isMarketOpen = true;
+    }
   }
 
   // بدء عملية القراءة بمعدل محدد
@@ -35,8 +75,13 @@ export class ScreenPriceReader {
     this.isCapturing = true;
     console.log("📸 بدء التقاط السعر من الشاشة كل", interval, "مللي ثانية");
 
+    // التحقق من حالة السوق قبل البدء
+    this.checkMarketStatus();
+    
     this.capturePrice();
     this.intervalId = window.setInterval(() => {
+      // نتحقق من حالة السوق بانتظام
+      this.checkMarketStatus();
       this.capturePrice();
     }, interval);
   }
@@ -56,11 +101,22 @@ export class ScreenPriceReader {
     return this.price;
   }
 
+  // الحصول على حالة السوق
+  public isMarketOpenNow(): boolean {
+    return this.isMarketOpen;
+  }
+
   // التقاط صورة لمنطقة السعر وقراءتها
   private async capturePrice(): Promise<void> {
     try {
       // رسالة تشخيصية
       console.log("محاولة التقاط سعر XAUUSD...");
+
+      // إذا كان السوق مغلقًا، لا نقوم بتحديث السعر
+      if (!this.isMarketOpen) {
+        console.log("السوق مغلق حاليًا، لن يتم تحديث السعر");
+        return;
+      }
 
       // في بيئة الإنتاج، ستحتاج إلى تنفيذ البرمجة المشتركة لالتقاط الشاشة
       // هنا سنقوم بمحاكاة القراءة من الصورة
@@ -90,12 +146,18 @@ export class ScreenPriceReader {
     // في الإنتاج، سيتم استبدال هذا بقراءة OCR حقيقية
     // محاكاة قراءة الصورة المرفقة التي تظهر 2984.91
     
-    // إضافة تذبذب صغير للسعر لمحاكاة تغيرات السوق
+    // لا نضيف تذبذب للسعر إذا كان السوق مغلقًا
     const basePrice = 2984.91;
-    const fluctuation = (Math.random() - 0.5) * 2; // تذبذب بين -1 و +1
-    const price = parseFloat((basePrice + fluctuation).toFixed(2));
     
-    return price;
+    if (this.isMarketOpen) {
+      // إضافة تذبذب صغير للسعر لمحاكاة تغيرات السوق في حالة السوق المفتوح
+      const fluctuation = (Math.random() - 0.5) * 2; // تذبذب بين -1 و +1
+      const price = parseFloat((basePrice + fluctuation).toFixed(2));
+      return price;
+    } else {
+      // إرجاع السعر الثابت بدون تذبذب في حالة السوق المغلق
+      return basePrice;
+    }
   }
   
   // نشر حدث بالسعر الجديد
@@ -110,7 +172,8 @@ export class ScreenPriceReader {
     window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
       detail: { 
         price: price, 
-        symbol: 'XAUUSD' 
+        symbol: 'XAUUSD',
+        isMarketOpen: this.isMarketOpen
       }
     }));
     
@@ -119,6 +182,7 @@ export class ScreenPriceReader {
       detail: { 
         price: price,
         symbol: 'XAUUSD',
+        isMarketOpen: this.isMarketOpen,
         dayLow: price - 3,
         dayHigh: price + 3,
         weekLow: price - 60,

@@ -6,12 +6,18 @@ import { screenPriceReader } from '@/utils/price/screenReader';
 export const usePriceReader = (interval: number = 1000) => {
   const [price, setPrice] = useState<number | null>(null);
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [isMarketOpen, setIsMarketOpen] = useState<boolean>(false);
 
   // استماع لتحديثات السعر
   useEffect(() => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
         setPrice(event.detail.price);
+        
+        // تحديث حالة السوق إذا كانت متوفرة في الحدث
+        if (event.detail.isMarketOpen !== undefined) {
+          setIsMarketOpen(event.detail.isMarketOpen);
+        }
       }
     };
 
@@ -21,6 +27,9 @@ export const usePriceReader = (interval: number = 1000) => {
     // بدء قراءة السعر
     screenPriceReader.start(interval);
     setIsActive(true);
+    
+    // الحصول على حالة السوق الحالية
+    setIsMarketOpen(screenPriceReader.isMarketOpenNow());
     
     // تنظيف عند الإلغاء
     return () => {
@@ -43,6 +52,7 @@ export const usePriceReader = (interval: number = 1000) => {
   return {
     price,
     isActive,
+    isMarketOpen,
     startReading,
     stopReading,
   };
