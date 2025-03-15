@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AnalysisData } from "@/types/analysis";
 import { validateAnalysisInputs } from "./utils/inputValidation";
@@ -14,6 +15,7 @@ export const useAnalysisHandler = () => {
   const [currentAnalysis, setCurrentAnalysis] = useState<string>('');
   const [tradingViewPrice, setTradingViewPrice] = useState<number | null>(null);
 
+  // استمع لتحديثات السعر من TradingView
   useEffect(() => {
     const handleTradingViewPriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
@@ -79,8 +81,10 @@ export const useAnalysisHandler = () => {
         selectedTypes
       });
 
+      // استخدام السعر من TradingView إذا كان متاحًا، وإلا استخدام السعر المقدم
       const finalPrice = tradingViewPrice !== null ? tradingViewPrice : providedPrice;
 
+      // Validate inputs
       if (!validateAnalysisInputs(symbol, timeframe, finalPrice)) {
         return;
       }
@@ -89,6 +93,7 @@ export const useAnalysisHandler = () => {
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);
       
+      // Build configuration
       const { analysisType, options } = buildAnalysisConfig(
         isScalping,
         isAI,
@@ -111,17 +116,20 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
+      // Process the chart analysis
       const result = await processChartAnalysis({
         symbol: upperSymbol,
         timeframe,
         providedPrice: finalPrice as number,
         analysisType,
+        // Use the provided selectedTypes if available, otherwise build them from the flags
         selectedTypes: selectedTypes || [],
         isAI,
         options,
         duration
       });
       
+      // Store the image and analysis result
       setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number) : null);
       setAnalysis(result ? result.analysisResult : null);
       setIsAnalyzing(false);
