@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -19,7 +18,6 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
   const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
-  const isMobile = useIsMobile();
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -120,7 +118,7 @@ function TradingViewWidget({
   }, [forcedSymbol]);
 
   return (
-    <div className={`relative w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg ${isMobile ? 'h-[500px]' : 'h-[600px]'}`}>
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       <div 
         ref={container}
         style={{ height: "100%", width: "100%" }}
