@@ -1,24 +1,24 @@
-
-// توسيع الأنواع الحالية بإضافة ما نحتاجه لقارئ الشاشة
-
-export interface PriceUpdate {
-  price: number;
+export interface PriceSubscription {
   symbol: string;
+  onUpdate: (price: number) => void;
+  onError: (error: Error) => void;
+}
+
+export interface CachedPrice {
+  price: number;
   timestamp: number;
 }
 
-export interface ScreenReaderOptions {
-  interval?: number;
-  defaultPrice?: number;
-  targetCoordinates?: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
+export type SymbolType = 'forex' | 'crypto';
+
+export interface PriceData {
+  price: number;
+  timestamp: number;
+  type: SymbolType;
 }
 
-export interface MarketStatus {
-  isOpen: boolean;
-  lastUpdated: number;
+export interface PriceResponse {
+  price: number | null;
+  success: boolean;
+  error?: string;
 }
