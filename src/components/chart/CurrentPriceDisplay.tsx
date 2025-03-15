@@ -14,7 +14,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
   });
 
   return (
-    <div className="bg-black/95 text-white py-4 px-3 rounded-b-lg">
+    <div className="bg-black/95 text-white py-4 px-3 rounded-lg shadow-lg">
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <div className="font-bold text-xs">
@@ -34,4 +34,3 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({ price:
     </div>
   );
 };
-
