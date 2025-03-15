@@ -1,6 +1,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PriceUpdateEvent, CurrentPriceResponseEvent } from './types';
+import { fetchExternalGoldPrice } from '../price-extractor/utils/eventDispatcher';
+import { priceUpdater } from '@/utils/price/priceUpdater';
 
 // القيم المنطقية لسعر الذهب (XAUUSD)
 const MIN_VALID_GOLD_PRICE = 500;   // أقل سعر منطقي للذهب (بالدولار)
@@ -17,8 +19,15 @@ export const usePriceEventHandlers = () => {
   const [priceSource, setPriceSource] = useState<string>('');
   const lastRequestTimeRef = useRef<number>(0);
   const priceRequestIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const externalApiAttemptedRef = useRef<boolean>(false);
   
-  const requestCurrentPrice = useCallback(() => {
+  // بدء تحديث الأسعار باستخدام Alpha Vantage
+  useEffect(() => {
+    const cleanup = priceUpdater.startPricePolling();
+    return cleanup;
+  }, []);
+  
+  const requestCurrentPrice = useCallback(async () => {
     const now = Date.now();
     
     if (now - lastRequestTimeRef.current > 2000) {
@@ -26,12 +35,20 @@ export const usePriceEventHandlers = () => {
       console.log('Requesting current price at', new Date().toISOString());
       window.dispatchEvent(new Event('request-current-price'));
       
-      setTimeout(() => {
-        if (currentPrice === null) {
-          console.log('No price received, trying additional request');
-          window.dispatchEvent(new Event('request-current-price'));
+      // إذا لم يتم العثور على سعر بعد 1 ثانية، حاول استخدام Alpha Vantage API
+      setTimeout(async () => {
+        if (currentPrice === null && !externalApiAttemptedRef.current) {
+          console.log('No price received from DOM, trying Alpha Vantage API');
+          externalApiAttemptedRef.current = true;
+          const price = await fetchExternalGoldPrice();
+          if (price) {
+            console.log('Successfully fetched price from Alpha Vantage:', price);
+          } else {
+            console.log('Failed to get price from Alpha Vantage, trying additional request');
+            window.dispatchEvent(new Event('request-current-price'));
+          }
         }
-      }, 500);
+      }, 1000);
     }
   }, [currentPrice]);
 
@@ -95,14 +112,21 @@ export const usePriceEventHandlers = () => {
   
   useEffect(() => {
     if (currentPrice === null) {
-      const additionalRequestsTimer = setTimeout(() => {
-        console.log('No price received after initial mount, trying multiple requests');
+      const additionalRequestsTimer = setTimeout(async () => {
+        console.log('No price received after initial mount, trying multiple sources');
         
-        requestCurrentPrice();
-        setTimeout(requestCurrentPrice, 1000);
-        setTimeout(requestCurrentPrice, 3000);
-        setTimeout(requestCurrentPrice, 6000);
-      }, 5000);
+        // محاولة استخدام API الخارجي مباشرة
+        const externalPrice = await fetchExternalGoldPrice();
+        if (externalPrice) {
+          console.log('Successfully fetched price from external API:', externalPrice);
+        } else {
+          // محاولات إضافية للحصول على السعر
+          requestCurrentPrice();
+          setTimeout(requestCurrentPrice, 1000);
+          setTimeout(requestCurrentPrice, 3000);
+          setTimeout(requestCurrentPrice, 6000);
+        }
+      }, 3000);
       
       return () => clearTimeout(additionalRequestsTimer);
     }

@@ -1,47 +1,12 @@
-import { supabase } from "@/lib/supabase";
+
 import { toast } from "sonner";
-
-export const getAlphaVantageKey = async (): Promise<string> => {
-  console.log("Fetching Alpha Vantage API key from Supabase...");
-  
-  try {
-    const { data, error } = await supabase
-      .functions.invoke('get-secret', {
-        body: { secretName: 'ALPHA_VANTAGE_API_KEY' }
-      });
-
-    if (error) {
-      console.error("Error fetching Alpha Vantage API key:", error);
-      toast.error("حدث خطأ أثناء جلب مفتاح API");
-      return '';
-    }
-    
-    if (!data?.secret) {
-      console.error("No API key found in response:", data);
-      toast.error("لم نتمكن من الوصول إلى مفتاح API");
-      return '';
-    }
-    
-    console.log("Successfully retrieved Alpha Vantage API key");
-    return data.secret;
-  } catch (error) {
-    console.error("Error in getAlphaVantageKey:", error);
-    toast.error("حدث خطأ في الوصول إلى مفتاح API");
-    return '';
-  }
-};
+import { ALPHA_VANTAGE_API_KEY } from "./config";
 
 export const fetchCryptoPrice = async (symbol: string): Promise<number | null> => {
   try {
-    const apiKey = await getAlphaVantageKey();
-    if (!apiKey) {
-      console.error("No API key available");
-      return null;
-    }
-
     console.log(`Fetching crypto price for ${symbol}...`);
     const response = await fetch(
-      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${symbol}&to_currency=USD&apikey=${apiKey}`,
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${symbol}&to_currency=USD&apikey=${ALPHA_VANTAGE_API_KEY}`,
       {
         headers: {
           'Accept': 'application/json',
@@ -79,19 +44,13 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number | null> =
 
 export const fetchForexPrice = async (symbol: string): Promise<number | null> => {
   try {
-    const apiKey = await getAlphaVantageKey();
-    if (!apiKey) {
-      console.error("No API key available");
-      return null;
-    }
-
     // Split the forex pair into base and quote currencies
     const from = symbol.substring(0, 3);
     const to = symbol.substring(3, 6);
 
     console.log(`Fetching forex price for ${from}/${to}...`);
     const response = await fetch(
-      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${from}&to_currency=${to}&apikey=${apiKey}`,
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=${from}&to_currency=${to}&apikey=${ALPHA_VANTAGE_API_KEY}`,
       {
         headers: {
           'Accept': 'application/json',
@@ -123,6 +82,16 @@ export const fetchForexPrice = async (symbol: string): Promise<number | null> =>
     return parseFloat(rate);
   } catch (error) {
     console.error("Error in fetchForexPrice:", error);
+    return null;
+  }
+};
+
+export const fetchGoldPrice = async (): Promise<number | null> => {
+  try {
+    console.log('Fetching gold price...');
+    return await fetchForexPrice('XAUUSD');
+  } catch (error) {
+    console.error("Error in fetchGoldPrice:", error);
     return null;
   }
 };

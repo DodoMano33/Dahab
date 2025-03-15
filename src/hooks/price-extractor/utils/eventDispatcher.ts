@@ -1,5 +1,6 @@
 
 import { PriceRecord } from '@/components/chart/price-extractor/types';
+import { priceUpdater } from '@/utils/price/priceUpdater';
 
 /**
  * إرسال حدث عند العثور على سعر جديد
@@ -29,6 +30,26 @@ export const createPriceRecord = (
     timestamp: new Date(),
     source: source
   };
+};
+
+/**
+ * محاولة الحصول على سعر الذهب باستخدام Alpha Vantage API
+ */
+export const fetchExternalGoldPrice = async (): Promise<number | null> => {
+  try {
+    console.log('Attempting to fetch gold price from Alpha Vantage...');
+    const price = await priceUpdater.fetchGoldPrice();
+    
+    if (price) {
+      console.log('Received gold price from Alpha Vantage:', price);
+      dispatchPriceEvent(price, 'Alpha Vantage API');
+      return price;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching gold price from external API:', error);
+    return null;
+  }
 };
 
 /**

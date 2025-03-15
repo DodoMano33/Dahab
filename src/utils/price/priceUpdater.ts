@@ -1,9 +1,12 @@
-import { fetchCryptoPrice, fetchForexPrice } from './api';
+
+import { fetchCryptoPrice, fetchForexPrice, fetchGoldPrice } from './api';
+import { POLLING_INTERVAL } from './config';
 
 export class PriceUpdater {
   private rateLimitHit: boolean = false;
   private lastRateLimitTime: number = 0;
   private readonly RATE_LIMIT_RESET_TIME = 24 * 60 * 60 * 1000; // 24 hours
+  private fetchInterval: number | null = null;
 
   async retry<T>(fn: () => Promise<T>, maxAttempts: number = 3): Promise<T> {
     let lastError: Error | null = null;
@@ -41,6 +44,37 @@ export class PriceUpdater {
     }
     
     return true;
+  }
+
+  async fetchGoldPrice(): Promise<number | null> {
+    if (this.isRateLimited()) {
+      console.warn('API rate limit has been reached. Waiting...');
+      return null;
+    }
+
+    try {
+      return await this.retry(async () => {
+        const price = await fetchGoldPrice();
+        if (price) {
+          // Dispatch event with the fetched price
+          window.dispatchEvent(new CustomEvent('global-price-update', { 
+            detail: { 
+              price: price, 
+              symbol: 'XAUUSD',
+              source: 'Alpha Vantage API'
+            }
+          }));
+        }
+        return price;
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('rate limit')) {
+        this.rateLimitHit = true;
+        this.lastRateLimitTime = Date.now();
+      }
+      console.error('Failed to fetch gold price:', error);
+      return null;
+    }
   }
 
   async fetchPrice(symbol: string): Promise<number | null> {
@@ -82,6 +116,29 @@ export class PriceUpdater {
       }
       throw error;
     }
+  }
+
+  startPricePolling() {
+    if (this.fetchInterval) {
+      clearInterval(this.fetchInterval);
+    }
+
+    // Initial fetch
+    this.fetchGoldPrice();
+
+    // Set up interval for polling
+    this.fetchInterval = setInterval(() => {
+      this.fetchGoldPrice();
+    }, POLLING_INTERVAL) as unknown as number;
+
+    console.log('Started price polling with interval:', POLLING_INTERVAL, 'ms');
+    
+    return () => {
+      if (this.fetchInterval) {
+        clearInterval(this.fetchInterval);
+        this.fetchInterval = null;
+      }
+    };
   }
 }
 

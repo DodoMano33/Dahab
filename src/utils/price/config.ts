@@ -1,4 +1,5 @@
-export const ALPHA_VANTAGE_API_KEY = 'demo';
+
+export const ALPHA_VANTAGE_API_KEY = 'RTZ3G9HKJZ0VHIQ3';
 
 export const FOREX_SYMBOLS = {
   'EURUSD': { from: 'EUR', to: 'USD' },
