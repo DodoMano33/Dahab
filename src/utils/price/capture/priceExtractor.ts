@@ -1,10 +1,17 @@
 
 import { captureElement, getPriceElementOrFind } from './elementFinder';
 import { extractTextFromImage, parseExtractedText } from './ocrService';
-import { isCapturingActive, setLastExtractedPrice } from './state';
+import { isCapturingActive, setLastExtractedPrice, getLastExtractedPrice } from './state';
 
 // نشر تحديث السعر في جميع أنحاء التطبيق
 export const broadcastPrice = (price: number) => {
+  const lastPrice = getLastExtractedPrice();
+  
+  // تفادي النشر المتكرر للسعر نفسه
+  if (lastPrice === price) {
+    return;
+  }
+  
   setLastExtractedPrice(price);
   
   // إرسال حدث تحديث السعر
@@ -34,17 +41,9 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     console.log('النص المستخرج من العنصر مباشرة:', directText);
     
     if (directText) {
-      // تحسين التعامل مع النص المستخرج مباشرة من العنصر
-      let cleanText = directText.replace(/[^\d.]/g, ''); // إزالة كل الأحرف ما عدا الأرقام والنقطة
-      
-      // التحقق من وجود نقطة عشرية صالحة
-      if (cleanText.includes('.')) {
-        const parts = cleanText.split('.');
-        if (parts.length > 2) {
-          // إذا كان هناك أكثر من نقطة عشرية، نأخذ الجزء الأول والثاني فقط
-          cleanText = parts[0] + '.' + parts[1];
-        }
-      }
+      // تنظيف النص من أي أحرف غير رقمية باستثناء النقطة العشرية
+      const cleanText = cleanPriceText(directText);
+      console.log('النص بعد التنظيف:', cleanText);
       
       const price = parseFloat(cleanText);
       if (!isNaN(price) && price > 0) {
@@ -59,9 +58,21 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     const extractedText = await extractTextFromImage(imageData);
     console.log('النص المستخرج من OCR:', extractedText);
     
+    if (extractedText) {
+      const cleanText = cleanPriceText(extractedText);
+      console.log('نص OCR بعد التنظيف:', cleanText);
+      
+      const price = parseFloat(cleanText);
+      if (!isNaN(price) && price > 0) {
+        console.log('تم استخراج السعر من OCR:', price);
+        return price;
+      }
+    }
+    
+    // محاولة استخدام تحليل محسّن للنص
     const price = parseExtractedText(extractedText);
     if (price !== null) {
-      console.log('تم استخراج السعر من OCR:', price);
+      console.log('تم استخراج السعر باستخدام تحليل محسّن:', price);
       return price;
     }
     
@@ -71,6 +82,23 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     console.error('فشل في استخراج السعر من الشارت:', error);
     return null;
   }
+};
+
+// تنظيف نص السعر
+const cleanPriceText = (text: string): string => {
+  // إزالة كل الأحرف ما عدا الأرقام والنقطة العشرية
+  let cleanText = text.replace(/[^\d.]/g, '');
+  
+  // التحقق من وجود نقطة عشرية صالحة
+  if (cleanText.includes('.')) {
+    const parts = cleanText.split('.');
+    if (parts.length > 2) {
+      // إذا كان هناك أكثر من نقطة عشرية، نأخذ الجزء الأول والثاني فقط
+      cleanText = parts[0] + '.' + parts[1];
+    }
+  }
+  
+  return cleanText;
 };
 
 // الدالة الرئيسية لاستخراج السعر وبثه
@@ -84,13 +112,15 @@ export const extractAndBroadcastPrice = async () => {
     console.log('بدء عملية استخراج السعر...');
     const price = await extractPriceFromChart();
     if (price !== null) {
-      const lastPrice = await import('./state').then(m => m.getLastExtractedPrice());
+      const lastPrice = getLastExtractedPrice();
+      
       // نشر السعر فقط إذا تغير بشكل ملحوظ أو كان هذا أول سعر
-      if (lastPrice === null || Math.abs(price - lastPrice) > 0.001) {
+      const priceThreshold = 0.01; // عتبة أكثر حساسية للتغييرات
+      if (lastPrice === null || Math.abs(price - lastPrice) > priceThreshold) {
         console.log('تم اكتشاف تغيير في السعر، جاري البث...');
         broadcastPrice(price);
       } else {
-        console.log('لم يتغير السعر بشكل كافٍ للبث');
+        console.log('لم يتغير السعر بشكل كافٍ للبث:', price, 'آخر سعر:', lastPrice);
       }
     } else {
       console.log('لم يتم استخراج سعر صالح');

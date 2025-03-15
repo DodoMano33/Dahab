@@ -1,6 +1,6 @@
 
 import html2canvas from 'html2canvas';
-import { PRICE_SELECTOR, ALTERNATIVE_SELECTORS } from './config';
+import { PRICE_SELECTOR, ALTERNATIVE_SELECTORS, PRICE_ELEMENT_ATTRIBUTES } from './config';
 import { getPriceElement, setPriceElement } from './state';
 
 // العثور على عنصر السعر في الشارت باستخدام المحددات المحدثة
@@ -9,62 +9,125 @@ export const findPriceElement = (): HTMLElement | null => {
   
   // استخدام المحدد الرئيسي أولاً
   let element = document.querySelector(PRICE_SELECTOR) as HTMLElement | null;
-  if (element) {
+  if (element && isValidPriceElement(element)) {
     console.log('تم العثور على عنصر السعر باستخدام المحدد الرئيسي');
     return element;
   }
   
-  // البحث في الإطار المضمن إذا كان موجوداً
+  // محاولة البحث في جميع الإطارات المضمنة
   try {
-    const iframe = document.querySelector('#tv_chart_container iframe') as HTMLIFrameElement | null;
-    if (iframe && iframe.contentDocument) {
-      element = iframe.contentDocument.querySelector(PRICE_SELECTOR) as HTMLElement | null;
-      if (element) {
-        console.log('تم العثور على عنصر السعر في الإطار المضمن');
-        return element;
+    const iframes = document.querySelectorAll('iframe');
+    for (let i = 0; i < iframes.length; i++) {
+      try {
+        const iframe = iframes[i];
+        if (iframe.contentDocument) {
+          element = iframe.contentDocument.querySelector(PRICE_SELECTOR) as HTMLElement | null;
+          if (element && isValidPriceElement(element)) {
+            console.log('تم العثور على عنصر السعر في الإطار المضمن', i);
+            return element;
+          }
+        }
+      } catch (e) {
+        // تجاهل أخطاء الوصول عبر المجالات المختلفة
       }
     }
   } catch (error) {
-    console.warn('فشل البحث في الإطار المضمن:', error);
+    console.warn('فشل البحث في الإطارات المضمنة:', error);
   }
   
   // محاولة العثور على العنصر باستخدام المحددات البديلة
   console.log('جاري تجربة المحددات البديلة...');
   for (const selector of ALTERNATIVE_SELECTORS) {
-    element = document.querySelector(selector) as HTMLElement | null;
-    if (element) {
-      console.log('تم العثور على عنصر السعر باستخدام المحدد البديل:', selector);
-      return element;
-    }
-    
-    // البحث في الإطار المضمن باستخدام المحددات البديلة
     try {
-      const iframe = document.querySelector('#tv_chart_container iframe') as HTMLIFrameElement | null;
-      if (iframe && iframe.contentDocument) {
-        element = iframe.contentDocument.querySelector(selector) as HTMLElement | null;
-        if (element) {
-          console.log('تم العثور على عنصر السعر في الإطار المضمن باستخدام المحدد البديل:', selector);
-          return element;
+      element = document.querySelector(selector) as HTMLElement | null;
+      if (element && isValidPriceElement(element)) {
+        console.log('تم العثور على عنصر السعر باستخدام المحدد البديل:', selector);
+        return element;
+      }
+      
+      // البحث في جميع الإطارات المضمنة باستخدام المحددات البديلة
+      const iframes = document.querySelectorAll('iframe');
+      for (let i = 0; i < iframes.length; i++) {
+        try {
+          const iframe = iframes[i];
+          if (iframe.contentDocument) {
+            element = iframe.contentDocument.querySelector(selector) as HTMLElement | null;
+            if (element && isValidPriceElement(element)) {
+              console.log('تم العثور على عنصر السعر في الإطار المضمن', i, 'باستخدام المحدد البديل:', selector);
+              return element;
+            }
+          }
+        } catch (e) {
+          // تجاهل أخطاء الوصول عبر المجالات المختلفة
         }
       }
-    } catch (error) {
-      // تجاهل أخطاء الوصول عبر المجالات المختلفة
+    } catch (e) {
+      // تجاهل أي أخطاء قد تحدث أثناء تحديد العناصر
     }
   }
   
-  // البحث باستخدام المحددات المرئية المنطقية
-  console.log('تجربة اختيار العناصر مرئياً...');
-  const visibleElements = document.querySelectorAll('.tv-chart-cont span, .tv-chart span, #tv_chart_container span');
-  for (const el of visibleElements) {
-    const text = el.textContent?.trim();
-    if (text && /^\d{1,5}(\.\d{1,2})?$/.test(text)) {
-      console.log('تم العثور على عنصر يحتوي على نص يشبه السعر:', text);
-      return el as HTMLElement;
+  // البحث عن عناصر تحتوي على نص يشبه السعر
+  console.log('تجربة اختيار العناصر بناءً على محتوى النص...');
+  
+  // تعريف النمط لتحديد النص الذي يشبه السعر
+  const pricePattern = PRICE_ELEMENT_ATTRIBUTES.regexPattern;
+  
+  // البحث في جميع عناصر span على الصفحة
+  const spans = document.querySelectorAll('span, div');
+  for (const span of spans) {
+    const text = span.textContent?.trim();
+    if (text && pricePattern.test(text)) {
+      const computedStyle = window.getComputedStyle(span);
+      const fontSize = parseInt(computedStyle.fontSize, 10);
+      
+      // التحقق من حجم الخط للتأكد من أنه قيمة السعر الرئيسية
+      if (fontSize >= PRICE_ELEMENT_ATTRIBUTES.minFontSize) {
+        console.log('تم العثور على عنصر محتمل للسعر بقيمة:', text);
+        return span as HTMLElement;
+      }
     }
+  }
+  
+  // البحث في عناصر محددة بشكل أكثر دقة في TradingView
+  try {
+    const legendItems = document.querySelectorAll('[data-name="legend"]');
+    for (const item of legendItems) {
+      const valueElements = item.querySelectorAll('[data-name*="value"]');
+      for (const el of valueElements) {
+        const text = el.textContent?.trim();
+        if (text && pricePattern.test(text)) {
+          console.log('تم العثور على عنصر محتمل للسعر في legend بقيمة:', text);
+          return el as HTMLElement;
+        }
+      }
+    }
+  } catch (e) {
+    // تجاهل أي أخطاء
   }
   
   console.warn('لم يتم العثور على عنصر السعر باستخدام أي من المحددات');
   return null;
+};
+
+// التحقق من صحة عنصر السعر
+const isValidPriceElement = (element: HTMLElement): boolean => {
+  if (!element) return false;
+  
+  const text = element.textContent?.trim();
+  if (!text) return false;
+  
+  // التحقق من أن النص يتطابق مع نمط السعر
+  if (!PRICE_ELEMENT_ATTRIBUTES.regexPattern.test(text)) {
+    return false;
+  }
+  
+  // التحقق من حجم العنصر إذا كان ذا قيمة
+  const rect = element.getBoundingClientRect();
+  if (rect.width < PRICE_ELEMENT_ATTRIBUTES.minWidth || rect.height < PRICE_ELEMENT_ATTRIBUTES.minHeight) {
+    return false;
+  }
+  
+  return true;
 };
 
 // التقاط صورة للعنصر
@@ -95,6 +158,18 @@ export const getPriceElementOrFind = (): HTMLElement | null => {
     if (element) {
       console.log('تم العثور على عنصر السعر وتخزينه');
       setPriceElement(element);
+    }
+  } else {
+    // التحقق من صحة العنصر المخزن
+    if (!document.body.contains(element) || !isValidPriceElement(element)) {
+      console.log('عنصر السعر المخزن غير صالح، جاري البحث عن عنصر جديد...');
+      element = findPriceElement();
+      if (element) {
+        console.log('تم العثور على عنصر السعر الجديد وتخزينه');
+        setPriceElement(element);
+      } else {
+        setPriceElement(null);
+      }
     }
   }
   
