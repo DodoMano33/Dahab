@@ -4,6 +4,8 @@ import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePriceReader } from '@/hooks/usePriceReader';
+import { screenPriceReader } from '@/utils/price/screenReader';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -20,6 +22,7 @@ function TradingViewWidget({
   const currentPriceRef = useRef<number | null>(null);
   const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
   const isMobile = useIsMobile();
+  const { price: screenPrice } = usePriceReader(1000);
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -27,18 +30,35 @@ function TradingViewWidget({
     onPriceUpdate
   });
 
-  // تحديث السعر المرجعي
+  // تحديث السعر المرجعي باستخدام السعر من قارئ الشاشة أو من TradingView
   useEffect(() => {
-    if (currentPrice !== null) {
-      currentPriceRef.current = currentPrice;
-      console.log('Current price updated in TradingViewWidget:', currentPrice);
+    const finalPrice = screenPrice !== null ? screenPrice : currentPrice;
+    if (finalPrice !== null) {
+      currentPriceRef.current = finalPrice;
+      console.log('Current price updated in TradingViewWidget:', finalPrice);
+      
+      // إعلام باقي المكونات بالسعر الجديد
+      if (onPriceUpdate) {
+        onPriceUpdate(finalPrice);
+      }
     }
-  }, [currentPrice]);
+  }, [screenPrice, currentPrice, onPriceUpdate]);
 
   useAnalysisChecker({
     symbol: forcedSymbol,
     currentPriceRef
   });
+
+  // بدء قارئ الشاشة عند تحميل المكون
+  useEffect(() => {
+    // بدء قراءة السعر من الشاشة كل ثانية
+    screenPriceReader.start(1000);
+    
+    return () => {
+      // إيقاف قراءة السعر عند إلغاء المكون
+      screenPriceReader.stop();
+    };
+  }, []);
 
   useEffect(() => {
     console.log('TradingViewWidget mounted with symbol:', forcedSymbol);
@@ -83,6 +103,9 @@ function TradingViewWidget({
     widgetDiv.className = 'tradingview-widget-container__widget';
     widgetDiv.style.height = 'calc(100% - 32px)';
     widgetDiv.style.width = '100%';
+    
+    // إضافة معرف فريد للعنصر الذي سيتم استخدامه للتقاط الشاشة
+    widgetDiv.id = 'tradingview-price-display';
 
     const copyright = document.createElement('div');
     copyright.className = 'tradingview-widget-copyright';
@@ -97,25 +120,7 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
-    // طلب السعر الأولي
-    const attemptInitialPriceRequest = () => {
-      try {
-        window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
-        console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
-      } catch (e) {
-        console.warn('Failed to request initial price from TradingView', e);
-      }
-    };
-    
-    // جدولة عدة طلبات متتالية للتأكد من الحصول على السعر
-    const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
-    const secondPriceTimer = setTimeout(attemptInitialPriceRequest, 5000);
-    const thirdPriceTimer = setTimeout(attemptInitialPriceRequest, 8000);
-
     return () => {
-      clearTimeout(initialPriceTimer);
-      clearTimeout(secondPriceTimer);
-      clearTimeout(thirdPriceTimer);
       if (container.current) {
         container.current.innerHTML = '';
       }
@@ -135,7 +140,7 @@ function TradingViewWidget({
       />
       
       {/* عرض معلومات السعر بشكل منفصل أسفل الشارت */}
-      <CurrentPriceDisplay price={currentPrice} />
+      <CurrentPriceDisplay price={currentPriceRef.current} />
     </div>
   );
 }

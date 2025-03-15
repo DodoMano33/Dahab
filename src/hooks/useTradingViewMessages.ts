@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from 'react';
+import { usePriceReader } from './usePriceReader';
 
 interface UseTradingViewMessagesProps {
   symbol: string;
@@ -14,6 +15,25 @@ export const useTradingViewMessages = ({
 }: UseTradingViewMessagesProps) => {
   const currentPriceRef = useRef<number | null>(null);
   const priceUpdateCountRef = useRef<number>(0);
+  const { price: screenPrice } = usePriceReader(1000);
+
+  useEffect(() => {
+    // تحديث السعر من قارئ الشاشة إذا كان متاحًا
+    if (screenPrice !== null) {
+      currentPriceRef.current = screenPrice;
+      priceUpdateCountRef.current += 1;
+      console.log(`★★★ Price updated from Screen Reader (${priceUpdateCountRef.current}):`, screenPrice, 'for XAUUSD');
+      
+      if (onPriceUpdate) {
+        onPriceUpdate(screenPrice);
+      }
+      
+      // إرسال حدث تحديث السعر
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { price: screenPrice, symbol: 'XAUUSD' }
+      }));
+    }
+  }, [screenPrice, onPriceUpdate]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -31,16 +51,19 @@ export const useTradingViewMessages = ({
             return;
           }
           
-          priceUpdateCountRef.current += 1;
-          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for XAUUSD');
-          
-          currentPriceRef.current = price;
-          onPriceUpdate?.(price);
-          
-          // يرسل حدث تحديث السعر للمكونات الأخرى
-          window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-            detail: { price, symbol: 'XAUUSD' }
-          }));
+          // استخدم سعر TradingView فقط إذا لم يكن هناك سعر من قارئ الشاشة
+          if (screenPrice === null) {
+            priceUpdateCountRef.current += 1;
+            console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for XAUUSD');
+            
+            currentPriceRef.current = price;
+            onPriceUpdate?.(price);
+            
+            // يرسل حدث تحديث السعر للمكونات الأخرى
+            window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+              detail: { price, symbol: 'XAUUSD' }
+            }));
+          }
         }
       } catch (error) {
         console.error('Error handling TradingView message:', error);
@@ -58,11 +81,14 @@ export const useTradingViewMessages = ({
 
     // معالج لطلبات السعر الحالي
     const handleCurrentPriceRequest = () => {
-      if (currentPriceRef.current !== null) {
-        console.log('Responding to current price request with:', currentPriceRef.current);
+      // استخدم سعر الشاشة أولاً، ثم سعر TradingView
+      const finalPrice = screenPrice !== null ? screenPrice : currentPriceRef.current;
+      
+      if (finalPrice !== null) {
+        console.log('Responding to current price request with:', finalPrice);
         window.dispatchEvent(new CustomEvent('current-price-response', {
           detail: { 
-            price: currentPriceRef.current,
+            price: finalPrice,
             symbol: 'XAUUSD'
           }
         }));
@@ -77,10 +103,10 @@ export const useTradingViewMessages = ({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('request-current-price', handleCurrentPriceRequest);
     };
-  }, [symbol, onSymbolChange, onPriceUpdate]);
+  }, [symbol, onSymbolChange, onPriceUpdate, screenPrice]);
 
   return {
-    currentPrice: currentPriceRef.current,
+    currentPrice: screenPrice || currentPriceRef.current,
     priceUpdateCount: priceUpdateCountRef.current
   };
 };
