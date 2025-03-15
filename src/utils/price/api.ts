@@ -1,33 +1,85 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
+// استخدام مفتاح API للتطبيق
+const DEFAULT_API_KEY = 'RTZ3G9HKJZ0VHIQ';
+
 export const getAlphaVantageKey = async (): Promise<string> => {
-  console.log("Fetching Alpha Vantage API key from Supabase...");
+  console.log("جاري جلب مفتاح Alpha Vantage API...");
   
   try {
+    // محاولة الحصول على المفتاح من Supabase (إذا كان متاحًا)
     const { data, error } = await supabase
       .functions.invoke('get-secret', {
         body: { secretName: 'ALPHA_VANTAGE_API_KEY' }
       });
 
     if (error) {
-      console.error("Error fetching Alpha Vantage API key:", error);
-      toast.error("حدث خطأ أثناء جلب مفتاح API");
-      return '';
+      console.error("خطأ في جلب مفتاح Alpha Vantage API:", error);
+      // استخدام المفتاح الافتراضي
+      console.log("استخدام مفتاح API الافتراضي");
+      return DEFAULT_API_KEY;
     }
     
     if (!data?.secret) {
-      console.error("No API key found in response:", data);
-      toast.error("لم نتمكن من الوصول إلى مفتاح API");
-      return '';
+      console.log("لم يتم العثور على مفتاح في Supabase، استخدام المفتاح الافتراضي");
+      return DEFAULT_API_KEY;
     }
     
-    console.log("Successfully retrieved Alpha Vantage API key");
+    console.log("تم جلب مفتاح Alpha Vantage API بنجاح");
     return data.secret;
   } catch (error) {
-    console.error("Error in getAlphaVantageKey:", error);
-    toast.error("حدث خطأ في الوصول إلى مفتاح API");
-    return '';
+    console.error("خطأ في getAlphaVantageKey:", error);
+    console.log("استخدام مفتاح API الافتراضي");
+    return DEFAULT_API_KEY;
+  }
+};
+
+export const fetchGoldPrice = async (): Promise<number | null> => {
+  try {
+    const apiKey = await getAlphaVantageKey();
+    
+    console.log("جاري جلب سعر الذهب من Alpha Vantage...");
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${apiKey}`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error("خطأ في جلب سعر الذهب:", response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (data.Note) {
+      console.error("تم تجاوز حد معدل API:", data.Note);
+      toast.error("تم تجاوز حد معدل API لـ Alpha Vantage");
+      return null;
+    }
+
+    const exchangeRate = data["Realtime Currency Exchange Rate"];
+    if (!exchangeRate) {
+      console.error("لم يتم العثور على بيانات سعر الصرف في الاستجابة:", data);
+      return null;
+    }
+
+    const price = exchangeRate["5. Exchange Rate"];
+    if (!price) {
+      console.error("لم يتم العثور على سعر الصرف في الاستجابة:", exchangeRate);
+      return null;
+    }
+
+    console.log(`تم جلب سعر الذهب الحالي: ${price}`);
+    return parseFloat(price);
+  } catch (error) {
+    console.error("خطأ في fetchGoldPrice:", error);
+    return null;
   }
 };
 

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { getLastExtractedPrice } from '@/utils/price/screenshotPriceExtractor';
+import { priceUpdater } from '@/utils/price/priceUpdater';
 
 interface UseExtractedPriceOptions {
   onPriceChange?: (price: number) => void;
@@ -11,10 +12,19 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
   const { onPriceChange, defaultPrice } = options;
   
   const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
-  const [priceSource, setPriceSource] = useState<'extracted' | 'tradingview' | 'default' | 'none'>('none');
+  const [priceSource, setPriceSource] = useState<'extracted' | 'tradingview' | 'default' | 'alphavantage' | 'none'>('none');
   
   // استخراج آخر سعر عند التحميل
   useEffect(() => {
+    // التحقق من وجود سعر من Alpha Vantage أولاً
+    const alphaVantagePrice = priceUpdater.getLastGoldPrice();
+    if (alphaVantagePrice !== null) {
+      setExtractedPrice(alphaVantagePrice);
+      setPriceSource('alphavantage');
+      onPriceChange?.(alphaVantagePrice);
+      return;
+    }
+    
     // التحقق من وجود سعر مستخرج سابقاً
     const lastPrice = getLastExtractedPrice();
     if (lastPrice !== null) {
@@ -33,15 +43,15 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
       if (event.detail && event.detail.price) {
         console.log('useExtractedPrice: تم استلام تحديث السعر:', event.detail.price);
         setExtractedPrice(event.detail.price);
-        setPriceSource('extracted');
+        setPriceSource(event.detail.source === 'alphavantage' ? 'alphavantage' : 'extracted');
         onPriceChange?.(event.detail.price);
       }
     };
     
     // الاستماع لتحديثات السعر من TradingView
     const handleTradingViewPrice = (event: CustomEvent) => {
-      // نستخدم السعر من TradingView فقط إذا لم يكن لدينا سعر مستخرج
-      if (priceSource !== 'extracted' && event.detail && event.detail.price) {
+      // نستخدم السعر من TradingView فقط إذا لم يكن لدينا سعر مستخرج أو من Alpha Vantage
+      if (priceSource !== 'extracted' && priceSource !== 'alphavantage' && event.detail && event.detail.price) {
         console.log('useExtractedPrice: تم استلام سعر من TradingView:', event.detail.price);
         setExtractedPrice(event.detail.price);
         setPriceSource('tradingview');
@@ -65,6 +75,7 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
     price: extractedPrice,
     priceSource,
     hasPrice: extractedPrice !== null,
-    isExtractedPrice: priceSource === 'extracted'
+    isExtractedPrice: priceSource === 'extracted' || priceSource === 'alphavantage',
+    isAlphaVantagePrice: priceSource === 'alphavantage'
   };
 };
