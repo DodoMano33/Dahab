@@ -56,8 +56,8 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
       <div className="flex flex-col items-end">
         <div className="text-lg font-bold">{symbol}</div>
         <div className="flex items-center">
-          <span className="text-2xl font-bold">{currentPrice || 2984.91}</span>
-          <span className="ml-1">USD</span>
+          <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
+          <span className="ml-1 text-lg">USD</span>
         </div>
         <div className={changeColor}>
           {change.toFixed(3)} {changePercent.toFixed(2)}%
