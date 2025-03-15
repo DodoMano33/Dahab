@@ -2,7 +2,6 @@
 import React from 'react';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { usePriceReader } from '@/hooks/usePriceReader';
 
 interface TradingViewStatsProps {
   symbol?: string;
@@ -11,37 +10,12 @@ interface TradingViewStatsProps {
 export const TradingViewStats: React.FC<TradingViewStatsProps> = ({ 
   symbol = "XAUUSD" 
 }) => {
-  const { marketData } = useCurrentPrice();
-  const { price: screenPrice } = usePriceReader(1000);
+  const { currentPrice, marketData } = useCurrentPrice();
   const isMobile = useIsMobile();
   
-  // إرسال حدث بالسعر الحالي للمكونات الأخرى
-  React.useEffect(() => {
-    if (screenPrice !== null) {
-      // إرسال حدث تحديث السعر مع بيانات السوق الكاملة
-      window.dispatchEvent(new CustomEvent('current-price-response', {
-        detail: {
-          price: screenPrice,
-          symbol: symbol,
-          dayLow: marketData?.dayLow || screenPrice * 0.997,
-          dayHigh: marketData?.dayHigh || screenPrice * 1.003,
-          weekLow: marketData?.weekLow || 2146,
-          weekHigh: marketData?.weekHigh || 3005,
-          change: marketData?.change || 0.35,
-          changePercent: marketData?.changePercent || 0.012,
-          recommendation: marketData?.recommendation || "Strong buy"
-        }
-      }));
-      console.log('TradingViewStats dispatched price update event:', screenPrice);
-    }
-  }, [screenPrice, symbol, marketData]);
-  
-  // إذا لم يكن هناك سعر مقروء، استخدم قيمة افتراضية
-  const currentPrice = screenPrice || 2984.91;
-  
   // نحدد قيم افتراضية لنطاقات السعر والتوصية الفنية
-  const dayLow = marketData?.dayLow || Math.round(currentPrice * 0.997);
-  const dayHigh = marketData?.dayHigh || Math.round(currentPrice * 1.003);
+  const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
+  const dayHigh = marketData?.dayHigh || (currentPrice ? Math.round(currentPrice * 1.003) : 3005);
   const weekLow = marketData?.weekLow || 2146;
   const weekHigh = marketData?.weekHigh || 3005;
   
@@ -64,8 +38,8 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   }
   
   // استخدام التغير والنسبة من البيانات أو القيم الافتراضية
-  const change = marketData?.change !== undefined ? marketData.change : 0.35;
-  const changePercent = marketData?.changePercent !== undefined ? marketData.changePercent : 0.012;
+  const change = marketData?.change !== undefined ? marketData.change : -3.785;
+  const changePercent = marketData?.changePercent !== undefined ? marketData.changePercent : -0.13;
   const changeColor = change >= 0 ? "text-green-500" : "text-red-500";
   
   // احتساب نسبة موقع السعر الحالي ضمن النطاق اليومي
@@ -80,21 +54,17 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
 
   return (
     <div className={`w-full text-white text-xs ${isMobile ? 'space-y-4' : 'grid grid-cols-3 gap-2'}`}>
-      {/* قسم معلومات السعر - تصميم محسّن للموبايل */}
-      <div className={`${isMobile ? 'flex justify-center' : 'flex flex-col items-end'} mb-2`}>
-        <div className="flex flex-col items-center">
-          <div className="text-lg font-bold mb-1">{symbol}</div>
-          <div className="flex items-center mb-1">
-            <div className="bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 rounded-lg px-3 py-1 shadow-lg">
-              <span className="text-4xl font-bold">{currentPrice.toFixed(2)}</span>
-              <span className="ml-1 text-lg">USD</span>
-            </div>
-          </div>
-          <div className={`${changeColor} mt-1`}>
-            {change.toFixed(3)} ({changePercent.toFixed(2)}%)
-          </div>
-          <div className="text-gray-400 text-xs mt-1">Market open</div>
+      {/* قسم معلومات السعر */}
+      <div className={`flex flex-col ${isMobile ? 'items-center' : 'items-end'}`}>
+        <div className="text-lg font-bold">{symbol}</div>
+        <div className="flex items-center">
+          <span className="text-4xl font-bold">{currentPrice || 2984.91}</span>
+          <span className="ml-1 text-lg">USD</span>
         </div>
+        <div className={changeColor}>
+          {change.toFixed(3)} {changePercent.toFixed(2)}%
+        </div>
+        <div className="text-gray-400">Market closed</div>
       </div>
 
       {/* قسم نطاقات السعر */}

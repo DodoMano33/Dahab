@@ -3,9 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { usePriceReader } from '@/hooks/usePriceReader';
-import { screenPriceReader } from '@/utils/price/screenReader';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -21,8 +18,6 @@ function TradingViewWidget({
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
   const forcedSymbol = "XAUUSD"; // تثبيت الرمز على XAUUSD
-  const isMobile = useIsMobile();
-  const { price: screenPrice } = usePriceReader(1000);
 
   const { currentPrice } = useTradingViewMessages({
     symbol: forcedSymbol,
@@ -30,35 +25,18 @@ function TradingViewWidget({
     onPriceUpdate
   });
 
-  // تحديث السعر المرجعي باستخدام السعر من قارئ الشاشة أو من TradingView
+  // تحديث السعر المرجعي
   useEffect(() => {
-    const finalPrice = screenPrice !== null ? screenPrice : currentPrice;
-    if (finalPrice !== null) {
-      currentPriceRef.current = finalPrice;
-      console.log('Current price updated in TradingViewWidget:', finalPrice);
-      
-      // إعلام باقي المكونات بالسعر الجديد
-      if (onPriceUpdate) {
-        onPriceUpdate(finalPrice);
-      }
+    if (currentPrice !== null) {
+      currentPriceRef.current = currentPrice;
+      console.log('Current price updated in TradingViewWidget:', currentPrice);
     }
-  }, [screenPrice, currentPrice, onPriceUpdate]);
+  }, [currentPrice]);
 
   useAnalysisChecker({
     symbol: forcedSymbol,
     currentPriceRef
   });
-
-  // بدء قارئ الشاشة عند تحميل المكون
-  useEffect(() => {
-    // بدء قراءة السعر من الشاشة كل ثانية
-    screenPriceReader.start(1000);
-    
-    return () => {
-      // إيقاف قراءة السعر عند إلغاء المكون
-      screenPriceReader.stop();
-    };
-  }, []);
 
   useEffect(() => {
     console.log('TradingViewWidget mounted with symbol:', forcedSymbol);
@@ -70,7 +48,7 @@ function TradingViewWidget({
 
     const config = {
       autosize: true,
-      symbol: "CFI:XAUUSD", // تغيير الرمز لاستخدام مصدر CFI للذهب
+      symbol: forcedSymbol,
       interval: "1",
       timezone: "Asia/Jerusalem",
       theme: "dark",
@@ -86,10 +64,7 @@ function TradingViewWidget({
       charts_storage_url: "https://saveload.tradingview.com",
       charts_storage_api_version: "1.1",
       client_id: "tradingview.com",
-      custom_css_url: "",
-      hide_top_toolbar: isMobile, // إخفاء شريط الأدوات العلوي في وضع الموبايل
-      hide_side_toolbar: isMobile, // إخفاء شريط الأدوات الجانبي في وضع الموبايل
-      toolbar_bg: "#000000", // خلفية داكنة للشريط
+      custom_css_url: ""
     };
 
     script.innerHTML = JSON.stringify(config);
@@ -103,9 +78,6 @@ function TradingViewWidget({
     widgetDiv.className = 'tradingview-widget-container__widget';
     widgetDiv.style.height = 'calc(100% - 32px)';
     widgetDiv.style.width = '100%';
-    
-    // إضافة معرف فريد للعنصر الذي سيتم استخدامه للتقاط الشاشة
-    widgetDiv.id = 'tradingview-price-display';
 
     const copyright = document.createElement('div');
     copyright.className = 'tradingview-widget-copyright';
@@ -120,27 +92,38 @@ function TradingViewWidget({
       container.current.appendChild(widgetContainer);
     }
 
+    // طلب السعر الأولي
+    const attemptInitialPriceRequest = () => {
+      try {
+        window.postMessage({ method: 'getCurrentPrice', symbol: forcedSymbol }, '*');
+        console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
+      } catch (e) {
+        console.warn('Failed to request initial price from TradingView', e);
+      }
+    };
+    
+    // جدولة عدة طلبات متتالية للتأكد من الحصول على السعر
+    const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
+    const secondPriceTimer = setTimeout(attemptInitialPriceRequest, 5000);
+    const thirdPriceTimer = setTimeout(attemptInitialPriceRequest, 8000);
+
     return () => {
+      clearTimeout(initialPriceTimer);
+      clearTimeout(secondPriceTimer);
+      clearTimeout(thirdPriceTimer);
       if (container.current) {
         container.current.innerHTML = '';
       }
     };
-  }, [forcedSymbol, isMobile]);
-
-  // ضبط ارتفاع الشارت حسب حجم الشاشة
-  const chartHeight = isMobile ? '350px' : '600px';
+  }, [forcedSymbol]);
 
   return (
-    <div className="flex flex-col w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-      {/* عرض الشارت بحجم أصغر على الموبايل */}
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       <div 
         ref={container}
-        className="w-full border-b border-gray-700"
-        style={{ height: chartHeight }}
+        style={{ height: "100%", width: "100%" }}
       />
-      
-      {/* عرض معلومات السعر بشكل منفصل أسفل الشارت */}
-      <CurrentPriceDisplay price={currentPriceRef.current} />
+      <CurrentPriceDisplay price={currentPrice} />
     </div>
   );
 }

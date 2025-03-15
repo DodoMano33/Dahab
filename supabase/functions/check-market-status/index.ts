@@ -15,21 +15,8 @@ function isWeekend(date: Date): boolean {
 
 function isMarketHours(date: Date): boolean {
   const hours = date.getUTCHours();
-  const day = date.getUTCDay();
-  
-  // أيام الأسبوع (الإثنين إلى الجمعة)
-  if (day >= 1 && day <= 5) {
-    // سوق الذهب مفتوح من الساعة 22:00 UTC (الأحد) إلى 21:00 UTC (الجمعة)
-    return hours >= 22 || hours < 21;
-  }
-  
-  // يوم الأحد - السوق يفتح فقط بعد الساعة 22:00 UTC
-  if (day === 0) {
-    return hours >= 22;
-  }
-  
-  // يوم السبت - السوق مغلق دائمًا
-  return false;
+  // The market is open from 22:00 UTC (Sunday) to 21:00 UTC (Friday)
+  return hours >= 22 || hours < 21;
 }
 
 serve(async (req) => {
@@ -48,15 +35,13 @@ serve(async (req) => {
     }
 
     const now = new Date();
-    const isMarketOpen = !isWeekend(now) && isMarketHours(now);
+    const isOpen = !isWeekend(now) && isMarketHours(now);
 
     console.log(`Current time: ${now.toISOString()}`);
-    console.log(`Is weekend: ${isWeekend(now)}`);
-    console.log(`Market hours check: ${isMarketHours(now)}`);
-    console.log(`Final market status: ${isMarketOpen ? 'open' : 'closed'}`);
+    console.log(`Market status: ${isOpen ? 'open' : 'closed'}`);
 
     const response = {
-      isOpen: isMarketOpen,
+      isOpen,
       timestamp: now.toISOString(),
       serverTime: now.toISOString(),
     };

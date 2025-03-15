@@ -6,7 +6,6 @@ import { buildAnalysisConfig } from "./utils/analysisConfigBuilder";
 import { processChartAnalysis } from "./utils/chartAnalysisProcessor";
 import { showErrorToast } from "./utils/toastUtils";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { usePriceReader } from "@/hooks/usePriceReader";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -15,7 +14,6 @@ export const useAnalysisHandler = () => {
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
   const [currentAnalysis, setCurrentAnalysis] = useState<string>('');
   const [tradingViewPrice, setTradingViewPrice] = useState<number | null>(null);
-  const { price: screenPrice } = usePriceReader(1000);
 
   // استمع لتحديثات السعر من TradingView
   useEffect(() => {
@@ -62,7 +60,6 @@ export const useAnalysisHandler = () => {
         timeframe,
         providedPrice,
         tradingViewPrice,
-        screenPrice,
         isScalping,
         isAI,
         isSMC,
@@ -84,10 +81,8 @@ export const useAnalysisHandler = () => {
         selectedTypes
       });
 
-      // استخدام السعر بترتيب: السعر من قارئ الشاشة، ثم السعر من TradingView، ثم السعر المقدم
-      const finalPrice = screenPrice !== null ? screenPrice : 
-                        tradingViewPrice !== null ? tradingViewPrice : 
-                        providedPrice;
+      // استخدام السعر من TradingView إذا كان متاحًا، وإلا استخدام السعر المقدم
+      const finalPrice = tradingViewPrice !== null ? tradingViewPrice : providedPrice;
 
       // Validate inputs
       if (!validateAnalysisInputs(symbol, timeframe, finalPrice)) {
@@ -158,6 +153,6 @@ export const useAnalysisHandler = () => {
     setImage,
     setAnalysis,
     setIsAnalyzing,
-    tradingViewPrice: screenPrice !== null ? screenPrice : tradingViewPrice
+    tradingViewPrice
   };
 };

@@ -18,7 +18,6 @@ export const PriceInput = ({
 }: PriceInputProps) => {
   const [useAutoPrice, setUseAutoPrice] = useState(true); // تفعيل السعر التلقائي افتراضيًا
   const [livePrice, setLivePrice] = useState<number | null>(tradingViewPrice);
-  const [retryCount, setRetryCount] = useState(0);
   
   // استخدام السعر من TradingView تلقائيًا
   useEffect(() => {
@@ -27,21 +26,19 @@ export const PriceInput = ({
     }
   }, [livePrice, useAutoPrice, onChange]);
 
-  // استمع للتحديثات المباشرة من TradingView وقارئ الشاشة
+  // استمع للتحديثات المباشرة من TradingView
   useEffect(() => {
-    const handlePriceUpdate = (event: CustomEvent) => {
+    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
         console.log('PriceInput received price update:', event.detail.price);
         setLivePrice(event.detail.price);
         if (useAutoPrice) {
           onChange(event.detail.price.toString());
         }
-        // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
-        setRetryCount(0);
       }
     };
 
-    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     
     // طلب السعر الحالي عند تحميل المكون
     window.dispatchEvent(new Event('request-current-price'));
@@ -54,37 +51,16 @@ export const PriceInput = ({
         if (useAutoPrice) {
           onChange(event.detail.price.toString());
         }
-        // إعادة تعيين عداد المحاولات بعد نجاح استلام السعر
-        setRetryCount(0);
       }
     };
     
     window.addEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     
-    // إضافة محاولات متكررة لطلب السعر في حالة عدم الاستجابة الأولى
-    const requestInterval = setInterval(() => {
-      if (livePrice === null || livePrice === undefined) {
-        window.dispatchEvent(new Event('request-current-price'));
-        setRetryCount(prev => prev + 1);
-        console.log(`PriceInput requesting price again (attempt ${retryCount + 1})...`);
-        
-        // بعد عدة محاولات، نستخدم السعر الافتراضي إذا كان متاحًا
-        if (retryCount > 3 && defaultValue) {
-          console.log('Using default price after multiple retry attempts:', defaultValue);
-          setLivePrice(Number(defaultValue));
-          if (useAutoPrice) {
-            onChange(defaultValue);
-          }
-        }
-      }
-    }, 2000); // محاولة كل 2 ثانية
-    
     return () => {
-      clearInterval(requestInterval);
-      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     };
-  }, [useAutoPrice, onChange, defaultValue, livePrice, retryCount]);
+  }, [useAutoPrice, onChange]);
 
   const toggleAutoPriceMode = () => {
     const newMode = !useAutoPrice;
@@ -126,14 +102,12 @@ export const PriceInput = ({
       />
       {useAutoPrice && (
         <p className="text-sm text-green-500 mt-1">
-          {livePrice !== null 
-            ? `السعر المباشر: ${displayPrice}` 
-            : "جاري تحميل السعر المباشر..."}
+          السعر المباشر من TradingView: {displayPrice}
         </p>
       )}
       {!useAutoPrice && livePrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
-          السعر المتاح حاليًا: {displayPrice}
+          السعر المتاح من TradingView: {displayPrice}
         </p>
       )}
     </div>

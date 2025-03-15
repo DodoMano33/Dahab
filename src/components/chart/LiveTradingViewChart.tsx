@@ -13,7 +13,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
-  // استخدام CFI:XAUUSD كرمز داخلي، لكن عند التواصل مع المكونات الأخرى نستخدم XAUUSD فقط
+  // تجاهل symbol المستلمة واستخدام XAUUSD دائمًا
   return (
     <div className="w-full h-full">
       <TradingViewWidget 

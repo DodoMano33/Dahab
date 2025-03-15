@@ -3,7 +3,6 @@ import { TableCell } from "@/components/ui/table";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { screenPriceReader } from "@/utils/price/screenReader";
 
 interface MarketStatusCellProps {
   itemId: string;
@@ -22,33 +21,15 @@ export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
           return;
         }
         setMarketStatus(data);
-        
-        // تحديث حالة السوق في قارئ السعر من الشاشة
-        console.log("تم تحديث حالة السوق:", data.isOpen ? "مفتوح" : "مغلق");
       } catch (err) {
         console.error(`[${itemId}] Failed to check market status:`, err);
       }
     };
     
-    // استدعاء الدالة مباشرة عند التحميل
     checkMarketStatus();
     
-    // تحديث حالة السوق كل 5 دقائق
     const interval = setInterval(checkMarketStatus, 5 * 60 * 1000);
-    
-    // الاستماع لأحداث تحديث السعر للحصول على آخر حالة للسوق
-    const handlePriceUpdate = (event: CustomEvent) => {
-      if (event.detail && event.detail.isMarketOpen !== undefined) {
-        setMarketStatus(prev => ({ ...prev, isOpen: event.detail.isMarketOpen }));
-      }
-    };
-    
-    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
-    };
+    return () => clearInterval(interval);
   }, [itemId]);
 
   return (

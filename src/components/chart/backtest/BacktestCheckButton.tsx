@@ -10,25 +10,17 @@ import { useTimeFormatting } from "@/hooks/useTimeFormatting";
 import { DiagnosticInfo } from "@/components/DiagnosticInfo";
 import { TimeInfo } from "./components/TimeInfo";
 import { PriceDisplay } from "./components/PriceDisplay";
-import { usePriceReader } from "@/hooks/usePriceReader";
 
 export const BacktestCheckButton = memo(() => {
   const { triggerManualCheck, isLoading, lastCheckTime, retryCount, diagnostics } = useBackTest();
   const networkStatus = useNetworkStatus();
   const diagnosticInfo = useDiagnosticInfo();
-  const { currentPrice: apiPrice, priceUpdateCount: apiUpdateCount } = useCurrentPrice();
-  const { price: screenPrice } = usePriceReader(1000);
+  const { currentPrice, priceUpdateCount } = useCurrentPrice();
   const { hasNetworkError, errorDetails, resetErrors } = useAnalysisErrors();
   const { formattedTime, nextAutoCheck } = useTimeFormatting(lastCheckTime);
 
-  // استخدم سعر الشاشة إذا كان متاحًا، وإلا استخدم السعر من API
-  const displayPrice = screenPrice !== null ? screenPrice : apiPrice;
-  const priceUpdateCount = screenPrice !== null ? 
-    apiUpdateCount + 1 : // زيادة عداد التحديثات للإشارة إلى وجود مصدر إضافي
-    apiUpdateCount;
-
   const handleTriggerManualCheck = () => {
-    console.log('Manual check triggered with current price:', displayPrice);
+    console.log('Manual check triggered with current price:', currentPrice);
     triggerManualCheck();
     resetErrors();
   };
@@ -44,10 +36,9 @@ export const BacktestCheckButton = memo(() => {
         diagnosticInfo={{
           ...diagnosticInfo,
           lastError: errorDetails,
-          currentPrice: displayPrice,
+          currentPrice,
           priceUpdateCount,
-          diagnostics,
-          priceSource: screenPrice !== null ? "قارئ الشاشة" : "API"
+          diagnostics
         }}
       />
       
@@ -58,7 +49,7 @@ export const BacktestCheckButton = memo(() => {
       />
       
       <PriceDisplay 
-        currentPrice={displayPrice} 
+        currentPrice={currentPrice} 
         priceUpdateCount={priceUpdateCount} 
       />
     </div>
