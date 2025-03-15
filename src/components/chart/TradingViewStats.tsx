@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getLastExtractedPrice } from '@/utils/price/screenshotPriceExtractor';
 
 interface TradingViewStatsProps {
   symbol?: string;
@@ -10,8 +11,34 @@ interface TradingViewStatsProps {
 export const TradingViewStats: React.FC<TradingViewStatsProps> = ({ 
   symbol = "CFI:XAUUSD" 
 }) => {
-  const { currentPrice, marketData } = useCurrentPrice();
+  const { currentPrice: hookPrice, marketData } = useCurrentPrice();
+  const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  
+  // استدعاء السعر المستخرج من الصورة
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        setExtractedPrice(event.detail.price);
+      }
+    };
+
+    // الاستماع لتحديثات السعر
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    
+    // التحقق من آخر سعر ملتقط عند التحميل
+    const lastPrice = getLastExtractedPrice();
+    if (lastPrice !== null) {
+      setExtractedPrice(lastPrice);
+    }
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    };
+  }, []);
+  
+  // استخدام السعر المستخرج إذا كان متاحًا، وإلا استخدام السعر من الهوك
+  const currentPrice = extractedPrice !== null ? extractedPrice : hookPrice;
   
   // قيم افتراضية فقط في حالة عدم توفر البيانات
   const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);

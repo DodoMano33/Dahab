@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { getLastExtractedPrice } from "@/utils/price/screenshotPriceExtractor";
 
 interface PriceInputProps {
   value: string;
@@ -18,22 +19,61 @@ export const PriceInput = ({
 }: PriceInputProps) => {
   const [useAutoPrice, setUseAutoPrice] = useState(true); // تفعيل السعر التلقائي افتراضيًا
   const [livePrice, setLivePrice] = useState<number | null>(tradingViewPrice);
+  const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
   
-  // استخدام السعر من TradingView تلقائيًا
+  // استدعاء السعر المستخرج من الصورة
   useEffect(() => {
-    if (useAutoPrice && livePrice !== null && livePrice !== undefined) {
-      onChange(livePrice.toString());
-    }
-  }, [livePrice, useAutoPrice, onChange]);
-
-  // استمع للتحديثات المباشرة من TradingView
-  useEffect(() => {
-    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
+    const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
-        console.log('PriceInput received price update:', event.detail.price);
+        console.log('PriceInput received extracted price update:', event.detail.price);
+        setExtractedPrice(event.detail.price);
+        // تحديث السعر المباشر باستخدام السعر المستخرج
         setLivePrice(event.detail.price);
         if (useAutoPrice) {
           onChange(event.detail.price.toString());
+        }
+      }
+    };
+
+    // الاستماع لتحديثات السعر المستخرج
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    
+    // التحقق من آخر سعر ملتقط عند التحميل
+    const lastPrice = getLastExtractedPrice();
+    if (lastPrice !== null) {
+      setExtractedPrice(lastPrice);
+      setLivePrice(lastPrice);
+      if (useAutoPrice) {
+        onChange(lastPrice.toString());
+      }
+    }
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    };
+  }, [useAutoPrice, onChange]);
+
+  // استخدام السعر من TradingView تلقائيًا (احتياطي)
+  useEffect(() => {
+    if (useAutoPrice && livePrice === null && tradingViewPrice !== null && tradingViewPrice !== undefined) {
+      setLivePrice(tradingViewPrice);
+      onChange(tradingViewPrice.toString());
+    }
+  }, [tradingViewPrice, useAutoPrice, onChange, livePrice]);
+
+  // استمع للتحديثات المباشرة من TradingView (احتياطي)
+  useEffect(() => {
+    // فقط إذا لم يكن هناك سعر مستخرج
+    if (extractedPrice !== null) return;
+
+    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        console.log('PriceInput received regular price update:', event.detail.price);
+        if (extractedPrice === null) {
+          setLivePrice(event.detail.price);
+          if (useAutoPrice) {
+            onChange(event.detail.price.toString());
+          }
         }
       }
     };
@@ -45,7 +85,7 @@ export const PriceInput = ({
     
     // استمع لاستجابة السعر الحالي
     const handleCurrentPriceResponse = (event: CustomEvent) => {
-      if (event.detail && event.detail.price) {
+      if (event.detail && event.detail.price && extractedPrice === null) {
         console.log('PriceInput received current price response:', event.detail.price);
         setLivePrice(event.detail.price);
         if (useAutoPrice) {
@@ -60,7 +100,7 @@ export const PriceInput = ({
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     };
-  }, [useAutoPrice, onChange]);
+  }, [useAutoPrice, onChange, extractedPrice]);
 
   const toggleAutoPriceMode = () => {
     const newMode = !useAutoPrice;
@@ -71,8 +111,10 @@ export const PriceInput = ({
     }
   };
 
-  const displayPrice = livePrice !== null && livePrice !== undefined
-    ? livePrice.toFixed(2)
+  // تحديد السعر الذي سيتم عرضه (أولوية للسعر المستخرج من الصورة)
+  const effectivePrice = extractedPrice !== null ? extractedPrice : (livePrice !== null ? livePrice : tradingViewPrice);
+  const displayPrice = effectivePrice !== null && effectivePrice !== undefined
+    ? effectivePrice.toFixed(2)
     : defaultValue || "السعر غير متاح";
 
   return (
@@ -102,12 +144,18 @@ export const PriceInput = ({
       />
       {useAutoPrice && (
         <p className="text-sm text-green-500 mt-1">
-          السعر المباشر من TradingView: {displayPrice}
+          {extractedPrice !== null ? 
+            "السعر المباشر من الصورة: " : 
+            "السعر المباشر من TradingView: "} 
+          {displayPrice}
         </p>
       )}
-      {!useAutoPrice && livePrice !== null && (
+      {!useAutoPrice && effectivePrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
-          السعر المتاح من TradingView: {displayPrice}
+          {extractedPrice !== null ? 
+            "السعر المتاح من الصورة: " : 
+            "السعر المتاح من TradingView: "} 
+          {displayPrice}
         </p>
       )}
     </div>

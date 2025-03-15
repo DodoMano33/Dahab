@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
 import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
 import { CurrentPriceDisplay } from './CurrentPriceDisplay';
+import { startPriceCapture, stopPriceCapture, cleanupPriceCapture } from '@/utils/price/screenshotPriceExtractor';
 
 interface TradingViewWidgetProps {
   symbol?: string;
@@ -82,6 +83,7 @@ function TradingViewWidget({
     widgetDiv.className = 'tradingview-widget-container__widget';
     widgetDiv.style.height = 'calc(100% - 32px)';
     widgetDiv.style.width = '100%';
+    widgetDiv.id = 'tv_chart_container'; // إضافة معرف للعثور عليه لاحقًا
 
     const copyright = document.createElement('div');
     copyright.className = 'tradingview-widget-copyright';
@@ -95,6 +97,12 @@ function TradingViewWidget({
       container.current.innerHTML = '';
       container.current.appendChild(widgetContainer);
     }
+
+    // بدء التقاط السعر بعد تحميل الشارت
+    const startCapture = setTimeout(() => {
+      console.log('بدء التقاط السعر من الشارت...');
+      startPriceCapture();
+    }, 5000);
 
     // طلب السعر المبدئي عدة مرات للتأكد من تحميله
     const requestInitialPrice = () => {
@@ -125,10 +133,14 @@ function TradingViewWidget({
     }, 10000);
 
     return () => {
+      clearTimeout(startCapture);
       clearTimeout(initialPriceTimer);
       clearTimeout(secondPriceTimer);
       clearTimeout(thirdPriceTimer);
       clearInterval(priceUpdateChecker);
+      
+      // إيقاف وتنظيف الالتقاط
+      cleanupPriceCapture();
       
       if (container.current) {
         container.current.innerHTML = '';
