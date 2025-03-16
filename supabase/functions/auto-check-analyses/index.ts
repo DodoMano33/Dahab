@@ -54,6 +54,27 @@ Deno.serve(async (req) => {
     // الحصول على الوقت الحالي لجميع التحديثات
     const currentTime = new Date().toISOString();
     
+    // التحقق من تواريخ التحليلات في قاعدة البيانات للتشخيص
+    try {
+      const { data: sampleAnalyses, error: sampleError } = await supabase
+        .from('search_history')
+        .select('id, created_at, result_timestamp, last_checked_at')
+        .limit(3);
+        
+      if (!sampleError && sampleAnalyses && sampleAnalyses.length > 0) {
+        console.log('Sample analyses dates for debugging:');
+        sampleAnalyses.forEach(analysis => {
+          console.log(`Analysis ID ${analysis.id}:`, {
+            created_at: analysis.created_at,
+            result_timestamp: analysis.result_timestamp,
+            last_checked_at: analysis.last_checked_at
+          });
+        });
+      }
+    } catch (debugError) {
+      console.error('Error checking sample analyses dates:', debugError);
+    }
+    
     // الحصول على التحليلات النشطة وتحديث وقت آخر فحص
     const { analyses, count, fetchError } = await updateLastCheckedTime(supabase, currentTime, effectivePrice);
     

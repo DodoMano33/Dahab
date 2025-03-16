@@ -1,5 +1,6 @@
 
-import { addDays, addHours, addMinutes, format } from "date-fns";
+import { addDays, addHours, addMinutes, format, parseISO, isValid } from "date-fns";
+import { ar } from "date-fns/locale";
 
 export const getExpectedTime = (timeframe: string, targetIndex: number) => {
   const now = new Date();
@@ -46,15 +47,80 @@ export const formatDateArabic = (timestamp: string | Date | null): string => {
   if (!timestamp || timestamp === "---") return "-";
   
   try {
-    const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
-    // التحقق من صحة التاريخ (إذا كان تاريخ صالح)
-    if (isNaN(date.getTime())) {
-      console.warn(`Invalid date format: ${timestamp}`);
+    let date: Date;
+    
+    // التعامل مع التنسيقات المختلفة للتاريخ
+    if (typeof timestamp === 'string') {
+      if (timestamp.includes('T')) {
+        // تنسيق ISO
+        date = parseISO(timestamp);
+      } else {
+        // تنسيق آخر للتاريخ
+        date = new Date(timestamp);
+      }
+    } else {
+      date = timestamp;
+    }
+    
+    // التحقق من صحة التاريخ 
+    if (!isValid(date)) {
+      console.warn(`Invalid date format: ${timestamp}, type: ${typeof timestamp}`);
       return "-";
     }
-    return format(date, 'dd/M/yyyy HH:mm');
+    
+    return format(date, 'dd/M/yyyy HH:mm', { locale: ar });
   } catch (error) {
     console.error("Error formatting date:", error, "Timestamp:", timestamp);
     return "-";
+  }
+};
+
+// دالة لتحويل تاريخ إنشاء السجل إلى تنسيق مناسب
+export const formatCreatedAtDate = (timestamp: string | Date | null): string => {
+  if (!timestamp) return "-";
+  
+  try {
+    let date: Date;
+    
+    if (typeof timestamp === 'string') {
+      date = parseISO(timestamp);
+    } else {
+      date = timestamp;
+    }
+    
+    if (!isValid(date)) {
+      console.warn(`Invalid created_at date: ${timestamp}`);
+      return "-";
+    }
+    
+    return format(date, 'dd/M/yyyy HH:mm', { locale: ar });
+  } catch (error) {
+    console.error("Error formatting created_at date:", error);
+    return "-";
+  }
+};
+
+// دالة لتحويل تاريخ نتيجة التحليل إلى تنسيق مناسب
+export const formatResultDate = (timestamp: string | Date | null): string => {
+  if (!timestamp) return "لم يكتمل بعد";
+  
+  try {
+    let date: Date;
+    
+    if (typeof timestamp === 'string') {
+      date = parseISO(timestamp);
+    } else {
+      date = timestamp;
+    }
+    
+    if (!isValid(date)) {
+      console.warn(`Invalid result_timestamp date: ${timestamp}`);
+      return "تاريخ غير صالح";
+    }
+    
+    return format(date, 'dd/M/yyyy HH:mm', { locale: ar });
+  } catch (error) {
+    console.error("Error formatting result_timestamp date:", error);
+    return "خطأ في التنسيق";
   }
 };

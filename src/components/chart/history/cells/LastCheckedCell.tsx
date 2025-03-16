@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { parseISO, isValid } from "date-fns";
 
 interface LastCheckedCellProps {
   price?: number;
@@ -21,11 +22,22 @@ export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellPro
     
     const updateFormattedTime = () => {
       try {
-        console.log(`[${itemId}] Formatting timestamp:`, timestamp, typeof timestamp);
+        // سجلات تشخيصية أكثر تفصيلًا للتاريخ
+        console.log(`[${itemId}] Formatting timestamp:`, {
+          value: timestamp,
+          type: typeof timestamp,
+          isString: typeof timestamp === 'string',
+          isDate: timestamp instanceof Date
+        });
         
         let dateObj: Date;
         if (typeof timestamp === 'string') {
-          dateObj = new Date(timestamp);
+          // التعامل مع تنسيقات التاريخ المختلفة
+          if (timestamp.includes('T')) {
+            dateObj = parseISO(timestamp);
+          } else {
+            dateObj = new Date(timestamp);
+          }
         } else if (timestamp instanceof Date) {
           dateObj = timestamp;
         } else {
@@ -34,12 +46,17 @@ export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellPro
           return;
         }
         
-        if (isNaN(dateObj.getTime())) {
-          console.error(`[${itemId}] Invalid date after conversion:`, dateObj);
+        // التحقق من صحة التاريخ بعد التحويل
+        if (!isValid(dateObj)) {
+          console.error(`[${itemId}] Invalid date after conversion:`, {
+            original: timestamp,
+            converted: dateObj
+          });
           setFormattedTime("");
           return;
         }
         
+        // تنسيق التاريخ كمدة نسبية
         const formatted = formatDistanceToNow(dateObj, { 
           addSuffix: true,
           locale: ar

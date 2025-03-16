@@ -2,8 +2,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { parseISO, isValid } from 'date-fns';
 
-const PAGE_SIZE = 500; // Changed from 100 to 500
+const PAGE_SIZE = 500; // تم تغييره من 100 إلى 500
 
 export const useBacktestResults = () => {
   const [results, setResults] = useState<any[]>([]);
@@ -53,14 +54,43 @@ export const useBacktestResults = () => {
       
       // طباعة بعض البيانات للتشخيص
       if (data && data.length > 0) {
+        const firstResult = data[0];
         console.log('First result sample:', {
-          id: data[0].id,
-          created_at: data[0].created_at,
-          result_timestamp: data[0].result_timestamp
+          id: firstResult.id,
+          created_at: firstResult.created_at,
+          result_timestamp: firstResult.result_timestamp,
+          created_at_type: typeof firstResult.created_at,
+          result_timestamp_type: typeof firstResult.result_timestamp
         });
+        
+        // التحقق من صحة التواريخ المستلمة
+        if (firstResult.created_at && firstResult.result_timestamp) {
+          let createdDate: Date | null = null;
+          let resultDate: Date | null = null;
+          
+          try {
+            createdDate = typeof firstResult.created_at === 'string' ? 
+              parseISO(firstResult.created_at) : 
+              firstResult.created_at;
+            
+            resultDate = typeof firstResult.result_timestamp === 'string' ? 
+              parseISO(firstResult.result_timestamp) : 
+              firstResult.result_timestamp;
+            
+            console.log('Parsed dates:', {
+              created_date: createdDate,
+              result_date: resultDate,
+              created_valid: isValid(createdDate),
+              result_valid: isValid(resultDate),
+              are_equal: createdDate.getTime() === resultDate.getTime()
+            });
+          } catch (dateError) {
+            console.error('Error parsing dates:', dateError);
+          }
+        }
       }
       
-      // معالجة النتائج للتأكد من أن البيانات صحيحة
+      // معالجة النتائج للتأكد من صحة البيانات
       const processedResults = data?.map(result => {
         // التأكد من أن نوع التحليل موجود
         if (!result.analysis_type) {
@@ -68,10 +98,23 @@ export const useBacktestResults = () => {
           result.analysis_type = 'normal';
         }
         
-        // التأكد من أن تاريخ النتيجة ليس فارغاً (إذا كان فارغاً، ضع قيمة فارغة واضحة)
+        // التأكد من أن تاريخ النتيجة ليس فارغاً
         if (!result.result_timestamp) {
           console.warn(`Result with empty result_timestamp:`, result.id);
           result.result_timestamp = null;
+        }
+        
+        // التأكد من أن تاريخ الإنشاء ليس فارغاً
+        if (!result.created_at) {
+          console.warn(`Result with empty created_at:`, result.id);
+          result.created_at = null;
+        }
+        
+        // طباعة القيم للتشخيص إذا كانت التواريخ متماثلة
+        if (result.created_at && result.result_timestamp &&
+            result.created_at === result.result_timestamp) {
+          console.warn(`WARNING: created_at and result_timestamp are identical for result ${result.id}:`,
+            { created_at: result.created_at, result_timestamp: result.result_timestamp });
         }
         
         return result;
@@ -85,6 +128,12 @@ export const useBacktestResults = () => {
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));
+      
+      // احسب إجمالي الربح/الخسارة
+      if (processedResults.length > 0) {
+        const totalPL = processedResults.reduce((sum, item) => sum + (item.profit_loss || 0), 0);
+        setTotalProfitLoss(totalPL);
+      }
     } catch (error) {
       console.error('Error in fetchResults:', error);
       toast.error('حدث خطأ أثناء جلب النتائج');

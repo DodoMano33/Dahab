@@ -17,6 +17,9 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
         continue;
       }
       
+      // طباعة المزيد من المعلومات التشخيصية
+      console.log(`Analysis details: id=${analysis.id}, created_at=${analysis.created_at}, result_timestamp=${analysis.result_timestamp}, last_checked_at=${analysis.last_checked_at}`);
+      
       // استخدام السعر من TradingView (الذي أصبح مضمونًا الآن)
       console.log(`Checking analysis ${analysis.id} with price:`, currentPrice);
       
@@ -40,17 +43,28 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
           });
         }
         
-        // طباعة المزيد من المعلومات التشخيصية حول حقل result_timestamp
+        // التحقق من التحديث واستخدام علامة وقت محددة للتأكد من صحة البيانات
         const { data: updatedAnalysis, error: checkError } = await supabase
           .from('search_history')
-          .select('id, created_at, result_timestamp')
+          .select('id, created_at, result_timestamp, last_checked_at')
           .eq('id', analysis.id)
           .single();
           
         if (checkError) {
           console.error(`Error checking updated analysis ${analysis.id}:`, checkError);
         } else {
-          console.log(`Updated analysis timestamps: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}`);
+          console.log(`Analysis after update: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}, last_checked_at=${updatedAnalysis.last_checked_at}`);
+          
+          // التحقق من صحة حقول التواريخ
+          if (updatedAnalysis.result_timestamp && 
+              updatedAnalysis.result_timestamp === updatedAnalysis.created_at) {
+            console.warn(`WARNING: result_timestamp equals created_at for analysis ${analysis.id}`);
+          }
+          
+          if (updatedAnalysis.result_timestamp && 
+              updatedAnalysis.result_timestamp === updatedAnalysis.last_checked_at) {
+            console.warn(`WARNING: result_timestamp equals last_checked_at for analysis ${analysis.id}`);
+          }
         }
         
         console.log(`Successfully processed analysis ${analysis.id}`);

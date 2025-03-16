@@ -1,157 +1,110 @@
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
-import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
-import { TableCell } from "./TableCell";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { formatResultDate, formatCreatedAtDate } from "@/utils/technicalAnalysis/timeUtils";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
+// تعريف الواجهة مع الفصل الواضح بين حقلي تاريخ الإنشاء وتاريخ النتيجة
 interface AnalysisRowProps {
-  analysis: any;
-  selected: boolean;
-  onSelect: (id: string) => void;
-  currentPrice: number | null;
+  id: string;
+  symbol: string;
+  entry_price?: number;
+  exit_price?: number;
+  target_price?: number;
+  stop_loss?: number;
+  direction?: string;
+  profit_loss?: number;
+  is_success?: boolean;
+  analysisType?: string;
+  timeframe?: string;
+  // تاريخ إنشاء التحليل
+  created_at?: string;
+  // تاريخ نتيجة التحليل (مختلف عن تاريخ الإنشاء)
+  result_timestamp?: string;
 }
 
-export const AnalysisRow = ({ 
-  analysis, 
-  selected, 
-  onSelect,
-  currentPrice
+export const AnalysisRow = ({
+  id,
+  symbol,
+  entry_price = 0,
+  exit_price = 0,
+  target_price = 0,
+  stop_loss = 0,
+  direction = "",
+  profit_loss = 0,
+  is_success = false,
+  analysisType = "",
+  timeframe = "",
+  created_at,
+  result_timestamp
 }: AnalysisRowProps) => {
-  // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
-  const formatNumber = (value: number | string | null | undefined) => {
-    if (value === null || value === undefined) return "-";
-    const num = typeof value === "string" ? parseFloat(value) : value;
-    return Number(num).toFixed(3);
-  };
-
-  // دالة محسنة لحساب وتنسيق الربح/الخسارة
-  const calculateProfitLoss = () => {
-    if (!analysis.entry_price || !analysis.exit_price) return "-";
-    
-    // حساب الربح/الخسارة بناءً على الاتجاه والأسعار الفعلية
-    const entryPrice = parseFloat(analysis.entry_price);
-    const exitPrice = parseFloat(analysis.exit_price);
-    let profitLoss = 0;
-    
-    if (analysis.direction === 'صاعد') {
-      // للاتجاه الصاعد: الربح عند ارتفاع السعر
-      profitLoss = exitPrice - entryPrice;
-    } else {
-      // للاتجاه الهابط: الربح عند انخفاض السعر
-      profitLoss = entryPrice - exitPrice;
-    }
-    
-    // تنسيق القيمة
-    const formattedValue = Math.abs(profitLoss).toFixed(3);
-    
-    // إضافة إشارة سالب للخسائر
-    return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
-  };
-
-  // حساب مدة بقاء التحليل بالساعات
-  const calculateAnalysisDuration = () => {
-    if (!analysis.created_at || !analysis.result_timestamp) return "-";
-    
-    try {
-      const startTime = new Date(analysis.created_at).getTime();
-      const endTime = new Date(analysis.result_timestamp).getTime();
-      
-      // حساب الفرق بالساعات
-      const durationHours = Math.round((endTime - startTime) / (1000 * 60 * 60));
-      
-      return `${durationHours} ساعة`;
-    } catch (error) {
-      console.error("Error calculating analysis duration:", error);
-      return "-";
-    }
-  };
-
-  const displayedAnalysisType = getStrategyName(analysis.analysis_type);
-
-  // حساب الربح/الخسارة
-  const profitLossValue = calculateProfitLoss();
-  
-  // تحديد لون النص بناءً على نجاح/فشل التحليل
-  const profitLossClass = analysis.is_success ? 'text-success' : 'text-destructive';
-
-  // قم بطباعة البيانات للتصحيح
-  console.log("Analysis Data:", {
-    id: analysis.id,
-    created_at: analysis.created_at,
-    result_timestamp: analysis.result_timestamp
+  // طباعة سجلات تشخيصية لفهم المزيد عن البيانات المستلمة
+  console.log(`AnalysisRow - ID: ${id}, DateInfo:`, {
+    created_at,
+    result_timestamp,
+    created_at_type: typeof created_at,
+    result_timestamp_type: typeof result_timestamp
   });
 
+  // تنسيق التواريخ باستخدام الدوال المخصصة
+  const formattedCreatedDate = formatCreatedAtDate(created_at);
+  const formattedResultDate = formatResultDate(result_timestamp);
+
   return (
-    <div
-      className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
-        analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
-      }`}
-    >
-      <div className="flex justify-center">
-        <Checkbox 
-          checked={selected}
-          onCheckedChange={() => onSelect(analysis.id)}
-        />
-      </div>
-      <TableCell 
-        label="تاريخ التحليل" 
-        value={formatDateArabic(analysis.created_at)}
-        className="whitespace-nowrap text-xs min-w-[110px] pl-2"
-      />
-      <TableCell 
-        label="نوع التحليل" 
-        value={displayedAnalysisType}
-        className="truncate pl-4"
-      />
-      <TableCell 
-        label="الرمز" 
-        value={analysis.symbol} 
-      />
-      <TableCell 
-        label="الاطار الزمني" 
-        value={analysis.timeframe} 
-      />
-      <div className="flex justify-center -mr-3">
-        <DirectionIndicator direction={analysis.direction || "محايد"} />
-      </div>
-      <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
-        {analysis.is_success ? 'ناجح' : 'فاشل'}
-      </div>
-      <TableCell 
-        label="مدة بقاء التحليل" 
-        value={calculateAnalysisDuration()}
-        className="truncate -mr-2"
-      />
-      <TableCell 
-        label="الربح/الخسارة" 
-        value={profitLossValue} 
-        className={`truncate ${profitLossClass}`}
-      />
-      <TableCell 
-        label="السعر عند التحليل" 
-        value={formatNumber(analysis.entry_price)} 
-      />
-      <TableCell 
-        label="الهدف الأول" 
-        value={formatNumber(analysis.target_price)} 
-      />
-      <TableCell 
-        label="وقف الخسارة" 
-        value={formatNumber(analysis.stop_loss)} 
-      />
-      <TableCell 
-        label="أفضل نقطة دخول" 
-        value={formatNumber(analysis.best_entry_price || analysis.entry_price)} 
-      />
-      <TableCell 
-        label="تاريخ النتيجة" 
-        value={formatDateArabic(analysis.result_timestamp || "---")}
-        className="whitespace-nowrap text-xs min-w-[110px]" 
-      />
-      <div className="text-center font-bold text-primary">
-        {currentPrice ? formatNumber(currentPrice) : "-"}
-      </div>
-    </div>
+    <TableRow className="hover:bg-muted/50">
+      <TableCell className="font-medium text-center">
+        {symbol}
+      </TableCell>
+      
+      <TableCell className="text-center">
+        <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full">
+          {profit_loss.toFixed(2)}
+        </Badge>
+      </TableCell>
+      
+      <TableCell className="text-center">
+        <DirectionIndicator direction={direction} />
+      </TableCell>
+      
+      <TableCell className="text-center">
+        {entry_price.toFixed(2)}
+      </TableCell>
+      
+      <TableCell className="text-center">
+        {exit_price.toFixed(2)}
+      </TableCell>
+      
+      <TableCell className="text-center">
+        {target_price.toFixed(2)}
+      </TableCell>
+      
+      <TableCell className="text-center">
+        {stop_loss.toFixed(2)}
+      </TableCell>
+      
+      <TableCell className="text-center">
+        <Badge variant={is_success ? "success" : "destructive"}>
+          {is_success ? "ناجح" : "غير ناجح"}
+        </Badge>
+      </TableCell>
+      
+      <TableCell className="text-center">
+        {timeframe}
+      </TableCell>
+      
+      <TableCell className="text-center">
+        {analysisType}
+      </TableCell>
+      
+      {/* عرض تاريخ إنشاء التحليل */}
+      <TableCell className="text-center text-xs">
+        {formattedCreatedDate}
+      </TableCell>
+      
+      {/* عرض تاريخ نتيجة التحليل (مختلف عن تاريخ الإنشاء) */}
+      <TableCell className="text-center text-xs">
+        {formattedResultDate}
+      </TableCell>
+    </TableRow>
   );
 };
