@@ -112,7 +112,7 @@ export const EntryPointRow = ({
       <TableCell 
         label="النتيجة"
         value={result.is_success ? "ناجح" : "فاشل"}
-        className={result.is_success ? "text-success" : "text-destructive font-medium"}
+        className={result.is_success ? "text-success font-medium" : "text-destructive font-medium"}
       />
       <TableCell 
         label="مدة بقاء التحليل" 
