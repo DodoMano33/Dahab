@@ -3,6 +3,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatResultDate, formatCreatedAtDate } from "@/utils/technicalAnalysis/timeUtils";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // تعريف الواجهة مع الفصل الواضح بين حقلي تاريخ الإنشاء وتاريخ النتيجة
 interface AnalysisRowProps {
@@ -12,7 +13,7 @@ interface AnalysisRowProps {
   exit_price?: number;
   target_price?: number;
   stop_loss?: number;
-  direction?: string;
+  direction?: "صاعد" | "هابط" | "محايد" | string;
   profit_loss?: number;
   is_success?: boolean;
   analysisType?: string;
@@ -21,6 +22,9 @@ interface AnalysisRowProps {
   created_at?: string;
   // تاريخ نتيجة التحليل (مختلف عن تاريخ الإنشاء)
   result_timestamp?: string;
+  // For selection in backtest results
+  selected?: boolean;
+  onSelect?: () => void;
 }
 
 export const AnalysisRow = ({
@@ -36,7 +40,9 @@ export const AnalysisRow = ({
   analysisType = "",
   timeframe = "",
   created_at,
-  result_timestamp
+  result_timestamp,
+  selected = false,
+  onSelect
 }: AnalysisRowProps) => {
   // طباعة سجلات تشخيصية لفهم المزيد عن البيانات المستلمة
   console.log(`AnalysisRow - ID: ${id}, DateInfo:`, {
@@ -50,8 +56,28 @@ export const AnalysisRow = ({
   const formattedCreatedDate = formatCreatedAtDate(created_at);
   const formattedResultDate = formatResultDate(result_timestamp);
 
+  // Convert direction to an acceptable value if it's not already
+  const safeDirection: "صاعد" | "هابط" | "محايد" = 
+    (direction === "صاعد" || direction === "هابط" || direction === "محايد") 
+      ? direction as "صاعد" | "هابط" | "محايد"
+      : direction === "up" || direction === "bullish" 
+        ? "صاعد" 
+        : direction === "down" || direction === "bearish" 
+          ? "هابط" 
+          : "محايد";
+
   return (
     <TableRow className="hover:bg-muted/50">
+      {onSelect && (
+        <TableCell className="w-[50px]">
+          <Checkbox 
+            checked={selected} 
+            onCheckedChange={onSelect}
+            aria-label="Select row"
+          />
+        </TableCell>
+      )}
+      
       <TableCell className="font-medium text-center">
         {symbol}
       </TableCell>
@@ -63,7 +89,7 @@ export const AnalysisRow = ({
       </TableCell>
       
       <TableCell className="text-center">
-        <DirectionIndicator direction={direction} />
+        <DirectionIndicator direction={safeDirection} />
       </TableCell>
       
       <TableCell className="text-center">

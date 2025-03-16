@@ -1,10 +1,28 @@
 
 import { TableHead, TableHeader as UITableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
-export const BacktestTableHeader = () => {
+interface TableHeaderProps {
+  onSelectAll?: (checked: boolean) => void;
+  allSelected?: boolean;
+}
+
+export const BacktestTableHeader = ({ 
+  onSelectAll, 
+  allSelected = false 
+}: TableHeaderProps = {}) => {
   return (
     <UITableHeader>
       <TableRow>
+        {onSelectAll && (
+          <TableHead className="w-[50px]">
+            <Checkbox 
+              checked={allSelected}
+              onCheckedChange={onSelectAll}
+              aria-label="Select all"
+            />
+          </TableHead>
+        )}
         <TableHead className="text-center w-[80px]">الرمز</TableHead>
         <TableHead className="text-center w-[80px]">الربح/الخسارة</TableHead>
         <TableHead className="text-center w-[80px]">الاتجاه</TableHead>
