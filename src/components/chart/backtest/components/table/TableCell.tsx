@@ -25,8 +25,8 @@ export const TableCell = ({
         <TooltipTrigger asChild>
           <div className={className}>{value}</div>
         </TooltipTrigger>
-        <TooltipContent>
-          <p>{label}: {typeof value === 'string' ? value : label}</p>
+        <TooltipContent side="top" align="center">
+          <p dir="rtl">{label}: {typeof value === 'string' ? value : label}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

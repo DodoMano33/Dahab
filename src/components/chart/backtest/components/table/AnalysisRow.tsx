@@ -77,7 +77,7 @@ export const AnalysisRow = ({
 
   return (
     <div
-      className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-14 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -90,57 +90,65 @@ export const AnalysisRow = ({
       <TableCell 
         label="تاريخ التحليل" 
         value={formatDateArabic(analysis.created_at)}
-        className="whitespace-nowrap text-xs min-w-[110px]"
+        className="whitespace-nowrap text-xs px-2"
       />
       <TableCell 
         label="نوع التحليل" 
-        value={displayedAnalysisType} 
+        value={displayedAnalysisType}
+        className="truncate px-2"
       />
       <TableCell 
         label="الرمز" 
-        value={analysis.symbol} 
+        value={analysis.symbol}
+        className="truncate px-2"
       />
       <TableCell 
         label="الاطار الزمني" 
-        value={analysis.timeframe} 
+        value={analysis.timeframe}
+        className="truncate px-2"
       />
-      <div className="flex justify-center">
+      <div className="flex justify-center px-2">
         <DirectionIndicator direction={analysis.direction || "محايد"} />
       </div>
-      <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
+      <div className={`font-medium truncate px-2 ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
         {analysis.is_success ? 'ناجح' : 'فاشل'}
       </div>
       <TableCell 
         label="مدة بقاء التحليل" 
-        value={calculateAnalysisDuration()} 
+        value={calculateAnalysisDuration()}
+        className="truncate px-2"
       />
       <TableCell 
         label="الربح/الخسارة" 
         value={profitLossValue} 
-        className={`truncate ${profitLossClass}`}
+        className={`truncate px-2 ${profitLossClass}`}
       />
       <TableCell 
         label="السعر عند التحليل" 
-        value={formatNumber(analysis.entry_price)} 
+        value={formatNumber(analysis.entry_price)}
+        className="truncate px-2"
       />
       <TableCell 
         label="الهدف الأول" 
-        value={formatNumber(analysis.target_price)} 
+        value={formatNumber(analysis.target_price)}
+        className="truncate px-2"
       />
       <TableCell 
         label="وقف الخسارة" 
-        value={formatNumber(analysis.stop_loss)} 
+        value={formatNumber(analysis.stop_loss)}
+        className="truncate px-2"
       />
       <TableCell 
         label="أفضل نقطة دخول" 
-        value={formatNumber(analysis.best_entry_price || analysis.entry_price)} 
+        value={formatNumber(analysis.best_entry_price || analysis.entry_price)}
+        className="truncate px-2"
       />
       <TableCell 
         label="تاريخ النتيجة" 
         value={formatDateArabic(analysis.result_timestamp)}
-        className="whitespace-nowrap text-xs min-w-[110px]" 
+        className="whitespace-nowrap text-xs px-2"
       />
-      <div className="text-center font-bold text-primary">
+      <div className="text-center font-bold text-primary px-2">
         {currentPrice ? formatNumber(currentPrice) : "-"}
       </div>
     </div>
