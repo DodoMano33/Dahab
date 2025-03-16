@@ -42,9 +42,9 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
   
   // الاستماع لتحديثات السعر المستخرج من الصورة
   useEffect(() => {
-    const handlePriceUpdate = (event: CustomEvent) => {
+    const handleExtractedPriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
-        console.log('useExtractedPrice: تم استلام تحديث السعر:', event.detail.price);
+        console.log('useExtractedPrice: تم استلام تحديث السعر المستخرج:', event.detail.price);
         setExtractedPrice(event.detail.price);
         setPriceSource(event.detail.source === 'alphavantage' ? 'alphavantage' : 'extracted');
         onPriceChange?.(event.detail.price);
@@ -66,13 +66,12 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
     const handleChartPrice = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
         console.log('useExtractedPrice: تم استلام سعر مباشر من الشارت:', event.detail.price);
+        // تعديل: تخزين السعر المباشر من الشارت ولكن لا يتم استخدامه كأولوية أعلى
         setChartPrice(event.detail.price);
-        // لا نغير مصدر السعر هنا لاستخدام chart-price كأولوية أعلى دائمًا
-        onPriceChange?.(event.detail.price);
       }
     };
 
-    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('tradingview-price-update', handleExtractedPriceUpdate as EventListener);
     window.addEventListener('current-price-response', handleTradingViewPrice as EventListener);
     window.addEventListener('chart-price-update', handleChartPrice as EventListener);
     
@@ -80,18 +79,18 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
     window.dispatchEvent(new Event('request-current-price'));
     
     return () => {
-      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('tradingview-price-update', handleExtractedPriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleTradingViewPrice as EventListener);
       window.removeEventListener('chart-price-update', handleChartPrice as EventListener);
     };
   }, [onPriceChange, priceSource]);
 
-  // استخدام السعر من الشارت كأولوية عليا يليه السعر المستخرج من الصورة
-  const price = chartPrice !== null ? chartPrice : extractedPrice;
+  // استخدام السعر المستخرج من الصورة كأولوية عليا (تغيير الأولوية هنا)
+  const price = extractedPrice !== null ? extractedPrice : chartPrice;
 
   return {
     price,
-    priceSource: chartPrice !== null ? 'chart' : priceSource,
+    priceSource: extractedPrice !== null ? priceSource : (chartPrice !== null ? 'chart' : 'none'),
     hasPrice: price !== null,
     isExtractedPrice: priceSource === 'extracted' || priceSource === 'alphavantage',
     isAlphaVantagePrice: priceSource === 'alphavantage'

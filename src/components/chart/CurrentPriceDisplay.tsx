@@ -29,7 +29,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
   useEffect(() => {
     const updateChartPrice = (event: any) => {
       if (event.detail && event.detail.price) {
-        // تحديث السعر من الشارت مباشرة
+        // تحديث السعر من الشارت مباشرة (للعرض فقط لا للاستخدام كأولوية)
         setChartPrice(event.detail.price);
       }
     };
@@ -42,7 +42,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
     };
   }, []);
 
-  // اختيار السعر المناسب للعرض (الأفضلية للسعر المستخرج من الصورة)
+  // اختيار السعر المناسب للعرض (الأفضلية الآن للسعر المستخرج من الصورة)
   const displayPrice = extractedPrice || chartPrice || propPrice;
 
   // تحديد نص مصدر السعر
@@ -51,7 +51,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
       return ` (${provider} - مستخرج)`;
     } else if (isAlphaVantagePrice) {
       return ' (Alpha Vantage API)';
-    } else if (chartPrice !== null) {
+    } else if (chartPrice !== null && !extractedPrice) {
       return ` (${provider} - مباشر)`;
     } else if (priceSource === 'tradingview') {
       return ` (${provider})`;
