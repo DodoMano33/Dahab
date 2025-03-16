@@ -35,8 +35,12 @@ export function SettingsTab({
     setAlphaVantageApiKey(storedKey);
     
     // تحميل حالة تفعيل Alpha Vantage
+    const storedEnabledState = localStorage.getItem('alpha_vantage_enabled');
+    const isEnabled = storedEnabledState === 'false' ? false : true;
+    setUseAlphaVantage(isEnabled);
+    
     if (goldPriceUpdater) {
-      setUseAlphaVantage(goldPriceUpdater.getUseAlphaVantage());
+      goldPriceUpdater.setUseAlphaVantage(isEnabled);
     }
   }, []);
   
@@ -45,9 +49,7 @@ export function SettingsTab({
     setUseAlphaVantage(enabled);
     if (goldPriceUpdater) {
       goldPriceUpdater.setUseAlphaVantage(enabled);
-      toast.success(enabled 
-        ? "تم تفعيل استخدام Alpha Vantage للحصول على أسعار الذهب" 
-        : "تم تعطيل استخدام Alpha Vantage");
+      // لا نحتاج لعرض toast هنا - سنعرضها بعد حفظ التغييرات
     }
   };
   
@@ -137,11 +139,6 @@ export function SettingsTab({
           checked={userProfile.autoCheckEnabled}
           onCheckedChange={(checked) => {
             setUserProfile({ ...userProfile, autoCheckEnabled: checked });
-            if (checked) {
-              toast.success("تم تفعيل الفحص التلقائي كل 5 دقائق");
-            } else {
-              toast.info("تم إيقاف الفحص التلقائي");
-            }
           }}
         />
       </div>

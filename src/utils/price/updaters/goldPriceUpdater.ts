@@ -50,6 +50,8 @@ export class GoldPriceUpdater {
   // تفعيل أو تعطيل استخدام Alpha Vantage
   setUseAlphaVantage(enabled: boolean) {
     this.useAlphaVantage = enabled;
+    // حفظ الحالة في التخزين المحلي
+    localStorage.setItem('alpha_vantage_enabled', enabled.toString());
     console.log(`تم ${enabled ? 'تفعيل' : 'تعطيل'} استخدام Alpha Vantage للحصول على سعر الذهب`);
   }
   
