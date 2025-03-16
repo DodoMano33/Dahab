@@ -34,7 +34,7 @@ export const AnalysisTable = ({
   }, [analyses]);
 
   return (
-    <div className="border rounded-lg bg-white shadow-sm">
+    <div className="border rounded-lg bg-white shadow-sm overflow-x-auto">
       <TableHeader 
         onSelectAll={onSelectAll} 
         allSelected={selectedItems.size === analyses.length} 

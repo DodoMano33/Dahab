@@ -20,7 +20,7 @@ export const BestEntryPointTable = ({
   isLoading = false
 }: BestEntryPointTableProps) => {
   return (
-    <div className="border rounded-lg bg-white shadow-sm">
+    <div className="border rounded-lg bg-white shadow-sm overflow-x-auto">
       <EntryPointHeader 
         onSelectAll={onSelectAll} 
         allSelected={selectedItems.size === results.length} 

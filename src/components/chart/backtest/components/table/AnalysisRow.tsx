@@ -59,7 +59,7 @@ export const AnalysisRow = ({
 
   return (
     <div
-      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-12 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
