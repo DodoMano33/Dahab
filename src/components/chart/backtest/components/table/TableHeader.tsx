@@ -27,6 +27,7 @@ export const BacktestTableHeader = ({
         <TableHead className="text-center w-[85px]">نوع التحليل</TableHead>
         <TableHead className="text-center w-[70px]">الرمز</TableHead>
         <TableHead className="text-center w-[60px]">الإطار الزمني</TableHead>
+        <TableHead className="text-center w-[60px]">الاتجاه</TableHead>
         <TableHead className="text-center w-[60px]">النتيجة</TableHead>
         <TableHead className="text-center w-[80px]">مدة بقاء التحليل</TableHead>
         <TableHead className="text-center w-[70px]">الربح/الخسارة</TableHead>

@@ -91,6 +91,10 @@ export const EntryPointRow = ({
         />
       </div>
       <TableCell 
+        label="تاريخ التحليل" 
+        value={formatDateArabic(result.created_at)} 
+      />
+      <TableCell 
         label="نوع التحليل" 
         value={displayedAnalysisType} 
       />
@@ -111,8 +115,8 @@ export const EntryPointRow = ({
         className={`truncate ${profitLossClass}`}
       />
       <TableCell 
-        label="سعر الخروج" 
-        value={formatNumber(result.exit_price)} 
+        label="مدة بقاء التحليل" 
+        value={calculateAnalysisDuration()} 
       />
       <TableCell 
         label="نقطة الدخول" 
@@ -131,16 +135,8 @@ export const EntryPointRow = ({
         value={formatNumber(result.entry_point_price)} 
       />
       <TableCell 
-        label="مدة بقاء التحليل" 
-        value={calculateAnalysisDuration()} 
-      />
-      <TableCell 
         label="تاريخ النتيجة" 
         value={formatDateArabic(result.result_timestamp)} 
-      />
-      <TableCell 
-        label="تاريخ التحليل" 
-        value={formatDateArabic(result.created_at)} 
       />
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}
