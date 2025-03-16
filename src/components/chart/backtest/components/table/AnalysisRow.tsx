@@ -58,7 +58,7 @@ export const AnalysisRow = ({
 
   return (
     <div
-      className={`grid grid-cols-12 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -79,6 +79,10 @@ export const AnalysisRow = ({
       <TableCell 
         label="الاطار الزمني" 
         value={analysis.timeframe} 
+      />
+      <TableCell 
+        label="الاتجاه" 
+        value={analysis.direction} 
       />
       <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
         {analysis.is_success ? 'ناجح' : 'فاشل'}
