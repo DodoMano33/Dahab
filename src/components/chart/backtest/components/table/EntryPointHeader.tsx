@@ -13,25 +13,25 @@ export const EntryPointHeader = ({
   itemsCount
 }: EntryPointHeaderProps) => {
   return (
-    <div className="grid grid-cols-[40px_120px_80px_100px_80px_100px_100px_100px_100px_100px_140px_140px_auto] gap-2 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40 min-w-[1400px]">
+    <div className="grid grid-cols-13 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40 min-w-[1200px]">
       <div className="text-center flex items-center justify-center">
         <Checkbox 
           checked={allSelected && itemsCount > 0}
           onCheckedChange={onSelectAll}
         />
       </div>
-      <div className="px-2">نوع التحليل</div>
-      <div className="px-2">الرمز</div>
-      <div className="px-2">الاطار الزمني</div>
-      <div className="text-center px-2">الاتجاه</div>
-      <div className="px-2">الربح/الخسارة</div>
-      <div className="px-2">سعر الخروج</div>
-      <div className="px-2">نقطة الدخول</div>
-      <div className="px-2">الهدف الأول</div>
-      <div className="px-2">وقف الخسارة</div>
-      <div className="px-2">تاريخ النتيجة</div>
-      <div className="px-2">تاريخ إنشاء التحليل</div>
-      <div className="text-center font-semibold text-primary px-2">السعر الحالي</div>
+      <div>نوع التحليل</div>
+      <div>الرمز</div>
+      <div>الاطار الزمني</div>
+      <div className="text-center">الاتجاه</div>
+      <div>الربح/الخسارة</div>
+      <div>سعر الخروج</div>
+      <div>نقطة الدخول</div>
+      <div>الهدف الأول</div>
+      <div>وقف الخسارة</div>
+      <div>تاريخ النتيجة</div>
+      <div>تاريخ إنشاء التحليل</div>
+      <div className="text-center font-semibold text-primary">السعر الحالي</div>
     </div>
   );
 };
