@@ -68,7 +68,9 @@ export class GoldPriceUpdater {
         console.log('فشل في الحصول على سعر الذهب من API');
         
         // محاولة استخدام السعر الحالي المستخرج إذا كان متاحًا
-        const currentPrice = window.currentExtractedPrice || document.querySelector('.chart-price-display')?.textContent;
+        const extractedPriceElement = document.querySelector('.chart-price-display');
+        const currentPrice = extractedPriceElement?.textContent;
+        
         if (currentPrice && !isNaN(parseFloat(currentPrice.toString()))) {
           const extractedPrice = parseFloat(currentPrice.toString());
           console.log(`استخدام السعر المستخرج البديل: ${extractedPrice}`);
