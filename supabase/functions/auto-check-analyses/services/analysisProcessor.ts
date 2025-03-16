@@ -39,6 +39,20 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
             p_current_price: currentPrice
           });
         }
+        
+        // طباعة المزيد من المعلومات التشخيصية حول حقل result_timestamp
+        const { data: updatedAnalysis, error: checkError } = await supabase
+          .from('search_history')
+          .select('id, created_at, result_timestamp')
+          .eq('id', analysis.id)
+          .single();
+          
+        if (checkError) {
+          console.error(`Error checking updated analysis ${analysis.id}:`, checkError);
+        } else {
+          console.log(`Updated analysis timestamps: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}`);
+        }
+        
         console.log(`Successfully processed analysis ${analysis.id}`);
         processedCount++;
       } catch (rpcError) {

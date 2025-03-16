@@ -75,6 +75,13 @@ export const AnalysisRow = ({
   // تحديد لون النص بناءً على نجاح/فشل التحليل
   const profitLossClass = analysis.is_success ? 'text-success' : 'text-destructive';
 
+  // قم بطباعة البيانات للتصحيح
+  console.log("Analysis Data:", {
+    id: analysis.id,
+    created_at: analysis.created_at,
+    result_timestamp: analysis.result_timestamp
+  });
+
   return (
     <div
       className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
@@ -139,7 +146,7 @@ export const AnalysisRow = ({
       />
       <TableCell 
         label="تاريخ النتيجة" 
-        value={formatDateArabic(analysis.result_timestamp)}
+        value={formatDateArabic(analysis.result_timestamp || "---")}
         className="whitespace-nowrap text-xs min-w-[110px]" 
       />
       <div className="text-center font-bold text-primary">

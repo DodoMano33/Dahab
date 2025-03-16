@@ -43,8 +43,18 @@ export const getTimeframeLabel = (timeframe: string): string => {
 
 // دالة مساعدة لتنسيق التاريخ بالشكل المطلوب
 export const formatDateArabic = (timestamp: string | Date | null): string => {
-  if (!timestamp) return "-";
+  if (!timestamp || timestamp === "---") return "-";
   
-  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
-  return format(date, 'dd/M/yyyy HH:mm');
+  try {
+    const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+    // التحقق من صحة التاريخ (إذا كان تاريخ صالح)
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date format: ${timestamp}`);
+      return "-";
+    }
+    return format(date, 'dd/M/yyyy HH:mm');
+  } catch (error) {
+    console.error("Error formatting date:", error, "Timestamp:", timestamp);
+    return "-";
+  }
 };

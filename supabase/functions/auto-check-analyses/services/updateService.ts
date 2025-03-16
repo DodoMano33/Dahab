@@ -21,6 +21,16 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
 
     if (analyses && analyses.length > 0) {
       try {
+        // طباعة نماذج من حالات التحليلات للتشخيص
+        if (analyses.length > 0) {
+          console.log('Sample analysis entry:', {
+            id: analyses[0].id,
+            created_at: analyses[0].created_at,
+            result_timestamp: analyses[0].result_timestamp,
+            last_checked_at: analyses[0].last_checked_at
+          });
+        }
+        
         // تحديث وقت آخر فحص لجميع التحليلات دفعة واحدة
         const { error: batchUpdateError } = await supabase
           .from('search_history')
@@ -35,6 +45,16 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
           // لن نتوقف هنا، سنستمر في معالجة التحليلات
         } else {
           console.log('Successfully updated last_checked_at for all analyses');
+          
+          // التحقق من التحديث
+          const { data: updated, error: checkError } = await supabase
+            .from('search_history')
+            .select('id, created_at, result_timestamp, last_checked_at')
+            .in('id', analyses.slice(0, 2).map((a: any) => a.id)); // نتحقق من أول تحليلين فقط
+            
+          if (!checkError && updated && updated.length > 0) {
+            console.log('Updated sample:', updated[0]);
+          }
         }
       } catch (updateError) {
         console.error('Exception in batch update operation:', updateError);

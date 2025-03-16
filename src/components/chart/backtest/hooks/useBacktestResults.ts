@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { getStrategyName } from '@/utils/technicalAnalysis/analysisTypeMap';
 
 const PAGE_SIZE = 500; // Changed from 100 to 500
 
@@ -52,24 +51,31 @@ export const useBacktestResults = () => {
 
       console.log(`Fetched ${data?.length} results`);
       
-      // Process results
+      // طباعة بعض البيانات للتشخيص
+      if (data && data.length > 0) {
+        console.log('First result sample:', {
+          id: data[0].id,
+          created_at: data[0].created_at,
+          result_timestamp: data[0].result_timestamp
+        });
+      }
+      
+      // معالجة النتائج للتأكد من أن البيانات صحيحة
       const processedResults = data?.map(result => {
-        // Make sure analysis_type is properly set
+        // التأكد من أن نوع التحليل موجود
         if (!result.analysis_type) {
           console.warn(`Result with missing analysis_type:`, result.id);
           result.analysis_type = 'normal';
         }
         
+        // التأكد من أن تاريخ النتيجة ليس فارغاً (إذا كان فارغاً، ضع قيمة فارغة واضحة)
+        if (!result.result_timestamp) {
+          console.warn(`Result with empty result_timestamp:`, result.id);
+          result.result_timestamp = null;
+        }
+        
         return result;
       }) || [];
-      
-      // Log unique analysis types from this batch
-      if (processedResults.length > 0) {
-        console.log('Unique analysis types in this batch:', 
-          [...new Set(processedResults.map(r => r.analysis_type))]);
-      }
-      
-      // Calculate total profit/loss - تم إزالة هذه الوظيفة حيث سيتم حساب الربح/الخسارة في مكونات الجدول
       
       // If we're on page 0, reset the results, otherwise add to them
       if (pageNumber === 0) {
