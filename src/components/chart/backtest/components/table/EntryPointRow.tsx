@@ -2,8 +2,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
-import { TableCell } from "./TableCell";
-import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
 interface EntryPointRowProps {
   result: any;
@@ -12,49 +10,39 @@ interface EntryPointRowProps {
   currentPrice: number | null;
 }
 
-export const EntryPointRow = ({ 
-  result, 
-  selected, 
+export const EntryPointRow = ({
+  result,
+  selected,
   onSelect,
   currentPrice
 }: EntryPointRowProps) => {
-  // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
+  // دالة لتنسيق الأرقام
   const formatNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return "-";
     const num = typeof value === "string" ? parseFloat(value) : value;
     return Number(num).toFixed(3);
   };
 
-  // دالة محسنة لحساب وتنسيق الربح/الخسارة
+  // دالة لحساب الربح/الخسارة
   const calculateProfitLoss = () => {
-    if (!result.entry_price || !result.exit_price) return "-";
+    if (!result.entry_point_price || !result.exit_price) return "-";
     
-    // حساب الربح/الخسارة بناءً على الاتجاه والأسعار الفعلية
-    const entryPrice = parseFloat(result.entry_price);
+    const entryPrice = parseFloat(result.entry_point_price);
     const exitPrice = parseFloat(result.exit_price);
     let profitLoss = 0;
     
     if (result.direction === 'صاعد') {
-      // للاتجاه الصاعد: الربح عند ارتفاع السعر
       profitLoss = exitPrice - entryPrice;
     } else {
-      // للاتجاه الهابط: الربح عند انخفاض السعر
       profitLoss = entryPrice - exitPrice;
     }
     
-    // تنسيق القيمة
     const formattedValue = Math.abs(profitLoss).toFixed(3);
-    
-    // إضافة إشارة سالب للخسائر
     return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
   const displayedAnalysisType = getStrategyName(result.analysis_type);
-
-  // حساب الربح/الخسارة
   const profitLossValue = calculateProfitLoss();
-  
-  // تحديد لون النص بناءً على نجاح/فشل التحليل
   const profitLossClass = result.is_success ? 'text-success' : 'text-destructive';
 
   return (
@@ -69,46 +57,18 @@ export const EntryPointRow = ({
           onCheckedChange={() => onSelect(result.id)}
         />
       </div>
-      <TableCell 
-        label="نوع التحليل" 
-        value={displayedAnalysisType} 
-      />
-      <TableCell 
-        label="الرمز" 
-        value={result.symbol} 
-      />
-      <TableCell 
-        label="الاطار الزمني" 
-        value={result.timeframe} 
-      />
-      <div className="flex justify-center">
-        <DirectionIndicator direction={result.direction || "محايد"} />
+      <div className="truncate" title={displayedAnalysisType}>
+        {displayedAnalysisType}
       </div>
-      <TableCell 
-        label="الربح/الخسارة" 
-        value={profitLossValue} 
-        className={`truncate ${profitLossClass}`}
-      />
-      <TableCell 
-        label="سعر الخروج" 
-        value={formatNumber(result.exit_price)} 
-      />
-      <TableCell 
-        label="نقطة الدخول" 
-        value={formatNumber(result.entry_price)} 
-      />
-      <TableCell 
-        label="الهدف الأول" 
-        value={formatNumber(result.target_price)} 
-      />
-      <TableCell 
-        label="وقف الخسارة" 
-        value={formatNumber(result.stop_loss)} 
-      />
-      <TableCell 
-        label="تاريخ النتيجة" 
-        value={formatDateArabic(result.result_timestamp)} 
-      />
+      <div className="truncate">{result.symbol}</div>
+      <div className="truncate">{result.timeframe}</div>
+      <div className="truncate">{result.direction}</div>
+      <div className={`font-medium truncate ${profitLossClass}`}>{profitLossValue}</div>
+      <div className="truncate">{formatNumber(result.exit_price)}</div>
+      <div className="truncate">{formatNumber(result.entry_point_price)}</div>
+      <div className="truncate">{formatNumber(result.target_price)}</div>
+      <div className="truncate">{formatNumber(result.stop_loss)}</div>
+      <div className="truncate">{formatDateArabic(result.result_timestamp)}</div>
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}
       </div>
