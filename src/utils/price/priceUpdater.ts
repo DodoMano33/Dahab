@@ -22,6 +22,13 @@ if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('request-extracted-price'));
     console.log('تم إرسال طلب فوري للحصول على السعر الحالي');
   }, 1000);
+  
+  // تحقق من وجود حالة Alpha Vantage في التخزين المحلي
+  const alphaVantageEnabled = localStorage.getItem('alpha_vantage_enabled');
+  if (alphaVantageEnabled === 'false') {
+    goldPriceUpdater.setUseAlphaVantage(false);
+    console.log('تم تعطيل استخدام Alpha Vantage من التخزين المحلي');
+  }
 }
 
 // بدء تحديثات سعر الذهب بشكل أكثر تكرارًا (كل 3 ثوانٍ)

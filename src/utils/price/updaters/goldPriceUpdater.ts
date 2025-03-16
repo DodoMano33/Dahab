@@ -9,6 +9,7 @@ import { broadcastGoldPriceUpdate } from '../events/priceEventBroadcaster';
 export class GoldPriceUpdater {
   private updateInterval: number | null = null;
   private readonly priceUpdater: PriceUpdater;
+  private useAlphaVantage: boolean = true;
   
   constructor(priceUpdater: PriceUpdater) {
     this.priceUpdater = priceUpdater;
@@ -46,6 +47,17 @@ export class GoldPriceUpdater {
     }
   }
   
+  // تفعيل أو تعطيل استخدام Alpha Vantage
+  setUseAlphaVantage(enabled: boolean) {
+    this.useAlphaVantage = enabled;
+    console.log(`تم ${enabled ? 'تفعيل' : 'تعطيل'} استخدام Alpha Vantage للحصول على سعر الذهب`);
+  }
+  
+  // الحصول على حالة استخدام Alpha Vantage
+  getUseAlphaVantage(): boolean {
+    return this.useAlphaVantage;
+  }
+  
   async updateGoldPrice() {
     try {
       if (this.priceUpdater.isRateLimited()) {
@@ -54,7 +66,13 @@ export class GoldPriceUpdater {
       }
       
       console.log('جاري تحديث سعر الذهب...');
-      const price = await fetchGoldPrice();
+      
+      // استخدام Alpha Vantage فقط إذا كان مفعلاً
+      let price = null;
+      
+      if (this.useAlphaVantage) {
+        price = await fetchGoldPrice();
+      }
       
       if (price !== null) {
         // تحديث السعر المخزن مؤقتًا

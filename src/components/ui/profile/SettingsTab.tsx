@@ -3,9 +3,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { goldPriceUpdater } from "@/utils/price/priceUpdater";
+import { setAlphaVantageKey } from "@/utils/price/api";
 
 interface SettingsTabProps {
   userProfile: {
@@ -22,6 +24,45 @@ export function SettingsTab({
   setUserProfile,
   resetOnboarding 
 }: SettingsTabProps) {
+  // إضافة حالة لمفتاح Alpha Vantage API
+  const [alphaVantageKey, setAlphaVantageApiKey] = useState<string>("");
+  const [useAlphaVantage, setUseAlphaVantage] = useState<boolean>(true);
+  
+  // تحميل حالة Alpha Vantage وقت تهيئة المكون
+  useEffect(() => {
+    // تحميل مفتاح API المخزن
+    const storedKey = localStorage.getItem('alpha_vantage_api_key') || "";
+    setAlphaVantageApiKey(storedKey);
+    
+    // تحميل حالة تفعيل Alpha Vantage
+    if (goldPriceUpdater) {
+      setUseAlphaVantage(goldPriceUpdater.getUseAlphaVantage());
+    }
+  }, []);
+  
+  // تحديث حالة Alpha Vantage
+  const handleAlphaVantageToggle = (enabled: boolean) => {
+    setUseAlphaVantage(enabled);
+    if (goldPriceUpdater) {
+      goldPriceUpdater.setUseAlphaVantage(enabled);
+      toast.success(enabled 
+        ? "تم تفعيل استخدام Alpha Vantage للحصول على أسعار الذهب" 
+        : "تم تعطيل استخدام Alpha Vantage");
+    }
+  };
+  
+  // حفظ مفتاح API
+  const handleSaveApiKey = () => {
+    if (alphaVantageKey) {
+      if (setAlphaVantageKey(alphaVantageKey)) {
+        toast.success("تم حفظ مفتاح Alpha Vantage API بنجاح");
+      }
+    } else {
+      setAlphaVantageKey(null);
+      toast.info("تم مسح مفتاح Alpha Vantage API وسيتم استخدام المفتاح الافتراضي");
+    }
+  };
+
   // تفعيل أو تعطيل الفحص التلقائي
   useEffect(() => {
     const setupAutoCheck = async () => {
@@ -105,7 +146,50 @@ export function SettingsTab({
         />
       </div>
       
-      <div className="space-y-2 pt-4">
+      <div className="border-t pt-4 mt-2">
+        <div className="space-y-1 mb-4">
+          <h3 className="font-medium text-base">إعدادات أسعار الذهب</h3>
+          <p className="text-sm text-muted-foreground">
+            تكوين كيفية الحصول على أسعار الذهب المباشرة
+          </p>
+        </div>
+        
+        <div className="flex items-center justify-between mb-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="alphaVantageToggle">استخدام Alpha Vantage API</Label>
+            <p className="text-sm text-muted-foreground">
+              الحصول على سعر الذهب المباشر من Alpha Vantage
+            </p>
+          </div>
+          <Switch
+            id="alphaVantageToggle"
+            checked={useAlphaVantage}
+            onCheckedChange={handleAlphaVantageToggle}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="alphaVantageKey">مفتاح Alpha Vantage API</Label>
+          <div className="flex gap-2">
+            <Input
+              id="alphaVantageKey"
+              value={alphaVantageKey}
+              onChange={(e) => setAlphaVantageApiKey(e.target.value)}
+              placeholder="أدخل مفتاح API الخاص بك"
+              className="flex-grow"
+              dir="ltr"
+            />
+            <Button onClick={handleSaveApiKey} type="button" variant="secondary">
+              حفظ
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            مفتاح API ضروري للحصول على أسعار الذهب المباشرة. يمكنك الحصول على مفتاح مجاني من موقع Alpha Vantage
+          </p>
+        </div>
+      </div>
+      
+      <div className="space-y-2 pt-4 border-t mt-2">
         <Button
           variant="outline"
           onClick={resetOnboarding}

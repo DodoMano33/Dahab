@@ -1,11 +1,34 @@
+
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // استخدام مفتاح API للتطبيق
+let userApiKey: string | null = null;
 const DEFAULT_API_KEY = 'RTZ3G9HKJZ0VHIQ';
+
+export const setAlphaVantageKey = (key: string | null) => {
+  userApiKey = key;
+  localStorage.setItem('alpha_vantage_api_key', key || '');
+  console.log("تم تعيين مفتاح Alpha Vantage API");
+  return true;
+};
 
 export const getAlphaVantageKey = async (): Promise<string> => {
   console.log("جاري جلب مفتاح Alpha Vantage API...");
+  
+  // أولاً، التحقق من المفتاح المخزن محلياً
+  if (userApiKey) {
+    console.log("استخدام مفتاح API المخزن في الذاكرة");
+    return userApiKey;
+  }
+  
+  // محاولة استرداد المفتاح من التخزين المحلي
+  const storedKey = localStorage.getItem('alpha_vantage_api_key');
+  if (storedKey && storedKey.length > 10) {
+    console.log("استخدام مفتاح API المخزن في التخزين المحلي");
+    userApiKey = storedKey;
+    return storedKey;
+  }
   
   try {
     // محاولة الحصول على المفتاح من Supabase (إذا كان متاحًا)
