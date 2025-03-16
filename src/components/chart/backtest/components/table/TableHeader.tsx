@@ -1,9 +1,9 @@
 
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableHead, TableHeader as UITableHeader, TableRow } from "@/components/ui/table";
 
-export const TableHeader = () => {
+export const BacktestTableHeader = () => {
   return (
-    <TableHeader>
+    <UITableHeader>
       <TableRow>
         <TableHead className="text-center w-[80px]">الرمز</TableHead>
         <TableHead className="text-center w-[80px]">الربح/الخسارة</TableHead>
@@ -18,6 +18,6 @@ export const TableHeader = () => {
         <TableHead className="text-center w-[150px]">تاريخ التحليل</TableHead>
         <TableHead className="text-center w-[150px]">تاريخ النتيجة</TableHead>
       </TableRow>
-    </TableHeader>
+    </UITableHeader>
   );
 };
