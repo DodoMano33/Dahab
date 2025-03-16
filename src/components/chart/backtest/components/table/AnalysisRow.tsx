@@ -25,6 +25,7 @@ interface AnalysisRowProps {
   // For selection in backtest results
   selected?: boolean;
   onSelect?: () => void;
+  current_price?: number;
 }
 
 export const AnalysisRow = ({
@@ -42,13 +43,14 @@ export const AnalysisRow = ({
   created_at,
   result_timestamp,
   selected = false,
-  onSelect
+  onSelect,
+  current_price = 0
 }: AnalysisRowProps) => {
   // تنسيق التواريخ باستخدام الدوال المخصصة
   const formattedCreatedDate = formatCreatedAtDate(created_at);
   const formattedResultDate = formatResultDate(result_timestamp);
 
-  // Convert direction to an acceptable value if it's not already
+  // تحويل الاتجاه إلى قيمة عربية إذا لم تكن كذلك بالفعل
   const safeDirection: "صاعد" | "هابط" | "محايد" = 
     (direction === "صاعد" || direction === "هابط" || direction === "محايد") 
       ? direction as "صاعد" | "هابط" | "محايد"
@@ -57,6 +59,9 @@ export const AnalysisRow = ({
         : direction === "down" || direction === "bearish" 
           ? "هابط" 
           : "محايد";
+
+  // طباعة قيم تواريخ النتيجة للتأكد من صحتها
+  console.log(`Row ${id} timestamps:`, { created_at, result_timestamp, formattedResultDate });
 
   return (
     <TableRow className="text-center hover:bg-muted/50">
@@ -70,58 +75,68 @@ export const AnalysisRow = ({
         </TableCell>
       )}
       
+      {/* تاريخ التحليل */}
+      <TableCell className="text-center">
+        {formattedCreatedDate}
+      </TableCell>
+      
+      {/* نوع التحليل */}
+      <TableCell className="text-center">
+        {analysisType}
+      </TableCell>
+      
+      {/* الرمز */}
       <TableCell className="font-medium text-center">
         {symbol}
       </TableCell>
       
+      {/* الإطار الزمني */}
       <TableCell className="text-center">
-        <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full">
-          {profit_loss.toFixed(2)}
-        </Badge>
+        {timeframe}
       </TableCell>
       
-      <TableCell className="text-center">
-        <DirectionIndicator direction={safeDirection} />
-      </TableCell>
-      
-      <TableCell className="text-center">
-        {entry_price.toFixed(2)}
-      </TableCell>
-      
-      <TableCell className="text-center">
-        {exit_price.toFixed(2)}
-      </TableCell>
-      
-      <TableCell className="text-center">
-        {target_price.toFixed(2)}
-      </TableCell>
-      
-      <TableCell className="text-center">
-        {stop_loss.toFixed(2)}
-      </TableCell>
-      
+      {/* النتيجة */}
       <TableCell className="text-center">
         <Badge variant={is_success ? "success" : "destructive"}>
           {is_success ? "ناجح" : "غير ناجح"}
         </Badge>
       </TableCell>
       
+      {/* وقف الخسارة */}
       <TableCell className="text-center">
-        {timeframe}
+        {stop_loss.toFixed(2)}
       </TableCell>
       
+      {/* الهدف */}
       <TableCell className="text-center">
-        {analysisType}
+        {target_price.toFixed(2)}
       </TableCell>
       
-      {/* عرض تاريخ إنشاء التحليل */}
+      {/* سعر الدخول */}
       <TableCell className="text-center">
-        {formattedCreatedDate}
+        {entry_price.toFixed(2)}
       </TableCell>
       
-      {/* عرض تاريخ نتيجة التحليل (مختلف عن تاريخ الإنشاء) */}
+      {/* الاتجاه */}
+      <TableCell className="text-center">
+        <DirectionIndicator direction={safeDirection} />
+      </TableCell>
+      
+      {/* الربح/الخسارة */}
+      <TableCell className="text-center">
+        <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full">
+          {profit_loss.toFixed(2)}
+        </Badge>
+      </TableCell>
+      
+      {/* تاريخ النتيجة */}
       <TableCell className="text-center">
         {formattedResultDate}
+      </TableCell>
+      
+      {/* السعر الحالي (إضافة عمود جديد) */}
+      <TableCell className="text-center">
+        {exit_price > 0 ? exit_price.toFixed(2) : (current_price > 0 ? current_price.toFixed(2) : "—")}
       </TableCell>
     </TableRow>
   );

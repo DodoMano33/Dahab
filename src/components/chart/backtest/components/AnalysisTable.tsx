@@ -63,6 +63,7 @@ export const AnalysisTable = ({
               result_timestamp={item.result_timestamp}
               selected={selectedItems?.has(item.id)}
               onSelect={onSelect ? () => onSelect(item.id) : undefined}
+              current_price={item.current_price}
             />
           ))}
         </TableBody>

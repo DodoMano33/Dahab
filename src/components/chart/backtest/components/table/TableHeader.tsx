@@ -23,18 +23,18 @@ export const BacktestTableHeader = ({
             />
           </TableHead>
         )}
-        <TableHead className="text-center w-[100px]">الرمز</TableHead>
-        <TableHead className="text-center w-[100px]">الربح/الخسارة</TableHead>
-        <TableHead className="text-center w-[100px]">الاتجاه</TableHead>
-        <TableHead className="text-center w-[100px]">سعر الدخول</TableHead>
-        <TableHead className="text-center w-[100px]">سعر الخروج</TableHead>
-        <TableHead className="text-center w-[100px]">الهدف</TableHead>
-        <TableHead className="text-center w-[100px]">وقف الخسارة</TableHead>
-        <TableHead className="text-center w-[100px]">النتيجة</TableHead>
-        <TableHead className="text-center w-[100px]">الإطار الزمني</TableHead>
-        <TableHead className="text-center w-[120px]">نوع التحليل</TableHead>
         <TableHead className="text-center w-[150px]">تاريخ التحليل</TableHead>
+        <TableHead className="text-center w-[120px]">نوع التحليل</TableHead>
+        <TableHead className="text-center w-[100px]">الرمز</TableHead>
+        <TableHead className="text-center w-[100px]">الإطار الزمني</TableHead>
+        <TableHead className="text-center w-[100px]">النتيجة</TableHead>
+        <TableHead className="text-center w-[100px]">وقف الخسارة</TableHead>
+        <TableHead className="text-center w-[100px]">الهدف</TableHead>
+        <TableHead className="text-center w-[100px]">سعر الدخول</TableHead>
+        <TableHead className="text-center w-[100px]">الاتجاه</TableHead>
+        <TableHead className="text-center w-[100px]">الربح/الخسارة</TableHead>
         <TableHead className="text-center w-[150px]">تاريخ النتيجة</TableHead>
+        <TableHead className="text-center w-[100px]">السعر الحالي</TableHead>
       </TableRow>
     </UITableHeader>
   );
