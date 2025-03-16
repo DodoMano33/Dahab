@@ -46,9 +46,7 @@ export const AnalysisRow = ({
     const formattedValue = Math.abs(profitLoss).toFixed(3);
     
     // إضافة إشارة سالب للخسائر
-    return profitLoss < 0 ? `-${formattedValue}` : formatte
-
-dValue;
+    return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
   // حساب مدة بقاء التحليل بالساعات
