@@ -59,12 +59,14 @@ export const BestEntryPointResultsDialog = ({
             </div>
           ) : (
             <>
-              <BestEntryPointTable
-                results={results}
-                selectedItems={selectedItems}
-                onSelectAll={handleSelectAll}
-                onSelect={handleSelectItem}
-              />
+              <div className="overflow-x-auto">
+                <BestEntryPointTable
+                  results={results}
+                  selectedItems={selectedItems}
+                  onSelectAll={handleSelectAll}
+                  onSelect={handleSelectItem}
+                />
+              </div>
               
               {hasMore && (
                 <div className="flex justify-center mt-6">

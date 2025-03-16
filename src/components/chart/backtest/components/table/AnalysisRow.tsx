@@ -59,7 +59,7 @@ export const AnalysisRow = ({
 
   return (
     <div
-      className={`grid grid-cols-12 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -111,6 +111,10 @@ export const AnalysisRow = ({
       <TableCell 
         label="تاريخ النتيجة" 
         value={formatDateArabic(analysis.result_timestamp)} 
+      />
+      <TableCell 
+        label="تاريخ التحليل" 
+        value={formatDateArabic(analysis.created_at)} 
       />
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}
