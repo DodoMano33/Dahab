@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackTestHeader } from "./components/BackTestHeader";
 import { AnalysisStats } from "./components/AnalysisStats";
 import { AnalysisTable } from "./components/AnalysisTable";
@@ -37,38 +36,11 @@ export const BackTestResultsDialog = ({
   } = useBacktestResults();
 
   useEffect(() => {
-    if (completedAnalyses.length > 0) {
-      console.log("BackTestResultsDialog: Loaded analysis types:", 
-        completedAnalyses.slice(0, 20).map(a => a.analysis_type));
-      
-      console.log("BackTestResultsDialog: Unique analysis types:", 
-        [...new Set(completedAnalyses.map(a => a.analysis_type))]);
-        
-      console.log("BackTestResultsDialog: Analysis types with display names:", 
-        completedAnalyses.slice(0, 20).map(a => ({
-          id: a.id,
-          type: a.analysis_type,
-          display: getStrategyName(a.analysis_type)
-        })));
+    if (isOpen) {
+      // عند فتح النافذة، نقوم بإعادة تعيين العناصر المحددة
+      setSelectedItems(new Set());
     }
-    
-    if (stats.length > 0) {
-      console.log("BackTestResultsDialog: Loaded stats types:", 
-        stats.map(s => s.type));
-      
-      console.log("BackTestResultsDialog: Unique stats types:", 
-        [...new Set(stats.map(s => s.type))]);
-      
-      console.log("BackTestResultsDialog: Stats types with display names:", 
-        stats.map(s => ({
-          type: s.type,
-          display: getStrategyName(s.type),
-          displayFromStat: s.display_name,
-          success: s.success,
-          fail: s.fail
-        })));
-    }
-  }, [completedAnalyses, stats]);
+  }, [isOpen]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {

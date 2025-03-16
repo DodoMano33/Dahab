@@ -15,7 +15,7 @@ export const BacktestTableHeader = ({
     <UITableHeader>
       <TableRow>
         {onSelectAll && (
-          <TableHead className="w-[50px]">
+          <TableHead className="w-[50px] text-center">
             <Checkbox 
               checked={allSelected}
               onCheckedChange={onSelectAll}
@@ -23,16 +23,16 @@ export const BacktestTableHeader = ({
             />
           </TableHead>
         )}
-        <TableHead className="text-center w-[80px]">الرمز</TableHead>
-        <TableHead className="text-center w-[80px]">الربح/الخسارة</TableHead>
-        <TableHead className="text-center w-[80px]">الاتجاه</TableHead>
-        <TableHead className="text-center w-[80px]">سعر الدخول</TableHead>
-        <TableHead className="text-center w-[80px]">سعر الخروج</TableHead>
-        <TableHead className="text-center w-[80px]">الهدف</TableHead>
-        <TableHead className="text-center w-[80px]">وقف الخسارة</TableHead>
-        <TableHead className="text-center w-[80px]">النتيجة</TableHead>
-        <TableHead className="text-center w-[80px]">الإطار الزمني</TableHead>
-        <TableHead className="text-center w-[100px]">نوع التحليل</TableHead>
+        <TableHead className="text-center w-[100px]">الرمز</TableHead>
+        <TableHead className="text-center w-[100px]">الربح/الخسارة</TableHead>
+        <TableHead className="text-center w-[100px]">الاتجاه</TableHead>
+        <TableHead className="text-center w-[100px]">سعر الدخول</TableHead>
+        <TableHead className="text-center w-[100px]">سعر الخروج</TableHead>
+        <TableHead className="text-center w-[100px]">الهدف</TableHead>
+        <TableHead className="text-center w-[100px]">وقف الخسارة</TableHead>
+        <TableHead className="text-center w-[100px]">النتيجة</TableHead>
+        <TableHead className="text-center w-[100px]">الإطار الزمني</TableHead>
+        <TableHead className="text-center w-[120px]">نوع التحليل</TableHead>
         <TableHead className="text-center w-[150px]">تاريخ التحليل</TableHead>
         <TableHead className="text-center w-[150px]">تاريخ النتيجة</TableHead>
       </TableRow>

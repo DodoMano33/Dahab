@@ -1,9 +1,10 @@
 
 import {
   Table,
+  TableBody
 } from "@/components/ui/table";
-import { AnalysisRow } from "../components/table/AnalysisRow";
-import { BacktestTableHeader } from "../components/table/TableHeader";
+import { AnalysisRow } from "./table/AnalysisRow";
+import { BacktestTableHeader } from "./table/TableHeader";
 
 interface AnalysisTableProps {
   data?: any[];
@@ -30,27 +31,32 @@ export const AnalysisTable = ({
   return (
     <div className="w-full overflow-auto">
       <Table>
-        <BacktestTableHeader />
-        {tableData.map((item) => (
-          <AnalysisRow
-            key={item.id}
-            id={item.id}
-            symbol={item.symbol}
-            entry_price={item.entry_price}
-            exit_price={item.exit_price}
-            target_price={item.target_price}
-            stop_loss={item.stop_loss}
-            direction={item.direction}
-            profit_loss={item.profit_loss}
-            is_success={item.is_success}
-            analysisType={item.analysis_type || item.analysisType}
-            timeframe={item.timeframe}
-            created_at={item.created_at}
-            result_timestamp={item.result_timestamp}
-            selected={selectedItems?.has(item.id)}
-            onSelect={onSelect ? () => onSelect(item.id) : undefined}
-          />
-        ))}
+        <BacktestTableHeader 
+          onSelectAll={onSelectAll}
+          allSelected={selectedItems && tableData.length > 0 && selectedItems.size === tableData.length}
+        />
+        <TableBody>
+          {tableData.map((item) => (
+            <AnalysisRow
+              key={item.id}
+              id={item.id}
+              symbol={item.symbol}
+              entry_price={item.entry_price}
+              exit_price={item.exit_price}
+              target_price={item.target_price}
+              stop_loss={item.stop_loss}
+              direction={item.direction}
+              profit_loss={item.profit_loss}
+              is_success={item.is_success}
+              analysisType={item.analysis_type || item.analysisType}
+              timeframe={item.timeframe}
+              created_at={item.created_at}
+              result_timestamp={item.result_timestamp}
+              selected={selectedItems?.has(item.id)}
+              onSelect={onSelect ? () => onSelect(item.id) : undefined}
+            />
+          ))}
+        </TableBody>
       </Table>
     </div>
   );

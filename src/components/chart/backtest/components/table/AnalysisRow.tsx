@@ -44,14 +44,6 @@ export const AnalysisRow = ({
   selected = false,
   onSelect
 }: AnalysisRowProps) => {
-  // طباعة سجلات تشخيصية لفهم المزيد عن البيانات المستلمة
-  console.log(`AnalysisRow - ID: ${id}, DateInfo:`, {
-    created_at,
-    result_timestamp,
-    created_at_type: typeof created_at,
-    result_timestamp_type: typeof result_timestamp
-  });
-
   // تنسيق التواريخ باستخدام الدوال المخصصة
   const formattedCreatedDate = formatCreatedAtDate(created_at);
   const formattedResultDate = formatResultDate(result_timestamp);
@@ -67,9 +59,9 @@ export const AnalysisRow = ({
           : "محايد";
 
   return (
-    <TableRow className="hover:bg-muted/50">
+    <TableRow className="text-center hover:bg-muted/50">
       {onSelect && (
-        <TableCell className="w-[50px]">
+        <TableCell className="text-center">
           <Checkbox 
             checked={selected} 
             onCheckedChange={onSelect}
@@ -123,12 +115,12 @@ export const AnalysisRow = ({
       </TableCell>
       
       {/* عرض تاريخ إنشاء التحليل */}
-      <TableCell className="text-center text-xs">
+      <TableCell className="text-center">
         {formattedCreatedDate}
       </TableCell>
       
       {/* عرض تاريخ نتيجة التحليل (مختلف عن تاريخ الإنشاء) */}
-      <TableCell className="text-center text-xs">
+      <TableCell className="text-center">
         {formattedResultDate}
       </TableCell>
     </TableRow>
