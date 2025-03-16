@@ -44,6 +44,16 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
         }
       }));
       
+      // إرسال تحديث لأي استجابة مطلوبة للسعر الحالي
+      window.dispatchEvent(new CustomEvent('current-price-response', { 
+        detail: { 
+          price,
+          source: 'extracted',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
       // أيضًا إرسال كحدث chart-price-update للتوافق مع النظام القديم
       window.dispatchEvent(new CustomEvent('chart-price-update', { 
         detail: { 
@@ -66,6 +76,16 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       
       // إرسال تحديث السعر عند نجاح استخراجه عبر OCR كمصدر "extracted" للأولوية العالية
       window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { 
+          price: ocrPrice,
+          source: 'extracted',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
+      // إرسال تحديث لأي استجابة مطلوبة للسعر الحالي
+      window.dispatchEvent(new CustomEvent('current-price-response', { 
         detail: { 
           price: ocrPrice,
           source: 'extracted',
@@ -151,11 +171,55 @@ export const extractAndBroadcastPrice = async () => {
 };
 
 /**
+ * الاستجابة لطلبات السعر المستخرج بشكل مباشر
+ */
+export const handleExtractedPriceRequest = () => {
+  try {
+    const lastPrice = getLastExtractedPrice();
+    if (lastPrice) {
+      console.log('الاستجابة لطلب السعر المستخرج بقيمة:', lastPrice);
+      
+      // إرسال الحدث بجميع أنواع الأحداث للتوافق مع جميع المكونات
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { 
+          price: lastPrice,
+          source: 'extracted',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('current-price-response', { 
+        detail: { 
+          price: lastPrice,
+          source: 'extracted',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('خطأ في الاستجابة لطلب السعر المستخرج:', error);
+    return false;
+  }
+};
+
+// إضافة مستمع لطلبات السعر المستخرج
+if (typeof window !== 'undefined') {
+  window.addEventListener('request-extracted-price', () => {
+    handleExtractedPriceRequest();
+  });
+}
+
+/**
  * طلب تحديث فوري للسعر الحالي
  */
 export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   // محاولة بث السعر المخزن أولاً
-  if (requestPriceUpdate()) {
+  if (handleExtractedPriceRequest() || requestPriceUpdate()) {
     return true;
   }
   

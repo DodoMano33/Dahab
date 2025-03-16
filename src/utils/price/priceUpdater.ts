@@ -83,7 +83,9 @@ export class PriceUpdater {
         
         console.log(`تم تحديث سعر الذهب من Alpha Vantage: ${price}`);
         
-        // تحديث السعر بمصدر 'alphavantage' لإعطائه أولوية عالية
+        // تحديث السعر بجميع الأحداث المختلفة لضمان استقباله من قبل جميع المكونات
+        
+        // 1. تحديث بمصدر 'alphavantage' لإعطائه أولوية عالية
         window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
           detail: { 
             price,
@@ -93,7 +95,18 @@ export class PriceUpdater {
           }
         }));
         
+        // 2. تحديث كاستجابة للسعر الحالي
         window.dispatchEvent(new CustomEvent('current-price-response', { 
+          detail: { 
+            price,
+            symbol: 'CFI:XAUUSD',
+            timestamp: Date.now(),
+            source: 'alphavantage'
+          }
+        }));
+        
+        // 3. تحديث كسعر مباشر من الشارت
+        window.dispatchEvent(new CustomEvent('chart-price-update', { 
           detail: { 
             price,
             symbol: 'CFI:XAUUSD',
@@ -166,6 +179,36 @@ export class PriceUpdater {
 }
 
 export const priceUpdater = new PriceUpdater();
+
+// الاستجابة لطلبات السعر الحالي - نضيف هذا المستمع هنا أيضًا للتأكيد
+if (typeof window !== 'undefined') {
+  window.addEventListener('request-current-price', () => {
+    const lastPrice = priceUpdater.getLastGoldPrice();
+    if (lastPrice !== null) {
+      console.log('الاستجابة لطلب السعر الحالي من priceUpdater:', lastPrice);
+      
+      // إرسال بجميع أنواع الأحداث للتوافق مع جميع المكونات
+      window.dispatchEvent(new CustomEvent('current-price-response', { 
+        detail: { 
+          price: lastPrice,
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          source: 'alphavantage'
+        }
+      }));
+      
+      // إرسال لأحداث التحديث بمصدر alphavantage
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { 
+          price: lastPrice,
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          source: 'alphavantage'
+        }
+      }));
+    }
+  });
+}
 
 // بدء تحديثات سعر الذهب بشكل أكثر تكرارًا (كل 5 ثوانٍ)
 priceUpdater.startGoldPriceUpdates(5000);
