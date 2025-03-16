@@ -120,7 +120,7 @@ export const formatResultDate = (timestamp: string | Date | null): string => {
     
     return format(date, 'dd/M/yyyy HH:mm', { locale: ar });
   } catch (error) {
-    console.error("Error formatting result_timestamp date:", error);
+    console.error("Error formatting result_timestamp date:", error, "Timestamp:", timestamp);
     return "خطأ في التنسيق";
   }
 };

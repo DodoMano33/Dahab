@@ -28,6 +28,15 @@ export const AnalysisTable = ({
   
   console.log("AnalysisTable: Rendering with", tableData.length, "items");
   
+  // طباعة أول نتيجة للتأكد من وجود تاريخ النتيجة
+  if (tableData.length > 0) {
+    console.log("First result sample:", {
+      id: tableData[0].id,
+      created_at: tableData[0].created_at,
+      result_timestamp: tableData[0].result_timestamp
+    });
+  }
+  
   return (
     <div className="w-full overflow-auto">
       <Table>
