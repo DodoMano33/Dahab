@@ -21,24 +21,17 @@ export const CurrentPriceListener = ({ children }: CurrentPriceListenerProps) =>
     window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
     window.addEventListener('chart-price-update', handlePriceUpdate as EventListener);
     window.addEventListener('current-price-response', handlePriceUpdate as EventListener);
+    window.addEventListener('extracted-price-update', handlePriceUpdate as EventListener);
     
-    // طلب السعر الحالي عند تحميل المكون
+    // طلب السعر الحالي عند تحميل المكون - إرسال طلب لجميع المصادر المحتملة
     window.dispatchEvent(new Event('request-current-price'));
-    
-    // أيضا طلب تحديث صريح من الأنظمة الأخرى
-    if (typeof window !== 'undefined') {
-      // محاولة إرسال حدث للحصول على سعر من خدمة استخراج السعر
-      try {
-        window.dispatchEvent(new CustomEvent('request-extracted-price'));
-      } catch (e) {
-        console.error("خطأ عند طلب السعر المستخرج:", e);
-      }
-    }
+    window.dispatchEvent(new Event('request-extracted-price'));
     
     return () => {
       window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('chart-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handlePriceUpdate as EventListener);
+      window.removeEventListener('extracted-price-update', handlePriceUpdate as EventListener);
     };
   }, []);
 

@@ -17,6 +17,9 @@ export const requestInitialPrice = () => {
     // إرسال طلب السعر الحالي
     window.dispatchEvent(new Event('request-current-price'));
     
+    // طلب السعر المستخرج بشكل صريح
+    window.dispatchEvent(new Event('request-extracted-price'));
+    
     // مباشرة عبر postMessage
     window.postMessage({ method: 'getCurrentPrice', symbol: 'CFI:XAUUSD', provider: 'CFI' }, '*');
     
@@ -26,13 +29,44 @@ export const requestInitialPrice = () => {
       const priceText = chartPriceElement.textContent.trim();
       const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
       if (!isNaN(price) && price > 0) {
+        // إرسال بجميع أنواع الأحداث للتوافق مع جميع المكونات
         window.dispatchEvent(new CustomEvent('tradingview-price-update', {
           detail: {
             price,
             symbol: 'CFI:XAUUSD',
             timestamp: Date.now(),
             provider: 'CFI',
-            source: 'extracted' // تغيير المصدر إلى extracted لإعطائه أولوية عالية
+            source: 'extracted'
+          }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('extracted-price-update', {
+          detail: {
+            price,
+            symbol: 'CFI:XAUUSD',
+            timestamp: Date.now(),
+            provider: 'CFI',
+            source: 'extracted'
+          }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('current-price-response', {
+          detail: {
+            price,
+            symbol: 'CFI:XAUUSD',
+            timestamp: Date.now(),
+            provider: 'CFI',
+            source: 'extracted'
+          }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('chart-price-update', {
+          detail: {
+            price,
+            symbol: 'CFI:XAUUSD',
+            timestamp: Date.now(),
+            provider: 'CFI',
+            source: 'extracted'
           }
         }));
       }
@@ -62,15 +96,50 @@ export const setupPriceUpdateChecker = (
       requestInitialPrice();
     } else {
       // تحديث السعر الحالي دوريًا حتى لو لم يتغير
+      const price = currentPriceRef.current;
+      
+      // نشر السعر بجميع أنواع الأحداث المتاحة
       window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
         detail: { 
-          price: currentPriceRef.current, 
+          price, 
           symbol: 'CFI:XAUUSD',
           timestamp: Date.now(),
           provider: priceProvider,
-          source: 'extracted' // تغيير المصدر إلى extracted لإعطائه أولوية عالية
+          source: 'extracted'
         }
       }));
+      
+      window.dispatchEvent(new CustomEvent('extracted-price-update', { 
+        detail: { 
+          price, 
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          provider: priceProvider,
+          source: 'extracted'
+        }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('current-price-response', { 
+        detail: { 
+          price, 
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          provider: priceProvider,
+          source: 'extracted'
+        }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('chart-price-update', { 
+        detail: { 
+          price, 
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          provider: priceProvider,
+          source: 'extracted'
+        }
+      }));
+      
+      console.log(`تم نشر تحديث السعر (${priceProvider}:XAUUSD): ${price}`);
     }
-  }, 8000); // تقليل الفاصل الزمني
+  }, 5000); // تقليل الفاصل الزمني لزيادة تكرار التحديثات
 };

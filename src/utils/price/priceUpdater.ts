@@ -114,6 +114,16 @@ export class PriceUpdater {
             source: 'alphavantage'
           }
         }));
+        
+        // 4. إصدار حدث جديد مخصص لتحديث السعر المستخرج
+        window.dispatchEvent(new CustomEvent('extracted-price-update', { 
+          detail: { 
+            price,
+            symbol: 'CFI:XAUUSD',
+            timestamp: Date.now(),
+            source: 'alphavantage'
+          }
+        }));
       } else {
         console.log('فشل في الحصول على سعر الذهب من API');
       }
@@ -180,8 +190,26 @@ export class PriceUpdater {
 
 export const priceUpdater = new PriceUpdater();
 
-// الاستجابة لطلبات السعر الحالي - نضيف هذا المستمع هنا أيضًا للتأكيد
+// إضافة مستمع جديد للاستجابة لطلب السعر المستخرج
 if (typeof window !== 'undefined') {
+  window.addEventListener('request-extracted-price', () => {
+    const lastPrice = priceUpdater.getLastGoldPrice();
+    if (lastPrice !== null) {
+      console.log('الاستجابة لطلب السعر المستخرج من priceUpdater:', lastPrice);
+      
+      // إرسال حدث السعر المستخرج
+      window.dispatchEvent(new CustomEvent('extracted-price-update', { 
+        detail: { 
+          price: lastPrice,
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          source: 'alphavantage'
+        }
+      }));
+    }
+  });
+  
+  // الاستجابة لطلبات السعر الحالي
   window.addEventListener('request-current-price', () => {
     const lastPrice = priceUpdater.getLastGoldPrice();
     if (lastPrice !== null) {
@@ -206,9 +234,19 @@ if (typeof window !== 'undefined') {
           source: 'alphavantage'
         }
       }));
+      
+      // إرسال تحديث السعر المستخرج
+      window.dispatchEvent(new CustomEvent('extracted-price-update', { 
+        detail: { 
+          price: lastPrice,
+          symbol: 'CFI:XAUUSD',
+          timestamp: Date.now(),
+          source: 'alphavantage'
+        }
+      }));
     }
   });
 }
 
-// بدء تحديثات سعر الذهب بشكل أكثر تكرارًا (كل 5 ثوانٍ)
-priceUpdater.startGoldPriceUpdates(5000);
+// بدء تحديثات سعر الذهب بشكل أكثر تكرارًا (كل 3 ثوانٍ)
+priceUpdater.startGoldPriceUpdates(3000);
