@@ -21,32 +21,34 @@ export const BestEntryPointTable = ({
 }: BestEntryPointTableProps) => {
   return (
     <div className="border rounded-lg bg-white shadow-sm overflow-x-auto">
-      <EntryPointHeader 
-        onSelectAll={onSelectAll} 
-        allSelected={selectedItems.size === results.length} 
-        itemsCount={results.length}
-      />
-      
-      <div className="divide-y">
-        {results.length === 0 ? (
-          <EmptyState isLoading={isLoading} />
-        ) : (
-          <CurrentPriceListener>
-            {(currentPrice) => (
-              <>
-                {results.map((result) => (
-                  <EntryPointRow
-                    key={result.id}
-                    result={result}
-                    selected={selectedItems.has(result.id)}
-                    onSelect={onSelect}
-                    currentPrice={currentPrice}
-                  />
-                ))}
-              </>
-            )}
-          </CurrentPriceListener>
-        )}
+      <div className="min-w-[1200px]">
+        <EntryPointHeader 
+          onSelectAll={onSelectAll} 
+          allSelected={selectedItems.size === results.length} 
+          itemsCount={results.length}
+        />
+        
+        <div className="divide-y">
+          {results.length === 0 ? (
+            <EmptyState isLoading={isLoading} />
+          ) : (
+            <CurrentPriceListener>
+              {(currentPrice) => (
+                <>
+                  {results.map((result) => (
+                    <EntryPointRow
+                      key={result.id}
+                      result={result}
+                      selected={selectedItems.has(result.id)}
+                      onSelect={onSelect}
+                      currentPrice={currentPrice}
+                    />
+                  ))}
+                </>
+              )}
+            </CurrentPriceListener>
+          )}
+        </div>
       </div>
     </div>
   );
