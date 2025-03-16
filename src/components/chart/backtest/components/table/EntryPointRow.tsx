@@ -32,16 +32,16 @@ export const EntryPointRow = ({
           onCheckedChange={() => onSelect(result.id)}
         />
       </div>
-      <div>{result.stop_loss}</div>
-      <div>{result.target_price}</div>
-      <div>{result.entry_point_price}</div>
-      <div>{result.exit_price}</div>
+      <div>{result.analysis_type}</div>
+      <div>{result.symbol}</div>
+      <div>{result.timeframe}</div>
       <div className="font-medium text-success">
         {result.profit_loss !== null ? result.profit_loss.toFixed(4) : 'N/A'}
       </div>
-      <div>{result.timeframe}</div>
-      <div>{result.analysis_type}</div>
-      <div>{result.symbol}</div>
+      <div>{result.exit_price}</div>
+      <div>{result.entry_point_price}</div>
+      <div>{result.target_price}</div>
+      <div>{result.stop_loss}</div>
       <div>
         {formatDateArabic(result.result_timestamp)}
       </div>

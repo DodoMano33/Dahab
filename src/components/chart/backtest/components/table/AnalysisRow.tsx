@@ -48,35 +48,45 @@ export const AnalysisRow = ({
         />
       </div>
       <TableCell 
-        label="وقف الخسارة" 
-        value={formatNumber(analysis.stop_loss)} 
+        label="نوع التحليل" 
+        value={displayedAnalysisType} 
       />
       <TableCell 
-        label="الهدف الأول" 
-        value={formatNumber(analysis.target_price)} 
+        label="الرمز" 
+        value={analysis.symbol} 
+      />
+      <TableCell 
+        label="الاطار الزمني" 
+        value={analysis.timeframe} 
+      />
+      <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
+        {analysis.is_success ? 'ناجح' : 'فاشل'}
+      </div>
+      <TableCell 
+        label="الربح/الخسارة" 
+        value={formatProfitLoss(analysis.profit_loss, analysis.is_success)} 
+        className={`truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}
       />
       <TableCell 
         label="السعر عند التحليل" 
         value={formatNumber(analysis.entry_price)} 
       />
       <TableCell 
+        label="الهدف الأول" 
+        value={formatNumber(analysis.target_price)} 
+      />
+      <TableCell 
+        label="وقف الخسارة" 
+        value={formatNumber(analysis.stop_loss)} 
+      />
+      <TableCell 
         label="أفضل نقطة دخول" 
         value={formatNumber(analysis.best_entry_price || analysis.entry_price)} 
       />
       <TableCell 
-        label="الربح/الخسارة" 
-        value={formatProfitLoss(analysis.profit_loss, analysis.is_success)} 
-        className={`truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}
+        label="تاريخ النتيجة" 
+        value={formatDateArabic(analysis.result_timestamp)} 
       />
-      <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
-        {analysis.is_success ? 'ناجح' : 'فاشل'}
-      </div>
-      <div className="truncate">{analysis.timeframe}</div>
-      <div className="truncate">{displayedAnalysisType}</div>
-      <div className="truncate">{analysis.symbol}</div>
-      <div className="truncate">
-        {formatDateArabic(analysis.result_timestamp)}
-      </div>
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}
       </div>
