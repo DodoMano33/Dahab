@@ -1,7 +1,6 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
 import { useEffect, useState } from "react";
 
 interface BestEntryPointTableProps {
@@ -44,6 +43,14 @@ export const BestEntryPointTable = ({
   const formatNumber = (value: number | null | undefined) => {
     if (value === null || value === undefined) return "-";
     return Number(value).toFixed(3);
+  };
+  
+  // دالة لتنسيق التاريخ بالشكل المطلوب
+  const formatDate = (timestamp: string | null) => {
+    if (!timestamp) return "-";
+    
+    const date = new Date(timestamp);
+    return format(date, 'dd/M/yyyy HH:mm');
   };
   
   return (
@@ -89,8 +96,7 @@ export const BestEntryPointTable = ({
             <div>{result.analysis_type}</div>
             <div>{result.symbol}</div>
             <div>
-              {result.result_timestamp && 
-                format(new Date(result.result_timestamp), 'PPpp', { locale: ar })}
+              {formatDate(result.result_timestamp)}
             </div>
             <div className="text-center font-bold text-primary">
               {currentPrice ? formatNumber(currentPrice) : "-"}

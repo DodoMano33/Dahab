@@ -1,4 +1,5 @@
-import { addDays, addHours, addMinutes } from "date-fns";
+
+import { addDays, addHours, addMinutes, format } from "date-fns";
 
 export const getExpectedTime = (timeframe: string, targetIndex: number) => {
   const now = new Date();
@@ -38,4 +39,12 @@ export const getTimeframeLabel = (timeframe: string): string => {
     default:
       return timeframe;
   }
+};
+
+// دالة مساعدة لتنسيق التاريخ بالشكل المطلوب
+export const formatDateArabic = (timestamp: string | Date | null): string => {
+  if (!timestamp) return "-";
+  
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+  return format(date, 'dd/M/yyyy HH:mm');
 };

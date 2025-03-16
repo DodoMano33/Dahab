@@ -66,6 +66,14 @@ export const AnalysisTable = ({
     return total >= 0 ? `+${total.toFixed(3)}` : `${total.toFixed(3)}`;
   };
 
+  // دالة لتنسيق التاريخ بالشكل المطلوب
+  const formatDate = (timestamp: string | null) => {
+    if (!timestamp) return "-";
+    
+    const date = new Date(timestamp);
+    return format(date, 'dd/M/yyyy HH:mm');
+  };
+
   console.log("Rendering analysis table with analyses:", analyses.length);
   if (analyses.length > 0) {
     console.log("Sample analysis types from items:", analyses.slice(0, 5).map(a => 
@@ -178,8 +186,7 @@ export const AnalysisTable = ({
               <div className="truncate">{displayedAnalysisType}</div>
               <div className="truncate">{analysis.symbol}</div>
               <div className="truncate">
-                {analysis.result_timestamp && 
-                  format(new Date(analysis.result_timestamp), 'PPpp', { locale: ar })}
+                {formatDate(analysis.result_timestamp)}
               </div>
               <div className="text-center font-bold text-primary">
                 {currentPrice ? formatNumber(currentPrice) : "-"}
