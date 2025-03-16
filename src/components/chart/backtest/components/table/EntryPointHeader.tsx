@@ -13,7 +13,7 @@ export const EntryPointHeader = ({
   itemsCount
 }: EntryPointHeaderProps) => {
   return (
-    <div className="grid grid-cols-11 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
+    <div className="grid grid-cols-12 gap-4 p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
       <div className="text-center flex items-center justify-center">
         <Checkbox 
           checked={allSelected && itemsCount > 0}
@@ -23,6 +23,7 @@ export const EntryPointHeader = ({
       <div>نوع التحليل</div>
       <div>الرمز</div>
       <div>الاطار الزمني</div>
+      <div className="text-center">الاتجاه</div>
       <div>الربح/الخسارة</div>
       <div>سعر الخروج</div>
       <div>نقطة الدخول</div>

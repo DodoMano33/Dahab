@@ -2,7 +2,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
-import { TableCell } from "./TableCell";
+import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
 interface EntryPointRowProps {
   result: any;
@@ -13,7 +13,7 @@ interface EntryPointRowProps {
 
 export const EntryPointRow = ({ 
   result, 
-  selected, 
+  selected,
   onSelect,
   currentPrice
 }: EntryPointRowProps) => {
@@ -24,12 +24,11 @@ export const EntryPointRow = ({
     return Number(num).toFixed(3);
   };
 
-  // دالة محسنة لحساب وتنسيق الربح/الخسارة
+  // حساب الربح/الخسارة
   const calculateProfitLoss = () => {
-    if (!result.entry_point_price || !result.exit_price) return "-";
+    if (!result.entry_price || !result.exit_price) return "-";
     
-    // حساب الربح/الخسارة بناءً على الاتجاه والأسعار الفعلية
-    const entryPrice = parseFloat(result.entry_point_price);
+    const entryPrice = parseFloat(result.entry_price);
     const exitPrice = parseFloat(result.exit_price);
     let profitLoss = 0;
     
@@ -48,21 +47,22 @@ export const EntryPointRow = ({
     return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
-  const displayedAnalysisType = getStrategyName(result.analysis_type);
-
   // حساب الربح/الخسارة
   const profitLossValue = calculateProfitLoss();
   
   // تحديد لون النص بناءً على نجاح/فشل التحليل
   const profitLossClass = result.is_success ? 'text-success' : 'text-destructive';
+  
+  // الحصول على اسم نوع التحليل
+  const displayedAnalysisType = getStrategyName(result.analysis_type);
 
   return (
     <div
-      className={`grid grid-cols-11 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-12 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
         result.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
-      <div className="text-center">
+      <div className="flex justify-center">
         <Checkbox 
           checked={selected}
           onCheckedChange={() => onSelect(result.id)}
@@ -71,11 +71,12 @@ export const EntryPointRow = ({
       <div className="truncate">{displayedAnalysisType}</div>
       <div className="truncate">{result.symbol}</div>
       <div className="truncate">{result.timeframe}</div>
-      <div className={`font-medium truncate ${profitLossClass}`}>
-        {profitLossValue}
+      <div className="flex justify-center">
+        <DirectionIndicator direction={result.direction || "محايد"} />
       </div>
+      <div className={`truncate ${profitLossClass}`}>{profitLossValue}</div>
       <div className="truncate">{formatNumber(result.exit_price)}</div>
-      <div className="truncate">{formatNumber(result.entry_point_price)}</div>
+      <div className="truncate">{formatNumber(result.entry_price)}</div>
       <div className="truncate">{formatNumber(result.target_price)}</div>
       <div className="truncate">{formatNumber(result.stop_loss)}</div>
       <div className="truncate">{formatDateArabic(result.result_timestamp)}</div>

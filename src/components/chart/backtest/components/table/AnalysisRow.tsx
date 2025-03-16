@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
 import { TableCell } from "./TableCell";
+import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
 interface AnalysisRowProps {
   analysis: any;
@@ -58,7 +59,7 @@ export const AnalysisRow = ({
 
   return (
     <div
-      className={`grid grid-cols-12 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -80,6 +81,9 @@ export const AnalysisRow = ({
         label="الاطار الزمني" 
         value={analysis.timeframe} 
       />
+      <div className="flex justify-center">
+        <DirectionIndicator direction={analysis.direction || "محايد"} />
+      </div>
       <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
         {analysis.is_success ? 'ناجح' : 'فاشل'}
       </div>
