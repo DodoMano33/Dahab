@@ -24,16 +24,37 @@ export const AnalysisRow = ({
     return Number(num).toFixed(3);
   };
 
-  // دالة لتنسيق الربح/الخسارة بحيث تظهر إشارة سالب للخسارة فقط
-  const formatProfitLoss = (value: number | null | undefined, isSuccess: boolean) => {
-    if (value === null || value === undefined) return "-";
+  // دالة محسنة لحساب وتنسيق الربح/الخسارة
+  const calculateProfitLoss = () => {
+    if (!analysis.entry_price || !analysis.exit_price) return "-";
     
-    // إظهار القيمة المطلقة للتحليلات الناجحة وإضافة إشارة سالب للفاشلة
-    const formattedValue = Number(Math.abs(value)).toFixed(3);
-    return isSuccess ? formattedValue : `-${formattedValue}`;
+    // حساب الربح/الخسارة بناءً على الاتجاه والأسعار الفعلية
+    const entryPrice = parseFloat(analysis.entry_price);
+    const exitPrice = parseFloat(analysis.exit_price);
+    let profitLoss = 0;
+    
+    if (analysis.direction === 'صاعد') {
+      // للاتجاه الصاعد: الربح عند ارتفاع السعر
+      profitLoss = exitPrice - entryPrice;
+    } else {
+      // للاتجاه الهابط: الربح عند انخفاض السعر
+      profitLoss = entryPrice - exitPrice;
+    }
+    
+    // تنسيق القيمة
+    const formattedValue = Math.abs(profitLoss).toFixed(3);
+    
+    // إضافة إشارة سالب للخسائر
+    return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
   const displayedAnalysisType = getStrategyName(analysis.analysis_type);
+
+  // حساب الربح/الخسارة
+  const profitLossValue = calculateProfitLoss();
+  
+  // تحديد لون النص بناءً على نجاح/فشل التحليل
+  const profitLossClass = analysis.is_success ? 'text-success' : 'text-destructive';
 
   return (
     <div
@@ -64,8 +85,8 @@ export const AnalysisRow = ({
       </div>
       <TableCell 
         label="الربح/الخسارة" 
-        value={formatProfitLoss(analysis.profit_loss, analysis.is_success)} 
-        className={`truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}
+        value={profitLossValue} 
+        className={`truncate ${profitLossClass}`}
       />
       <TableCell 
         label="السعر عند التحليل" 

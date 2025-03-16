@@ -52,22 +52,13 @@ export const useBacktestResults = () => {
 
       console.log(`Fetched ${data?.length} results`);
       
-      // Process results to enhance analysis types
+      // Process results
       const processedResults = data?.map(result => {
         // Make sure analysis_type is properly set
         if (!result.analysis_type) {
           console.warn(`Result with missing analysis_type:`, result.id);
           result.analysis_type = 'normal';
         }
-        
-        // Make sure profit_loss is correctly formatted
-        if (result.profit_loss !== null && result.profit_loss !== undefined) {
-          // Store the absolute value - we'll format it with the sign later based on is_success
-          result.profit_loss = Math.abs(Number(result.profit_loss));
-        }
-        
-        // Log the analysis type for debugging
-        console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${getStrategyName(result.analysis_type)}`);
         
         return result;
       }) || [];
@@ -78,25 +69,13 @@ export const useBacktestResults = () => {
           [...new Set(processedResults.map(r => r.analysis_type))]);
       }
       
-      // Calculate total profit/loss
-      let total = 0;
-      processedResults.forEach(result => {
-        if (result.profit_loss !== null && result.profit_loss !== undefined) {
-          if (result.is_success) {
-            total += Number(result.profit_loss);
-          } else {
-            total -= Number(result.profit_loss);
-          }
-        }
-      });
+      // Calculate total profit/loss - تم إزالة هذه الوظيفة حيث سيتم حساب الربح/الخسارة في مكونات الجدول
       
-      // If we're on page 0, reset the total, otherwise add to it
+      // If we're on page 0, reset the results, otherwise add to them
       if (pageNumber === 0) {
         setResults(processedResults);
-        setTotalProfitLoss(total);
       } else {
         setResults(prev => [...prev, ...processedResults]);
-        setTotalProfitLoss(prev => prev + total);
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));
