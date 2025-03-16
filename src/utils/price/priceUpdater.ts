@@ -1,3 +1,4 @@
+
 import { fetchCryptoPrice, fetchForexPrice, fetchGoldPrice } from './api';
 
 export class PriceUpdater {
@@ -80,11 +81,15 @@ export class PriceUpdater {
         this.cachedGoldPrice = price;
         this.lastGoldPriceUpdate = Date.now();
         
+        console.log(`تم تحديث سعر الذهب من Alpha Vantage: ${price}`);
+        
+        // تحديث السعر بمصدر 'alphavantage' لإعطائه أولوية عالية
         window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
           detail: { 
             price,
             symbol: 'CFI:XAUUSD',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            source: 'alphavantage'
           }
         }));
         
@@ -92,11 +97,10 @@ export class PriceUpdater {
           detail: { 
             price,
             symbol: 'CFI:XAUUSD',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            source: 'alphavantage'
           }
         }));
-        
-        console.log(`تم تحديث سعر الذهب: ${price}`);
       } else {
         console.log('فشل في الحصول على سعر الذهب من API');
       }
@@ -163,4 +167,5 @@ export class PriceUpdater {
 
 export const priceUpdater = new PriceUpdater();
 
-priceUpdater.startGoldPriceUpdates(10000);
+// بدء تحديثات سعر الذهب بشكل أكثر تكرارًا (كل 5 ثوانٍ)
+priceUpdater.startGoldPriceUpdates(5000);

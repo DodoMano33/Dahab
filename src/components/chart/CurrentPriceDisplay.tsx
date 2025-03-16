@@ -31,6 +31,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
       if (event.detail && event.detail.price) {
         // تحديث السعر من الشارت مباشرة (للعرض فقط لا للاستخدام كأولوية)
         setChartPrice(event.detail.price);
+        console.log('CurrentPriceDisplay: تم استلام السعر من الشارت:', event.detail.price);
       }
     };
 
@@ -42,8 +43,17 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
     };
   }, []);
 
-  // اختيار السعر المناسب للعرض (الأفضلية الآن للسعر المستخرج من الصورة)
+  // تحديد السعر الفعلي للعرض بشكل واضح والتأكد من تحديثه بشكل صحيح
   const displayPrice = extractedPrice || chartPrice || propPrice;
+  
+  useEffect(() => {
+    console.log('CurrentPriceDisplay: القيم الحالية:', { 
+      extractedPrice, 
+      chartPrice, 
+      propPrice, 
+      displayPrice 
+    });
+  }, [extractedPrice, chartPrice, propPrice, displayPrice]);
 
   // تحديد نص مصدر السعر
   const getPriceSourceText = () => {

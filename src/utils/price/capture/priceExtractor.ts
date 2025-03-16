@@ -4,7 +4,7 @@
  */
 
 import { getPriceElementOrFind } from './elementFinder';
-import { isCapturingActive, getLastExtractedPrice } from './state';
+import { isCapturingActive, getLastExtractedPrice, setLastExtractedPrice } from './state';
 import { extractPriceFromDirectText } from './directTextExtractor';
 import { extractPriceUsingOCR } from './ocrExtractor';
 import { broadcastPrice, requestPriceUpdate } from './priceBroadcaster';
@@ -30,6 +30,9 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     
     if (price !== null) {
       console.log(`تم استخراج سعر ${isCFIPrice ? 'CFI' : ''} بقيمة: ${price}`);
+      
+      // حفظ السعر المستخرج
+      setLastExtractedPrice(price);
       
       // إرسال تحديث السعر مباشرة من الشارت باعتباره مصدر "extracted" للأولوية العالية
       window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
@@ -58,6 +61,9 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     const ocrPrice = await extractPriceUsingOCR(priceElement);
     
     if (ocrPrice !== null) {
+      // حفظ السعر المستخرج بواسطة OCR
+      setLastExtractedPrice(ocrPrice);
+      
       // إرسال تحديث السعر عند نجاح استخراجه عبر OCR كمصدر "extracted" للأولوية العالية
       window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
         detail: { 
@@ -135,7 +141,6 @@ export const extractAndBroadcastPrice = async () => {
     const price = await extractPriceFromChart();
     if (price !== null) {
       // تحديد مصدر السعر إلى extracted في البث لإعطائه الأولوية القصوى
-      // تصحيح: إرسال 3 معاملات فقط بدلاً من 4
       broadcastPrice(price, true, 'CFI:XAUUSD');
     } else {
       console.log('لم يتم استخراج سعر صالح');
@@ -150,7 +155,6 @@ export const extractAndBroadcastPrice = async () => {
  */
 export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   // محاولة بث السعر المخزن أولاً
-  // تصحيح: إرسال معامل واحد فقط بدلاً من معاملين
   if (requestPriceUpdate()) {
     return true;
   }
@@ -160,7 +164,6 @@ export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   const price = await extractPriceFromChart();
   
   if (price !== null) {
-    // تصحيح: إرسال 3 معاملات فقط بدلاً من 4
     broadcastPrice(price, true, 'CFI:XAUUSD');
     return true;
   }
