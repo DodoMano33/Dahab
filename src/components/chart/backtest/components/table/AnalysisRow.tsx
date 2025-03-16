@@ -1,7 +1,7 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
+import { formatDateArabic, formatTimeDuration } from "@/utils/technicalAnalysis/timeUtils";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
@@ -56,6 +56,13 @@ export const AnalysisRow = ({
   // Convert analysis type to readable format
   const displayedAnalysisType = getStrategyName(analysisType);
   
+  // حساب مدة بقاء التحليل بتنسيق ساعات:دقائق
+  const getAnalysisDuration = () => {
+    if (!created_at || !result_timestamp) return "-";
+    
+    return formatTimeDuration(created_at, result_timestamp);
+  };
+  
   return (
     <TableRow
       key={id}
@@ -85,7 +92,7 @@ export const AnalysisRow = ({
         {is_success ? <span className="text-success font-medium">ناجح</span> : <span className="text-destructive font-medium">فاشل</span>}
       </TableCell>
       <TableCell className="text-center p-2">
-        {result_timestamp ? formatDateArabic(result_timestamp) : "-"}
+        {getAnalysisDuration()}
       </TableCell>
       <TableCell className={`text-center p-2 ${getProfitLossClass()}`}>
         {formatNumber(profit_loss)}

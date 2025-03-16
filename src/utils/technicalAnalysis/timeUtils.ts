@@ -1,5 +1,5 @@
 
-import { addDays, addHours, addMinutes, format, parseISO, isValid } from "date-fns";
+import { addDays, addHours, addMinutes, format, parseISO, isValid, differenceInMinutes } from "date-fns";
 import { ar } from "date-fns/locale";
 
 export const getExpectedTime = (timeframe: string, targetIndex: number) => {
@@ -122,5 +122,51 @@ export const formatResultDate = (timestamp: string | Date | null): string => {
   } catch (error) {
     console.error("Error formatting result_timestamp date:", error, "Timestamp:", timestamp);
     return "خطأ في التنسيق";
+  }
+};
+
+// دالة جديدة لحساب الفرق بين تاريخين بتنسيق ساعات:دقائق
+export const formatTimeDuration = (startDate: string | Date | null, endDate: string | Date | null): string => {
+  if (!startDate || !endDate) return "-";
+  
+  try {
+    // تحويل التواريخ إلى كائنات Date
+    let start: Date;
+    let end: Date;
+    
+    if (typeof startDate === 'string') {
+      start = new Date(startDate);
+    } else {
+      start = startDate;
+    }
+    
+    if (typeof endDate === 'string') {
+      end = new Date(endDate);
+    } else {
+      end = endDate;
+    }
+    
+    // التحقق من صحة التواريخ
+    if (!isValid(start) || !isValid(end)) {
+      console.warn(`Invalid date format: start=${startDate}, end=${endDate}`);
+      return "-";
+    }
+    
+    // حساب الفرق بالدقائق
+    const diffInMinutes = differenceInMinutes(end, start);
+    
+    if (diffInMinutes < 0) {
+      return "-"; // تاريخ البداية بعد تاريخ النهاية
+    }
+    
+    // تحويل إلى ساعات ودقائق
+    const hours = Math.floor(diffInMinutes / 60);
+    const minutes = diffInMinutes % 60;
+    
+    // تنسيق النتيجة بالشكل HH:MM
+    return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  } catch (error) {
+    console.error("Error calculating time duration:", error);
+    return "-";
   }
 };

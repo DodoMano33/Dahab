@@ -1,7 +1,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
-import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
+import { formatDateArabic, formatTimeDuration } from "@/utils/technicalAnalysis/timeUtils";
 import { TableCell } from "./TableCell";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
@@ -49,18 +49,12 @@ export const EntryPointRow = ({
     return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
-  // حساب مدة بقاء التحليل بالساعات
+  // حساب مدة بقاء التحليل بتنسيق ساعات:دقائق
   const calculateAnalysisDuration = () => {
     if (!result.created_at || !result.result_timestamp) return "-";
     
     try {
-      const startTime = new Date(result.created_at).getTime();
-      const endTime = new Date(result.result_timestamp).getTime();
-      
-      // حساب الفرق بالساعات
-      const durationHours = Math.round((endTime - startTime) / (1000 * 60 * 60));
-      
-      return `${durationHours} ساعة`;
+      return formatTimeDuration(result.created_at, result.result_timestamp);
     } catch (error) {
       console.error("Error calculating analysis duration:", error);
       return "-";
