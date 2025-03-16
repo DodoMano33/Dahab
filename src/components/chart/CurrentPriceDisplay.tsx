@@ -42,17 +42,17 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
     };
   }, []);
 
-  // اختيار السعر المناسب للعرض (الأفضلية للسعر من الشارت مباشرة)
-  const displayPrice = chartPrice || extractedPrice || propPrice;
+  // اختيار السعر المناسب للعرض (الأفضلية للسعر المستخرج من الصورة)
+  const displayPrice = extractedPrice || chartPrice || propPrice;
 
   // تحديد نص مصدر السعر
   const getPriceSourceText = () => {
-    if (chartPrice !== null) {
-      return ` (${provider} - مباشر)`;
+    if (priceSource === 'extracted') {
+      return ` (${provider} - مستخرج)`;
     } else if (isAlphaVantagePrice) {
       return ' (Alpha Vantage API)';
-    } else if (priceSource === 'extracted') {
-      return ` (${provider})`;
+    } else if (chartPrice !== null) {
+      return ` (${provider} - مباشر)`;
     } else if (priceSource === 'tradingview') {
       return ` (${provider})`;
     }

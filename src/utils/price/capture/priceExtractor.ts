@@ -31,7 +31,17 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     if (price !== null) {
       console.log(`تم استخراج سعر ${isCFIPrice ? 'CFI' : ''} بقيمة: ${price}`);
       
-      // إرسال تحديث السعر مباشرة من الشارت
+      // إرسال تحديث السعر مباشرة من الشارت باعتباره مصدر "extracted" للأولوية العالية
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { 
+          price,
+          source: 'extracted',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
+      // أيضًا إرسال كحدث chart-price-update للتوافق مع النظام القديم
       window.dispatchEvent(new CustomEvent('chart-price-update', { 
         detail: { 
           price,
@@ -48,7 +58,17 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     const ocrPrice = await extractPriceUsingOCR(priceElement);
     
     if (ocrPrice !== null) {
-      // إرسال تحديث السعر عند نجاح استخراجه عبر OCR
+      // إرسال تحديث السعر عند نجاح استخراجه عبر OCR كمصدر "extracted" للأولوية العالية
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+        detail: { 
+          price: ocrPrice,
+          source: 'extracted',
+          timestamp: Date.now(),
+          provider: 'CFI'
+        }
+      }));
+      
+      // أيضًا إرسال كحدث chart-price-update للتوافق
       window.dispatchEvent(new CustomEvent('chart-price-update', { 
         detail: { 
           price: ocrPrice,
@@ -114,8 +134,8 @@ export const extractAndBroadcastPrice = async () => {
     console.log('بدء عملية استخراج السعر...');
     const price = await extractPriceFromChart();
     if (price !== null) {
-      // تحديد مصدر السعر إلى CFI في البث
-      broadcastPrice(price, false, 'CFI:XAUUSD');
+      // تحديد مصدر السعر إلى extracted في البث لإعطائه الأولوية القصوى
+      broadcastPrice(price, true, 'CFI:XAUUSD', 'extracted');
     } else {
       console.log('لم يتم استخراج سعر صالح');
     }
@@ -129,7 +149,7 @@ export const extractAndBroadcastPrice = async () => {
  */
 export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   // محاولة بث السعر المخزن أولاً
-  if (requestPriceUpdate('CFI:XAUUSD')) {
+  if (requestPriceUpdate('CFI:XAUUSD', 'extracted')) {
     return true;
   }
   
@@ -138,7 +158,7 @@ export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   const price = await extractPriceFromChart();
   
   if (price !== null) {
-    broadcastPrice(price, true, 'CFI:XAUUSD');
+    broadcastPrice(price, true, 'CFI:XAUUSD', 'extracted');
     return true;
   }
   

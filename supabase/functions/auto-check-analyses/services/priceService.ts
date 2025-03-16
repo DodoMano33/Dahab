@@ -39,11 +39,18 @@ export async function getLastStoredPrice(supabase: any): Promise<number> {
 export function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
   return new Promise(async (resolve) => {
     try {
-      // محاولة استخدام السعر من الطلب
+      // فحص معلومات التشخيص للطلب
+      console.log('Request price data:', {
+        hasCurrentPrice: Boolean(requestData?.currentPrice),
+        priceType: typeof requestData?.currentPrice,
+        priceValue: requestData?.currentPrice
+      });
+      
+      // محاولة استخدام السعر من الطلب (هذا سيكون السعر المستخرج من الصورة في الغالب)
       const tradingViewPrice = requestData?.currentPrice || null;
       
       if (tradingViewPrice !== null && !isNaN(tradingViewPrice)) {
-        console.log('Using price from request:', tradingViewPrice);
+        console.log('Using extracted price from request:', tradingViewPrice);
         resolve(tradingViewPrice);
         return;
       }

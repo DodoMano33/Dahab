@@ -11,14 +11,14 @@ import {
 
 export const requestInitialPrice = () => {
   try {
+    // طلب تحديث فوري من نظام استخراج السعر - إعطاء أولوية أعلى
+    requestImmediatePriceUpdate();
+    
     // إرسال طلب السعر الحالي
     window.dispatchEvent(new Event('request-current-price'));
     
     // مباشرة عبر postMessage
     window.postMessage({ method: 'getCurrentPrice', symbol: 'CFI:XAUUSD', provider: 'CFI' }, '*');
-    
-    // طلب تحديث فوري من نظام استخراج السعر
-    requestImmediatePriceUpdate();
     
     // تحقق من السعر المعروض في الشارت وأرسله كتحديث
     const chartPriceElement = document.querySelector('.chart-price-display');
@@ -26,13 +26,13 @@ export const requestInitialPrice = () => {
       const priceText = chartPriceElement.textContent.trim();
       const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
       if (!isNaN(price) && price > 0) {
-        window.dispatchEvent(new CustomEvent('chart-price-update', {
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', {
           detail: {
             price,
             symbol: 'CFI:XAUUSD',
             timestamp: Date.now(),
             provider: 'CFI',
-            source: 'direct-chart'
+            source: 'extracted' // تغيير المصدر إلى extracted لإعطائه أولوية عالية
           }
         }));
       }
@@ -44,7 +44,8 @@ export const requestInitialPrice = () => {
   }
 };
 
-export const initPriceCapture = (timeoutMs: number = 5000) => {
+export const initPriceCapture = (timeoutMs: number = 2000) => {
+  // تقليل وقت الانتظار قبل بدء التقاط السعر
   return setTimeout(() => {
     console.log('بدء التقاط السعر من الشارت CFI...');
     startPriceCapture();
@@ -61,15 +62,15 @@ export const setupPriceUpdateChecker = (
       requestInitialPrice();
     } else {
       // تحديث السعر الحالي دوريًا حتى لو لم يتغير
-      window.dispatchEvent(new CustomEvent('chart-price-update', { 
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
         detail: { 
           price: currentPriceRef.current, 
           symbol: 'CFI:XAUUSD',
           timestamp: Date.now(),
           provider: priceProvider,
-          source: 'periodic-update'
+          source: 'extracted' // تغيير المصدر إلى extracted لإعطائه أولوية عالية
         }
       }));
     }
-  }, 10000);
+  }, 8000); // تقليل الفاصل الزمني
 };

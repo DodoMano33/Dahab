@@ -17,24 +17,26 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
   
   // استخراج آخر سعر عند التحميل
   useEffect(() => {
-    // التحقق من وجود سعر من Alpha Vantage أولاً
-    const alphaVantagePrice = priceUpdater.getLastGoldPrice();
-    if (alphaVantagePrice !== null) {
-      setExtractedPrice(alphaVantagePrice);
-      setPriceSource('alphavantage');
-      onPriceChange?.(alphaVantagePrice);
-      return;
-    }
-    
-    // التحقق من وجود سعر مستخرج سابقاً
+    // التحقق من وجود سعر مستخرج سابقًا أولاً (أصبح هذا هو الأولوية الأولى)
     const lastPrice = getLastExtractedPrice();
     if (lastPrice !== null) {
       setExtractedPrice(lastPrice);
       setPriceSource('extracted');
       onPriceChange?.(lastPrice);
-    } else if (defaultPrice !== null && defaultPrice !== undefined) {
-      setExtractedPrice(defaultPrice);
-      setPriceSource('default');
+    } 
+    // التحقق من وجود سعر من Alpha Vantage كخيار ثانٍ
+    else {
+      const alphaVantagePrice = priceUpdater.getLastGoldPrice();
+      if (alphaVantagePrice !== null) {
+        setExtractedPrice(alphaVantagePrice);
+        setPriceSource('alphavantage');
+        onPriceChange?.(alphaVantagePrice);
+      }
+      // استخدام السعر الافتراضي كخيار أخير
+      else if (defaultPrice !== null && defaultPrice !== undefined) {
+        setExtractedPrice(defaultPrice);
+        setPriceSource('default');
+      }
     }
   }, [defaultPrice, onPriceChange]);
   
@@ -49,10 +51,10 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
       }
     };
     
-    // الاستماع لتحديثات السعر من TradingView
+    // الاستماع لتحديثات السعر من TradingView (أصبح بأولوية منخفضة)
     const handleTradingViewPrice = (event: CustomEvent) => {
-      // نستخدم السعر من TradingView فقط إذا لم يكن لدينا سعر مستخرج أو من Alpha Vantage
-      if (priceSource !== 'extracted' && priceSource !== 'alphavantage' && event.detail && event.detail.price) {
+      // نستخدم السعر من TradingView فقط إذا لم يكن لدينا سعر مستخرج
+      if (priceSource === 'none' || priceSource === 'default') {
         console.log('useExtractedPrice: تم استلام سعر من TradingView:', event.detail.price);
         setExtractedPrice(event.detail.price);
         setPriceSource('tradingview');
@@ -84,7 +86,7 @@ export const useExtractedPrice = (options: UseExtractedPriceOptions = {}) => {
     };
   }, [onPriceChange, priceSource]);
 
-  // استخدام السعر من الشارت كأولوية عليا
+  // استخدام السعر من الشارت كأولوية عليا يليه السعر المستخرج من الصورة
   const price = chartPrice !== null ? chartPrice : extractedPrice;
 
   return {
