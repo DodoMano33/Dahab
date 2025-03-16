@@ -46,7 +46,9 @@ export const AnalysisRow = ({
     const formattedValue = Math.abs(profitLoss).toFixed(3);
     
     // إضافة إشارة سالب للخسائر
-    return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
+    return profitLoss < 0 ? `-${formattedValue}` : formatte
+
+dValue;
   };
 
   // حساب مدة بقاء التحليل بالساعات
@@ -88,6 +90,10 @@ export const AnalysisRow = ({
         />
       </div>
       <TableCell 
+        label="تاريخ التحليل" 
+        value={formatDateArabic(analysis.created_at)} 
+      />
+      <TableCell 
         label="نوع التحليل" 
         value={displayedAnalysisType} 
       />
@@ -105,6 +111,10 @@ export const AnalysisRow = ({
       <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
         {analysis.is_success ? 'ناجح' : 'فاشل'}
       </div>
+      <TableCell 
+        label="مدة بقاء التحليل" 
+        value={calculateAnalysisDuration()} 
+      />
       <TableCell 
         label="الربح/الخسارة" 
         value={profitLossValue} 
@@ -127,16 +137,8 @@ export const AnalysisRow = ({
         value={formatNumber(analysis.best_entry_price || analysis.entry_price)} 
       />
       <TableCell 
-        label="مدة بقاء التحليل" 
-        value={calculateAnalysisDuration()} 
-      />
-      <TableCell 
         label="تاريخ النتيجة" 
         value={formatDateArabic(analysis.result_timestamp)} 
-      />
-      <TableCell 
-        label="تاريخ التحليل" 
-        value={formatDateArabic(analysis.created_at)} 
       />
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}

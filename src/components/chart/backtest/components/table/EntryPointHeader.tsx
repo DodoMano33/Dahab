@@ -20,19 +20,19 @@ export const EntryPointHeader = ({
           onCheckedChange={onSelectAll}
         />
       </div>
+      <div>تاريخ التحليل</div>
       <div>نوع التحليل</div>
       <div>الرمز</div>
       <div>الاطار الزمني</div>
       <div className="text-center">الاتجاه</div>
       <div>الربح/الخسارة</div>
-      <div>سعر الخروج</div>
+      <div>مدة بقاء التحليل</div>
       <div>نقطة الدخول</div>
       <div>الهدف الأول</div>
       <div>وقف الخسارة</div>
       <div>أفضل نقطة دخول</div>
-      <div>مدة بقاء التحليل</div>
       <div>تاريخ النتيجة</div>
-      <div>تاريخ التحليل</div>
+      <div>سعر الخروج</div>
       <div className="text-center font-semibold text-primary">السعر الحالي</div>
     </div>
   );
