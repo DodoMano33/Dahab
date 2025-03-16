@@ -59,6 +59,20 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
           if (updatedAnalysis.result_timestamp && 
               updatedAnalysis.result_timestamp === updatedAnalysis.created_at) {
             console.warn(`WARNING: result_timestamp equals created_at for analysis ${analysis.id}`);
+            
+            // محاولة إصلاح مشكلة تطابق التواريخ عن طريق تحديث تاريخ النتيجة يدوياً
+            const currentTimestamp = new Date().toISOString();
+            const { error: updateError } = await supabase
+              .from('search_history')
+              .update({ result_timestamp: currentTimestamp })
+              .eq('id', analysis.id)
+              .is('result_timestamp', updatedAnalysis.created_at);
+              
+            if (updateError) {
+              console.error(`Error fixing date issue for analysis ${analysis.id}:`, updateError);
+            } else {
+              console.log(`Fixed date issue: Updated result_timestamp for analysis ${analysis.id} to ${currentTimestamp}`);
+            }
           }
           
           if (updatedAnalysis.result_timestamp && 

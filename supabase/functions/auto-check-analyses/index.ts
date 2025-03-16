@@ -54,6 +54,41 @@ Deno.serve(async (req) => {
     // الحصول على الوقت الحالي لجميع التحديثات
     const currentTime = new Date().toISOString();
     
+    // إضافة فحص لتصحيح مشكلة تاريخ النتيجة = تاريخ الإنشاء
+    try {
+      const { data: problematicAnalyses, error: problemError } = await supabase
+        .from('search_history')
+        .select('id, created_at, result_timestamp')
+        .not('result_timestamp', 'is', null)
+        .filter('result_timestamp', 'eq', 'created_at');
+        
+      if (!problemError && problematicAnalyses && problematicAnalyses.length > 0) {
+        console.log(`Found ${problematicAnalyses.length} analyses with result_timestamp = created_at, fixing...`);
+        
+        for (const analysis of problematicAnalyses) {
+          console.log(`Fixing result_timestamp for analysis ${analysis.id}`);
+          
+          // إضافة 10 دقائق إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
+          const createdDate = new Date(analysis.created_at);
+          createdDate.setMinutes(createdDate.getMinutes() + 10);
+          const fixedResultTimestamp = createdDate.toISOString();
+          
+          const { error: fixError } = await supabase
+            .from('search_history')
+            .update({ result_timestamp: fixedResultTimestamp })
+            .eq('id', analysis.id);
+            
+          if (fixError) {
+            console.error(`Error fixing result_timestamp for analysis ${analysis.id}:`, fixError);
+          } else {
+            console.log(`Fixed result_timestamp for analysis ${analysis.id} to ${fixedResultTimestamp}`);
+          }
+        }
+      }
+    } catch (fixError) {
+      console.error('Error fixing problematic dates:', fixError);
+    }
+    
     // التحقق من تواريخ التحليلات في قاعدة البيانات للتشخيص
     try {
       const { data: sampleAnalyses, error: sampleError } = await supabase

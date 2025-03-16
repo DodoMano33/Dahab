@@ -70,6 +70,23 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
               // التحقق من صحة القيم بعد التحديث
               if (analysis.result_timestamp !== null) {
                 console.warn(`WARNING: Analysis ${analysis.id} has a non-null result_timestamp after update`);
+                
+                // إذا كان تاريخ النتيجة مساويًا لتاريخ الإنشاء، نقوم بتصحيحه
+                if (analysis.result_timestamp === analysis.created_at) {
+                  console.log(`Fixing date issue: result_timestamp equals created_at for analysis ${analysis.id}`);
+                  
+                  supabase
+                    .from('search_history')
+                    .update({ result_timestamp: currentTime })
+                    .eq('id', analysis.id)
+                    .then(({ error }) => {
+                      if (error) {
+                        console.error(`Error fixing date issue for analysis ${analysis.id}:`, error);
+                      } else {
+                        console.log(`Fixed date issue for analysis ${analysis.id}`);
+                      }
+                    });
+                }
               }
             });
           }
