@@ -27,10 +27,10 @@ export const EntryPointRow = ({
 
   // دالة محسنة لحساب وتنسيق الربح/الخسارة
   const calculateProfitLoss = () => {
-    if (!result.entry_price || !result.exit_price) return "-";
+    if (!result.entry_point_price || !result.exit_price) return "-";
     
     // حساب الربح/الخسارة بناءً على الاتجاه والأسعار الفعلية
-    const entryPrice = parseFloat(result.entry_price);
+    const entryPrice = parseFloat(result.entry_point_price);
     const exitPrice = parseFloat(result.exit_price);
     let profitLoss = 0;
     
@@ -49,6 +49,24 @@ export const EntryPointRow = ({
     return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
+  // حساب مدة بقاء التحليل بالساعات
+  const calculateAnalysisDuration = () => {
+    if (!result.created_at || !result.result_timestamp) return "-";
+    
+    try {
+      const startTime = new Date(result.created_at).getTime();
+      const endTime = new Date(result.result_timestamp).getTime();
+      
+      // حساب الفرق بالساعات
+      const durationHours = Math.round((endTime - startTime) / (1000 * 60 * 60));
+      
+      return `${durationHours} ساعة`;
+    } catch (error) {
+      console.error("Error calculating analysis duration:", error);
+      return "-";
+    }
+  };
+
   const displayedAnalysisType = getStrategyName(result.analysis_type);
 
   // حساب الربح/الخسارة
@@ -59,7 +77,7 @@ export const EntryPointRow = ({
 
   return (
     <div
-      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         result.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -95,7 +113,7 @@ export const EntryPointRow = ({
       />
       <TableCell 
         label="نقطة الدخول" 
-        value={formatNumber(result.entry_price)} 
+        value={formatNumber(result.entry_point_price)} 
       />
       <TableCell 
         label="الهدف الأول" 
@@ -107,7 +125,11 @@ export const EntryPointRow = ({
       />
       <TableCell 
         label="أفضل نقطة دخول" 
-        value={formatNumber(result.best_entry_price)} 
+        value={formatNumber(result.entry_point_price)} 
+      />
+      <TableCell 
+        label="مدة بقاء التحليل" 
+        value={calculateAnalysisDuration()} 
       />
       <TableCell 
         label="تاريخ النتيجة" 

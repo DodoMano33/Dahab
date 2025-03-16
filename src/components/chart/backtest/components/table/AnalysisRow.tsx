@@ -49,6 +49,24 @@ export const AnalysisRow = ({
     return profitLoss < 0 ? `-${formattedValue}` : formattedValue;
   };
 
+  // حساب مدة بقاء التحليل بالساعات
+  const calculateAnalysisDuration = () => {
+    if (!analysis.created_at || !analysis.result_timestamp) return "-";
+    
+    try {
+      const startTime = new Date(analysis.created_at).getTime();
+      const endTime = new Date(analysis.result_timestamp).getTime();
+      
+      // حساب الفرق بالساعات
+      const durationHours = Math.round((endTime - startTime) / (1000 * 60 * 60));
+      
+      return `${durationHours} ساعة`;
+    } catch (error) {
+      console.error("Error calculating analysis duration:", error);
+      return "-";
+    }
+  };
+
   const displayedAnalysisType = getStrategyName(analysis.analysis_type);
 
   // حساب الربح/الخسارة
@@ -59,7 +77,7 @@ export const AnalysisRow = ({
 
   return (
     <div
-      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -107,6 +125,10 @@ export const AnalysisRow = ({
       <TableCell 
         label="أفضل نقطة دخول" 
         value={formatNumber(analysis.best_entry_price || analysis.entry_price)} 
+      />
+      <TableCell 
+        label="مدة بقاء التحليل" 
+        value={calculateAnalysisDuration()} 
       />
       <TableCell 
         label="تاريخ النتيجة" 

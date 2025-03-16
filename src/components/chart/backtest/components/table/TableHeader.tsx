@@ -15,7 +15,7 @@ export const TableHeader = ({
   showCurrentPrice = true
 }: TableHeaderProps) => {
   return (
-    <div className="grid grid-cols-13 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
+    <div className="grid grid-cols-14 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
       <div className="text-center flex items-center justify-center">
         <Checkbox 
           checked={allSelected && itemsCount > 0}
@@ -32,6 +32,7 @@ export const TableHeader = ({
       <div>الهدف الأول</div>
       <div>وقف الخسارة</div>
       <div>أفضل نقطة دخول</div>
+      <div>مدة بقاء التحليل</div>
       <div>تاريخ النتيجة</div>
       <div>تاريخ التحليل</div>
       {showCurrentPrice && (
