@@ -82,7 +82,7 @@ export const AnalysisRow = ({
         <DirectionIndicator direction={direction || "محايد"} />
       </TableCell>
       <TableCell className="text-center p-2">
-        {is_success ? "ناجح" : "غير ناجح"}
+        {is_success ? "ناجح" : <span className="text-destructive font-medium">فاشل</span>}
       </TableCell>
       <TableCell className="text-center p-2">
         {result_timestamp ? formatDateArabic(result_timestamp) : "-"}
