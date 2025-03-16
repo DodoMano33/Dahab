@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
+import { TableCell } from "./TableCell";
 
 interface EntryPointRowProps {
   result: any;
@@ -26,9 +27,9 @@ export const EntryPointRow = ({
 
   // حساب الربح/الخسارة
   const calculateProfitLoss = () => {
-    if (!result.entry_price || !result.exit_price) return "-";
+    if (!result.entry_point_price || !result.exit_price) return "-";
     
-    const entryPrice = parseFloat(result.entry_price);
+    const entryPrice = parseFloat(result.entry_point_price);
     const exitPrice = parseFloat(result.exit_price);
     let profitLoss = 0;
     
@@ -58,7 +59,7 @@ export const EntryPointRow = ({
 
   return (
     <div
-      className={`grid grid-cols-12 gap-4 p-4 items-center text-right hover:bg-muted/50 transition-colors ${
+      className={`grid grid-cols-13 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
         result.is_success ? 'bg-success/10' : 'bg-destructive/10'
       }`}
     >
@@ -68,18 +69,23 @@ export const EntryPointRow = ({
           onCheckedChange={() => onSelect(result.id)}
         />
       </div>
-      <div className="truncate">{displayedAnalysisType}</div>
-      <div className="truncate">{result.symbol}</div>
-      <div className="truncate">{result.timeframe}</div>
+      <TableCell label="نوع التحليل" value={displayedAnalysisType} />
+      <TableCell label="الرمز" value={result.symbol} />
+      <TableCell label="الاطار الزمني" value={result.timeframe} />
       <div className="flex justify-center">
         <DirectionIndicator direction={result.direction || "محايد"} />
       </div>
-      <div className={`truncate ${profitLossClass}`}>{profitLossValue}</div>
-      <div className="truncate">{formatNumber(result.exit_price)}</div>
-      <div className="truncate">{formatNumber(result.entry_price)}</div>
-      <div className="truncate">{formatNumber(result.target_price)}</div>
-      <div className="truncate">{formatNumber(result.stop_loss)}</div>
-      <div className="truncate">{formatDateArabic(result.result_timestamp)}</div>
+      <TableCell 
+        label="الربح/الخسارة" 
+        value={profitLossValue} 
+        className={`truncate ${profitLossClass}`}
+      />
+      <TableCell label="سعر الخروج" value={formatNumber(result.exit_price)} />
+      <TableCell label="نقطة الدخول" value={formatNumber(result.entry_point_price)} />
+      <TableCell label="الهدف الأول" value={formatNumber(result.target_price)} />
+      <TableCell label="وقف الخسارة" value={formatNumber(result.stop_loss)} />
+      <TableCell label="تاريخ النتيجة" value={formatDateArabic(result.result_timestamp)} />
+      <TableCell label="تاريخ إنشاء التحليل" value={formatDateArabic(result.created_at)} />
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}
       </div>
