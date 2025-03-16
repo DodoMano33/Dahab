@@ -6,18 +6,18 @@
 /**
  * بث تحديث سعر الذهب إلى جميع المستمعين
  */
-export const broadcastGoldPriceUpdate = (price: number, symbol: string = 'CFI:XAUUSD') => {
+export const broadcastGoldPriceUpdate = (price: number, symbol: string = 'CFI:XAUUSD', source: string = 'alphavantage') => {
   const timestamp = Date.now();
   
   // نشر السعر بجميع أنواع الأحداث المتاحة
   
-  // 1. تحديث بمصدر 'alphavantage' لإعطائه أولوية عالية
+  // 1. تحديث بمصدر محدد لإعطائه أولوية عالية
   window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
     detail: { 
       price,
       symbol,
       timestamp,
-      source: 'alphavantage'
+      source
     }
   }));
   
@@ -27,7 +27,7 @@ export const broadcastGoldPriceUpdate = (price: number, symbol: string = 'CFI:XA
       price,
       symbol,
       timestamp,
-      source: 'alphavantage'
+      source
     }
   }));
   
@@ -37,7 +37,7 @@ export const broadcastGoldPriceUpdate = (price: number, symbol: string = 'CFI:XA
       price,
       symbol,
       timestamp,
-      source: 'alphavantage'
+      source
     }
   }));
   
@@ -47,9 +47,9 @@ export const broadcastGoldPriceUpdate = (price: number, symbol: string = 'CFI:XA
       price,
       symbol,
       timestamp,
-      source: 'alphavantage'
+      source
     }
   }));
   
-  console.log(`تم بث تحديث سعر الذهب: ${price} لجميع المستمعين`);
+  console.log(`تم بث تحديث سعر الذهب: ${price} لجميع المستمعين (المصدر: ${source})`);
 };

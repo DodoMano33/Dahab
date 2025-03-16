@@ -1,9 +1,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PriceUpdateEvent, CurrentPriceResponseEvent, MarketData } from './types';
+import { priceUpdater } from '@/utils/price/priceUpdater';
 
 export const usePriceEventHandlers = () => {
-  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(() => {
+    // استخدام آخر سعر محفوظ كقيمة مبدئية
+    return priceUpdater.getLastGoldPrice();
+  });
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
   const [marketData, setMarketData] = useState<MarketData | undefined>(undefined);
 
@@ -64,8 +68,20 @@ export const usePriceEventHandlers = () => {
 
   const requestCurrentPrice = useCallback(() => {
     console.log('Requesting current price...');
+    
+    // طلب السعر من جميع المصادر المحتملة
     window.dispatchEvent(new Event('request-current-price'));
-  }, []);
+    window.dispatchEvent(new Event('request-extracted-price'));
+    window.dispatchEvent(new Event('request-ui-price-update'));
+    
+    // أيضًا التحقق من السعر المخزن في الذاكرة المؤقتة
+    const cachedPrice = priceUpdater.getLastGoldPrice();
+    if (cachedPrice !== null && (currentPrice === null || cachedPrice !== currentPrice)) {
+      console.log('useCurrentPrice: تحديث السعر من الذاكرة المؤقتة:', cachedPrice);
+      setCurrentPrice(cachedPrice);
+      setPriceUpdateCount(prev => prev + 1);
+    }
+  }, [currentPrice]);
 
   return {
     currentPrice,

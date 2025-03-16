@@ -29,5 +29,14 @@ export const registerPriceEventListeners = () => {
     }
   });
   
+  // استجابة لطلبات من واجهة المستخدم المباشرة
+  window.addEventListener('request-ui-price-update', () => {
+    const lastPrice = priceUpdater.getLastGoldPrice();
+    if (lastPrice !== null) {
+      console.log('الاستجابة لطلب تحديث السعر من واجهة المستخدم:', lastPrice);
+      broadcastGoldPriceUpdate(lastPrice, 'CFI:XAUUSD', 'alphavantage');
+    }
+  });
+  
   console.log('تم تسجيل مستمعي أحداث الأسعار');
 };

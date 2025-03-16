@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { CurrentPriceListener } from "./components/table/CurrentPriceListener";
 
 interface BackTestResultsDialogProps {
   isOpen: boolean;
@@ -38,6 +39,11 @@ export const BackTestResultsDialog = ({
     if (isOpen) {
       // عند فتح النافذة، نقوم بإعادة تعيين العناصر المحددة
       setSelectedItems(new Set());
+      
+      // طلب تحديث السعر
+      window.dispatchEvent(new Event('request-current-price'));
+      window.dispatchEvent(new Event('request-extracted-price'));
+      window.dispatchEvent(new Event('request-ui-price-update'));
     }
   }, [isOpen]);
 
@@ -93,6 +99,12 @@ export const BackTestResultsDialog = ({
 
   const handleRefresh = async () => {
     console.log("Refreshing backtest results and stats...");
+    
+    // إرسال طلب تحديث السعر
+    window.dispatchEvent(new Event('request-current-price'));
+    window.dispatchEvent(new Event('request-extracted-price'));
+    window.dispatchEvent(new Event('request-ui-price-update'));
+    
     await refreshResults();
     await refreshStats();
   };
@@ -126,13 +138,20 @@ export const BackTestResultsDialog = ({
               )}
               
               <div className="overflow-visible">
-                <AnalysisTable
-                  analyses={completedAnalyses}
-                  selectedItems={selectedItems}
-                  onSelectAll={handleSelectAll}
-                  onSelect={handleSelect}
-                  totalProfitLoss={totalProfitLoss}
-                />
+                <CurrentPriceListener>
+                  {(currentPrice) => (
+                    <AnalysisTable
+                      analyses={completedAnalyses.map(analysis => ({
+                        ...analysis,
+                        current_price: currentPrice || analysis.current_price
+                      }))}
+                      selectedItems={selectedItems}
+                      onSelectAll={handleSelectAll}
+                      onSelect={handleSelect}
+                      totalProfitLoss={totalProfitLoss}
+                    />
+                  )}
+                </CurrentPriceListener>
                 
                 {hasMore && (
                   <div className="flex justify-center mt-4">

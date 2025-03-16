@@ -14,13 +14,23 @@ export class GoldPriceUpdater {
     this.priceUpdater = priceUpdater;
   }
   
-  start(intervalMs: number = 10000) {
+  start(intervalMs: number = 3000) {
     this.stop();
     
     console.log(`بدء تحديثات سعر الذهب كل ${intervalMs}ms`);
     
     // تحديث سعر الذهب مباشرة عند البدء
     this.updateGoldPrice();
+    
+    // بث السعر الحالي من الذاكرة المؤقتة حتى إذا لم يتغير
+    const broadcastIntervalMs = Math.min(intervalMs / 2, 2000);
+    setInterval(() => {
+      const cachedPrice = this.priceUpdater.getLastGoldPrice();
+      if (cachedPrice !== null) {
+        console.log(`إعادة بث السعر المخزن: ${cachedPrice}`);
+        broadcastGoldPriceUpdate(cachedPrice, 'CFI:XAUUSD', 'alphavantage');
+      }
+    }, broadcastIntervalMs);
     
     // بدء التحديثات الدورية
     this.updateInterval = window.setInterval(() => {
@@ -53,9 +63,18 @@ export class GoldPriceUpdater {
         console.log(`تم تحديث سعر الذهب من Alpha Vantage: ${price}`);
         
         // بث تحديث السعر إلى جميع المستمعين
-        broadcastGoldPriceUpdate(price);
+        broadcastGoldPriceUpdate(price, 'CFI:XAUUSD', 'alphavantage');
       } else {
         console.log('فشل في الحصول على سعر الذهب من API');
+        
+        // محاولة استخدام السعر الحالي المستخرج إذا كان متاحًا
+        const currentPrice = window.currentExtractedPrice || document.querySelector('.chart-price-display')?.textContent;
+        if (currentPrice && !isNaN(parseFloat(currentPrice.toString()))) {
+          const extractedPrice = parseFloat(currentPrice.toString());
+          console.log(`استخدام السعر المستخرج البديل: ${extractedPrice}`);
+          this.priceUpdater.setCachedGoldPrice(extractedPrice);
+          broadcastGoldPriceUpdate(extractedPrice, 'CFI:XAUUSD', 'extracted');
+        }
       }
     } catch (error) {
       console.error('خطأ في تحديث سعر الذهب:', error);

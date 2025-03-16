@@ -15,6 +15,13 @@ const goldPriceUpdater = new GoldPriceUpdater(priceUpdater);
 // تسجيل مستمعي أحداث الأسعار
 if (typeof window !== 'undefined') {
   registerPriceEventListeners();
+  
+  // إضافة طلب فوري للسعر عند تحميل الصفحة
+  setTimeout(() => {
+    window.dispatchEvent(new Event('request-current-price'));
+    window.dispatchEvent(new Event('request-extracted-price'));
+    console.log('تم إرسال طلب فوري للحصول على السعر الحالي');
+  }, 1000);
 }
 
 // بدء تحديثات سعر الذهب بشكل أكثر تكرارًا (كل 3 ثوانٍ)
