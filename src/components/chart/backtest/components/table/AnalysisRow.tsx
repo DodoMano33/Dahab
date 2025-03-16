@@ -90,11 +90,12 @@ export const AnalysisRow = ({
       <TableCell 
         label="تاريخ التحليل" 
         value={formatDateArabic(analysis.created_at)}
-        className="whitespace-nowrap text-xs min-w-[110px]"
+        className="whitespace-nowrap text-xs min-w-[110px] pl-2"
       />
       <TableCell 
         label="نوع التحليل" 
-        value={displayedAnalysisType} 
+        value={displayedAnalysisType}
+        className="truncate pl-4"
       />
       <TableCell 
         label="الرمز" 
@@ -104,7 +105,7 @@ export const AnalysisRow = ({
         label="الاطار الزمني" 
         value={analysis.timeframe} 
       />
-      <div className="flex justify-center">
+      <div className="flex justify-center -mr-3">
         <DirectionIndicator direction={analysis.direction || "محايد"} />
       </div>
       <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
@@ -112,7 +113,8 @@ export const AnalysisRow = ({
       </div>
       <TableCell 
         label="مدة بقاء التحليل" 
-        value={calculateAnalysisDuration()} 
+        value={calculateAnalysisDuration()}
+        className="truncate -mr-2"
       />
       <TableCell 
         label="الربح/الخسارة" 

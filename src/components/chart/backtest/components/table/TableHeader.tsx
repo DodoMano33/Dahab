@@ -22,13 +22,13 @@ export const TableHeader = ({
           onCheckedChange={onSelectAll}
         />
       </div>
-      <div className="min-w-[110px]">تاريخ التحليل</div>
-      <div>نوع التحليل</div>
+      <div className="min-w-[110px] pl-2">تاريخ التحليل</div>
+      <div className="pl-4">نوع التحليل</div>
       <div>الرمز</div>
       <div>الاطار الزمني</div>
-      <div className="text-center">الاتجاه</div>
+      <div className="text-center -mr-3">الاتجاه</div>
       <div>النتيجة</div>
-      <div>مدة بقاء التحليل</div>
+      <div className="-mr-2">مدة بقاء التحليل</div>
       <div>الربح/الخسارة</div>
       <div>السعر عند التحليل</div>
       <div>الهدف الأول</div>
