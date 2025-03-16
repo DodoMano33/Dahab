@@ -1,6 +1,6 @@
 
 import { TableCell } from "@/components/ui/table";
-import { DirectionIndicator } from "../DirectionIndicator";
+import { DirectionIndicator } from "./DirectionIndicator";
 
 interface DirectionCellProps {
   direction: "صاعد" | "هابط" | "محايد";
