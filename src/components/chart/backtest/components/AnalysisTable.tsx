@@ -96,14 +96,7 @@ export const AnalysisTable = ({
         <div>الهدف الأول</div>
         <div>السعر عند التحليل</div>
         <div>أفضل نقطة دخول</div>
-        <div className="flex items-center justify-end gap-2">
-          <span>الربح/الخسارة</span>
-          {analyses.length > 0 && (
-            <Badge variant={totalProfitLoss >= 0 ? "success" : "destructive"} className="font-bold">
-              {formatTotalProfitLoss(totalProfitLoss)}
-            </Badge>
-          )}
-        </div>
+        <div>الربح/الخسارة</div>
         <div>النتيجة</div>
         <div>الاطار الزمني</div>
         <div>نوع التحليل</div>
