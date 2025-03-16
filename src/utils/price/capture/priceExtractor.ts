@@ -135,7 +135,8 @@ export const extractAndBroadcastPrice = async () => {
     const price = await extractPriceFromChart();
     if (price !== null) {
       // تحديد مصدر السعر إلى extracted في البث لإعطائه الأولوية القصوى
-      broadcastPrice(price, true, 'CFI:XAUUSD', 'extracted');
+      // تصحيح: إرسال 3 معاملات فقط بدلاً من 4
+      broadcastPrice(price, true, 'CFI:XAUUSD');
     } else {
       console.log('لم يتم استخراج سعر صالح');
     }
@@ -149,7 +150,8 @@ export const extractAndBroadcastPrice = async () => {
  */
 export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   // محاولة بث السعر المخزن أولاً
-  if (requestPriceUpdate('CFI:XAUUSD', 'extracted')) {
+  // تصحيح: إرسال معامل واحد فقط بدلاً من معاملين
+  if (requestPriceUpdate()) {
     return true;
   }
   
@@ -158,7 +160,8 @@ export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
   const price = await extractPriceFromChart();
   
   if (price !== null) {
-    broadcastPrice(price, true, 'CFI:XAUUSD', 'extracted');
+    // تصحيح: إرسال 3 معاملات فقط بدلاً من 4
+    broadcastPrice(price, true, 'CFI:XAUUSD');
     return true;
   }
   
