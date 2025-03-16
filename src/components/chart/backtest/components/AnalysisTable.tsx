@@ -35,10 +35,10 @@ export const AnalysisTable = ({
 
   return (
     <div className="border rounded-lg bg-white shadow-sm overflow-x-auto">
-      <div className="min-w-[1200px]">
+      <div className="min-w-[1400px]">
         <TableHeader 
           onSelectAll={onSelectAll} 
-          allSelected={selectedItems.size === analyses.length} 
+          allSelected={selectedItems.size === analyses.length && analyses.length > 0} 
           itemsCount={analyses.length}
         />
         

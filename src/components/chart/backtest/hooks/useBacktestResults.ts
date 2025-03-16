@@ -69,7 +69,15 @@ export const useBacktestResults = () => {
           [...new Set(processedResults.map(r => r.analysis_type))]);
       }
       
-      // Calculate total profit/loss - تم إزالة هذه الوظيفة حيث سيتم حساب الربح/الخسارة في مكونات الجدول
+      // Calculate total profit/loss
+      let totalPL = 0;
+      processedResults.forEach(result => {
+        if (typeof result.profit_loss === 'number') {
+          totalPL += result.profit_loss;
+        }
+      });
+      
+      setTotalProfitLoss(totalPL);
       
       // If we're on page 0, reset the results, otherwise add to them
       if (pageNumber === 0) {
