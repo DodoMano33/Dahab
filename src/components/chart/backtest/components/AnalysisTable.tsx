@@ -38,8 +38,8 @@ export const AnalysisTable = ({
   }
   
   return (
-    <div className="w-full overflow-auto">
-      <Table>
+    <div className="w-full overflow-x-auto">
+      <Table className="min-w-full">
         <BacktestTableHeader 
           onSelectAll={onSelectAll}
           allSelected={selectedItems && tableData.length > 0 && selectedItems.size === tableData.length}

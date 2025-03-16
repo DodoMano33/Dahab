@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface BackTestResultsDialogProps {
   isOpen: boolean;
@@ -100,7 +99,7 @@ export const BackTestResultsDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] md:max-w-7xl h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-[98vw] md:max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden">
         <BackTestHeader
           initialAnalysesCount={completedAnalyses.length}
           onClose={onClose}
@@ -114,7 +113,7 @@ export const BackTestResultsDialog = ({
 
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
-            <div className="p-4 space-y-4">
+            <div className="p-2 space-y-4">
               {!isLoadingStats && (
                 <>
                   <AnalysisStats stats={stats} />
@@ -126,7 +125,7 @@ export const BackTestResultsDialog = ({
                 </>
               )}
               
-              <div className="overflow-x-auto">
+              <div className="overflow-visible">
                 <AnalysisTable
                   analyses={completedAnalyses}
                   selectedItems={selectedItems}
@@ -141,6 +140,7 @@ export const BackTestResultsDialog = ({
                       onClick={loadMore}
                       disabled={isLoadingResults}
                       variant="outline"
+                      size="sm"
                     >
                       {isLoadingResults ? (
                         <>

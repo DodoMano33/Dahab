@@ -15,7 +15,7 @@ export const BacktestTableHeader = ({
     <UITableHeader>
       <TableRow>
         {onSelectAll && (
-          <TableHead className="w-[50px] text-center">
+          <TableHead className="w-[40px] text-center">
             <Checkbox 
               checked={allSelected}
               onCheckedChange={onSelectAll}
@@ -23,19 +23,19 @@ export const BacktestTableHeader = ({
             />
           </TableHead>
         )}
-        <TableHead className="text-center w-[150px]">تاريخ التحليل</TableHead>
-        <TableHead className="text-center w-[120px]">نوع التحليل</TableHead>
-        <TableHead className="text-center w-[100px]">الرمز</TableHead>
-        <TableHead className="text-center w-[100px]">الإطار الزمني</TableHead>
-        <TableHead className="text-center w-[100px]">النتيجة</TableHead>
-        <TableHead className="text-center w-[120px]">مدة بقاء التحليل</TableHead>
-        <TableHead className="text-center w-[100px]">الربح/الخسارة</TableHead>
-        <TableHead className="text-center w-[100px]">سعر الدخول</TableHead>
-        <TableHead className="text-center w-[100px]">الهدف</TableHead>
-        <TableHead className="text-center w-[100px]">وقف الخسارة</TableHead>
-        <TableHead className="text-center w-[100px]">أفضل نقطة دخول</TableHead>
-        <TableHead className="text-center w-[150px]">تاريخ النتيجة</TableHead>
-        <TableHead className="text-center w-[100px]">السعر الحالي</TableHead>
+        <TableHead className="text-center w-[85px]">تاريخ التحليل</TableHead>
+        <TableHead className="text-center w-[85px]">نوع التحليل</TableHead>
+        <TableHead className="text-center w-[70px]">الرمز</TableHead>
+        <TableHead className="text-center w-[60px]">الإطار الزمني</TableHead>
+        <TableHead className="text-center w-[60px]">النتيجة</TableHead>
+        <TableHead className="text-center w-[80px]">مدة بقاء التحليل</TableHead>
+        <TableHead className="text-center w-[70px]">الربح/الخسارة</TableHead>
+        <TableHead className="text-center w-[70px]">سعر الدخول</TableHead>
+        <TableHead className="text-center w-[70px]">الهدف</TableHead>
+        <TableHead className="text-center w-[70px]">وقف الخسارة</TableHead>
+        <TableHead className="text-center w-[70px]">أفضل نقطة دخول</TableHead>
+        <TableHead className="text-center w-[85px]">تاريخ النتيجة</TableHead>
+        <TableHead className="text-center w-[70px]">السعر الحالي</TableHead>
       </TableRow>
     </UITableHeader>
   );

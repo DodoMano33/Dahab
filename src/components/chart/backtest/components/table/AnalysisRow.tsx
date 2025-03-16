@@ -2,7 +2,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatResultDate, formatCreatedAtDate } from "@/utils/technicalAnalysis/timeUtils";
-import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 import { Checkbox } from "@/components/ui/checkbox";
 
 // تعريف الواجهة مع الفصل الواضح بين حقلي تاريخ الإنشاء وتاريخ النتيجة
@@ -78,9 +77,6 @@ export const AnalysisRow = ({
     }
   };
 
-  // طباعة قيم تواريخ النتيجة للتأكد من صحتها
-  console.log(`Row ${id} timestamps:`, { created_at, result_timestamp, formattedResultDate });
-
   return (
     <TableRow className="text-center hover:bg-muted/50">
       {onSelect && (
@@ -94,71 +90,71 @@ export const AnalysisRow = ({
       )}
       
       {/* تاريخ التحليل */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {formattedCreatedDate}
       </TableCell>
       
       {/* نوع التحليل */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {analysisType}
       </TableCell>
       
       {/* الرمز */}
-      <TableCell className="font-medium text-center">
+      <TableCell className="font-medium text-center text-xs">
         {symbol}
       </TableCell>
       
       {/* الإطار الزمني */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {timeframe}
       </TableCell>
       
       {/* النتيجة */}
       <TableCell className="text-center">
-        <Badge variant={is_success ? "success" : "destructive"}>
+        <Badge variant={is_success ? "success" : "destructive"} className="text-xs">
           {is_success ? "ناجح" : "غير ناجح"}
         </Badge>
       </TableCell>
       
       {/* مدة بقاء التحليل */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {calculateAnalysisDuration()}
       </TableCell>
       
       {/* الربح/الخسارة */}
       <TableCell className="text-center">
-        <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full">
+        <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full text-xs">
           {profit_loss.toFixed(2)}
         </Badge>
       </TableCell>
       
       {/* سعر الدخول */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {entry_price.toFixed(2)}
       </TableCell>
       
       {/* الهدف */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {target_price.toFixed(2)}
       </TableCell>
       
       {/* وقف الخسارة */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {stop_loss.toFixed(2)}
       </TableCell>
       
       {/* أفضل نقطة دخول */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {entry_price.toFixed(2)}
       </TableCell>
       
       {/* تاريخ النتيجة */}
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs">
         {formattedResultDate}
       </TableCell>
       
-      {/* السعر الحالي (إضافة عمود جديد) */}
-      <TableCell className="text-center">
+      {/* السعر الحالي */}
+      <TableCell className="text-center text-xs">
         {exit_price > 0 ? exit_price.toFixed(2) : (current_price > 0 ? current_price.toFixed(2) : "—")}
       </TableCell>
     </TableRow>
