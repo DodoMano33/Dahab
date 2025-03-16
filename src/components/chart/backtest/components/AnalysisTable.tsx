@@ -34,33 +34,35 @@ export const AnalysisTable = ({
   }, [analyses]);
 
   return (
-    <div className="border rounded-lg bg-white shadow-sm overflow-x-auto">
-      <TableHeader 
-        onSelectAll={onSelectAll} 
-        allSelected={selectedItems.size === analyses.length} 
-        itemsCount={analyses.length}
-      />
-      
-      <div className="divide-y text-xs">
-        {analyses.length === 0 ? (
-          <EmptyState isLoading={isLoading} />
-        ) : (
-          <CurrentPriceListener>
-            {(currentPrice) => (
-              <>
-                {analyses.map((analysis) => (
-                  <AnalysisRow
-                    key={analysis.id}
-                    analysis={analysis}
-                    selected={selectedItems.has(analysis.id)}
-                    onSelect={onSelect}
-                    currentPrice={currentPrice}
-                  />
-                ))}
-              </>
-            )}
-          </CurrentPriceListener>
-        )}
+    <div className="border rounded-lg bg-white shadow-sm overflow-auto">
+      <div className="min-w-[1200px]">
+        <TableHeader 
+          onSelectAll={onSelectAll} 
+          allSelected={selectedItems.size === analyses.length} 
+          itemsCount={analyses.length}
+        />
+        
+        <div className="divide-y text-xs">
+          {analyses.length === 0 ? (
+            <EmptyState isLoading={isLoading} />
+          ) : (
+            <CurrentPriceListener>
+              {(currentPrice) => (
+                <>
+                  {analyses.map((analysis) => (
+                    <AnalysisRow
+                      key={analysis.id}
+                      analysis={analysis}
+                      selected={selectedItems.has(analysis.id)}
+                      onSelect={onSelect}
+                      currentPrice={currentPrice}
+                    />
+                  ))}
+                </>
+              )}
+            </CurrentPriceListener>
+          )}
+        </div>
       </div>
     </div>
   );
