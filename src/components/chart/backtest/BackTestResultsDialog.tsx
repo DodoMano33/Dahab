@@ -1,6 +1,6 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackTestHeader } from "./components/BackTestHeader";
 import { AnalysisStats } from "./components/AnalysisStats";
 import { AnalysisTable } from "./components/AnalysisTable";
@@ -194,4 +194,3 @@ export const BackTestResultsDialog = ({
     </Dialog>
   );
 };
-
