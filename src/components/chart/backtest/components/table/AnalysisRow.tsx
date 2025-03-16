@@ -60,6 +60,24 @@ export const AnalysisRow = ({
           ? "هابط" 
           : "محايد";
 
+  // حساب مدة بقاء التحليل
+  const calculateAnalysisDuration = () => {
+    if (!created_at || !result_timestamp) return "-";
+    
+    try {
+      const startTime = new Date(created_at).getTime();
+      const endTime = new Date(result_timestamp).getTime();
+      
+      // حساب الفرق بالساعات
+      const durationHours = Math.round((endTime - startTime) / (1000 * 60 * 60));
+      
+      return `${durationHours} ساعة`;
+    } catch (error) {
+      console.error("Error calculating analysis duration:", error);
+      return "-";
+    }
+  };
+
   // طباعة قيم تواريخ النتيجة للتأكد من صحتها
   console.log(`Row ${id} timestamps:`, { created_at, result_timestamp, formattedResultDate });
 
@@ -102,24 +120,9 @@ export const AnalysisRow = ({
         </Badge>
       </TableCell>
       
-      {/* وقف الخسارة */}
+      {/* مدة بقاء التحليل */}
       <TableCell className="text-center">
-        {stop_loss.toFixed(2)}
-      </TableCell>
-      
-      {/* الهدف */}
-      <TableCell className="text-center">
-        {target_price.toFixed(2)}
-      </TableCell>
-      
-      {/* سعر الدخول */}
-      <TableCell className="text-center">
-        {entry_price.toFixed(2)}
-      </TableCell>
-      
-      {/* الاتجاه */}
-      <TableCell className="text-center">
-        <DirectionIndicator direction={safeDirection} />
+        {calculateAnalysisDuration()}
       </TableCell>
       
       {/* الربح/الخسارة */}
@@ -127,6 +130,26 @@ export const AnalysisRow = ({
         <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full">
           {profit_loss.toFixed(2)}
         </Badge>
+      </TableCell>
+      
+      {/* سعر الدخول */}
+      <TableCell className="text-center">
+        {entry_price.toFixed(2)}
+      </TableCell>
+      
+      {/* الهدف */}
+      <TableCell className="text-center">
+        {target_price.toFixed(2)}
+      </TableCell>
+      
+      {/* وقف الخسارة */}
+      <TableCell className="text-center">
+        {stop_loss.toFixed(2)}
+      </TableCell>
+      
+      {/* أفضل نقطة دخول */}
+      <TableCell className="text-center">
+        {entry_price.toFixed(2)}
       </TableCell>
       
       {/* تاريخ النتيجة */}
