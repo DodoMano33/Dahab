@@ -22,7 +22,7 @@ export const TableHeader = ({
           onCheckedChange={onSelectAll}
         />
       </div>
-      <div>تاريخ التحليل</div>
+      <div className="min-w-[110px]">تاريخ التحليل</div>
       <div>نوع التحليل</div>
       <div>الرمز</div>
       <div>الاطار الزمني</div>
@@ -34,7 +34,7 @@ export const TableHeader = ({
       <div>الهدف الأول</div>
       <div>وقف الخسارة</div>
       <div>أفضل نقطة دخول</div>
-      <div>تاريخ النتيجة</div>
+      <div className="min-w-[110px]">تاريخ النتيجة</div>
       {showCurrentPrice && (
         <div className="text-center font-semibold text-primary">السعر الحالي</div>
       )}

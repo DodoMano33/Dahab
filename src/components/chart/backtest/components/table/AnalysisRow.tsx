@@ -89,7 +89,8 @@ export const AnalysisRow = ({
       </div>
       <TableCell 
         label="تاريخ التحليل" 
-        value={formatDateArabic(analysis.created_at)} 
+        value={formatDateArabic(analysis.created_at)}
+        className="whitespace-nowrap text-xs min-w-[110px]"
       />
       <TableCell 
         label="نوع التحليل" 
@@ -136,7 +137,8 @@ export const AnalysisRow = ({
       />
       <TableCell 
         label="تاريخ النتيجة" 
-        value={formatDateArabic(analysis.result_timestamp)} 
+        value={formatDateArabic(analysis.result_timestamp)}
+        className="whitespace-nowrap text-xs min-w-[110px]" 
       />
       <div className="text-center font-bold text-primary">
         {currentPrice ? formatNumber(currentPrice) : "-"}

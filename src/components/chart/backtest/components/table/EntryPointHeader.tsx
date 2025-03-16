@@ -20,7 +20,7 @@ export const EntryPointHeader = ({
           onCheckedChange={onSelectAll}
         />
       </div>
-      <div>تاريخ التحليل</div>
+      <div className="min-w-[110px]">تاريخ التحليل</div>
       <div>نوع التحليل</div>
       <div>الرمز</div>
       <div>الاطار الزمني</div>
@@ -31,8 +31,7 @@ export const EntryPointHeader = ({
       <div>الهدف الأول</div>
       <div>وقف الخسارة</div>
       <div>أفضل نقطة دخول</div>
-      <div>تاريخ النتيجة</div>
-      <div>سعر الخروج</div>
+      <div className="min-w-[110px]">تاريخ النتيجة</div>
       <div className="text-center font-semibold text-primary">السعر الحالي</div>
     </div>
   );
