@@ -106,24 +106,29 @@ export const EntryPointRow = ({
         label="الاطار الزمني" 
         value={result.timeframe} 
       />
-      <div className="flex justify-center">
+      <div className="flex justify-center items-center">
         <DirectionIndicator direction={result.direction || "محايد"} />
       </div>
       <TableCell 
-        label="الربح/الخسارة" 
-        value={profitLossValue} 
-        className={`truncate ${profitLossClass}`}
+        label="النتيجة"
+        value={result.is_success ? "ناجح" : "غير ناجح"}
+        className={result.is_success ? "text-success" : "text-destructive"}
       />
       <TableCell 
         label="مدة بقاء التحليل" 
         value={calculateAnalysisDuration()} 
       />
       <TableCell 
-        label="نقطة الدخول" 
+        label="الربح/الخسارة" 
+        value={profitLossValue} 
+        className={`truncate ${profitLossClass}`}
+      />
+      <TableCell 
+        label="سعر الدخول" 
         value={formatNumber(result.entry_point_price)} 
       />
       <TableCell 
-        label="الهدف الأول" 
+        label="الهدف" 
         value={formatNumber(result.target_price)} 
       />
       <TableCell 

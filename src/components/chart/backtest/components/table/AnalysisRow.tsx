@@ -1,161 +1,104 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { formatResultDate, formatCreatedAtDate } from "@/utils/technicalAnalysis/timeUtils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { formatDateArabic } from "@/utils/technicalAnalysis/timeUtils";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
+import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
 
-// تعريف الواجهة مع الفصل الواضح بين حقلي تاريخ الإنشاء وتاريخ النتيجة
 interface AnalysisRowProps {
   id: string;
   symbol: string;
-  entry_price?: number;
-  exit_price?: number;
-  target_price?: number;
-  stop_loss?: number;
-  direction?: "صاعد" | "هابط" | "محايد" | string;
-  profit_loss?: number;
-  is_success?: boolean;
-  analysisType?: string;
-  timeframe?: string;
-  // تاريخ إنشاء التحليل
-  created_at?: string;
-  // تاريخ نتيجة التحليل (مختلف عن تاريخ الإنشاء)
-  result_timestamp?: string;
-  // For selection in backtest results
+  entry_price: number;
+  target_price: number;
+  stop_loss: number;
+  direction: "صاعد" | "هابط" | "محايد";
+  profit_loss: number;
+  is_success: boolean;
+  analysisType: string;
+  timeframe: string;
+  created_at: string;
+  result_timestamp: string;
   selected?: boolean;
   onSelect?: () => void;
+  exit_price?: number;
   current_price?: number;
 }
 
 export const AnalysisRow = ({
   id,
   symbol,
-  entry_price = 0,
-  exit_price = 0,
-  target_price = 0,
-  stop_loss = 0,
-  direction = "",
-  profit_loss = 0,
-  is_success = false,
-  analysisType = "",
-  timeframe = "",
+  entry_price,
+  exit_price,
+  target_price,
+  stop_loss,
+  direction,
+  profit_loss,
+  is_success,
+  analysisType,
+  timeframe,
   created_at,
   result_timestamp,
-  selected = false,
+  selected,
   onSelect,
-  current_price = 0
+  current_price
 }: AnalysisRowProps) => {
-  // تنسيق التواريخ باستخدام الدوال المخصصة
-  const formattedCreatedDate = formatCreatedAtDate(created_at);
-  const formattedResultDate = formatResultDate(result_timestamp);
-
-  // تحويل الاتجاه إلى قيمة عربية إذا لم تكن كذلك بالفعل
-  const safeDirection: "صاعد" | "هابط" | "محايد" = 
-    (direction === "صاعد" || direction === "هابط" || direction === "محايد") 
-      ? direction as "صاعد" | "هابط" | "محايد"
-      : direction === "up" || direction === "bullish" 
-        ? "صاعد" 
-        : direction === "down" || direction === "bearish" 
-          ? "هابط" 
-          : "محايد";
-
-  // حساب مدة بقاء التحليل
-  const calculateAnalysisDuration = () => {
-    if (!created_at || !result_timestamp) return "-";
-    
-    try {
-      const startTime = new Date(created_at).getTime();
-      const endTime = new Date(result_timestamp).getTime();
-      
-      // حساب الفرق بالساعات
-      const durationHours = Math.round((endTime - startTime) / (1000 * 60 * 60));
-      
-      return `${durationHours} ساعة`;
-    } catch (error) {
-      console.error("Error calculating analysis duration:", error);
-      return "-";
-    }
+  // Format numbers for display with 2 decimal places
+  const formatNumber = (num: number) => {
+    return num !== undefined && num !== null ? Number(num).toFixed(2) : "-";
   };
-
+  
+  // Calculate profit/loss color
+  const getProfitLossClass = () => {
+    if (profit_loss === 0) return "text-gray-500";
+    return profit_loss > 0 ? "text-success font-medium" : "text-destructive font-medium";
+  };
+  
+  // Convert analysis type to readable format
+  const displayedAnalysisType = getStrategyName(analysisType);
+  
   return (
-    <TableRow className="text-center hover:bg-muted/50">
+    <TableRow
+      key={id}
+      className={is_success ? "bg-success/10" : "bg-destructive/10"}
+    >
       {onSelect && (
-        <TableCell className="text-center">
-          <Checkbox 
-            checked={selected} 
+        <TableCell className="text-center w-[40px] p-2">
+          <Checkbox
+            checked={selected}
             onCheckedChange={onSelect}
             aria-label="Select row"
           />
         </TableCell>
       )}
-      
-      {/* تاريخ التحليل */}
-      <TableCell className="text-center text-xs">
-        {formattedCreatedDate}
+      <TableCell className="text-center p-2">
+        {formatDateArabic(created_at)}
       </TableCell>
-      
-      {/* نوع التحليل */}
-      <TableCell className="text-center text-xs">
-        {analysisType}
+      <TableCell className="text-center p-2">
+        {displayedAnalysisType}
       </TableCell>
-      
-      {/* الرمز */}
-      <TableCell className="font-medium text-center text-xs">
-        {symbol}
+      <TableCell className="text-center p-2">{symbol}</TableCell>
+      <TableCell className="text-center p-2">{timeframe}</TableCell>
+      <TableCell className="text-center p-2">
+        <DirectionIndicator direction={direction || "محايد"} />
       </TableCell>
-      
-      {/* الإطار الزمني */}
-      <TableCell className="text-center text-xs">
-        {timeframe}
+      <TableCell className="text-center p-2">
+        {is_success ? "ناجح" : "غير ناجح"}
       </TableCell>
-      
-      {/* النتيجة */}
-      <TableCell className="text-center">
-        <Badge variant={is_success ? "success" : "destructive"} className="text-xs">
-          {is_success ? "ناجح" : "غير ناجح"}
-        </Badge>
+      <TableCell className="text-center p-2">
+        {result_timestamp ? formatDateArabic(result_timestamp) : "-"}
       </TableCell>
-      
-      {/* مدة بقاء التحليل */}
-      <TableCell className="text-center text-xs">
-        {calculateAnalysisDuration()}
+      <TableCell className={`text-center p-2 ${getProfitLossClass()}`}>
+        {formatNumber(profit_loss)}
       </TableCell>
-      
-      {/* الربح/الخسارة */}
-      <TableCell className="text-center">
-        <Badge variant={profit_loss > 0 ? "success" : "destructive"} className="justify-center w-full text-xs">
-          {profit_loss.toFixed(2)}
-        </Badge>
+      <TableCell className="text-center p-2">{formatNumber(entry_price)}</TableCell>
+      <TableCell className="text-center p-2">{formatNumber(target_price)}</TableCell>
+      <TableCell className="text-center p-2">{formatNumber(stop_loss)}</TableCell>
+      <TableCell className="text-center p-2">{formatNumber(target_price)}</TableCell>
+      <TableCell className="text-center p-2">
+        {result_timestamp ? formatDateArabic(result_timestamp) : "-"}
       </TableCell>
-      
-      {/* سعر الدخول */}
-      <TableCell className="text-center text-xs">
-        {entry_price.toFixed(2)}
-      </TableCell>
-      
-      {/* الهدف */}
-      <TableCell className="text-center text-xs">
-        {target_price.toFixed(2)}
-      </TableCell>
-      
-      {/* وقف الخسارة */}
-      <TableCell className="text-center text-xs">
-        {stop_loss.toFixed(2)}
-      </TableCell>
-      
-      {/* أفضل نقطة دخول */}
-      <TableCell className="text-center text-xs">
-        {entry_price.toFixed(2)}
-      </TableCell>
-      
-      {/* تاريخ النتيجة */}
-      <TableCell className="text-center text-xs">
-        {formattedResultDate}
-      </TableCell>
-      
-      {/* السعر الحالي */}
-      <TableCell className="text-center text-xs">
-        {exit_price > 0 ? exit_price.toFixed(2) : (current_price > 0 ? current_price.toFixed(2) : "—")}
+      <TableCell className="text-center p-2 font-bold text-primary">
+        {current_price ? formatNumber(current_price) : "-"}
       </TableCell>
     </TableRow>
   );
