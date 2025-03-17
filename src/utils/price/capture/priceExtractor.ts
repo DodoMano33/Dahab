@@ -15,7 +15,7 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     console.log('بدء محاولة استخراج السعر من الشارت...');
 
     // البحث عن عنصر السعر الرئيسي كما يظهر في الصورة
-    const mainPriceElement = document.querySelector('.tv-symbol-price-quote__value');
+    const mainPriceElement = document.querySelector('.js-symbol-last, .tv-symbol-price-quote__value');
     if (mainPriceElement) {
       const priceText = mainPriceElement.textContent?.trim();
       console.log('تم العثور على سعر TradingView في العنصر الرئيسي:', priceText);
