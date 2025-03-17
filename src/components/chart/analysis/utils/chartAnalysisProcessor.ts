@@ -1,6 +1,5 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { executeAnalysis } from "./analysisExecutor";
 import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";
 import { dismissToasts, showLoadingToast, showSuccessToast } from "./toastUtils";
@@ -8,7 +7,6 @@ import { dismissToasts, showLoadingToast, showSuccessToast } from "./toastUtils"
 interface ChartAnalysisParams {
   symbol: string;
   timeframe: string;
-  providedPrice: number;
   analysisType: string;
   selectedTypes: string[];
   isAI: boolean;
@@ -29,7 +27,6 @@ interface ChartAnalysisParams {
 export const processChartAnalysis = async ({
   symbol,
   timeframe,
-  providedPrice,
   analysisType,
   selectedTypes,
   isAI,
@@ -64,17 +61,14 @@ export const processChartAnalysis = async ({
       console.error("Error showing analysis message:", messageError);
     }
 
-    // التحقق من وجود سعر محدث من TradingView عن طريق مناداة حدث
-    let finalPrice = providedPrice;
-    
-    // إرسال حدث للحصول على السعر الحالي من TradingView
-    window.dispatchEvent(new CustomEvent('request-current-price'));
+    // استخدام سعر افتراضي ثابت بدلاً من الحصول على سعر من TradingView
+    const finalPrice = 100; // قيمة ثابتة
     
     // طباعة السعر النهائي المستخدم للتحليل
-    console.log("Analysis using price:", finalPrice);
+    console.log("Analysis using fixed price:", finalPrice);
 
-    // Get the chart image
-    console.log("Getting TradingView chart image for:", { 
+    // استخدام صورة وهمية للرسم البياني
+    console.log("Using placeholder chart image for:", { 
       symbol, 
       timeframe, 
       price: finalPrice,
@@ -83,8 +77,8 @@ export const processChartAnalysis = async ({
       duration
     });
 
-    const chartImage = await getTradingViewChartImage(symbol, timeframe, finalPrice);
-    console.log("Chart image received successfully");
+    const chartImage = "placeholder-chart-image";
+    console.log("Placeholder chart image used");
 
     // Perform the analysis
     let analysisResult: AnalysisData;

@@ -33,8 +33,7 @@ export const useAnalysisHandler = () => {
     isBehavioral: boolean = false,
     isFibonacci: boolean = false,
     isFibonacciAdvanced: boolean = false,
-    duration?: string,
-    selectedTypes?: string[]
+    duration?: string
   ) => {
     try {
       console.log("Starting analysis with parameters:", {
@@ -58,7 +57,6 @@ export const useAnalysisHandler = () => {
         isFibonacci,
         isFibonacciAdvanced,
         duration,
-        selectedTypes
       });
 
       // Validate inputs (بدون التحقق من صحة السعر)
@@ -98,7 +96,7 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol,
         timeframe,
         analysisType,
-        selectedTypes: selectedTypes || [],
+        selectedTypes: [],
         isAI,
         options,
         duration

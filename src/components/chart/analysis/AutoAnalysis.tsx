@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
@@ -36,18 +37,10 @@ export const AutoAnalysis = ({
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
     const symbol = symbolInput?.value;
 
-    const priceInput = document.querySelector('input#price') as HTMLInputElement;
-    const currentPrice = priceInput ? Number(priceInput.value) : undefined;
-
-    console.log("Auto analysis inputs:", { symbol, currentPrice, duration });
+    console.log("Auto analysis inputs:", { symbol, duration });
 
     if (!symbol) {
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
-      return;
-    }
-
-    if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) {
-      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
       return;
     }
 
@@ -66,7 +59,7 @@ export const AutoAnalysis = ({
         interval: selectedInterval,
         analysisTypes: selectedAnalysisTypes,
         repetitions,
-        currentPrice,
+        currentPrice: 100, // قيمة ثابتة
         symbol,
         duration: durationHours,
         onAnalysisComplete: (result) => {

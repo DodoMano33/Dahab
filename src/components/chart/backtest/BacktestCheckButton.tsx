@@ -4,23 +4,20 @@ import { useBackTest } from "@/components/hooks/useBackTest";
 import { Server } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useDiagnosticInfo } from "@/hooks/useDiagnosticInfo";
-import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useAnalysisErrors } from "@/hooks/useAnalysisErrors";
 import { useTimeFormatting } from "@/hooks/useTimeFormatting";
 import { DiagnosticInfo } from "@/components/DiagnosticInfo";
 import { TimeInfo } from "./components/TimeInfo";
-import { PriceDisplay } from "./components/PriceDisplay";
 
 export const BacktestCheckButton = memo(() => {
   const { triggerManualCheck, isLoading, lastCheckTime, retryCount, diagnostics } = useBackTest();
   const networkStatus = useNetworkStatus();
   const diagnosticInfo = useDiagnosticInfo();
-  const { currentPrice, priceUpdateCount } = useCurrentPrice();
   const { hasNetworkError, errorDetails, resetErrors } = useAnalysisErrors();
   const { formattedTime, nextAutoCheck } = useTimeFormatting(lastCheckTime);
 
   const handleTriggerManualCheck = () => {
-    console.log('Manual check triggered with current price:', currentPrice);
+    console.log('Manual check triggered with fixed price value');
     triggerManualCheck();
     resetErrors();
   };
@@ -36,8 +33,8 @@ export const BacktestCheckButton = memo(() => {
         diagnosticInfo={{
           ...diagnosticInfo,
           lastError: errorDetails,
-          currentPrice,
-          priceUpdateCount,
+          currentPrice: 100, // قيمة ثابتة
+          priceUpdateCount: 0,
           diagnostics
         }}
       />
@@ -46,11 +43,6 @@ export const BacktestCheckButton = memo(() => {
         formattedTime={formattedTime} 
         nextAutoCheck={nextAutoCheck}
         hasNetworkError={hasNetworkError}
-      />
-      
-      <PriceDisplay 
-        currentPrice={currentPrice} 
-        priceUpdateCount={priceUpdateCount} 
       />
     </div>
   );

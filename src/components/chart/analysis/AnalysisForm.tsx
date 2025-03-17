@@ -9,7 +9,6 @@ interface AnalysisFormProps {
   currentAnalysis?: string;
   onHistoryClick?: () => void;
   defaultSymbol?: string;
-  defaultPrice?: number | null;
 }
 
 export const AnalysisForm = ({ 
@@ -18,7 +17,6 @@ export const AnalysisForm = ({
   currentAnalysis,
   onHistoryClick,
   defaultSymbol,
-  defaultPrice
 }: AnalysisFormProps) => {
   const { handleAnalysis } = useAnalysisSubmit({ onAnalysis });
 
@@ -28,7 +26,6 @@ export const AnalysisForm = ({
       onTradingViewConfig={(
         symbol: string, 
         timeframe: string, 
-        providedPrice?: number,
         isScalping?: boolean,
         isAI?: boolean,
         isSMC?: boolean,
@@ -51,7 +48,6 @@ export const AnalysisForm = ({
         return handleAnalysis(
           symbol, 
           timeframe, 
-          providedPrice, 
           isScalping, 
           isAI, 
           isSMC, 
