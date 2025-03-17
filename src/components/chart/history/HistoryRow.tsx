@@ -1,6 +1,7 @@
 
 import { TableRow } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
+import { useState, useEffect } from "react";
 import { CheckboxCell } from "./cells/CheckboxCell";
 import { MarketStatusCell } from "./cells/MarketStatusCell";
 import { LastCheckedCell } from "./cells/LastCheckedCell";
@@ -27,8 +28,8 @@ interface HistoryRowProps {
   isSelected?: boolean;
   onSelect?: () => void;
   analysis_duration_hours?: number;
-  last_checked_at?: Date | string | null;
   last_checked_price?: number;
+  last_checked_at?: Date | string | null;
 }
 
 export const HistoryRow = ({
@@ -42,8 +43,8 @@ export const HistoryRow = ({
   isSelected,
   onSelect,
   analysis_duration_hours,
-  last_checked_at,
   last_checked_price,
+  last_checked_at,
 }: HistoryRowProps) => {
   // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
   const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
@@ -51,12 +52,29 @@ export const HistoryRow = ({
     : analysis.pattern === "تحليل فيبوناتشي متقدم" 
       ? "تحليل فيبوناتشي متقدم" 
       : getStrategyName(analysisType);
-      
+  
+  // تشخيص وقت آخر فحص
+  console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
+  
+  // الاستماع للتحديثات في الوقت الحقيقي
+  useEffect(() => {
+    const handleHistoryUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log(`[${id}] HistoryRow detected update event:`, customEvent.detail?.timestamp || "No timestamp");
+    };
+    
+    window.addEventListener('historyUpdated', handleHistoryUpdate);
+    return () => {
+      window.removeEventListener('historyUpdated', handleHistoryUpdate);
+    };
+  }, [id]);
+
   return (
     <TableRow className="text-xs">
       <CheckboxCell isSelected={isSelected} onSelect={onSelect} />
       <MarketStatusCell itemId={id} />
       <LastCheckedCell 
+        price={last_checked_price}
         timestamp={last_checked_at} 
         itemId={id}
       />

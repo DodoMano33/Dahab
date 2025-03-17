@@ -7,11 +7,16 @@ import { showErrorToast } from "./toastUtils";
  */
 export const validateAnalysisInputs = (
   symbol: string,
-  timeframe: string
+  timeframe: string,
+  providedPrice?: number
 ): boolean => {
   try {
     if (!symbol || !timeframe) {
       throw new Error("جميع الحقول مطلوبة");
+    }
+
+    if (!providedPrice) {
+      throw new Error("يجب إدخال السعر الحالي للتحليل");
     }
 
     return true;

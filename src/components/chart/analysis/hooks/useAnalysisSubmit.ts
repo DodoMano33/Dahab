@@ -1,105 +1,74 @@
 
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { SearchHistoryItem } from "@/types/analysis";
-import { saveAnalysisToHistory } from "../utils/saveAnalysis";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { AnalysisType, SearchHistoryItem } from "@/types/analysis";
+import { buildAnalysisConfig } from "../utils/analysisConfigBuilder";
+import { validateAnalysisInputs } from "../utils/inputValidation";
+import { dismissToasts, showErrorToast, showLoadingToast } from "../utils/toastUtils";
+import { useAnalysisHandler } from "../AnalysisHandler";
+import { saveAnalysis } from "../utils/saveAnalysis";
+import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 
 interface UseAnalysisSubmitProps {
   onAnalysis: (item: SearchHistoryItem) => void;
 }
 
 export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
-  const [currentSymbol, setCurrentSymbol] = useState<string>("");
-  const [currentTimeframe, setCurrentTimeframe] = useState<string>("");
-  const [currentPrice, setCurrentPrice] = useState<number>(100); // قيمة افتراضية
-
-  // استمع للأحداث الخارجية مثل تغيرات الرمز والسعر
-  useEffect(() => {
-    const handleSymbolUpdate = (event: any) => {
-      if (event.detail?.symbol) {
-        setCurrentSymbol(event.detail.symbol);
-      }
-    };
-    
-    const handlePriceUpdate = (event: any) => {
-      if (event.detail?.price && !isNaN(event.detail.price)) {
-        setCurrentPrice(event.detail.price);
-      }
-    };
-
-    window.addEventListener("symbol-update", handleSymbolUpdate);
-    window.addEventListener("price-update", handlePriceUpdate);
-    
-    // استخراج السعر من واجهة المستخدم عند التحميل
-    const extractInitialPrice = () => {
-      try {
-        // محاولة العثور على سعر الذهب من عنصر القيمة الرئيسي
-        const mainPriceElement = document.querySelector('.tv-symbol-price-quote__value');
-        if (mainPriceElement) {
-          const priceText = mainPriceElement.textContent || '';
-          const price = parseFloat(priceText.replace(',', ''));
-          if (!isNaN(price)) {
-            setCurrentPrice(price);
-            console.log('Initial price set from main UI element:', price);
-          }
-        }
-      } catch (error) {
-        console.error('Error extracting initial price:', error);
-      }
-    };
-    
-    extractInitialPrice();
-    
-    // إعادة المحاولة بعد فترة لضمان تحميل الويدجيت
-    const retryTimer = setTimeout(extractInitialPrice, 3000);
-    
-    return () => {
-      window.removeEventListener("symbol-update", handleSymbolUpdate);
-      window.removeEventListener("price-update", handlePriceUpdate);
-      clearTimeout(retryTimer);
-    };
-  }, []);
+  const { user } = useAuth();
+  const { handleTradingViewConfig } = useAnalysisHandler();
 
   const handleAnalysis = async (
-    symbol: string,
-    timeframe: string,
-    isScalping?: boolean,
-    isAI?: boolean,
-    isSMC?: boolean,
-    isICT?: boolean,
-    isTurtleSoup?: boolean,
-    isGann?: boolean,
-    isWaves?: boolean,
-    isPatternAnalysis?: boolean,
-    isPriceAction?: boolean,
-    isNeuralNetwork?: boolean,
-    isRNN?: boolean,
-    isTimeClustering?: boolean,
-    isMultiVariance?: boolean,
-    isCompositeCandlestick?: boolean,
-    isBehavioral?: boolean,
-    isFibonacci?: boolean,
-    isFibonacciAdvanced?: boolean,
-    duration?: string
+    symbol: string, 
+    timeframe: string, 
+    providedPrice?: number,
+    isScalping: boolean = false,
+    isAI: boolean = false,
+    isSMC: boolean = false,
+    isICT: boolean = false,
+    isTurtleSoup: boolean = false,
+    isGann: boolean = false,
+    isWaves: boolean = false,
+    isPatternAnalysis: boolean = false,
+    isPriceAction: boolean = false,
+    isNeuralNetwork: boolean = false,
+    isRNN: boolean = false,
+    isTimeClustering: boolean = false,
+    isMultiVariance: boolean = false,
+    isCompositeCandlestick: boolean = false,
+    isBehavioral: boolean = false,
+    isFibonacci: boolean = false,
+    isFibonacciAdvanced: boolean = false,
+    duration?: string,
+    selectedTypes?: string[]
   ) => {
+    // Create toast IDs for tracking
+    const loadingToastId = showLoadingToast(
+      `جاري التحليل للرمز ${symbol} على الإطار الزمني ${timeframe}...`
+    );
+    
     try {
-      setCurrentSymbol(symbol);
-      setCurrentTimeframe(timeframe);
-
-      if (!symbol || !timeframe) {
-        toast.error("الرجاء إدخال جميع البيانات المطلوبة");
+      if (!user) {
+        showErrorToast(new Error("يرجى تسجيل الدخول لحفظ نتائج التحليل"));
+        dismissToasts(loadingToastId);
         return;
       }
 
-      // تحميل مكون AnalysisHandler ديناميكيًا
-      const { useAnalysisHandler } = await import("../AnalysisHandler");
-      const handler = useAnalysisHandler();
-      const { handleTradingViewConfig } = handler;
+      // Use the validation utility
+      if (!validateAnalysisInputs(symbol, timeframe, providedPrice)) {
+        dismissToasts(loadingToastId);
+        return;
+      }
 
-      // إجراء التحليل باستخدام السعر الحالي
-      const analysisResult = await handleTradingViewConfig(
-        symbol,
-        timeframe,
+      // التحقق من صحة مدة التحليل
+      const durationHours = duration ? parseInt(duration) : 8;
+      if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
+        showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
+        dismissToasts(loadingToastId);
+        return;
+      }
+
+      // Get the analysis type using the utility function
+      const { analysisType } = buildAnalysisConfig(
         isScalping,
         isAI,
         isSMC,
@@ -116,41 +85,93 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isCompositeCandlestick,
         isBehavioral,
         isFibonacci,
-        isFibonacciAdvanced,
-        duration
+        isFibonacciAdvanced
       );
 
-      if (analysisResult) {
-        console.log("Analysis result received:", analysisResult);
+      const result = await handleTradingViewConfig(
+        symbol, 
+        timeframe, 
+        providedPrice, 
+        isScalping, 
+        isAI, 
+        isSMC, 
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction,
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral,
+        isFibonacci,
+        isFibonacciAdvanced,
+        duration,
+        selectedTypes
+      );
+      
+      // Dismiss the loading toast
+      dismissToasts(loadingToastId);
+      
+      if (result && result.analysisResult) {
+        const { analysisResult, currentPrice, symbol: upperSymbol } = result;
         
-        // حفظ التحليل في سجل البحث باستخدام السعر الحالي
-        const historyItem = await saveAnalysisToHistory({
-          symbol,
-          timeframe,
-          analysisResult: analysisResult.analysisResult,
-          currentPrice: currentPrice, // استخدام السعر الحالي
-          analysisType: analysisResult.analysisResult.analysisType || "normal"
-        });
-
-        if (historyItem) {
-          console.log("Analysis saved to history:", historyItem);
-          onAnalysis(historyItem);
+        if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
+          console.error("Invalid analysis result:", analysisResult);
+          showErrorToast(new Error("نتائج التحليل غير صالحة"));
+          return;
         }
 
-        return analysisResult;
+        try {
+          console.log("Saving analysis with duration:", durationHours);
+          
+          // Map the analysis type to a valid database enum value
+          const mappedAnalysisType = mapToAnalysisType(analysisType);
+          console.log("Mapped analysis type:", mappedAnalysisType);
+          
+          const savedData = await saveAnalysis({
+            userId: user.id,
+            symbol: upperSymbol,
+            currentPrice,
+            analysisResult,
+            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            timeframe,
+            durationHours
+          });
+
+          if (savedData) {
+            const newHistoryEntry: SearchHistoryItem = {
+              id: savedData.id,
+              date: new Date(),
+              symbol: upperSymbol,
+              currentPrice,
+              analysis: analysisResult,
+              targetHit: false,
+              stopLossHit: false,
+              analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+              timeframe,
+              analysis_duration_hours: durationHours
+            };
+
+            onAnalysis(newHistoryEntry);
+            console.log("تم تحديث سجل البحث:", newHistoryEntry);
+          }
+        } catch (saveError) {
+          console.error("Error saving analysis:", saveError);
+          showErrorToast(new Error("حدث خطأ أثناء حفظ التحليل"));
+        }
       }
     } catch (error) {
-      console.error("Error in analysis submit:", error);
-      toast.error("فشل في إجراء التحليل");
+      console.error("خطأ في التحليل:", error);
+      showErrorToast(error);
+      
+      // Dismiss any loading toasts
+      dismissToasts(loadingToastId);
     }
-    
-    return null;
   };
 
-  return {
-    handleAnalysis,
-    currentSymbol,
-    currentTimeframe,
-    currentPrice
-  };
+  return { handleAnalysis };
 };

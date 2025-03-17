@@ -1,36 +1,56 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
 import { toast } from "sonner";
+import { PriceInput } from "./chart/inputs/PriceInput";
 import { SymbolSelector } from "./chart/inputs/SymbolSelector";
 import { AnalysisDurationInput } from "./chart/inputs/AnalysisDurationInput";
 
 interface TradingViewSelectorProps {
-  onConfigSubmit: (symbol: string, timeframe: string, customHours?: number) => void;
+  onConfigSubmit: (symbol: string, timeframe: string, currentPrice?: number, customHours?: number) => void;
   isLoading: boolean;
   onHistoryClick: () => void;
   defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 export const TradingViewSelector = ({ 
   onConfigSubmit, 
   isLoading, 
   onHistoryClick,
-  defaultSymbol
+  defaultSymbol,
+  defaultPrice
 }: TradingViewSelectorProps) => {
   const [symbol, setSymbol] = useState(defaultSymbol || "");
+  const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
   const [customHours, setCustomHours] = useState<string>("24");
+
+  useEffect(() => {
+    if (defaultSymbol) setSymbol(defaultSymbol);
+    if (defaultPrice) setCurrentPrice(defaultPrice.toString());
+  }, [defaultSymbol, defaultPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       if (!symbol && !defaultSymbol) {
-        toast.error("الرجاء اختيار رمز العملة");
+        toast.error("الرجاء انتظار تحميل الشارت أو اختيار رمز العملة");
         return;
       }
       
+      const priceToUse = currentPrice || defaultPrice?.toString();
+      if (!priceToUse) {
+        toast.error("الرجاء انتظار تحميل السعر من الشارت");
+        return;
+      }
+      
+      const price = Number(priceToUse);
+      if (isNaN(price) || price <= 0) {
+        toast.error("الرجاء التأكد من صحة السعر");
+        return;
+      }
+
       const hours = Number(customHours);
       if (isNaN(hours) || hours < 1 || hours > 72) {
         toast.error("الرجاء إدخال مدة صالحة بين 1 و 72 ساعة");
@@ -39,10 +59,11 @@ export const TradingViewSelector = ({
       
       console.log("تقديم تحليل:", { 
         symbol: symbol || defaultSymbol, 
+        currentPrice: price,
         customHours: hours
       });
       
-      await onConfigSubmit(symbol || defaultSymbol || "", "1d", hours);
+      await onConfigSubmit(symbol || defaultSymbol || "", "1d", price, hours);
       
     } catch (error) {
       console.error("خطأ في تقديم التحليل:", error);
@@ -57,6 +78,12 @@ export const TradingViewSelector = ({
         onChange={setSymbol}
         defaultValue={defaultSymbol}
       />
+      
+      <PriceInput
+        value={currentPrice}
+        onChange={setCurrentPrice}
+        defaultValue={defaultPrice?.toString()}
+      />
 
       <AnalysisDurationInput
         value={customHours}
@@ -67,7 +94,7 @@ export const TradingViewSelector = ({
         <Button 
           type="submit" 
           className="flex-1" 
-          disabled={isLoading || (!symbol && !defaultSymbol)}
+          disabled={isLoading || (!symbol && !defaultSymbol) || (!currentPrice && !defaultPrice)}
         >
           {isLoading ? "جاري التحليل..." : "تحليل الرسم البياني"}
         </Button>

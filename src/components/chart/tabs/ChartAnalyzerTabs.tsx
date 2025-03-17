@@ -9,7 +9,9 @@ interface ChartAnalyzerTabsProps {
   searchHistoryStats: { total: number; active: number; completed: number };
   isRefreshing: boolean;
   autoSymbol: string;
+  autoPrice: number | null;
   onSymbolChange: (symbol: string) => void;
+  onPriceUpdate: (price: number) => void;
   onAddToSearchHistory: (item: SearchHistoryItem) => void;
   isAnalyzing: boolean;
   currentAnalysis: string;
@@ -27,7 +29,9 @@ export const ChartAnalyzerTabs = ({
   searchHistoryStats,
   isRefreshing,
   autoSymbol,
+  autoPrice,
   onSymbolChange,
+  onPriceUpdate,
   onAddToSearchHistory,
   isAnalyzing,
   currentAnalysis,
@@ -54,7 +58,9 @@ export const ChartAnalyzerTabs = ({
           searchHistoryStats={searchHistoryStats}
           isRefreshing={isRefreshing}
           autoSymbol={autoSymbol}
+          autoPrice={autoPrice}
           onSymbolChange={onSymbolChange}
+          onPriceUpdate={onPriceUpdate}
           onAddToSearchHistory={onAddToSearchHistory}
           isAnalyzing={isAnalyzing}
           currentAnalysis={currentAnalysis}

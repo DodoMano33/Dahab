@@ -1,112 +1,174 @@
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { useFormValidation } from "../validation/useFormValidation";
 
-interface FormSubmitProps {
+interface UseFormSubmitProps {
   symbol: string;
-  defaultSymbol?: string;
+  defaultSymbol: string;
+  price: string;
+  defaultPrice: number | null;
   timeframe: string;
   duration: string;
-  onSubmit: (symbol: string, timeframe: string, isScalping?: boolean, isAI?: boolean, isSMC?: boolean, isICT?: boolean, isTurtleSoup?: boolean, isGann?: boolean, isWaves?: boolean, isPatternAnalysis?: boolean, isPriceAction?: boolean, isNeuralNetwork?: boolean, isRNN?: boolean, isTimeClustering?: boolean, isMultiVariance?: boolean, isCompositeCandlestick?: boolean, isBehavioral?: boolean, isFibonacci?: boolean, isFibonacciAdvanced?: boolean, duration?: string, selectedTypes?: string[]) => void;
+  onSubmit: (
+    symbol: string,
+    timeframe: string,
+    providedPrice?: number,
+    isScalping?: boolean,
+    isAI?: boolean,
+    isSMC?: boolean,
+    isICT?: boolean,
+    isTurtleSoup?: boolean,
+    isGann?: boolean,
+    isWaves?: boolean,
+    isPatternAnalysis?: boolean,
+    isPriceAction?: boolean,
+    isNeuralNetwork?: boolean,
+    isRNN?: boolean,
+    isTimeClustering?: boolean,
+    isMultiVariance?: boolean,
+    isCompositeCandlestick?: boolean,
+    isBehavioral?: boolean,
+    isFibonacci?: boolean,
+    isFibonacciAdvanced?: boolean,
+    duration?: string,
+    selectedTypes?: string[]
+  ) => void;
 }
 
 export const useFormSubmit = ({
   symbol,
   defaultSymbol,
+  price,
+  defaultPrice,
   timeframe,
   duration,
   onSubmit
-}: FormSubmitProps) => {
+}: UseFormSubmitProps) => {
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
-  
-  const validateInputs = () => {
-    if (!symbol && !defaultSymbol) {
-      toast.error("الرجاء إدخال رمز العملة أو انتظار تحميل الشارت");
-      return false;
-    }
+  const { validateInputs } = useFormValidation();
 
-    const durationHours = Number(duration);
-    if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
-      toast.error("الرجاء إدخال مدة صالحة بين 1 و 72 ساعة");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleSubmit = (type: string) => {
-    if (!validateInputs()) return;
+  const handleSubmit = (
+    e: React.MouseEvent,
+    isScalping: boolean = false,
+    isAI: boolean = false,
+    isSMC: boolean = false,
+    isICT: boolean = false,
+    isTurtleSoup: boolean = false,
+    isGann: boolean = false,
+    isWaves: boolean = false,
+    isPatternAnalysis: boolean = false,
+    isPriceAction: boolean = false,
+    isNeuralNetwork: boolean = false,
+    isRNN: boolean = false,
+    isTimeClustering: boolean = false,
+    isMultiVariance: boolean = false,
+    isCompositeCandlestick: boolean = false,
+    isBehavioral: boolean = false,
+    isFibonacci: boolean = false,
+    isFibonacciAdvanced: boolean = false,
+    selectedTypes: string[] = []
+  ) => {
+    e.preventDefault();
     
-    console.log(`Submitting analysis with type ${type}`, {
-      symbol: symbol || defaultSymbol,
-      timeframe,
+    const isValid = validateInputs({
+      symbol: symbol,
+      defaultSymbol: defaultSymbol,
+      price,
+      defaultPrice,
       duration
     });
 
-    switch (type) {
-      case "فيبوناتشي":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false, duration);
-        break;
-      case "فيبوناتشي متقدم":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, duration);
-        break;
-      case "سكالبينج":
-        onSubmit(symbol || defaultSymbol || "", timeframe, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, duration);
-        break;
-      case "SMC":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, duration);
-        break;
-      case "ICT":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, duration);
-        break;
-      case "Turtle Soup":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, false, duration);
-        break;
-      case "Gann":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false, duration);
-        break;
-      case "Price Action":
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, duration);
-        break;
-      case "الذكاء الاصطناعي":
-        setIsAIDialogOpen(true);
-        break;
-      default:
-        // نوع تحليل افتراضي - استخدم "Patterns"
-        onSubmit(symbol || defaultSymbol || "", timeframe, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, duration);
-        break;
+    if (!isValid) return;
+
+    if (isAI && selectedTypes.length > 0) {
+      console.log("Smart Analysis with pre-selected types:", selectedTypes);
+      const providedPrice = price ? Number(price) : defaultPrice;
+      onSubmit(
+        symbol,
+        timeframe,
+        providedPrice,
+        isScalping,
+        isAI,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction,
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral,
+        isFibonacci,
+        isFibonacciAdvanced,
+        duration,
+        selectedTypes
+      );
+      return;
     }
+    
+    if (isAI) {
+      setIsAIDialogOpen(true);
+      return;
+    }
+    
+    console.log(`تحليل للذهب على الإطار الزمني ${timeframe} لمدة ${duration} ساعات`);
+    
+    const providedPrice = price ? Number(price) : defaultPrice;
+    onSubmit(
+      symbol,
+      timeframe,
+      providedPrice,
+      isScalping,
+      isAI,
+      isSMC,
+      isICT,
+      isTurtleSoup,
+      isGann,
+      isWaves,
+      isPatternAnalysis,
+      isPriceAction,
+      isNeuralNetwork,
+      isRNN,
+      isTimeClustering,
+      isMultiVariance,
+      isCompositeCandlestick,
+      isBehavioral,
+      isFibonacci,
+      isFibonacciAdvanced,
+      duration
+    );
   };
 
   const handleCombinedAnalysis = (selectedTypes: string[]) => {
-    if (!validateInputs()) return;
+    console.log("Combined analysis with types:", selectedTypes);
     
-    console.log("Submitting combined analysis with types:", selectedTypes, {
-      symbol: symbol || defaultSymbol,
-      timeframe,
-      duration
-    });
+    const providedPrice = price ? Number(price) : defaultPrice;
     
     onSubmit(
-      symbol || defaultSymbol || "", 
-      timeframe, 
-      false, 
-      true, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
-      false, 
+      symbol,
+      timeframe,
+      providedPrice,
+      false, // isScalping
+      true, // isAI
+      false, // isSMC
+      false, // isICT
+      false, // isTurtleSoup
+      false, // isGann
+      false, // isWaves
+      false, // isPatternAnalysis
+      false, // isPriceAction
+      false, // isNeuralNetwork
+      false, // isRNN
+      false, // isTimeClustering
+      false, // isMultiVariance
+      false, // isCompositeCandlestick
+      false, // isBehavioral
+      false, // isFibonacci
+      false, // isFibonacciAdvanced
       duration,
       selectedTypes
     );

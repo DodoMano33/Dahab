@@ -1,5 +1,13 @@
 
 import { AnalysisData } from "@/types/analysis";
+import {
+  calculateFibonacciLevels,
+  calculateTargets,
+  calculateStopLoss,
+  calculateSupportResistance,
+  detectTrend,
+  calculateBestEntryPoint,
+} from "@/utils/technicalAnalysis";
 import { addDays } from "date-fns";
 
 export const analyzeDailyChart = async (
@@ -26,46 +34,34 @@ export const analyzeDailyChart = async (
         return;
       }
 
-      const prices = detectPrices(imageData);
+      const prices = detectPrices(imageData, currentPrice);
       console.log("الأسعار المكتشفة للتحليل اليومي:", prices);
 
-      // استخدام قيم ثابتة بدلا من الحسابات الديناميكية
-      const direction = Math.random() > 0.5 ? "صاعد" : "هابط" as "صاعد" | "هابط";
-      
-      // تحديد مستويات الدعم والمقاومة
-      const support = currentPrice * 0.98;
-      const resistance = currentPrice * 1.02;
-      
-      // حساب وقف الخسارة
-      const stopLoss = direction === "صاعد" ? support - 5 : resistance + 5;
-      
-      // حساب مستويات فيبوناتشي
-      const fibLevels = [
-        { level: 0, price: resistance },
-        { level: 0.236, price: resistance - (resistance - support) * 0.236 },
-        { level: 0.382, price: resistance - (resistance - support) * 0.382 },
-        { level: 0.5, price: resistance - (resistance - support) * 0.5 },
-        { level: 0.618, price: resistance - (resistance - support) * 0.618 },
-        { level: 0.786, price: resistance - (resistance - support) * 0.786 },
-        { level: 1, price: support }
-      ];
+      const direction = detectTrend(prices) as "صاعد" | "هابط";
+      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
+      const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
+      const fibLevelsObj = calculateFibonacciLevels(resistance, support);
+      const fibLevels = fibLevelsObj.allLevels ? fibLevelsObj.allLevels : 
+                         fibLevelsObj.retracementLevels.map(level => ({ 
+                           level: level.level, 
+                           price: level.price 
+                         }));
+      const targetPrices = calculateTargets(currentPrice, direction, support, resistance, timeframe);
 
-      // حساب الأهداف
-      const targetPrices = direction === "صاعد" ? 
-        [currentPrice * 1.01, currentPrice * 1.02, currentPrice * 1.03] : 
-        [currentPrice * 0.99, currentPrice * 0.98, currentPrice * 0.97];
-
-      // نقطة الدخول المثلى
-      const bestEntryPoint = {
-        price: direction === "صاعد" ? currentPrice * 1.001 : currentPrice * 0.999,
-        reason: direction === "صاعد" ? "نقطة دخول مناسبة على الارتداد من مستوى الدعم" : "نقطة دخول مناسبة على الارتداد من مستوى المقاومة"
-      };
+      const bestEntryPoint = calculateBestEntryPoint(
+        currentPrice,
+        direction,
+        support,
+        resistance,
+        fibLevels,
+        timeframe
+      );
 
       const pattern = direction === "صاعد" ? 
         "نموذج صعودي مستمر" : 
         "نموذج هبوطي مستمر";
 
-      // إنشاء أهداف مع تواريخ مناسبة
+      // Create targets with proper dates
       const targets = targetPrices.map((price, index) => ({
         price,
         expectedTime: addDays(new Date(), (index + 1) * 2)
@@ -96,13 +92,12 @@ export const analyzeDailyChart = async (
   });
 };
 
-const detectPrices = (imageData: ImageData): number[] => {
+const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
   const prices: number[] = [];
   const height = imageData.height;
   
-  // استخدام قيمة ثابتة للسعر الحالي
   const currentPriceRow = Math.floor(height * 0.5); 
-  let currentPrice = 2622; // قيمة ثابتة
+  let currentPrice = providedCurrentPrice || 2622; 
   
   for (let y = 0; y < height; y += height / 10) {
     let sum = 0;

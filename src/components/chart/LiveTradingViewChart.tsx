@@ -1,96 +1,62 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import TradingViewWidget from './TradingViewWidget';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
   onSymbolChange?: (symbol: string) => void;
+  onPriceUpdate?: (price: number) => void;
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
   symbol = "XAUUSD",
-  onSymbolChange
+  onSymbolChange,
+  onPriceUpdate
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Clear previous widget if any
-    containerRef.current.innerHTML = '';
-
-    // Create widget container
-    const widgetContainer = document.createElement('div');
-    widgetContainer.className = 'tradingview-widget-container';
-    widgetContainer.style.width = '100%';
-    widgetContainer.style.height = '100%';
-    widgetContainer.id = 'trading-view-widget-container'; // إضافة معرف للعثور عليه بسهولة
-
-    // Create script for Single Quote Widget
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+    console.log('تم تركيب مكون LiveTradingViewChart');
     
-    // Widget configuration
-    script.innerHTML = JSON.stringify({
-      symbol: "CFI:XAUUSD",
-      width: "100%",
-      colorTheme: "light",
-      isTransparent: false,
-      locale: "ar"
-    });
-
-    // Append elements
-    widgetContainer.appendChild(script);
-    containerRef.current.appendChild(widgetContainer);
-
-    // بدلاً من استخراج السعر هنا، سنترك ذلك لمكون ScreenshotPriceExtractor
-    // الذي سيقوم بالتقاط صورة للويدجت واستخراج السعر منها
-
-    // نشر حدث عند تغيير الرمز إذا تم توفير معالج
-    if (onSymbolChange) {
-      onSymbolChange(symbol);
-    }
-
-    // لا حاجة للتنظيف الخاص لأن المكون الجديد سيتعامل مع ذلك
-  }, [symbol, onSymbolChange]);
-
-  // استلام تحديث السعر من مكون ScreenshotPriceExtractor
-  const handlePriceUpdate = (price: number) => {
-    if (price > 0 && price !== currentPrice) {
-      setCurrentPrice(price);
-    }
-  };
-
-  // تسجيل المستمع للأحداث المخصصة للسعر
-  useEffect(() => {
-    const handleCustomPriceEvent = (event: CustomEvent) => {
-      if (event.detail && event.detail.price) {
-        handlePriceUpdate(event.detail.price);
+    // استخراج السعر المبدئي
+    const fetchInitialPrice = async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        console.log(`تم استخراج السعر المبدئي: ${price}`);
+        setCurrentPrice(price);
+        onPriceUpdate?.(price);
       }
     };
-
-    window.addEventListener('price-update' as any, handleCustomPriceEvent as EventListener);
+    
+    fetchInitialPrice();
+    
+    // جدولة تحديث دوري
+    const interval = setInterval(async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        console.log(`تم تحديث السعر: ${price}`);
+        setCurrentPrice(price);
+        onPriceUpdate?.(price);
+      }
+    }, 5000);
     
     return () => {
-      window.removeEventListener('price-update' as any, handleCustomPriceEvent as EventListener);
+      clearInterval(interval);
+      console.log('تم إزالة مكون LiveTradingViewChart');
     };
-  }, []);
+  }, [onPriceUpdate]);
+
+  const handlePriceUpdate = (price: number) => {
+    console.log(`LiveTradingViewChart استلم تحديث السعر: ${price}`);
+    setCurrentPrice(price);
+    onPriceUpdate?.(price);
+  };
 
   return (
     <div className="w-full mb-6">
-      <div className="p-1 bg-gray-800 rounded-lg h-64 flex flex-col">
-        <div ref={containerRef} className="w-full h-full">
-          {/* TradingView Widget will be inserted here */}
-        </div>
-        {currentPrice && (
-          <div className="text-center p-2 bg-white rounded-b-lg">
-            <p className="text-lg font-bold text-green-600">
-              سعر الذهب الحالي: {currentPrice.toFixed(2)} دولار
-            </p>
-          </div>
-        )}
+      <div className="p-1 bg-gray-800 rounded-lg">
+        <TradingViewWidget />
       </div>
     </div>
   );

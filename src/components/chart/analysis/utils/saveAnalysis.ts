@@ -1,59 +1,18 @@
 
 import { supabase } from "@/lib/supabase";
-import { AnalysisType, AnalysisData, SearchHistoryItem } from "@/types/analysis";
+import { AnalysisType, AnalysisData } from "@/types/analysis";
 import { toast } from "sonner";
 
-// دالة للحفظ إلى سجل التحليل
-export const saveAnalysisToHistory = async ({
-  symbol,
-  timeframe,
-  analysisResult,
-  currentPrice,
-  analysisType,
-  duration = "8"
-}: {
+interface SaveAnalysisParams {
+  userId: string;
   symbol: string;
-  timeframe: string;
-  analysisResult: AnalysisData;
   currentPrice: number;
-  analysisType: string;
-  duration?: string;
-}): Promise<SearchHistoryItem | null> => {
-  try {
-    console.log("Saving analysis to history:", {
-      symbol,
-      timeframe,
-      analysisResult,
-      currentPrice,
-      analysisType,
-      duration
-    });
+  analysisResult: AnalysisData;
+  analysisType: AnalysisType;
+  timeframe: string;
+  durationHours?: number;
+}
 
-    const durationHours = Number(duration);
-
-    // إنشاء كائن التحليل الذي سيتم حفظه
-    const newItem: SearchHistoryItem = {
-      id: Math.random().toString(36).substring(2, 15),
-      date: new Date(),
-      symbol,
-      currentPrice,
-      analysis: analysisResult,
-      analysisType: analysisType as AnalysisType,
-      timeframe,
-      analysis_duration_hours: durationHours
-    };
-
-    console.log("Created new search history item:", newItem);
-    
-    return newItem;
-  } catch (error) {
-    console.error("Error saving analysis to history:", error);
-    toast.error("حدث خطأ أثناء حفظ التحليل");
-    return null;
-  }
-};
-
-// Add the saveAnalysis function for compatibility with useSaveAnalysis.ts
 export const saveAnalysis = async ({
   userId,
   symbol,
@@ -61,40 +20,69 @@ export const saveAnalysis = async ({
   analysisResult,
   analysisType,
   timeframe,
-  durationHours
-}: {
-  userId: string;
-  symbol: string;
-  currentPrice: number;
-  analysisResult: AnalysisData;
-  analysisType: AnalysisType;
-  timeframe: string;
-  durationHours: number;
-}) => {
+  durationHours = 8
+}: SaveAnalysisParams) => {
+  // Validate required fields
+  if (!userId || !symbol || !currentPrice || !analysisResult || !analysisType || !timeframe) {
+    console.error("Missing required fields:", { userId, symbol, currentPrice, analysisResult, analysisType, timeframe });
+    throw new Error("جميع الحقول مطلوبة لحفظ التحليل");
+  }
+
+  // Validate analysis result structure
+  if (!analysisResult.pattern || !analysisResult.direction || !analysisResult.stopLoss) {
+    console.error("Invalid analysis result structure:", analysisResult);
+    throw new Error("نتائج التحليل غير صالحة");
+  }
+
+  // Ensure analysisType is a valid value for the database
+  console.log("Final analysis type being saved to database:", analysisType);
+
+  // Set automatic activation type for Fibonacci analysis types
+  if (!analysisResult.activation_type) {
+    if (analysisResult.pattern === "تحليل فيبوناتشي متقدم" || analysisType === "فيبوناتشي متقدم") {
+      analysisResult.activation_type = "يدوي";
+    } else if (analysisResult.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" || analysisType === "فيبوناتشي") {
+      analysisResult.activation_type = "تلقائي";
+    }
+  }
+
+  console.log("Inserting analysis data with duration:", durationHours, {
+    user_id: userId,
+    symbol,
+    current_price: currentPrice,
+    analysis: analysisResult,
+    analysis_type: analysisType,
+    timeframe,
+    analysis_duration_hours: durationHours
+  });
+
   try {
-    console.log("Saving analysis:", {
-      userId,
-      symbol,
-      currentPrice,
-      analysisResult,
-      analysisType,
-      timeframe,
-      durationHours
-    });
-    
-    // Creating a record with a generated ID
-    const id = Math.random().toString(36).substring(2, 15);
-    
-    return {
-      id,
-      date: new Date(),
-      userId,
-      symbol,
-      currentPrice,
-      analysisType,
-      timeframe,
-      durationHours
-    };
+    const { data, error } = await supabase
+      .from('search_history')
+      .insert({
+        user_id: userId,
+        symbol,
+        current_price: currentPrice,
+        analysis: analysisResult,
+        analysis_type: analysisType,
+        timeframe,
+        analysis_duration_hours: durationHours
+      })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error saving to Supabase:", error);
+      
+      // Add specific error handling for analysis_type constraint violations
+      if (error.code === '23514' && error.message.includes('search_history_analysis_type_check')) {
+        throw new Error(`نوع التحليل "${analysisType}" غير مسموح به في قاعدة البيانات`);
+      }
+      
+      throw error;
+    }
+
+    return data;
   } catch (error) {
     console.error("Error in saveAnalysis:", error);
     throw error;

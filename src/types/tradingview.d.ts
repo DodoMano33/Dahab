@@ -1,4 +1,3 @@
-
 interface TradingViewWidget {
   widget: (config: {
     container_id: string;
@@ -25,7 +24,6 @@ interface TradingViewWidget {
     onSymbolChanged: () => {
       subscribe: (callback: null, handler: (symbolInfo: { name: string }) => void) => void;
     };
-    captureScreenshot?: () => Promise<string>;
   };
 }
 

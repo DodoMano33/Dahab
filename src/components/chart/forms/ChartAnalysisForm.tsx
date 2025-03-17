@@ -10,6 +10,7 @@ interface ChartAnalysisFormProps {
   onSubmit: (
     symbol: string,
     timeframe: string,
+    providedPrice?: number,
     isScalping?: boolean,
     isAI?: boolean,
     isSMC?: boolean,
@@ -34,6 +35,7 @@ interface ChartAnalysisFormProps {
   onHistoryClick: () => void;
   currentAnalysis?: string;
   defaultSymbol?: string;
+  defaultPrice?: number | null;
 }
 
 export const ChartAnalysisForm = ({
@@ -41,11 +43,13 @@ export const ChartAnalysisForm = ({
   isAnalyzing,
   onHistoryClick,
   currentAnalysis,
-  defaultSymbol
+  defaultSymbol,
+  defaultPrice
 }: ChartAnalysisFormProps) => {
   // تثبيت رمز الذهب كقيمة افتراضية
   const fixedSymbol = "XAUUSD";
   const [symbol, setSymbol] = useState(fixedSymbol);
+  const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
 
@@ -57,57 +61,12 @@ export const ChartAnalysisForm = ({
   } = useFormSubmit({
     symbol: fixedSymbol,
     defaultSymbol: fixedSymbol,
+    price,
+    defaultPrice,
     timeframe,
     duration,
     onSubmit
   });
-
-  // Function to bridge the type mismatch between AnalysisButtonGroup and handleSubmit
-  const handleButtonClick = (
-    e: React.MouseEvent,
-    isScalping?: boolean,
-    isAI?: boolean,
-    isSMC?: boolean,
-    isICT?: boolean,
-    isTurtleSoup?: boolean,
-    isGann?: boolean,
-    isWaves?: boolean,
-    isPatternAnalysis?: boolean,
-    isPriceAction?: boolean,
-    isNeuralNetwork?: boolean,
-    isRNN?: boolean,
-    isTimeClustering?: boolean,
-    isMultiVariance?: boolean,
-    isCompositeCandlestick?: boolean,
-    isBehavioral?: boolean,
-    isFibonacci?: boolean,
-    isFibonacciAdvanced?: boolean,
-    selectedTypes?: string[]
-  ) => {
-    // Determine which type of analysis was requested based on the boolean flags
-    let analysisType = "patterns"; // Default
-    
-    if (isScalping) analysisType = "سكالبينج";
-    else if (isAI) analysisType = "الذكاء الاصطناعي";
-    else if (isSMC) analysisType = "SMC";
-    else if (isICT) analysisType = "ICT";
-    else if (isTurtleSoup) analysisType = "Turtle Soup";
-    else if (isGann) analysisType = "Gann";
-    else if (isWaves) analysisType = "Waves";
-    else if (isPatternAnalysis) analysisType = "Patterns";
-    else if (isPriceAction) analysisType = "Price Action";
-    else if (isNeuralNetwork) analysisType = "Neural Network";
-    else if (isRNN) analysisType = "RNN";
-    else if (isTimeClustering) analysisType = "Time Clustering";
-    else if (isMultiVariance) analysisType = "Multi Variance";
-    else if (isCompositeCandlestick) analysisType = "Composite Candlestick";
-    else if (isBehavioral) analysisType = "Behavioral";
-    else if (isFibonacci) analysisType = "فيبوناتشي";
-    else if (isFibonacciAdvanced) analysisType = "فيبوناتشي متقدم";
-    
-    // Call the string-based handler with the determined type
-    handleSubmit(analysisType);
-  };
 
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
@@ -116,15 +75,18 @@ export const ChartAnalysisForm = ({
       <FormInputs
         symbol={fixedSymbol}
         setSymbol={setSymbol}
+        price={price}
+        setPrice={setPrice}
         timeframe={timeframe}
         setTimeframe={setTimeframe}
         duration={duration}
         setDuration={setDuration}
+        defaultPrice={defaultPrice}
       />
       
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
-        onSubmit={handleButtonClick}
+        onSubmit={handleSubmit}
         onHistoryClick={onHistoryClick}
         currentAnalysis={currentAnalysis}
       />

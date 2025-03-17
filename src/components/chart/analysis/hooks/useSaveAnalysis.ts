@@ -29,7 +29,6 @@ export const useSaveAnalysis = () => {
     try {
       // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
-      console.log("Using current price for analysis:", currentPrice);
       
       // Fix for Fibonacci Advanced analysis
       if (analysisType === "fibonacci_advanced" || 
