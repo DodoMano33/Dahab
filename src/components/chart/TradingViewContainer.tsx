@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
+import { createTradingViewWidget } from '@/utils/tradingview/chartSetup';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface TradingViewContainerProps {
@@ -19,14 +20,30 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
   
-  // استخراج السعر من الشارت بشكل دوري
+  // تهيئة الشارت عند تحميل المكون
   useEffect(() => {
-    // استخراج السعر عند التحميل
+    if (!containerRef.current) return;
+    
+    console.log('إنشاء شارت TradingView للرمز:', forcedSymbol, 'مع المزود:', priceProvider);
+    
+    // إنشاء شارت TradingView داخل الحاوية
+    const { widgetDiv } = createTradingViewWidget(containerRef.current, forcedSymbol, priceProvider);
+    
+    // تأخير قصير لضمان تحميل الشارت ثم محاولة استخراج السعر
+    const initialTimeout = setTimeout(() => {
+      console.log('محاولة استخراج السعر المبدئي بعد تحميل الشارت...');
+      extractInitialPrice();
+    }, 3000);
+    
+    // استخراج السعر الأولي
     const extractInitialPrice = async () => {
       const price = await extractPriceFromChart();
       if (price !== null) {
+        console.log('تم استخراج السعر المبدئي:', price);
         currentPriceRef.current = price;
         onPriceUpdate?.(price);
+      } else {
+        console.log('فشل في استخراج السعر المبدئي، سيتم المحاولة مرة أخرى...');
       }
     };
     
@@ -34,20 +51,23 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     const extractionInterval = setInterval(async () => {
       const price = await extractPriceFromChart();
       if (price !== null && price !== currentPriceRef.current) {
+        console.log('تم استخراج سعر جديد:', price);
         currentPriceRef.current = price;
         onPriceUpdate?.(price);
       }
     }, 3000);
     
-    // البدء باستخراج السعر بعد تحميل الشارت
-    const initialExtractionTimeout = setTimeout(extractInitialPrice, 5000);
-    
     // التنظيف عند إلغاء تحميل المكون
     return () => {
       clearInterval(extractionInterval);
-      clearTimeout(initialExtractionTimeout);
+      clearTimeout(initialTimeout);
+      
+      // تنظيف الحاوية
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
     };
-  }, [onPriceUpdate]);
+  }, [forcedSymbol, priceProvider, onPriceUpdate]);
 
   return (
     <div 

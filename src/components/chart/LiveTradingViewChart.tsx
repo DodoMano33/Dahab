@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 
 interface LiveTradingViewChartProps {
@@ -9,18 +9,24 @@ interface LiveTradingViewChartProps {
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
-  symbol = "XAUUSD", // تثبيت القيمة الافتراضية على XAUUSD
+  symbol = "XAUUSD",
   onSymbolChange,
   onPriceUpdate
 }) => {
-  // استخدام الرمز المثبت XAUUSD دائمًا
+  useEffect(() => {
+    console.log('تم تركيب مكون LiveTradingViewChart');
+    return () => console.log('تم إزالة مكون LiveTradingViewChart');
+  }, []);
+
   return (
-    <div className="w-full mb-10">
-      <TradingViewWidget 
-        symbol="XAUUSD" // سيتم تطبيق "CFI:XAUUSD" داخل المكون
-        onSymbolChange={onSymbolChange}
-        onPriceUpdate={onPriceUpdate}
-      />
+    <div className="w-full mb-6">
+      <div className="p-1 bg-gray-800 rounded-lg">
+        <TradingViewWidget 
+          symbol="XAUUSD"
+          onSymbolChange={onSymbolChange}
+          onPriceUpdate={onPriceUpdate}
+        />
+      </div>
     </div>
   );
 };
