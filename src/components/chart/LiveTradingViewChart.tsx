@@ -25,19 +25,30 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     widgetContainer.style.width = '100%';
     widgetContainer.style.height = '100%';
 
-    // Create script for Single Quote Widget
+    // Create script for Advanced Chart Widget (استخدام ويدجت الرسم البياني المتقدم بدلاً من الاقتباس الفردي)
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.async = true;
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     
     // Widget configuration
     script.innerHTML = JSON.stringify({
-      symbol: "CFI:XAUUSD",
-      width: "100%",
-      colorTheme: "light",
-      isTransparent: false,
-      locale: "ar"
+      "autosize": true,
+      "symbol": "FX:XAUUSD",
+      "interval": "D",
+      "timezone": "Etc/UTC",
+      "theme": "light",
+      "style": "1",
+      "locale": "ar",
+      "toolbar_bg": "#f1f3f6",
+      "enable_publishing": false,
+      "hide_top_toolbar": false,
+      "allow_symbol_change": true,
+      "calendar": false,
+      "studies": [
+        "MACD@tv-basicstudies"
+      ],
+      "support_host": "https://www.tradingview.com"
     });
 
     // Append elements
@@ -48,24 +59,28 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     const extractPriceInterval = setInterval(() => {
       try {
         if (containerRef.current) {
-          // Try to find the price element in the widget
-          const priceElement = containerRef.current.querySelector('.tv-ticker-item-last__last');
-          if (priceElement) {
-            const priceText = priceElement.textContent || '';
+          // Try to find the price element with large font in the widget
+          const priceElements = containerRef.current.querySelectorAll('.tv-symbol-price-quote__value, .tv-ticker-item-last__last');
+          
+          for (const element of priceElements) {
+            const priceText = element.textContent || '';
             const price = parseFloat(priceText.replace(',', ''));
+            
             if (!isNaN(price)) {
               setCurrentPrice(price);
-              console.log('Gold price extracted:', price);
+              console.log('Gold price extracted from widget:', price);
               
-              // Emit price change if callback exists
+              // Emit symbol change if callback exists
               if (onSymbolChange) {
                 onSymbolChange(symbol);
               }
+              
+              break;
             }
           }
         }
       } catch (error) {
-        console.error('Error extracting price:', error);
+        console.error('Error extracting price from widget:', error);
       }
     }, 2000); // Check every 2 seconds
 
