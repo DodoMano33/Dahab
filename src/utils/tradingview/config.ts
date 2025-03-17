@@ -2,12 +2,12 @@
 /**
  * Trading View widget configuration
  */
-export const getTradingViewConfig = (symbol: string = "XAUUSD", provider: string = "CFI") => {
-  console.log(`تهيئة إعدادات TradingView لـ ${provider}:${symbol}`);
+export const getTradingViewConfig = () => {
+  console.log(`تهيئة إعدادات TradingView للذهب`);
   
   return {
     autosize: true,
-    symbol: `${provider}:${symbol}`,
+    symbol: "CFI:XAUUSD",
     interval: "1",
     timezone: "Asia/Jerusalem",
     theme: "dark",

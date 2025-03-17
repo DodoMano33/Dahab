@@ -3,27 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { TradingViewContainer } from './TradingViewContainer';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
-interface TradingViewWidgetProps {
-  symbol?: string;
-  onSymbolChange?: (symbol: string) => void;
-  onPriceUpdate?: (price: number) => void;
-}
-
-function TradingViewWidget({ 
-  symbol = "XAUUSD",
-  onSymbolChange,
-  onPriceUpdate 
-}: TradingViewWidgetProps) {
+function TradingViewWidget() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
-  
-  // تثبيت رمز العملة وإضافة مزود السعر بوضوح
-  const forcedSymbol = "XAUUSD"; 
-  const priceProvider = "CFI";
   
   const handlePriceUpdate = (price: number) => {
     console.log(`تم تحديث السعر في TradingViewWidget: ${price}`);
     setCurrentPrice(price);
-    onPriceUpdate?.(price);
     
     // تحديث أي عناصر عرض السعر في الصفحة
     document.querySelectorAll('#stats-price-display').forEach(element => {
@@ -41,7 +26,7 @@ function TradingViewWidget({
   useEffect(() => {
     console.log('تم تركيب مكون TradingViewWidget');
     
-    // استخراج السعر المبدئي
+    // استخراج السعر المبدئي بعد فترة قصيرة للسماح للشارت بالتحميل
     const fetchInitialPrice = async () => {
       const price = await extractPriceFromChart();
       if (price !== null) {
@@ -51,7 +36,7 @@ function TradingViewWidget({
     };
     
     // تأخير محاولة الاستخراج الأولى للسماح للشارت بالتحميل
-    const initialTimeout = setTimeout(fetchInitialPrice, 2000);
+    const initialTimeout = setTimeout(fetchInitialPrice, 5000);
     
     // جدولة تحديثات دورية
     const interval = setInterval(async () => {
@@ -67,22 +52,30 @@ function TradingViewWidget({
       clearTimeout(initialTimeout);
       console.log('تم إزالة مكون TradingViewWidget');
     };
-  }, [onPriceUpdate]);
+  }, []);
 
   return (
-    <div className="flex flex-col w-full space-y-4">
+    <div className="flex flex-col w-full space-y-2">
       {/* عنوان الشارت */}
-      <div className="pt-2 pb-1 text-lg font-bold text-white bg-gray-900 text-center rounded-t-lg">
-        شارت الذهب (CFI:XAUUSD)
+      <div className="py-2 text-lg font-bold text-white bg-gray-900 text-center rounded-t-lg">
+        الذهب (CFI:XAUUSD)
       </div>
       
       {/* الرسم البياني */}
-      <div className="w-full h-[520px] bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-700">
-        <TradingViewContainer 
-          symbol={forcedSymbol}
-          onSymbolChange={onSymbolChange}
-          onPriceUpdate={handlePriceUpdate}
-        />
+      <div className="w-full h-[500px] bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-700">
+        <TradingViewContainer onPriceUpdate={handlePriceUpdate} />
+      </div>
+      
+      {/* عرض السعر الحالي */}
+      <div className="bg-gray-900 text-white p-4 rounded-lg flex justify-center items-center">
+        <div className="flex items-center">
+          <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse mr-2"></div>
+          <span className="text-gray-300 mr-2">سعر الذهب:</span>
+        </div>
+        <span className="font-bold text-2xl text-yellow-500" id="stats-price-display">
+          {currentPrice ? currentPrice.toFixed(2) : "جاري التحميل..."}
+        </span>
+        <span className="text-gray-300 text-sm ml-2">USD</span>
       </div>
     </div>
   );
