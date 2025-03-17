@@ -1,4 +1,3 @@
-
 interface TradingViewWidget {
   widget: (config: {
     container_id: string;

@@ -11,52 +11,18 @@ interface UseAnalysisSubmitProps {
 export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
   const [currentSymbol, setCurrentSymbol] = useState<string>("");
   const [currentTimeframe, setCurrentTimeframe] = useState<string>("");
-  const [currentPrice, setCurrentPrice] = useState<number>(100); // قيمة افتراضية
 
-  // استمع للأحداث الخارجية مثل تغيرات الرمز والسعر
+  // استمع للأحداث الخارجية مثل تغيرات الرمز
   useEffect(() => {
     const handleSymbolUpdate = (event: any) => {
       if (event.detail?.symbol) {
         setCurrentSymbol(event.detail.symbol);
       }
     };
-    
-    const handlePriceUpdate = (event: any) => {
-      if (event.detail?.price && !isNaN(event.detail.price)) {
-        setCurrentPrice(event.detail.price);
-      }
-    };
 
     window.addEventListener("symbol-update", handleSymbolUpdate);
-    window.addEventListener("price-update", handlePriceUpdate);
-    
-    // استخراج السعر من واجهة المستخدم عند التحميل
-    const extractInitialPrice = () => {
-      try {
-        // محاولة العثور على سعر الذهب من عنصر القيمة الرئيسي
-        const mainPriceElement = document.querySelector('.tv-symbol-price-quote__value');
-        if (mainPriceElement) {
-          const priceText = mainPriceElement.textContent || '';
-          const price = parseFloat(priceText.replace(',', ''));
-          if (!isNaN(price)) {
-            setCurrentPrice(price);
-            console.log('Initial price set from main UI element:', price);
-          }
-        }
-      } catch (error) {
-        console.error('Error extracting initial price:', error);
-      }
-    };
-    
-    extractInitialPrice();
-    
-    // إعادة المحاولة بعد فترة لضمان تحميل الويدجيت
-    const retryTimer = setTimeout(extractInitialPrice, 3000);
-    
     return () => {
       window.removeEventListener("symbol-update", handleSymbolUpdate);
-      window.removeEventListener("price-update", handlePriceUpdate);
-      clearTimeout(retryTimer);
     };
   }, []);
 
@@ -96,7 +62,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
       const handler = useAnalysisHandler();
       const { handleTradingViewConfig } = handler;
 
-      // إجراء التحليل باستخدام السعر الحالي
+      // إجراء التحليل باستخدام قيمة ثابتة بدل السعر
       const analysisResult = await handleTradingViewConfig(
         symbol,
         timeframe,
@@ -123,12 +89,12 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
       if (analysisResult) {
         console.log("Analysis result received:", analysisResult);
         
-        // حفظ التحليل في سجل البحث باستخدام السعر الحالي
+        // حفظ التحليل في سجل البحث
         const historyItem = await saveAnalysisToHistory({
           symbol,
           timeframe,
           analysisResult: analysisResult.analysisResult,
-          currentPrice: currentPrice, // استخدام السعر الحالي
+          currentPrice: 100, // قيمة ثابتة بدل السعر الحقيقي
           analysisType: analysisResult.analysisResult.analysisType || "normal"
         });
 
@@ -150,7 +116,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
   return {
     handleAnalysis,
     currentSymbol,
-    currentTimeframe,
-    currentPrice
+    currentTimeframe
   };
 };

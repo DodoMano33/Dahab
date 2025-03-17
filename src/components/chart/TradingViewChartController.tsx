@@ -93,33 +93,6 @@ export const TradingViewChartController = ({
             if (currentPrice && !isNaN(currentPrice)) {
               console.log("Price from chart:", currentPrice);
               onPriceUpdate(currentPrice);
-            } else {
-              // محاولة استخراج السعر من عناصر واجهة المستخدم المرئية
-              const chartContainer = document.getElementById('tradingview_chart');
-              if (chartContainer) {
-                // محاولة استخراج السعر من عنصر القيمة ذو الخط الأكبر
-                const mainPriceElement = chartContainer.querySelector('.tv-symbol-price-quote__value');
-                if (mainPriceElement) {
-                  const priceText = mainPriceElement.textContent || '';
-                  const price = parseFloat(priceText.replace(',', ''));
-                  if (!isNaN(price)) {
-                    console.log("Price from main UI element:", price);
-                    onPriceUpdate(price);
-                    return;
-                  }
-                }
-                
-                // محاولة بديلة باستخدام العناصر الأخرى
-                const alternativePriceElement = chartContainer.querySelector('.tv-ticker-item-last__last');
-                if (alternativePriceElement) {
-                  const priceText = alternativePriceElement.textContent || '';
-                  const price = parseFloat(priceText.replace(',', ''));
-                  if (!isNaN(price)) {
-                    console.log("Price from alternative UI element:", price);
-                    onPriceUpdate(price);
-                  }
-                }
-              }
             }
           } catch (error) {
             console.error("Error getting price:", error);
