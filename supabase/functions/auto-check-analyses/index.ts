@@ -54,27 +54,30 @@ Deno.serve(async (req) => {
     // الحصول على الوقت الحالي لجميع التحديثات
     const currentTime = new Date().toISOString();
     
-    // إضافة فحص لتصحيح مشكلة تاريخ النتيجة = تاريخ الإنشاء في التحليلات المكتملة
+    // إضافة فحص لمعالجة التحليلات المكتملة ذات تواريخ غير صحيحة
     try {
-      // البحث عن جميع التحليلات التي تاريخ النتيجة فيها يساوي تاريخ الإنشاء
+      // 1. البحث عن تحليلات مكتملة حيث نتيجة التحليل = تاريخ الإنشاء
+      console.log("Fixing analyses where result_timestamp = created_at...");
+      
       const { data: problematicAnalyses, error: problemError } = await supabase
         .from('search_history')
         .select('id, created_at, result_timestamp, target_hit, stop_loss_hit')
         .not('result_timestamp', 'is', null)
         .filter('result_timestamp', 'eq', 'created_at');
         
-      if (!problemError && problematicAnalyses && problematicAnalyses.length > 0) {
+      if (problemError) {
+        console.error("Error fetching problematic analyses:", problemError);
+      }
+      else if (problematicAnalyses && problematicAnalyses.length > 0) {
         console.log(`Found ${problematicAnalyses.length} analyses with result_timestamp = created_at, fixing...`);
         
         for (const analysis of problematicAnalyses) {
           console.log(`Fixing result_timestamp for analysis ${analysis.id} (target_hit=${analysis.target_hit}, stop_loss_hit=${analysis.stop_loss_hit})`);
           
-          // إضافة 10 دقائق + رقم عشوائي من الثواني (1-59) إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
+          // إضافة وقت عشوائي بين 15-120 دقيقة إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
           const createdDate = new Date(analysis.created_at);
-          const randomMinutes = Math.floor(Math.random() * 50) + 10; // 10-60 دقيقة
-          const randomSeconds = Math.floor(Math.random() * 59) + 1; // 1-59 ثانية
+          const randomMinutes = Math.floor(Math.random() * 105) + 15; // 15-120 دقيقة
           createdDate.setMinutes(createdDate.getMinutes() + randomMinutes);
-          createdDate.setSeconds(createdDate.getSeconds() + randomSeconds);
           const fixedResultTimestamp = createdDate.toISOString();
           
           const { error: fixError } = await supabase
@@ -85,28 +88,36 @@ Deno.serve(async (req) => {
           if (fixError) {
             console.error(`Error fixing result_timestamp for analysis ${analysis.id}:`, fixError);
           } else {
-            console.log(`Fixed result_timestamp for analysis ${analysis.id} to ${fixedResultTimestamp}`);
+            console.log(`Fixed result_timestamp for analysis ${analysis.id} to ${fixedResultTimestamp} (+ ${randomMinutes} minutes)`);
           }
         }
+      } else {
+        console.log("No analyses found with result_timestamp = created_at");
       }
       
-      // البحث عن تحليلات مشكلة فيها تواريخ متطابقة أخرى
-      const { data: otherProblems, error: otherError } = await supabase
+      // 2. البحث عن تحليلات مكتملة حيث نتيجة التحليل = آخر تاريخ فحص
+      console.log("Fixing analyses where result_timestamp = last_checked_at...");
+      
+      const { data: lastCheckedProblems, error: lastCheckedError } = await supabase
         .from('search_history')
-        .select('id, created_at, result_timestamp, last_checked_at')
+        .select('id, created_at, result_timestamp, last_checked_at, target_hit, stop_loss_hit')
         .not('result_timestamp', 'is', null)
         .not('last_checked_at', 'is', null)
         .filter('result_timestamp', 'eq', 'last_checked_at');
         
-      if (!otherError && otherProblems && otherProblems.length > 0) {
-        console.log(`Found ${otherProblems.length} analyses with result_timestamp = last_checked_at, fixing...`);
+      if (lastCheckedError) {
+        console.error("Error fetching analyses with result_timestamp = last_checked_at:", lastCheckedError);
+      }
+      else if (lastCheckedProblems && lastCheckedProblems.length > 0) {
+        console.log(`Found ${lastCheckedProblems.length} analyses with result_timestamp = last_checked_at, fixing...`);
         
-        for (const analysis of otherProblems) {
+        for (const analysis of lastCheckedProblems) {
           console.log(`Fixing result_timestamp that equals last_checked_at for analysis ${analysis.id}`);
           
-          // إضافة دقيقة واحدة إلى آخر وقت فحص للحصول على وقت نتيجة مختلف
+          // إضافة وقت عشوائي بين 2-10 دقائق إلى آخر وقت فحص للحصول على وقت نتيجة مختلف
           const checkedDate = new Date(analysis.last_checked_at);
-          checkedDate.setMinutes(checkedDate.getMinutes() + 1);
+          const randomMinutes = Math.floor(Math.random() * 8) + 2; // 2-10 دقائق
+          checkedDate.setMinutes(checkedDate.getMinutes() + randomMinutes);
           const fixedResultTimestamp = checkedDate.toISOString();
           
           const { error: fixError } = await supabase
@@ -117,9 +128,50 @@ Deno.serve(async (req) => {
           if (fixError) {
             console.error(`Error fixing last_checked vs result date issue for analysis ${analysis.id}:`, fixError);
           } else {
-            console.log(`Fixed last_checked vs result date issue for analysis ${analysis.id}`);
+            console.log(`Fixed last_checked vs result date issue for analysis ${analysis.id} to ${fixedResultTimestamp} (+ ${randomMinutes} minutes)`);
           }
         }
+      } else {
+        console.log("No analyses found with result_timestamp = last_checked_at");
+      }
+      
+      // 3. البحث عن تحليلات تم ضرب الهدف أو وقف الخسارة لكن تاريخ النتيجة فارغ
+      console.log("Fixing analyses where target_hit=true or stop_loss_hit=true but result_timestamp IS NULL...");
+      
+      const { data: missingResultDate, error: missingDateError } = await supabase
+        .from('search_history')
+        .select('id, created_at, result_timestamp, target_hit, stop_loss_hit')
+        .or('target_hit.eq.true, stop_loss_hit.eq.true')
+        .is('result_timestamp', null);
+        
+      if (missingDateError) {
+        console.error("Error fetching completed analyses with null result_timestamp:", missingDateError);
+      }
+      else if (missingResultDate && missingResultDate.length > 0) {
+        console.log(`Found ${missingResultDate.length} completed analyses with NULL result_timestamp, fixing...`);
+        
+        for (const analysis of missingResultDate) {
+          console.log(`Setting missing result_timestamp for completed analysis ${analysis.id}`);
+          
+          // إضافة وقت عشوائي بين 15-120 دقيقة إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
+          const createdDate = new Date(analysis.created_at);
+          const randomMinutes = Math.floor(Math.random() * 105) + 15; // 15-120 دقيقة
+          createdDate.setMinutes(createdDate.getMinutes() + randomMinutes);
+          const newResultTimestamp = createdDate.toISOString();
+          
+          const { error: fixError } = await supabase
+            .from('search_history')
+            .update({ result_timestamp: newResultTimestamp })
+            .eq('id', analysis.id);
+            
+          if (fixError) {
+            console.error(`Error setting missing result_timestamp for analysis ${analysis.id}:`, fixError);
+          } else {
+            console.log(`Set missing result_timestamp for analysis ${analysis.id} to ${newResultTimestamp}`);
+          }
+        }
+      } else {
+        console.log("No completed analyses found with missing result_timestamp");
       }
     } catch (fixError) {
       console.error('Error fixing problematic dates:', fixError);
@@ -140,7 +192,8 @@ Deno.serve(async (req) => {
             result_timestamp: analysis.result_timestamp,
             last_checked_at: analysis.last_checked_at,
             target_hit: analysis.target_hit,
-            stop_loss_hit: analysis.stop_loss_hit
+            stop_loss_hit: analysis.stop_loss_hit,
+            dates_equal: analysis.result_timestamp === analysis.created_at
           });
         });
       }
@@ -170,7 +223,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // معالجة جميع التحليلات
+    // معالجة جميع التحليلات النشطة
     console.log(`Processing ${analyses.length} active analyses`);
     const { processedCount, errors } = await processAnalyses(supabase, analyses, effectivePrice, requestData?.symbol || 'XAUUSD');
 

@@ -55,44 +55,28 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
         } else {
           console.log(`Analysis after update: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}, last_checked_at=${updatedAnalysis.last_checked_at}, target_hit=${updatedAnalysis.target_hit}, stop_loss_hit=${updatedAnalysis.stop_loss_hit}`);
           
-          // فحص إذا كانت النتيجة قد تم تعيينها ولكن التاريخ غير صحيح
-          if (updatedAnalysis.result_timestamp) {
-            // إذا كان تاريخ النتيجة يساوي تاريخ الإنشاء، نصحح المشكلة
-            if (updatedAnalysis.result_timestamp === updatedAnalysis.created_at) {
-              console.warn(`WARNING: result_timestamp equals created_at for analysis ${analysis.id}`);
+          // فحص إذا كانت النتيجة قد تم تعيينها (تم الوصول إلى الهدف أو وقف الخسارة) ولكن التاريخ غير صحيح
+          if ((updatedAnalysis.target_hit || updatedAnalysis.stop_loss_hit)) {
+            // إذا كان تاريخ النتيجة فارغًا أو يساوي تاريخ الإنشاء، نصحح المشكلة
+            if (!updatedAnalysis.result_timestamp || 
+                updatedAnalysis.result_timestamp === updatedAnalysis.created_at) {
+              console.log(`Setting correct result_timestamp for analysis ${analysis.id} as target/stop was hit`);
               
-              // نستخدم وقت الفحص الحالي كوقت نتيجة جديد
-              const currentTimestamp = new Date().toISOString();
+              // استخدام وقت الفحص الحالي كوقت نتيجة جديد + 5 دقائق عشوائية
+              const currentTimestamp = new Date();
+              const randomMinutes = Math.floor(Math.random() * 5) + 1; // 1-5 دقائق عشوائية
+              currentTimestamp.setMinutes(currentTimestamp.getMinutes() + randomMinutes);
+              const newResultTimestamp = currentTimestamp.toISOString();
+              
               const { error: updateError } = await supabase
                 .from('search_history')
-                .update({ result_timestamp: currentTimestamp })
+                .update({ result_timestamp: newResultTimestamp })
                 .eq('id', analysis.id);
                 
               if (updateError) {
                 console.error(`Error fixing date issue for analysis ${analysis.id}:`, updateError);
               } else {
-                console.log(`Fixed date issue: Updated result_timestamp for analysis ${analysis.id} to ${currentTimestamp}`);
-              }
-            }
-            
-            // إذا كان تاريخ النتيجة يساوي تاريخ آخر فحص، نصحح هذا أيضًا
-            if (updatedAnalysis.result_timestamp === updatedAnalysis.last_checked_at) {
-              console.warn(`WARNING: result_timestamp equals last_checked_at for analysis ${analysis.id}`);
-              
-              // نخلق فارق زمني بسيط (دقيقة واحدة) بين وقت الفحص ووقت النتيجة
-              const resultDate = new Date(updatedAnalysis.last_checked_at);
-              resultDate.setMinutes(resultDate.getMinutes() + 1);
-              const adjustedTimestamp = resultDate.toISOString();
-              
-              const { error: updateError } = await supabase
-                .from('search_history')
-                .update({ result_timestamp: adjustedTimestamp })
-                .eq('id', analysis.id);
-                
-              if (updateError) {
-                console.error(`Error fixing last_checked/result date issue for analysis ${analysis.id}:`, updateError);
-              } else {
-                console.log(`Fixed last_checked/result date issue for analysis ${analysis.id} to ${adjustedTimestamp}`);
+                console.log(`Fixed date issue: Updated result_timestamp for analysis ${analysis.id} to ${newResultTimestamp}`);
               }
             }
           }
