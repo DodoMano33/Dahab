@@ -1,9 +1,8 @@
-
 // تكوين التقاط السعر
 export const CAPTURE_INTERVAL = 1000; // 1 ثانية
 
 // محدد السعر الرئيسي الجديد بناءً على المعلومات المقدمة
-export const PRICE_SELECTOR = '.last-price';
+export const PRICE_SELECTOR = '.tv-symbol-price-quote__value.js-symbol-last';
 
 // قائمة بمحددات CSS البديلة للعثور على عنصر السعر
 export const ALTERNATIVE_SELECTORS = [
@@ -37,7 +36,13 @@ export const ALTERNATIVE_SELECTORS = [
   '.price-value',
   '.pane-legend-line span.pane-legend-item-value-wrap',
   '.js-last-price',
-  '.dl-last-quote'
+  '.dl-last-quote',
+  '.chart-price-display',
+  '.chart-price',
+  '.tv-symbol-price-quote__value',
+  '.pane-legend-line__value',
+  '.chart-title-price',
+  '.js-symbol-last'
 ];
 
 // الصفات المرئية لمساعدة التعرف على عنصر السعر

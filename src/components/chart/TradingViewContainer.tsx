@@ -20,6 +20,24 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
   
+  // دالة مساعدة لتحديث السعر من العنصر المخصص
+  const updatePriceFromCustomElement = () => {
+    const tradingViewPriceElement = document.querySelector('.tv-symbol-price-quote__value.js-symbol-last');
+    if (tradingViewPriceElement) {
+      const priceText = tradingViewPriceElement.textContent?.trim();
+      if (priceText) {
+        const extractedPrice = parseFloat(priceText.replace(/[^\d.]/g, ''));
+        if (!isNaN(extractedPrice) && extractedPrice >= 1800 && extractedPrice <= 3500) {
+          console.log(`تم العثور على سعر في عنصر TradingView المخصص: ${extractedPrice}`);
+          currentPriceRef.current = extractedPrice;
+          onPriceUpdate?.(extractedPrice);
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+  
   // تهيئة الشارت عند تحميل المكون
   useEffect(() => {
     if (!containerRef.current) return;
@@ -37,6 +55,12 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     
     // استخراج السعر الأولي
     const extractInitialPrice = async () => {
+      // محاولة الحصول على السعر من العنصر المخصص أولاً
+      if (updatePriceFromCustomElement()) {
+        return;
+      }
+      
+      // إذا لم ينجح، استخدم الطريقة العامة
       const price = await extractPriceFromChart();
       if (price !== null) {
         console.log('تم استخراج السعر المبدئي:', price);
@@ -47,8 +71,14 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
       }
     };
     
-    // جدولة استخراج متكرر للسعر
+    // تحديث السعر دوريًا من العنصر المخصص
+    const customElementInterval = setInterval(() => {
+      updatePriceFromCustomElement();
+    }, 1000);
+    
+    // جدولة استخراج متكرر للسعر بالطريقة العامة كاحتياطي
     const extractionInterval = setInterval(async () => {
+      // إذا لم يتم تحديث السعر من العنصر المخصص، استخدم الطريقة العامة
       const price = await extractPriceFromChart();
       if (price !== null && price !== currentPriceRef.current) {
         console.log('تم استخراج سعر جديد:', price);
@@ -59,6 +89,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     
     // التنظيف عند إلغاء تحميل المكون
     return () => {
+      clearInterval(customElementInterval);
       clearInterval(extractionInterval);
       clearTimeout(initialTimeout);
       

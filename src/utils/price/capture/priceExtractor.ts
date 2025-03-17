@@ -13,39 +13,72 @@ import { extractPriceFromDirectText } from './directTextExtractor';
 export const extractPriceFromChart = async (): Promise<number | null> => {
   try {
     console.log('بدء محاولة استخراج السعر من الشارت...');
+
+    // جرب المحدد الجديد الذي قدمه المستخدم أولاً
+    const tradingViewPriceElement = document.querySelector('.tv-symbol-price-quote__value.js-symbol-last');
+    if (tradingViewPriceElement) {
+      const priceText = tradingViewPriceElement.textContent?.trim();
+      console.log('تم العثور على سعر TradingView باستخدام المحدد المخصص:', priceText);
+      if (priceText) {
+        const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+        if (!isNaN(price) && price >= 1800 && price <= 3500) {
+          console.log(`تم استخراج سعر صحيح من TradingView: ${price}`);
+          setLastExtractedPrice(price);
+          return price;
+        }
+      }
+    }
+
+    // البحث عن أرقام محددة في أعلى الشارت (تطابق ما يظهر في الصورة)
+    const chartHeaderNumbers = document.querySelectorAll('[class*="price"], [class*="quote"], [class*="value"]');
+    for (const element of chartHeaderNumbers) {
+      const text = element.textContent?.trim();
+      if (text && /^\s*\d{1,4}(,\d{3})*\.\d{1,3}\s*$/.test(text)) {
+        const price = parseFloat(text.replace(/,/g, ''));
+        if (!isNaN(price) && price >= 1800 && price <= 3500) {
+          console.log(`تم استخراج سعر من عنوان الشارت: ${price}`);
+          setLastExtractedPrice(price);
+          return price;
+        }
+      }
+    }
     
-    // البحث عن عنصر السعر
-    const priceElement = getPriceElementOrFind();
-    if (!priceElement) {
-      console.warn('لم يتم العثور على عنصر السعر في الشارت');
-      
-      // محاولة البحث عن أي عنصر في الصفحة يحتوي على سعر ذهب نموذجي
-      const allElements = document.querySelectorAll('*');
-      console.log(`البحث في ${allElements.length} عنصر عن قيمة تشبه سعر الذهب...`);
-      
-      // محاولة خاصة للعثور على سعر في عناصر الشارت المختلفة
-      const chartPriceElements = document.querySelectorAll('.chart-toolbar .chart-container .chart-price, .chart-title-indicator, .pane-legend-line .pane-legend-line__value');
-      for (const element of chartPriceElements) {
-        const text = element.textContent?.trim();
-        if (text && /\b(2|3)\d{3}(\.\d{1,2})?\b/.test(text)) {
-          console.log('تم العثور على عنصر سعر في الشارت:', text);
-          const price = parseFloat(text.replace(/[^\d.]/g, ''));
-          if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            console.log(`تم استخراج سعر صحيح من الشارت: ${price}`);
+    // البحث بشكل مباشر عن الأرقام في نطاق سعر الذهب في كامل الشارت
+    const allElements = document.querySelectorAll('*');
+    for (const element of allElements) {
+      const text = element.textContent?.trim();
+      if (text && /\b(2|3)\d{3}\.\d{1,3}\b/.test(text)) {
+        console.log('محتمل أن يكون سعر ذهب:', text);
+        // استخراج الرقم من النص
+        const matches = text.match(/\b(2|3)\d{3}\.\d{1,3}\b/);
+        if (matches) {
+          const price = parseFloat(matches[0]);
+          if (price >= 1800 && price <= 3500) {
+            console.log(`تم استخراج سعر ذهب محتمل: ${price}`);
             setLastExtractedPrice(price);
             return price;
           }
         }
       }
+    }
+    
+    // البحث عن عنصر السعر باستخدام الطريقة القديمة
+    const priceElement = getPriceElementOrFind();
+    if (!priceElement) {
+      console.warn('لم يتم العثور على عنصر السعر في الشارت');
       
-      // البحث في جميع العناصر للعثور على سعر معقول
-      for (const element of allElements) {
+      // البحث عن أي عنصر مرئي على حافة الشارت قد يكون يعرض السعر
+      console.log(`البحث في جميع العناصر المرئية على حافة الشارت...`);
+      
+      // البحث خصيصاً عن الأرقام التي تظهر في شريط على الشارت (كما في الصورة)
+      const chartPriceElements = document.querySelectorAll('.chart-toolbar .chart-container .chart-price, .chart-title-indicator, .pane-legend-line .pane-legend-line__value, .pane-legend-line__value');
+      for (const element of chartPriceElements) {
         const text = element.textContent?.trim();
-        if (text && /\b(2|3)\d{3}(\.\d{1,2})?\b/.test(text)) {
-          console.log('تم العثور على عنصر يحتوي على نص يشبه سعر الذهب:', text);
+        if (text && /\b(2|3)\d{3}(\.\d{1,3})?\b/.test(text)) {
+          console.log('تم العثور على عنصر سعر في الشارت:', text);
           const price = parseFloat(text.replace(/[^\d.]/g, ''));
           if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            console.log(`تم استخراج سعر يبدو منطقيًا: ${price}`);
+            console.log(`تم استخراج سعر صحيح من الشارت: ${price}`);
             setLastExtractedPrice(price);
             return price;
           }
@@ -64,66 +97,19 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
         }
       }
       
-      // الحصول على السعر من iFrame
-      try {
-        const iframe = document.querySelector('iframe[src*="tradingview"]');
-        if (iframe) {
-          const iframeDoc = (iframe as HTMLIFrameElement).contentDocument;
-          if (iframeDoc) {
-            const iframePriceEl = iframeDoc.querySelector('.chart-price');
-            if (iframePriceEl && iframePriceEl.textContent) {
-              const price = parseFloat(iframePriceEl.textContent.replace(/[^\d.]/g, ''));
-              if (!isNaN(price) && price >= 1800 && price <= 3500) {
-                console.log(`تم استخراج السعر من iframe: ${price}`);
-                setLastExtractedPrice(price);
-                return price;
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.warn('فشل في الوصول إلى محتوى iframe:', error);
-      }
-      
-      // استخدام قيمة من الشارت إذا كانت واضحة
-      const chartValue = document.querySelector('.js-symbol-last');
-      if (chartValue && chartValue.textContent) {
-        const price = parseFloat(chartValue.textContent.replace(/[^\d.]/g, ''));
-        if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج السعر من .js-symbol-last: ${price}`);
-          setLastExtractedPrice(price);
-          return price;
-        }
-      }
-      
       // لم يتم العثور على سعر
       console.log('لم يتم العثور على سعر صالح من الشارت');
       return null;
     }
     
-    // محاولة قراءة النص مباشرة من العنصر
+    // استخراج السعر من النص
     const directText = priceElement.textContent?.trim();
-    console.log('النص المستخرج من عنصر السعر:', directText);
-    
     const price = extractPriceFromDirectText(directText);
     
     if (price !== null && price >= 1800 && price <= 3500) {
       console.log(`تم استخراج سعر بقيمة: ${price}`);
-      
-      // حفظ السعر المستخرج
       setLastExtractedPrice(price);
-      
-      // إبلاغ السعر مباشرة إلى أي عنصر مرئي للعرض
-      const priceDisplayElements = document.querySelectorAll('[id="stats-price-display"]');
-      priceDisplayElements.forEach(element => {
-        element.textContent = price.toFixed(2);
-        console.log('تم تحديث عنصر عرض السعر');
-      });
-      
       return price;
-    } else if (price !== null) {
-      console.log(`تم استخراج قيمة خارج النطاق المتوقع: ${price}`);
-      return null;
     }
     
     console.log('لم يتم استخراج سعر');
@@ -148,6 +134,12 @@ export const extractAndBroadcastPrice = async () => {
       window.dispatchEvent(new CustomEvent('tradingview-price-update', {
         detail: { price, timestamp: Date.now() }
       }));
+      
+      // تحديث عنصر عرض السعر مباشرة إن وجد
+      const priceDisplayElements = document.querySelectorAll('[id="stats-price-display"]');
+      priceDisplayElements.forEach(element => {
+        element.textContent = price.toFixed(2);
+      });
       
       return price;
     } else {

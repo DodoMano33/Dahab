@@ -11,7 +11,32 @@ import {
 
 export const requestInitialPrice = () => {
   try {
-    // طلب تحديث فوري من نظام استخراج السعر - إعطاء أولوية أعلى
+    // محاولة استخراج السعر مباشرة من العنصر المخصص
+    const tradingViewPriceElement = document.querySelector('.tv-symbol-price-quote__value.js-symbol-last');
+    if (tradingViewPriceElement) {
+      const priceText = tradingViewPriceElement.textContent?.trim();
+      if (priceText) {
+        const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+        if (!isNaN(price) && price >= 1800 && price <= 3500) {
+          console.log(`تم العثور على سعر في عنصر TradingView المخصص: ${price}`);
+          
+          // إرسال حدث مع السعر المستخرج
+          window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+            detail: {
+              price,
+              symbol: 'CFI:XAUUSD',
+              timestamp: Date.now(),
+              provider: 'CFI',
+              source: 'extracted'
+            }
+          }));
+          
+          return;
+        }
+      }
+    }
+    
+    // طلب تحديث فوري من نظام استخراج السعر
     requestImmediatePriceUpdate();
     
     // إرسال طلب السعر الحالي
@@ -19,58 +44,6 @@ export const requestInitialPrice = () => {
     
     // طلب السعر المستخرج بشكل صريح
     window.dispatchEvent(new Event('request-extracted-price'));
-    
-    // مباشرة عبر postMessage
-    window.postMessage({ method: 'getCurrentPrice', symbol: 'CFI:XAUUSD', provider: 'CFI' }, '*');
-    
-    // تحقق من السعر المعروض في الشارت وأرسله كتحديث
-    const chartPriceElement = document.querySelector('.chart-price-display');
-    if (chartPriceElement && chartPriceElement.textContent) {
-      const priceText = chartPriceElement.textContent.trim();
-      const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
-      if (!isNaN(price) && price > 0) {
-        // إرسال بجميع أنواع الأحداث للتوافق مع جميع المكونات
-        window.dispatchEvent(new CustomEvent('tradingview-price-update', {
-          detail: {
-            price,
-            symbol: 'CFI:XAUUSD',
-            timestamp: Date.now(),
-            provider: 'CFI',
-            source: 'extracted'
-          }
-        }));
-        
-        window.dispatchEvent(new CustomEvent('extracted-price-update', {
-          detail: {
-            price,
-            symbol: 'CFI:XAUUSD',
-            timestamp: Date.now(),
-            provider: 'CFI',
-            source: 'extracted'
-          }
-        }));
-        
-        window.dispatchEvent(new CustomEvent('current-price-response', {
-          detail: {
-            price,
-            symbol: 'CFI:XAUUSD',
-            timestamp: Date.now(),
-            provider: 'CFI',
-            source: 'extracted'
-          }
-        }));
-        
-        window.dispatchEvent(new CustomEvent('chart-price-update', {
-          detail: {
-            price,
-            symbol: 'CFI:XAUUSD',
-            timestamp: Date.now(),
-            provider: 'CFI',
-            source: 'extracted'
-          }
-        }));
-      }
-    }
     
     console.log('تم إرسال طلب الحصول على السعر الحالي من CFI بجميع الطرق المتاحة');
   } catch (e) {
@@ -91,6 +64,34 @@ export const setupPriceUpdateChecker = (
   priceProvider: string
 ) => {
   return setInterval(() => {
+    // محاولة استخراج السعر مباشرة من العنصر المخصص
+    const tradingViewPriceElement = document.querySelector('.tv-symbol-price-quote__value.js-symbol-last');
+    if (tradingViewPriceElement) {
+      const priceText = tradingViewPriceElement.textContent?.trim();
+      if (priceText) {
+        const price = parseFloat(priceText.replace(/[^\d.]/g, ''));
+        if (!isNaN(price) && price >= 1800 && price <= 3500) {
+          console.log(`تم العثور على سعر في عنصر TradingView المخصص: ${price}`);
+          
+          // تحديث السعر المرجعي
+          currentPriceRef.current = price;
+          
+          // إرسال حدث مع السعر المستخرج
+          window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+            detail: {
+              price,
+              symbol: 'CFI:XAUUSD',
+              timestamp: Date.now(),
+              provider: priceProvider,
+              source: 'extracted'
+            }
+          }));
+          
+          return;
+        }
+      }
+    }
+    
     // إذا لم يكن هناك سعر حالي، أطلب السعر
     if (currentPriceRef.current === null) {
       requestInitialPrice();
@@ -108,38 +109,6 @@ export const setupPriceUpdateChecker = (
           source: 'extracted'
         }
       }));
-      
-      window.dispatchEvent(new CustomEvent('extracted-price-update', { 
-        detail: { 
-          price, 
-          symbol: 'CFI:XAUUSD',
-          timestamp: Date.now(),
-          provider: priceProvider,
-          source: 'extracted'
-        }
-      }));
-      
-      window.dispatchEvent(new CustomEvent('current-price-response', { 
-        detail: { 
-          price, 
-          symbol: 'CFI:XAUUSD',
-          timestamp: Date.now(),
-          provider: priceProvider,
-          source: 'extracted'
-        }
-      }));
-      
-      window.dispatchEvent(new CustomEvent('chart-price-update', { 
-        detail: { 
-          price, 
-          symbol: 'CFI:XAUUSD',
-          timestamp: Date.now(),
-          provider: priceProvider,
-          source: 'extracted'
-        }
-      }));
-      
-      console.log(`تم نشر تحديث السعر (${priceProvider}:XAUUSD): ${price}`);
     }
-  }, 5000); // تقليل الفاصل الزمني لزيادة تكرار التحديثات
+  }, 1000); // تقليل الفاصل الزمني لزيادة تكرار التحديثات
 };
