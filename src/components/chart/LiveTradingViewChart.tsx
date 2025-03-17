@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
-import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -58,11 +57,6 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     <div className="w-full mb-6">
       <div className="p-1 bg-gray-800 rounded-lg">
         <TradingViewWidget />
-      </div>
-      
-      {/* إضافة شريط عرض السعر أسفل الشارت */}
-      <div className="mt-4">
-        <CurrentPriceDisplay price={currentPrice} provider="CFI" />
       </div>
     </div>
   );

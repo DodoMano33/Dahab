@@ -32,18 +32,6 @@ function TradingViewWidget() {
       <div className="w-full h-[200px] bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-700">
         <TradingViewContainer onPriceUpdate={handlePriceUpdate} />
       </div>
-      
-      {/* عرض السعر الحالي */}
-      <div className="bg-gray-900 text-white p-4 rounded-lg flex justify-center items-center">
-        <div className="flex items-center">
-          <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse mr-2"></div>
-          <span className="text-gray-300 mr-2">سعر الذهب:</span>
-        </div>
-        <span className="font-bold text-2xl text-yellow-500" id="stats-price-display">
-          {currentPrice ? currentPrice.toFixed(2) : "جاري التحميل..."}
-        </span>
-        <span className="text-gray-300 text-sm ml-2">USD</span>
-      </div>
     </div>
   );
 }
