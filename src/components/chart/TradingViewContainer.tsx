@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { createTradingViewWidget } from '@/utils/tradingview/chartSetup';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';

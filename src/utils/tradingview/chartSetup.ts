@@ -18,6 +18,28 @@ export const createTradingViewWidget = (container: HTMLElement) => {
 
   // الحصول على إعدادات الشارت
   const config = getTradingViewConfig();
+  
+  // تأكيد تعطيل مقياس الأسعار
+  if (!config.disabled_features) {
+    config.disabled_features = [];
+  }
+  
+  // إضافة كل الخيارات لإخفاء مقياس الأسعار
+  if (!config.disabled_features.includes("show_left_price_scale")) {
+    config.disabled_features.push("show_left_price_scale");
+  }
+  if (!config.disabled_features.includes("left_price_scale")) {
+    config.disabled_features.push("left_price_scale");
+  }
+  if (!config.disabled_features.includes("scale_left")) {
+    config.disabled_features.push("scale_left");
+  }
+  
+  // ضبط إعدادات إضافية
+  config.hide_price_scale = true;
+  config.hide_left_price_scale = true;
+  config.scale_padding = 0;
+  
   script.innerHTML = JSON.stringify(config);
 
   // إنشاء حاويات الشارت

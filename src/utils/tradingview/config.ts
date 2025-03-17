@@ -20,7 +20,9 @@ export const getTradingViewConfig = () => {
     save_image: true,
     calendar: false,
     hide_volume: false,
-    hide_price_scale: true, // إضافة هذا الخيار لإخفاء عمود الأسعار في اليسار
+    hide_price_scale: true,          // إخفاء مقياس الأسعار
+    hide_left_price_scale: true,     // إخفاء مقياس الأسعار على اليسار تحديدًا
+    scale_padding: 0,                // إزالة أي مساحة للمقياس
     support_host: "https://www.tradingview.com",
     enabled_features: ["chart_property_page_trading"],
     disabled_features: [
@@ -31,7 +33,10 @@ export const getTradingViewConfig = () => {
       "use_localstorage_for_settings",
       "header_fullscreen_button",
       "volume_force_overlay",
-      "show_left_price_scale" // إضافة هذه الخاصية لإخفاء مقياس الأسعار على اليسار
+      "show_left_price_scale",       // تعطيل عرض مقياس الأسعار على اليسار
+      "left_price_scale",            // تعطيل مقياس الأسعار اليساري نفسه
+      "scale_left",                  // تعطيل المقياس اليساري
+      "scales_date_format"           // تعطيل تنسيق المقياس
     ],
     charts_storage_url: "https://saveload.tradingview.com",
     charts_storage_api_version: "1.1",
