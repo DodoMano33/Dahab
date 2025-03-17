@@ -25,6 +25,7 @@ interface TradingViewWidget {
     onSymbolChanged: () => {
       subscribe: (callback: null, handler: (symbolInfo: { name: string }) => void) => void;
     };
+    captureScreenshot?: () => Promise<string>;
   };
 }
 

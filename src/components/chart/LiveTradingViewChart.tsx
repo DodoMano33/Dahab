@@ -24,6 +24,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     widgetContainer.className = 'tradingview-widget-container';
     widgetContainer.style.width = '100%';
     widgetContainer.style.height = '100%';
+    widgetContainer.id = 'trading-view-widget-container'; // إضافة معرف للعثور عليه بسهولة
 
     // Create script for Single Quote Widget
     const script = document.createElement('script');
@@ -44,71 +45,38 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     widgetContainer.appendChild(script);
     containerRef.current.appendChild(widgetContainer);
 
-    // Function to extract price from widget
-    const extractPriceInterval = setInterval(() => {
-      try {
-        if (containerRef.current) {
-          // استخراج السعر من عنصر القيمة الرئيسي ذو الخط الأكبر
-          const priceElement = containerRef.current.querySelector('.tv-symbol-price-quote__value');
-          if (priceElement) {
-            const priceText = priceElement.textContent || '';
-            const price = parseFloat(priceText.replace(',', ''));
-            if (!isNaN(price)) {
-              setCurrentPrice(price);
-              console.log('Gold price extracted from main value:', price);
-              
-              // Emit price change if callback exists
-              if (onSymbolChange) {
-                onSymbolChange(symbol);
-              }
-            } else {
-              // محاولة بديلة في حالة فشل استخراج السعر من العنصر الرئيسي
-              console.log('Could not parse main price value:', priceText);
-              fallbackToAlternativePriceElement();
-            }
-          } else {
-            // محاولة بديلة في حالة عدم وجود العنصر الرئيسي
-            fallbackToAlternativePriceElement();
-          }
-        }
-      } catch (error) {
-        console.error('Error extracting price:', error);
-        fallbackToAlternativePriceElement();
-      }
-    }, 2000); // Check every 2 seconds
-    
-    // دالة احتياطية للبحث عن عنصر السعر البديل
-    function fallbackToAlternativePriceElement() {
-      try {
-        if (!containerRef.current) return;
-        
-        const alternativePriceElement = containerRef.current.querySelector('.tv-ticker-item-last__last');
-        if (alternativePriceElement) {
-          const alternativePriceText = alternativePriceElement.textContent || '';
-          const alternativePrice = parseFloat(alternativePriceText.replace(',', ''));
-          if (!isNaN(alternativePrice)) {
-            setCurrentPrice(alternativePrice);
-            console.log('Gold price extracted from alternative element:', alternativePrice);
-            
-            // Emit price change if callback exists
-            if (onSymbolChange) {
-              onSymbolChange(symbol);
-            }
-          } else {
-            console.log('Could not parse alternative price:', alternativePriceText);
-          }
-        } else {
-          console.log('Alternative price element not found');
-        }
-      } catch (error) {
-        console.error('Error in fallback price extraction:', error);
-      }
+    // بدلاً من استخراج السعر هنا، سنترك ذلك لمكون ScreenshotPriceExtractor
+    // الذي سيقوم بالتقاط صورة للويدجت واستخراج السعر منها
+
+    // نشر حدث عند تغيير الرمز إذا تم توفير معالج
+    if (onSymbolChange) {
+      onSymbolChange(symbol);
     }
 
-    return () => {
-      clearInterval(extractPriceInterval);
-    };
+    // لا حاجة للتنظيف الخاص لأن المكون الجديد سيتعامل مع ذلك
   }, [symbol, onSymbolChange]);
+
+  // استلام تحديث السعر من مكون ScreenshotPriceExtractor
+  const handlePriceUpdate = (price: number) => {
+    if (price > 0 && price !== currentPrice) {
+      setCurrentPrice(price);
+    }
+  };
+
+  // تسجيل المستمع للأحداث المخصصة للسعر
+  useEffect(() => {
+    const handleCustomPriceEvent = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        handlePriceUpdate(event.detail.price);
+      }
+    };
+
+    window.addEventListener('price-update' as any, handleCustomPriceEvent as EventListener);
+    
+    return () => {
+      window.removeEventListener('price-update' as any, handleCustomPriceEvent as EventListener);
+    };
+  }, []);
 
   return (
     <div className="w-full mb-6">

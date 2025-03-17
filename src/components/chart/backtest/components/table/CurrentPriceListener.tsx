@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { ScreenshotPriceExtractor } from '../ScreenshotPriceExtractor';
 
 interface CurrentPriceListenerProps {
   children: (currentPrice: number) => React.ReactNode;
@@ -7,10 +8,19 @@ interface CurrentPriceListenerProps {
 
 export const CurrentPriceListener: React.FC<CurrentPriceListenerProps> = ({ children }) => {
   const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [usingScreenshot, setUsingScreenshot] = useState<boolean>(true);
+
+  // استخدام قارئ لقطات الشاشة
+  const handlePriceFromScreenshot = (price: number) => {
+    if (price > 0) {
+      setCurrentPrice(price);
+      console.log('CurrentPriceListener - تم تحديث السعر من لقطة الشاشة:', price);
+    }
+  };
 
   useEffect(() => {
-    // Function to extract price from the TradingView widget
-    const extractPrice = () => {
+    // طريقة احتياطية في حال فشل استخراج السعر من لقطة الشاشة
+    const fallbackExtractPrice = () => {
       try {
         // استخراج السعر من عنصر القيمة الرئيسي ذو الخط الأكبر
         const priceElement = document.querySelector('.tv-symbol-price-quote__value');
@@ -63,14 +73,32 @@ export const CurrentPriceListener: React.FC<CurrentPriceListenerProps> = ({ chil
       }
     };
 
-    // Initial extraction
-    extractPrice();
+    // طريقة احتياطية تعمل في حالة عدم نجاح طريقة لقطات الشاشة
+    if (!usingScreenshot) {
+      fallbackExtractPrice();
+      
+      // Set up interval for periodic updates using fallback method
+      const interval = setInterval(fallbackExtractPrice, 5000);
+      return () => clearInterval(interval);
+    }
     
-    // Set up interval for periodic updates
-    const interval = setInterval(extractPrice, 5000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    // لا نحتاج للفاصل الزمني هنا لأن ScreenshotPriceExtractor سيقوم بذلك
+    return () => {
+      // تنظيف إذا لزم الأمر
+    };
+  }, [usingScreenshot]);
 
-  return <>{children(currentPrice)}</>;
+  return (
+    <>
+      {/* استخدام مكون ScreenshotPriceExtractor لقراءة السعر من لقطات الشاشة */}
+      {usingScreenshot && (
+        <ScreenshotPriceExtractor 
+          targetSelector=".tradingview-widget-container" 
+          onPriceExtracted={handlePriceFromScreenshot} 
+          intervalMs={1000} // التقاط صورة كل ثانية
+        />
+      )}
+      {children(currentPrice)}
+    </>
+  );
 };
