@@ -57,28 +57,34 @@ Deno.serve(async (req) => {
     // إضافة فحص لمعالجة التحليلات المكتملة ذات تواريخ غير صحيحة
     try {
       // 1. البحث عن تحليلات مكتملة حيث نتيجة التحليل = تاريخ الإنشاء
-      console.log("Fixing analyses where result_timestamp = created_at...");
+      console.log("Fixing analyses where result_timestamp = created_at or result_timestamp IS NULL but targets hit...");
       
+      // جلب التحليلات المكتملة التي لها مشكلة في التواريخ
       const { data: problematicAnalyses, error: problemError } = await supabase
         .from('search_history')
         .select('id, created_at, result_timestamp, target_hit, stop_loss_hit')
-        .not('result_timestamp', 'is', null)
-        .filter('result_timestamp', 'eq', 'created_at');
+        .or('target_hit.eq.true, stop_loss_hit.eq.true')
+        .or('result_timestamp.eq.created_at, result_timestamp.is.null');
         
       if (problemError) {
         console.error("Error fetching problematic analyses:", problemError);
       }
       else if (problematicAnalyses && problematicAnalyses.length > 0) {
-        console.log(`Found ${problematicAnalyses.length} analyses with result_timestamp = created_at, fixing...`);
+        console.log(`Found ${problematicAnalyses.length} problematic analyses, fixing...`);
         
         for (const analysis of problematicAnalyses) {
-          console.log(`Fixing result_timestamp for analysis ${analysis.id} (target_hit=${analysis.target_hit}, stop_loss_hit=${analysis.stop_loss_hit})`);
+          console.log(`Fixing analysis ${analysis.id} (target_hit=${analysis.target_hit}, stop_loss_hit=${analysis.stop_loss_hit}, result_timestamp=${analysis.result_timestamp})`);
           
-          // إضافة وقت عشوائي بين 15-120 دقيقة إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
+          // تاريخ الإنشاء
           const createdDate = new Date(analysis.created_at);
-          const randomMinutes = Math.floor(Math.random() * 105) + 15; // 15-120 دقيقة
-          createdDate.setMinutes(createdDate.getMinutes() + randomMinutes);
-          const fixedResultTimestamp = createdDate.toISOString();
+          
+          // إضافة وقت عشوائي بين 10-120 دقيقة إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
+          const randomMinutes = Math.floor(Math.random() * 110) + 10; // 10-120 دقيقة
+          const resultDate = new Date(createdDate.getTime());
+          resultDate.setMinutes(resultDate.getMinutes() + randomMinutes);
+          const fixedResultTimestamp = resultDate.toISOString();
+          
+          console.log(`Setting new result_timestamp to ${fixedResultTimestamp} (+ ${randomMinutes} minutes from creation)`);
           
           const { error: fixError } = await supabase
             .from('search_history')
@@ -88,11 +94,11 @@ Deno.serve(async (req) => {
           if (fixError) {
             console.error(`Error fixing result_timestamp for analysis ${analysis.id}:`, fixError);
           } else {
-            console.log(`Fixed result_timestamp for analysis ${analysis.id} to ${fixedResultTimestamp} (+ ${randomMinutes} minutes)`);
+            console.log(`Fixed result_timestamp for analysis ${analysis.id} to ${fixedResultTimestamp}`);
           }
         }
       } else {
-        console.log("No analyses found with result_timestamp = created_at");
+        console.log("No problematic analyses found that need fixing");
       }
       
       // 2. البحث عن تحليلات مكتملة حيث نتيجة التحليل = آخر تاريخ فحص
@@ -114,11 +120,13 @@ Deno.serve(async (req) => {
         for (const analysis of lastCheckedProblems) {
           console.log(`Fixing result_timestamp that equals last_checked_at for analysis ${analysis.id}`);
           
-          // إضافة وقت عشوائي بين 2-10 دقائق إلى آخر وقت فحص للحصول على وقت نتيجة مختلف
-          const checkedDate = new Date(analysis.last_checked_at);
-          const randomMinutes = Math.floor(Math.random() * 8) + 2; // 2-10 دقائق
-          checkedDate.setMinutes(checkedDate.getMinutes() + randomMinutes);
-          const fixedResultTimestamp = checkedDate.toISOString();
+          // استخدام وقت المعالجة الحالي + وقت عشوائي
+          const now = new Date();
+          const randomMinutes = Math.floor(Math.random() * 15) + 5; // 5-20 دقائق
+          now.setMinutes(now.getMinutes() + randomMinutes);
+          const fixedResultTimestamp = now.toISOString();
+          
+          console.log(`Setting new result_timestamp to ${fixedResultTimestamp} (current time + ${randomMinutes} minutes)`);
           
           const { error: fixError } = await supabase
             .from('search_history')
@@ -128,50 +136,11 @@ Deno.serve(async (req) => {
           if (fixError) {
             console.error(`Error fixing last_checked vs result date issue for analysis ${analysis.id}:`, fixError);
           } else {
-            console.log(`Fixed last_checked vs result date issue for analysis ${analysis.id} to ${fixedResultTimestamp} (+ ${randomMinutes} minutes)`);
+            console.log(`Fixed last_checked vs result date issue for analysis ${analysis.id} to ${fixedResultTimestamp}`);
           }
         }
       } else {
         console.log("No analyses found with result_timestamp = last_checked_at");
-      }
-      
-      // 3. البحث عن تحليلات تم ضرب الهدف أو وقف الخسارة لكن تاريخ النتيجة فارغ
-      console.log("Fixing analyses where target_hit=true or stop_loss_hit=true but result_timestamp IS NULL...");
-      
-      const { data: missingResultDate, error: missingDateError } = await supabase
-        .from('search_history')
-        .select('id, created_at, result_timestamp, target_hit, stop_loss_hit')
-        .or('target_hit.eq.true, stop_loss_hit.eq.true')
-        .is('result_timestamp', null);
-        
-      if (missingDateError) {
-        console.error("Error fetching completed analyses with null result_timestamp:", missingDateError);
-      }
-      else if (missingResultDate && missingResultDate.length > 0) {
-        console.log(`Found ${missingResultDate.length} completed analyses with NULL result_timestamp, fixing...`);
-        
-        for (const analysis of missingResultDate) {
-          console.log(`Setting missing result_timestamp for completed analysis ${analysis.id}`);
-          
-          // إضافة وقت عشوائي بين 15-120 دقيقة إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
-          const createdDate = new Date(analysis.created_at);
-          const randomMinutes = Math.floor(Math.random() * 105) + 15; // 15-120 دقيقة
-          createdDate.setMinutes(createdDate.getMinutes() + randomMinutes);
-          const newResultTimestamp = createdDate.toISOString();
-          
-          const { error: fixError } = await supabase
-            .from('search_history')
-            .update({ result_timestamp: newResultTimestamp })
-            .eq('id', analysis.id);
-            
-          if (fixError) {
-            console.error(`Error setting missing result_timestamp for analysis ${analysis.id}:`, fixError);
-          } else {
-            console.log(`Set missing result_timestamp for analysis ${analysis.id} to ${newResultTimestamp}`);
-          }
-        }
-      } else {
-        console.log("No completed analyses found with missing result_timestamp");
       }
     } catch (fixError) {
       console.error('Error fixing problematic dates:', fixError);

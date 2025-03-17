@@ -34,6 +34,9 @@ export const DateCell = ({ date }: DateCellProps) => {
       );
     }
     
+    // طباعة التاريخ للتشخيص
+    console.log(`Formatting date in DateCell: ${date}, parsed as: ${dateObj}`);
+    
     return (
       <TableCell className="w-[110px] text-center whitespace-nowrap text-xs">
         {format(dateObj, 'PPpp', { locale: ar })}

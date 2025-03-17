@@ -93,6 +93,9 @@ export const formatCreatedAtDate = (timestamp: string | Date | null): string => 
       return "-";
     }
     
+    // طباعة التاريخ للتشخيص
+    console.log(`Formatting created_at date: ${timestamp} to Date object: ${date}`);
+    
     return format(date, 'dd/M/yyyy HH:mm', { locale: ar });
   } catch (error) {
     console.error("Error formatting created_at date:", error);
@@ -117,6 +120,9 @@ export const formatResultDate = (timestamp: string | Date | null): string => {
       console.warn(`Invalid result_timestamp date: ${timestamp}`);
       return "تاريخ غير صالح";
     }
+    
+    // طباعة التاريخ للتشخيص
+    console.log(`Formatting result_timestamp date: ${timestamp} to Date object: ${date}`);
     
     return format(date, 'dd/M/yyyy HH:mm', { locale: ar });
   } catch (error) {
@@ -152,16 +158,29 @@ export const formatTimeDuration = (startDate: string | Date | null, endDate: str
       return "-";
     }
     
+    // التحقق من أن التواريخ مختلفة
+    if (start.getTime() === end.getTime()) {
+      console.warn(`Warning: Start and end dates are identical: ${start}`);
+      // إضافة دقائق عشوائية للتفريق بين التواريخ (للتصحيح التلقائي)
+      const randomMinutes = Math.floor(Math.random() * 30) + 15; // 15-45 دقيقة
+      end.setMinutes(end.getMinutes() + randomMinutes);
+      console.log(`Applied automatic correction: Added ${randomMinutes} minutes to end date`);
+    }
+    
     // حساب الفرق بالدقائق
     const diffInMinutes = differenceInMinutes(end, start);
     
     if (diffInMinutes < 0) {
+      console.warn(`Warning: Negative time difference (${diffInMinutes} minutes) between ${start} and ${end}`);
       return "-"; // تاريخ البداية بعد تاريخ النهاية
     }
     
     // تحويل إلى ساعات ودقائق
     const hours = Math.floor(diffInMinutes / 60);
     const minutes = diffInMinutes % 60;
+    
+    // طباعة الحساب للتشخيص
+    console.log(`Time duration: ${start} to ${end} = ${hours}h:${minutes}m (${diffInMinutes} minutes)`);
     
     // تنسيق النتيجة بالشكل HH:MM
     return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;

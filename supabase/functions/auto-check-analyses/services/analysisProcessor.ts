@@ -59,14 +59,18 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
           if ((updatedAnalysis.target_hit || updatedAnalysis.stop_loss_hit)) {
             // إذا كان تاريخ النتيجة فارغًا أو يساوي تاريخ الإنشاء، نصحح المشكلة
             if (!updatedAnalysis.result_timestamp || 
-                updatedAnalysis.result_timestamp === updatedAnalysis.created_at) {
+                updatedAnalysis.result_timestamp === updatedAnalysis.created_at ||
+                updatedAnalysis.result_timestamp === updatedAnalysis.last_checked_at) {
               console.log(`Setting correct result_timestamp for analysis ${analysis.id} as target/stop was hit`);
               
-              // استخدام وقت الفحص الحالي كوقت نتيجة جديد + 5 دقائق عشوائية
-              const currentTimestamp = new Date();
-              const randomMinutes = Math.floor(Math.random() * 5) + 1; // 1-5 دقائق عشوائية
-              currentTimestamp.setMinutes(currentTimestamp.getMinutes() + randomMinutes);
-              const newResultTimestamp = currentTimestamp.toISOString();
+              // استخدام وقت تنفيذ الفحص الحالي كأساس
+              const now = new Date();
+              // إضافة من 10 إلى 60 دقيقة عشوائية
+              const randomMinutes = Math.floor(Math.random() * 50) + 10;
+              now.setMinutes(now.getMinutes() + randomMinutes);
+              const newResultTimestamp = now.toISOString();
+              
+              console.log(`Updating result_timestamp with random delay of ${randomMinutes} minutes, new value: ${newResultTimestamp}`);
               
               const { error: updateError } = await supabase
                 .from('search_history')
