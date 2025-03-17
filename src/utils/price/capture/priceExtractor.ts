@@ -14,83 +14,85 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
   try {
     console.log('بدء محاولة استخراج السعر من الشارت...');
 
-    // البحث عن عنصر السعر الرئيسي كما يظهر في الصورة
-    const mainPriceElement = document.querySelector('.js-symbol-last, .tv-symbol-price-quote__value');
-    if (mainPriceElement) {
-      const priceText = mainPriceElement.textContent?.trim();
-      console.log('تم العثور على سعر TradingView في العنصر الرئيسي:', priceText);
-      if (priceText) {
-        // تنظيف النص واستخراج الرقم
-        const price = parseFloat(priceText.replace(/,/g, '').replace(/[^\d.]/g, ''));
-        if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج سعر صحيح من العنصر الرئيسي: ${price}`);
-          setLastExtractedPrice(price);
-          return price;
+    // البحث المباشر عن عنصر TradingView الذي يحتوي على السعر
+    const priceSelectors = [
+      '.tv-symbol-price-quote__value',        // محدد السعر الرئيسي
+      '[data-name="legend-series-item"] .tv-symbol-price-quote__value',
+      '.tv-symbol-price-quote__value--large', // محدد للنسخة الكبيرة من السعر
+      '.chart-toolbar-price-value',           // محدد لشريط الأدوات
+      '.chart-status-price'                   // محدد لحالة الشارت
+    ];
+
+    // تجربة كل محدد على حدة
+    for (const selector of priceSelectors) {
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        const priceText = element.textContent?.trim();
+        if (priceText) {
+          // استخراج الرقم بشكل صحيح من النص (مثل 2,999.350)
+          const price = parseFloat(priceText.replace(/,/g, ''));
+          if (!isNaN(price) && price >= 1800 && price <= 3500) {
+            console.log(`تم استخراج سعر من المحدد "${selector}": ${price}`);
+            setLastExtractedPrice(price);
+            return price;
+          }
         }
       }
     }
 
-    // البحث عن عنصر السعر الكبير في واجهة TradingView (مثل الذي يظهر في الصورة)
-    const largePriceElements = document.querySelectorAll('[data-name="legend-series-item"] .price-value, .chart-toolbar-price-value, .price-line-price-label, .chart-status-price');
-    for (const element of largePriceElements) {
-      const priceText = element.textContent?.trim();
-      console.log('تم العثور على عنصر سعر محتمل:', priceText);
-      if (priceText) {
-        // تنظيف النص واستخراج الرقم
-        const price = parseFloat(priceText.replace(/,/g, '').replace(/[^\d.]/g, ''));
-        if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج سعر صحيح من عنصر السعر: ${price}`);
-          setLastExtractedPrice(price);
-          return price;
-        }
-      }
-    }
-    
-    // البحث عن أي عنصر رقمي كبير في الصفحة قد يكون سعر الذهب
-    const allElements = document.querySelectorAll('*');
-    for (const element of allElements) {
+    // فحص أكثر شمولاً في الصفحة
+    const allPriceElements = document.querySelectorAll('div, span, strong, b');
+    for (const element of allPriceElements) {
       const text = element.textContent?.trim();
-      if (text && /\b[1-3][\d,]{3,6}\.\d{1,3}\b/.test(text)) {
-        console.log('محتمل أن يكون سعر ذهب:', text);
-        // استخراج الرقم من النص
-        const price = parseFloat(text.replace(/,/g, '').replace(/[^\d.]/g, ''));
+      // البحث عن نمط نصي يمثل سعر ذهب (مثل 2,999.350)
+      if (text && /\b[1-3](,\d{3})*\.\d{1,3}\b/.test(text)) {
+        const price = parseFloat(text.replace(/,/g, ''));
         if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج سعر ذهب محتمل: ${price}`);
+          console.log(`تم استخراج سعر من نص عام: ${price} (${text})`);
           setLastExtractedPrice(price);
           return price;
         }
       }
     }
     
-    // جرب تقنية أخرى للبحث عن نمط رقمي يشبه سعر الذهب
+    // الطريقة الاحتياطية - البحث في عناصر الصفحة عن أي رقم يشبه سعر الذهب
     const bodyText = document.body.textContent || '';
-    const goldPriceMatches = bodyText.match(/\b[1-3][\d,]{3,6}\.\d{1,3}\b/g);
+    const goldPriceMatches = bodyText.match(/\b[1-3](,\d{3})*\.\d{1,3}\b/g);
     if (goldPriceMatches) {
       for (const match of goldPriceMatches) {
         const price = parseFloat(match.replace(/,/g, ''));
         if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج سعر ذهب من نص الصفحة: ${price}`);
+          console.log(`تم استخراج سعر من نص الصفحة: ${price} (${match})`);
           setLastExtractedPrice(price);
           return price;
         }
       }
     }
     
-    // البحث عن عنصر السعر باستخدام الطريقة القديمة
+    // إذا لم ننجح بالطرق المباشرة، نستخدم طريقة العنصر
     const priceElement = getPriceElementOrFind();
-    if (!priceElement) {
-      console.warn('لم يتم العثور على عنصر السعر في الشارت');
-      return null;
+    if (priceElement) {
+      const directText = priceElement.textContent?.trim();
+      const price = extractPriceFromDirectText(directText);
+      
+      if (price !== null && price >= 1800 && price <= 3500) {
+        console.log(`تم استخراج سعر بقيمة: ${price}`);
+        setLastExtractedPrice(price);
+        return price;
+      }
     }
     
-    // استخراج السعر من النص
-    const directText = priceElement.textContent?.trim();
-    const price = extractPriceFromDirectText(directText);
-    
-    if (price !== null && price >= 1800 && price <= 3500) {
-      console.log(`تم استخراج سعر بقيمة: ${price}`);
-      setLastExtractedPrice(price);
-      return price;
+    // كرجعة أخيرة، نبحث عن أرقام تبدأ بـ 2 أو 3 وتحتوي على نقطة عشرية
+    const digitMatches = document.body.textContent?.match(/\b[23]\d*\.\d+\b/g);
+    if (digitMatches) {
+      for (const match of digitMatches) {
+        const price = parseFloat(match);
+        if (!isNaN(price) && price >= 1800 && price <= 3500) {
+          console.log(`تم استخراج سعر محتمل من نص عام: ${price}`);
+          setLastExtractedPrice(price);
+          return price;
+        }
+      }
     }
     
     console.log('لم يتم استخراج سعر');

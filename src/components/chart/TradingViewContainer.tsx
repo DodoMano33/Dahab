@@ -50,39 +50,45 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     // استمع إلى تحديثات السعر وابحث عنها دورياً
     const priceCheckInterval = setInterval(() => {
       try {
-        // البحث عن عنصر السعر الرئيسي
+        // البحث عن عنصر السعر الرئيسي بشكل أكثر دقة
         const priceElement = document.querySelector('.tv-symbol-price-quote__value');
+        
         if (priceElement) {
           const priceText = priceElement.textContent?.trim();
           if (priceText) {
-            const price = parseFloat(priceText.replace(/,/g, '').replace(/[^\d.]/g, ''));
+            // استخراج الأرقام من النص (2,999.350 -> 2999.35)
+            const price = parseFloat(priceText.replace(/,/g, ''));
+            
             if (!isNaN(price) && price >= 1800 && price <= 3500) {
-              console.log(`تم العثور على سعر في ويدجيت TradingView: ${price}`);
+              console.log(`تم العثور على سعر دقيق في ويدجيت TradingView: ${price}`);
               
               // تحديث السعر محلياً
               onPriceUpdate?.(price);
               
-              // بث السعر لكامل التطبيق
+              // بث السعر لكامل التطبيق مع التأكيد على ضمان وصوله لجميع المكونات
               broadcastPrice(price, true, 'CFI:XAUUSD');
             }
           }
         }
         
-        // البحث عن السعر بالنمط المرئي في الصورة
-        const allElements = document.querySelectorAll('*');
-        for (const element of allElements) {
-          const text = element.textContent?.trim();
-          if (text && /\b[1-3][\d,]{3,6}\.\d{1,3}\b/.test(text)) {
-            const price = parseFloat(text.replace(/,/g, '').replace(/[^\d.]/g, ''));
-            if (!isNaN(price) && price >= 1800 && price <= 3500) {
-              console.log(`تم العثور على سعر ذهب محتمل: ${price}`);
-              
-              // تحديث السعر محلياً
-              onPriceUpdate?.(price);
-              
-              // بث السعر لكامل التطبيق
-              broadcastPrice(price, true, 'CFI:XAUUSD');
-              break;
+        // البحث بشكل أوسع عن أرقام تطابق نمط سعر الذهب في الصفحة (كاحتياط)
+        if (!priceElement) {
+          const allElements = document.querySelectorAll('div, span');
+          for (const element of allElements) {
+            const text = element.textContent?.trim();
+            // نمط البحث محسن للكشف عن أرقام مثل 2,999.350
+            if (text && /\d{1,3}(,\d{3})*\.\d{1,3}/.test(text)) {
+              const price = parseFloat(text.replace(/,/g, ''));
+              if (!isNaN(price) && price >= 1800 && price <= 3500) {
+                console.log(`تم العثور على سعر ذهب محتمل: ${price}`);
+                
+                // تحديث السعر محلياً
+                onPriceUpdate?.(price);
+                
+                // بث السعر لكامل التطبيق
+                broadcastPrice(price, true, 'CFI:XAUUSD');
+                break;
+              }
             }
           }
         }

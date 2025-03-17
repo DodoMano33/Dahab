@@ -23,6 +23,8 @@ export const broadcastPrice = (price: number, force: boolean = false, source: st
     return;
   }
   
+  console.log(`تم تحديث السعر: ${price}`);
+  
   // تحديث آخر سعر تم استخراجه
   setLastExtractedPrice(price);
   
