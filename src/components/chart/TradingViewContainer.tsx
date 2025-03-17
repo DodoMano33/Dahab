@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
+import { broadcastPrice } from '@/utils/price/capture/priceBroadcaster';
 
 interface TradingViewContainerProps {
   onPriceUpdate?: (price: number) => void;
@@ -57,7 +58,12 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
             const price = parseFloat(priceText.replace(/,/g, '').replace(/[^\d.]/g, ''));
             if (!isNaN(price) && price >= 1800 && price <= 3500) {
               console.log(`تم العثور على سعر في ويدجيت TradingView: ${price}`);
+              
+              // تحديث السعر محلياً
               onPriceUpdate?.(price);
+              
+              // بث السعر لكامل التطبيق
+              broadcastPrice(price, true, 'CFI:XAUUSD');
             }
           }
         }
@@ -70,7 +76,12 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
             const price = parseFloat(text.replace(/,/g, '').replace(/[^\d.]/g, ''));
             if (!isNaN(price) && price >= 1800 && price <= 3500) {
               console.log(`تم العثور على سعر ذهب محتمل: ${price}`);
+              
+              // تحديث السعر محلياً
               onPriceUpdate?.(price);
+              
+              // بث السعر لكامل التطبيق
+              broadcastPrice(price, true, 'CFI:XAUUSD');
               break;
             }
           }

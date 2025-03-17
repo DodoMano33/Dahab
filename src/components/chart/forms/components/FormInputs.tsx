@@ -41,7 +41,6 @@ export const FormInputs = ({
         value={price} 
         onChange={setPrice}
         defaultValue={defaultPrice?.toString()}
-        tradingViewPrice={defaultPrice}
       />
       
       <AnalysisDurationInput
