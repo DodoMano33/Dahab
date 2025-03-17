@@ -1,6 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
+import { CurrentPriceDisplay } from './CurrentPriceDisplay';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -13,10 +15,44 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+
   useEffect(() => {
     console.log('تم تركيب مكون LiveTradingViewChart');
-    return () => console.log('تم إزالة مكون LiveTradingViewChart');
-  }, []);
+    
+    // استخراج السعر المبدئي
+    const fetchInitialPrice = async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        console.log(`تم استخراج السعر المبدئي: ${price}`);
+        setCurrentPrice(price);
+        onPriceUpdate?.(price);
+      }
+    };
+    
+    fetchInitialPrice();
+    
+    // جدولة تحديث دوري
+    const interval = setInterval(async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        console.log(`تم تحديث السعر: ${price}`);
+        setCurrentPrice(price);
+        onPriceUpdate?.(price);
+      }
+    }, 5000);
+    
+    return () => {
+      clearInterval(interval);
+      console.log('تم إزالة مكون LiveTradingViewChart');
+    };
+  }, [onPriceUpdate]);
+
+  const handlePriceUpdate = (price: number) => {
+    console.log(`LiveTradingViewChart استلم تحديث السعر: ${price}`);
+    setCurrentPrice(price);
+    onPriceUpdate?.(price);
+  };
 
   return (
     <div className="w-full mb-6">
@@ -24,8 +60,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         <TradingViewWidget 
           symbol="XAUUSD"
           onSymbolChange={onSymbolChange}
-          onPriceUpdate={onPriceUpdate}
+          onPriceUpdate={handlePriceUpdate}
         />
+      </div>
+      
+      {/* عرض السعر الحالي بشكل واضح */}
+      <div className="mt-4">
+        <CurrentPriceDisplay price={currentPrice} provider="CFI" />
       </div>
     </div>
   );

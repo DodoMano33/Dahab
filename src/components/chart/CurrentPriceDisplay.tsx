@@ -1,5 +1,6 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface CurrentPriceDisplayProps {
   price: number | null;
@@ -10,14 +11,35 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
   price, 
   provider = "CFI" 
 }) => {
-  // سجل التغييرات في السعر
+  const [localPrice, setLocalPrice] = useState<number | null>(price);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+  
+  // استخدام السعر المقدم أو استخراج سعر جديد
   useEffect(() => {
     if (price !== null) {
       console.log(`تم تحديث عرض السعر: ${price}`);
+      setLocalPrice(price);
+      setLastUpdated(new Date().toLocaleTimeString());
+    } else {
+      // إذا لم يتم تقديم سعر، حاول استخراجه مباشرة
+      const fetchPrice = async () => {
+        const extractedPrice = await extractPriceFromChart();
+        if (extractedPrice !== null) {
+          console.log(`تم استخراج السعر مباشرة: ${extractedPrice}`);
+          setLocalPrice(extractedPrice);
+          setLastUpdated(new Date().toLocaleTimeString());
+        }
+      };
+      
+      fetchPrice();
+      
+      // جدولة تحديثات دورية
+      const interval = setInterval(fetchPrice, 10000);
+      return () => clearInterval(interval);
     }
   }, [price]);
-
-  const displayPrice = price !== null ? price.toFixed(2) : "---.--";
+  
+  const displayPrice = localPrice !== null ? localPrice.toFixed(2) : "---.--";
   
   return (
     <div 
@@ -29,11 +51,14 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
         <span className="text-gray-300 mr-2">الذهب مقابل الدولار ({provider}:XAUUSD)</span>
       </div>
       
-      <div className="flex items-center">
+      <div className="flex flex-col items-end">
         <span className="font-bold text-2xl text-yellow-500" id="stats-price-display">
           {displayPrice}
         </span>
-        <span className="text-gray-300 ml-1">USD</span>
+        <div className="flex items-center">
+          <span className="text-gray-300 text-sm ml-1">USD</span>
+          {lastUpdated && <span className="text-xs text-gray-400 mr-2">آخر تحديث: {lastUpdated}</span>}
+        </div>
       </div>
     </div>
   );
