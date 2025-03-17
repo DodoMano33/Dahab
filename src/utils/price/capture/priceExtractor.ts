@@ -96,10 +96,9 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
         }
       }
       
-      // استخدام سعر ثابت (3000.57) كقيمة افتراضية
-      console.log('استخدام سعر ثابت: 3000.57');
-      setLastExtractedPrice(3000.57);
-      return 3000.57;
+      // لم يتم العثور على سعر
+      console.log('لم يتم العثور على سعر صالح من الشارت');
+      return null;
     }
     
     // محاولة قراءة النص مباشرة من العنصر
@@ -123,18 +122,15 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       
       return price;
     } else if (price !== null) {
-      console.log(`تم استخراج قيمة خارج النطاق المتوقع: ${price}، استخدام القيمة الافتراضية`);
-      setLastExtractedPrice(3000.57);
-      return 3000.57;
+      console.log(`تم استخراج قيمة خارج النطاق المتوقع: ${price}`);
+      return null;
     }
     
-    console.log('لم يتم استخراج سعر، استخدام القيمة الافتراضية');
-    setLastExtractedPrice(3000.57);
-    return 3000.57;
+    console.log('لم يتم استخراج سعر');
+    return null;
   } catch (error) {
     console.error('فشل في استخراج السعر من الشارت:', error);
-    setLastExtractedPrice(3000.57);
-    return 3000.57;
+    return null;
   }
 };
 
