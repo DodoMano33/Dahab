@@ -148,15 +148,15 @@ const extractPriceFromImage = async (imageData: string): Promise<number | null> 
     
     // استخراج المنطقة العلوية من الصورة حيث يحتمل وجود السعر
     // (هذه قيم تقريبية، قد تحتاج للتعديل حسب شكل الرسم البياني)
-    const imageData = ctx.getImageData(0, 0, img.width, Math.min(50, img.height));
+    const imageDataObj = ctx.getImageData(0, 0, img.width, Math.min(50, img.height));
     
     // تحليل البيكسلات بحثًا عن المناطق ذات التباين العالي (حيث يحتمل وجود أرقام)
     // هذه طريقة بسيطة للكشف عن مناطق النص
     let pixelData = '';
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const r = imageData.data[i];
-      const g = imageData.data[i + 1];
-      const b = imageData.data[i + 2];
+    for (let i = 0; i < imageDataObj.data.length; i += 4) {
+      const r = imageDataObj.data[i];
+      const g = imageDataObj.data[i + 1];
+      const b = imageDataObj.data[i + 2];
       const brightness = (r + g + b) / 3;
       
       pixelData += brightness > 200 ? '1' : '0';
