@@ -161,7 +161,7 @@ export const formatTimeDuration = (startDate: string | Date | null, endDate: str
     // التحقق من أن التواريخ مختلفة
     if (start.getTime() === end.getTime()) {
       console.warn(`Warning: Start and end dates are identical: ${start}`);
-      return "-"; // إذا كانت التواريخ متماثلة، نرجع "-" بدلاً من إضافة وقت عشوائي
+      return "-";
     }
     
     // حساب الفرق بالدقائق
@@ -169,7 +169,7 @@ export const formatTimeDuration = (startDate: string | Date | null, endDate: str
     
     if (diffInMinutes < 0) {
       console.warn(`Warning: Negative time difference (${diffInMinutes} minutes) between ${start} and ${end}`);
-      return "-"; // تاريخ البداية بعد تاريخ النهاية
+      return "-";
     }
     
     // تحويل إلى ساعات ودقائق

@@ -81,8 +81,7 @@ export const useBacktestResults = () => {
               created_date: createdDate,
               result_date: resultDate,
               created_valid: isValid(createdDate),
-              result_valid: isValid(resultDate),
-              are_equal: createdDate.getTime() === resultDate.getTime()
+              result_valid: isValid(resultDate)
             });
           } catch (dateError) {
             console.error('Error parsing dates:', dateError);
@@ -108,13 +107,6 @@ export const useBacktestResults = () => {
         if (!result.created_at) {
           console.warn(`Result with empty created_at:`, result.id);
           result.created_at = null;
-        }
-        
-        // طباعة القيم للتشخيص إذا كانت التواريخ متماثلة
-        if (result.created_at && result.result_timestamp &&
-            result.created_at === result.result_timestamp) {
-          console.warn(`WARNING: created_at and result_timestamp are identical for result ${result.id}:`,
-            { created_at: result.created_at, result_timestamp: result.result_timestamp });
         }
         
         return result;

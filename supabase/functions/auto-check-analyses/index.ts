@@ -69,8 +69,7 @@ Deno.serve(async (req) => {
             result_timestamp: analysis.result_timestamp,
             last_checked_at: analysis.last_checked_at,
             target_hit: analysis.target_hit,
-            stop_loss_hit: analysis.stop_loss_hit,
-            dates_equal: analysis.result_timestamp === analysis.created_at
+            stop_loss_hit: analysis.stop_loss_hit
           });
         });
       }
