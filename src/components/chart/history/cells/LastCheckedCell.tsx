@@ -11,7 +11,7 @@ interface LastCheckedCellProps {
   itemId: string;
 }
 
-export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellProps) => {
+export const LastCheckedCell = ({ timestamp, itemId }: LastCheckedCellProps) => {
   const [formattedTime, setFormattedTime] = useState<string>("");
   
   useEffect(() => {
@@ -77,24 +77,7 @@ export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellPro
     return () => clearInterval(interval);
   }, [timestamp, itemId]);
   
-  // استماع لحدث تحديث سجل البحث
-  useEffect(() => {
-    const handleHistoryUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail?.timestamp) {
-        console.log(`[${itemId}] LastCheckedCell detected update event with timestamp:`, customEvent.detail.timestamp);
-      } else {
-        console.log(`[${itemId}] LastCheckedCell detected update event`);
-      }
-    };
-    
-    window.addEventListener('historyUpdated', handleHistoryUpdate);
-    return () => {
-      window.removeEventListener('historyUpdated', handleHistoryUpdate);
-    };
-  }, [itemId]);
-  
-  if (!price || !formattedTime) {
+  if (!formattedTime) {
     return <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>;
   }
   
@@ -103,14 +86,12 @@ export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellPro
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="text-xs cursor-help">
-            <div>{price}</div>
             <div className="text-muted-foreground text-[10px]">
               {formattedTime}
             </div>
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          <p>آخر سعر تم فحصه: {price}</p>
           <p>وقت الفحص: {formattedTime}</p>
         </TooltipContent>
       </Tooltip>

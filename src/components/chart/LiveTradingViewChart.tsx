@@ -1,62 +1,22 @@
 
-import React, { useEffect, useState } from 'react';
-import TradingViewWidget from './TradingViewWidget';
-import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
+import React from 'react';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
   onSymbolChange?: (symbol: string) => void;
-  onPriceUpdate?: (price: number) => void;
 }
 
 export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({ 
   symbol = "XAUUSD",
-  onSymbolChange,
-  onPriceUpdate
+  onSymbolChange
 }) => {
-  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
-
-  useEffect(() => {
-    console.log('تم تركيب مكون LiveTradingViewChart');
-    
-    // استخراج السعر المبدئي
-    const fetchInitialPrice = async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log(`تم استخراج السعر المبدئي: ${price}`);
-        setCurrentPrice(price);
-        onPriceUpdate?.(price);
-      }
-    };
-    
-    fetchInitialPrice();
-    
-    // جدولة تحديث دوري
-    const interval = setInterval(async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log(`تم تحديث السعر: ${price}`);
-        setCurrentPrice(price);
-        onPriceUpdate?.(price);
-      }
-    }, 5000);
-    
-    return () => {
-      clearInterval(interval);
-      console.log('تم إزالة مكون LiveTradingViewChart');
-    };
-  }, [onPriceUpdate]);
-
-  const handlePriceUpdate = (price: number) => {
-    console.log(`LiveTradingViewChart استلم تحديث السعر: ${price}`);
-    setCurrentPrice(price);
-    onPriceUpdate?.(price);
-  };
-
   return (
     <div className="w-full mb-6">
-      <div className="p-1 bg-gray-800 rounded-lg">
-        <TradingViewWidget />
+      <div className="p-1 bg-gray-800 rounded-lg h-64 flex items-center justify-center text-white">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold mb-2">الرسم البياني</h3>
+          <p className="text-gray-300">تم إيقاف عرض بيانات الأسعار المباشرة</p>
+        </div>
       </div>
     </div>
   );

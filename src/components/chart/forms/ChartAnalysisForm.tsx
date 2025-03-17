@@ -10,7 +10,6 @@ interface ChartAnalysisFormProps {
   onSubmit: (
     symbol: string,
     timeframe: string,
-    providedPrice?: number,
     isScalping?: boolean,
     isAI?: boolean,
     isSMC?: boolean,
@@ -35,7 +34,6 @@ interface ChartAnalysisFormProps {
   onHistoryClick: () => void;
   currentAnalysis?: string;
   defaultSymbol?: string;
-  defaultPrice?: number | null;
 }
 
 export const ChartAnalysisForm = ({
@@ -43,13 +41,11 @@ export const ChartAnalysisForm = ({
   isAnalyzing,
   onHistoryClick,
   currentAnalysis,
-  defaultSymbol,
-  defaultPrice
+  defaultSymbol
 }: ChartAnalysisFormProps) => {
   // تثبيت رمز الذهب كقيمة افتراضية
   const fixedSymbol = "XAUUSD";
   const [symbol, setSymbol] = useState(fixedSymbol);
-  const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
 
@@ -61,8 +57,6 @@ export const ChartAnalysisForm = ({
   } = useFormSubmit({
     symbol: fixedSymbol,
     defaultSymbol: fixedSymbol,
-    price,
-    defaultPrice,
     timeframe,
     duration,
     onSubmit
@@ -75,13 +69,10 @@ export const ChartAnalysisForm = ({
       <FormInputs
         symbol={fixedSymbol}
         setSymbol={setSymbol}
-        price={price}
-        setPrice={setPrice}
         timeframe={timeframe}
         setTimeframe={setTimeframe}
         duration={duration}
         setDuration={setDuration}
-        defaultPrice={defaultPrice}
       />
       
       <AnalysisButtonGroup

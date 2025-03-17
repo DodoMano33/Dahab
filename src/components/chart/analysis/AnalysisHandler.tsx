@@ -1,11 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnalysisData } from "@/types/analysis";
 import { validateAnalysisInputs } from "./utils/inputValidation";
 import { buildAnalysisConfig } from "./utils/analysisConfigBuilder";
 import { processChartAnalysis } from "./utils/chartAnalysisProcessor";
 import { showErrorToast } from "./utils/toastUtils";
-import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -13,27 +12,10 @@ export const useAnalysisHandler = () => {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [currentSymbol, setCurrentSymbol] = useState<string>('');
   const [currentAnalysis, setCurrentAnalysis] = useState<string>('');
-  const [tradingViewPrice, setTradingViewPrice] = useState<number | null>(null);
-
-  // استمع لتحديثات السعر من TradingView
-  useEffect(() => {
-    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
-      if (event.detail && event.detail.price) {
-        setTradingViewPrice(event.detail.price);
-        console.log("AnalysisHandler received TradingView price update:", event.detail.price);
-      }
-    };
-
-    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
-    return () => {
-      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
-    };
-  }, []);
 
   const handleTradingViewConfig = async (
     symbol: string, 
     timeframe: string, 
-    providedPrice?: number,
     isScalping: boolean = false,
     isAI: boolean = false,
     isSMC: boolean = false,
@@ -58,8 +40,6 @@ export const useAnalysisHandler = () => {
       console.log("Starting analysis with parameters:", {
         symbol,
         timeframe,
-        providedPrice,
-        tradingViewPrice,
         isScalping,
         isAI,
         isSMC,
@@ -81,11 +61,8 @@ export const useAnalysisHandler = () => {
         selectedTypes
       });
 
-      // استخدام السعر من TradingView إذا كان متاحًا، وإلا استخدام السعر المقدم
-      const finalPrice = tradingViewPrice !== null ? tradingViewPrice : providedPrice;
-
-      // Validate inputs
-      if (!validateAnalysisInputs(symbol, timeframe, finalPrice)) {
+      // Validate inputs (بدون التحقق من صحة السعر)
+      if (!validateAnalysisInputs(symbol, timeframe)) {
         return;
       }
 
@@ -116,13 +93,11 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
-      // Process the chart analysis
+      // Process the chart analysis (بدون الاعتماد على بيانات السعر)
       const result = await processChartAnalysis({
         symbol: upperSymbol,
         timeframe,
-        providedPrice: finalPrice as number,
         analysisType,
-        // Use the provided selectedTypes if available, otherwise build them from the flags
         selectedTypes: selectedTypes || [],
         isAI,
         options,
@@ -130,7 +105,7 @@ export const useAnalysisHandler = () => {
       });
       
       // Store the image and analysis result
-      setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number) : null);
+      setImage(result ? "placeholder-image.png" : null);
       setAnalysis(result ? result.analysisResult : null);
       setIsAnalyzing(false);
       
@@ -152,7 +127,6 @@ export const useAnalysisHandler = () => {
     handleTradingViewConfig,
     setImage,
     setAnalysis,
-    setIsAnalyzing,
-    tradingViewPrice
+    setIsAnalyzing
   };
 };

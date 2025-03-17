@@ -12,9 +12,7 @@ interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
   isRefreshing: boolean;
   autoSymbol: string;
-  autoPrice: number | null;
   onSymbolChange: (symbol: string) => void;
-  onPriceUpdate: (price: number) => void;
   onAddToSearchHistory: (item: SearchHistoryItem) => void;
   isAnalyzing: boolean;
   currentAnalysis: string;
@@ -23,18 +21,13 @@ interface AnalysisTabContentProps {
   setIsHistoryOpen: (open: boolean) => void;
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
-  onManualCheck?: () => void;
-  isCheckLoading?: boolean;
-  lastCheckTime?: Date | null;
 }
 
 export const AnalysisTabContent = ({
   searchHistoryStats,
   isRefreshing,
   autoSymbol,
-  autoPrice,
   onSymbolChange,
-  onPriceUpdate,
   onAddToSearchHistory,
   isAnalyzing,
   currentAnalysis,
@@ -58,20 +51,18 @@ export const AnalysisTabContent = ({
       <LiveTradingViewChart
         symbol={autoSymbol}
         onSymbolChange={onSymbolChange}
-        onPriceUpdate={onPriceUpdate}
       />
 
       <div className="py-4">
         <Separator className="h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
       </div>
 
-      {/* Symbol, Price, and Timeframe Form */}
+      {/* Symbol and Timeframe Form */}
       <AnalysisForm
         onAnalysis={onAddToSearchHistory}
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}
         defaultSymbol={autoSymbol}
-        defaultPrice={autoPrice}
       />
 
       {/* Auto Analysis Settings */}
@@ -81,7 +72,6 @@ export const AnalysisTabContent = ({
         setIsHistoryOpen={setIsHistoryOpen}
         onAnalysisComplete={onAnalysisComplete}
         defaultSymbol={autoSymbol}
-        defaultPrice={autoPrice}
       />
       
       {/* Manual Analysis Display */}

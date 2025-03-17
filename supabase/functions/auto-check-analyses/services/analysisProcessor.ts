@@ -2,7 +2,7 @@
 /**
  * Processes all active analyses and updates their status
  */
-export async function processAnalyses(supabase: any, analyses: any[], currentPrice: number | null, symbol: string) {
+export async function processAnalyses(supabase: any, analyses: any[], symbol: string) {
   let processedCount = 0;
   let errors: { analysis_id: string; error: string }[] = [];
   
@@ -20,43 +20,16 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
       // طباعة المزيد من المعلومات التشخيصية
       console.log(`Analysis details: id=${analysis.id}, created_at=${analysis.created_at}, result_timestamp=${analysis.result_timestamp}, last_checked_at=${analysis.last_checked_at}`);
       
-      // استخدام السعر من TradingView (الذي أصبح مضمونًا الآن)
-      console.log(`Checking analysis ${analysis.id} with price:`, currentPrice);
-      
-      // تحقق من وجود نقطة دخول مثالية
-      const hasBestEntryPoint = analysis.analysis?.bestEntryPoint?.price;
-      
       try {
-        // تحديث حالة التحليل مع نقطة الدخول المثالية
-        if (hasBestEntryPoint) {
-          console.log(`Analysis ${analysis.id} has best entry point, using update_analysis_status_with_entry_point`);
-          await supabase.rpc('update_analysis_status_with_entry_point', {
-            p_id: analysis.id,
-            p_current_price: currentPrice
-          });
-        } else {
-          // تحديث حالة التحليل العادي
-          console.log(`Analysis ${analysis.id} has NO best entry point, using update_analysis_status`);
-          await supabase.rpc('update_analysis_status', {
-            p_id: analysis.id,
-            p_current_price: currentPrice
-          });
-        }
-        
-        // التحقق من التحديث واستخدام علامة وقت محددة للتأكد من صحة البيانات
-        const { data: updatedAnalysis, error: checkError } = await supabase
+        // تحديث وقت الفحص فقط بدون الاعتماد على سعر معين
+        await supabase
           .from('search_history')
-          .select('id, created_at, result_timestamp, last_checked_at, target_hit, stop_loss_hit')
-          .eq('id', analysis.id)
-          .single();
-          
-        if (checkError) {
-          console.error(`Error checking updated analysis ${analysis.id}:`, checkError);
-        } else {
-          console.log(`Analysis after update: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}, last_checked_at=${updatedAnalysis.last_checked_at}, target_hit=${updatedAnalysis.target_hit}, stop_loss_hit=${updatedAnalysis.stop_loss_hit}`);
-        }
+          .update({
+            last_checked_at: new Date().toISOString()
+          })
+          .eq('id', analysis.id);
         
-        console.log(`Successfully processed analysis ${analysis.id}`);
+        console.log(`Successfully updated analysis check time ${analysis.id}`);
         processedCount++;
       } catch (rpcError) {
         errors.push({

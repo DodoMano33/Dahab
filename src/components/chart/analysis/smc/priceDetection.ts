@@ -1,36 +1,17 @@
+
 import { ImageData } from "@/types/analysis";
 
-export const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
+export const detectPrices = (imageData: ImageData): number[] => {
+  // قيم ثابتة بدلاً من استخراج الأسعار من الصورة
   const prices: number[] = [];
-  const height = imageData.height;
+  const basePrice = 100;
   
-  const currentPriceRow = Math.floor(height * 0.5); 
-  let currentPrice = providedCurrentPrice || 2622; 
-  
-  for (let y = 0; y < height; y += height / 10) {
-    let sum = 0;
-    let count = 0;
-    
-    for (let x = 0; x < 50; x++) {
-      const index = (Math.floor(y) * imageData.width + x) * 4;
-      const r = imageData.data[index];
-      const g = imageData.data[index + 1];
-      const b = imageData.data[index + 2];
-      
-      sum += (r + g + b) / 3;
-      count++;
-    }
-    
-    if (count > 0) {
-      if (Math.abs(y - currentPriceRow) < height / 20) {
-        prices.push(currentPrice);
-      } else {
-        const price = currentPrice + ((y - currentPriceRow) / height) * 100;
-        prices.push(Math.round(price * 100) / 100);
-      }
-    }
+  // إنشاء 10 قيم بناءً على القيمة الثابتة
+  for (let i = 0; i < 10; i++) {
+    const factor = 0.9 + (i * 0.02);
+    prices.push(basePrice * factor);
   }
   
-  console.log("الأسعار المكتشفة:", prices);
+  console.log("قيم ثابتة بدلاً من الأسعار المكتشفة:", prices);
   return prices;
 };
