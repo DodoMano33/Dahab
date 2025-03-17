@@ -7,6 +7,7 @@ import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
 import { Separator } from "@/components/ui/separator";
+import { ExtractedPriceDisplay } from "../price/ExtractedPriceDisplay";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -60,6 +61,9 @@ export const AnalysisTabContent = ({
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />
+      
+      {/* عرض السعر المستخرج */}
+      <ExtractedPriceDisplay />
 
       <div className="py-4">
         <Separator className="h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
