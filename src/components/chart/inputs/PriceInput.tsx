@@ -2,13 +2,11 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 
 interface PriceInputProps {
   value: string;
   onChange: (value: string) => void;
   defaultValue?: string;
-  tradingViewPrice?: number | null;
 }
 
 export const PriceInput = ({ 
@@ -18,30 +16,23 @@ export const PriceInput = ({
 }: PriceInputProps) => {
   // حالة للتبديل بين الوضع التلقائي واليدوي
   const [useAutoPrice, setUseAutoPrice] = useState(true);
-  // استخدام السعر المستخرج من TradingView مباشرة
-  const { currentPrice } = useCurrentPrice();
+  // حالة لتخزين السعر الحالي
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   
-  // استخدام السعر الحالي تلقائياً عند تحديثه
-  useEffect(() => {
-    if (currentPrice !== null && useAutoPrice) {
-      onChange(currentPrice.toString());
-    }
-  }, [currentPrice, useAutoPrice, onChange]);
-
-  // الاستماع مباشرة للتحديثات من TradingView
+  // الاستماع للسعر من TradingViewWidget فقط
   useEffect(() => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail?.price && useAutoPrice) {
-        onChange(event.detail.price.toString());
+        const newPrice = event.detail.price;
+        setCurrentPrice(newPrice);
+        onChange(newPrice.toString());
       }
     };
     
-    // الاستماع لجميع أنواع أحداث تحديث السعر
-    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    // الاستماع فقط لحدث price-updated من TradingViewWidget
     window.addEventListener('price-updated', handlePriceUpdate as EventListener);
     
     return () => {
-      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
       window.removeEventListener('price-updated', handlePriceUpdate as EventListener);
     };
   }, [onChange, useAutoPrice]);
