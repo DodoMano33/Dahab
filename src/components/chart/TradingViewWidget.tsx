@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { TradingViewContainer } from './TradingViewContainer';
-import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 function TradingViewWidget() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
@@ -22,38 +21,6 @@ function TradingViewWidget() {
     }));
   };
 
-  // محاولة استخراج السعر بشكل دوري
-  useEffect(() => {
-    console.log('تم تركيب مكون TradingViewWidget');
-    
-    // استخراج السعر المبدئي بعد فترة قصيرة للسماح للشارت بالتحميل
-    const fetchInitialPrice = async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log(`استخراج السعر المبدئي: ${price}`);
-        handlePriceUpdate(price);
-      }
-    };
-    
-    // تأخير محاولة الاستخراج الأولى للسماح للشارت بالتحميل
-    const initialTimeout = setTimeout(fetchInitialPrice, 5000);
-    
-    // جدولة تحديثات دورية
-    const interval = setInterval(async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log(`استخراج السعر الدوري: ${price}`);
-        handlePriceUpdate(price);
-      }
-    }, 5000);
-    
-    return () => {
-      clearInterval(interval);
-      clearTimeout(initialTimeout);
-      console.log('تم إزالة مكون TradingViewWidget');
-    };
-  }, []);
-
   return (
     <div className="flex flex-col w-full space-y-2">
       {/* عنوان الشارت */}
@@ -61,8 +28,8 @@ function TradingViewWidget() {
         الذهب (CFI:XAUUSD)
       </div>
       
-      {/* الرسم البياني */}
-      <div className="w-full h-[500px] bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-700">
+      {/* ويدجيت TradingView */}
+      <div className="w-full h-[200px] bg-gray-900 rounded-lg shadow-lg overflow-hidden border border-gray-700">
         <TradingViewContainer onPriceUpdate={handlePriceUpdate} />
       </div>
       

@@ -1,6 +1,5 @@
+
 import React, { useEffect, useRef } from 'react';
-import { createTradingViewWidget } from '@/utils/tradingview/chartSetup';
-import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface TradingViewContainerProps {
   onPriceUpdate?: (price: number) => void;
@@ -10,49 +9,64 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
   onPriceUpdate
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const currentPriceRef = useRef<number | null>(null);
   
-  // تهيئة الشارت عند تحميل المكون
+  // تهيئة الويدجيت عند تحميل المكون
   useEffect(() => {
     if (!containerRef.current) return;
     
-    console.log('إنشاء شارت TradingView للذهب');
+    console.log('إنشاء ويدجيت TradingView Single Quote للذهب');
     
-    // إنشاء شارت TradingView داخل الحاوية
-    const { widgetDiv } = createTradingViewWidget(containerRef.current);
+    // تنظيف الحاوية من أي محتوى سابق
+    containerRef.current.innerHTML = '';
     
-    // تأخير قصير لضمان تحميل الشارت ثم محاولة استخراج السعر
-    const initialTimeout = setTimeout(() => {
-      console.log('محاولة استخراج السعر المبدئي بعد تحميل الشارت...');
-      extractInitialPrice();
-    }, 3000);
+    // إنشاء حاوية للويدجيت
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container';
+    widgetContainer.style.width = '100%';
+    widgetContainer.style.height = '100%';
     
-    // استخراج السعر الأولي
-    const extractInitialPrice = async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log('تم استخراج السعر المبدئي:', price);
-        currentPriceRef.current = price;
-        onPriceUpdate?.(price);
-      } else {
-        console.log('فشل في استخراج السعر المبدئي، سيتم المحاولة مرة أخرى...');
+    // إنشاء سكريبت لتحميل ويدجيت TradingView Single Quote
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+    script.async = true;
+    
+    // إعدادات الويدجيت
+    script.innerHTML = JSON.stringify({
+      "symbol": "CFI:XAUUSD",
+      "width": "100%",
+      "colorTheme": "dark",
+      "isTransparent": false,
+      "locale": "ar"
+    });
+    
+    // إضافة السكريبت إلى الحاوية
+    widgetContainer.appendChild(script);
+    
+    // إضافة الحاوية إلى العنصر الأصلي
+    containerRef.current.appendChild(widgetContainer);
+    
+    // استمع إلى تحديثات السعر من الويدجيت
+    const messageHandler = (event: MessageEvent) => {
+      try {
+        if (event.data && typeof event.data === 'object' && event.data.name === 'tv-widget-symbol-update' && event.data.symbolName === 'CFI:XAUUSD') {
+          const price = event.data.price;
+          if (price && !isNaN(price)) {
+            console.log(`تم استلام تحديث سعر من Single Quote Widget: ${price}`);
+            onPriceUpdate?.(price);
+          }
+        }
+      } catch (error) {
+        console.error('خطأ في معالجة رسالة تحديث السعر:', error);
       }
     };
     
-    // جدولة استخراج متكرر للسعر
-    const extractionInterval = setInterval(async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null && price !== currentPriceRef.current) {
-        console.log('تم استخراج سعر جديد:', price);
-        currentPriceRef.current = price;
-        onPriceUpdate?.(price);
-      }
-    }, 3000);
+    // إضافة مستمع الرسائل
+    window.addEventListener('message', messageHandler);
     
-    // التنظيف عند إلغاء تحميل المكون
     return () => {
-      clearInterval(extractionInterval);
-      clearTimeout(initialTimeout);
+      // إزالة مستمع الرسائل عند إزالة المكون
+      window.removeEventListener('message', messageHandler);
       
       // تنظيف الحاوية
       if (containerRef.current) {
@@ -65,7 +79,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     <div 
       ref={containerRef}
       style={{ height: "100%", width: "100%" }}
-      className="tradingview-chart-container"
+      className="tradingview-chart-container flex items-center justify-center"
     />
   );
 };
