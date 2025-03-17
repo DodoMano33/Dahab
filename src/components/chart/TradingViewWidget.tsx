@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { TradingViewContainer } from './TradingViewContainer';
-import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface TradingViewWidgetProps {
@@ -86,10 +85,7 @@ function TradingViewWidget({
         />
       </div>
       
-      {/* معلومات السعر */}
-      <div className="w-full">
-        <CurrentPriceDisplay price={currentPrice} provider={priceProvider} />
-      </div>
+      {/* إزالة عرض السعر المكرر من هنا */}
     </div>
   );
 }

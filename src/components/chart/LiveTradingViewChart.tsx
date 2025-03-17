@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
-import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface LiveTradingViewChartProps {
@@ -64,10 +63,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         />
       </div>
       
-      {/* عرض السعر الحالي بشكل واضح */}
-      <div className="mt-4">
-        <CurrentPriceDisplay price={currentPrice} provider="CFI" />
-      </div>
+      {/* إزالة عرض السعر المكرر من هنا */}
     </div>
   );
 };
