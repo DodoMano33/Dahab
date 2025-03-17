@@ -16,6 +16,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onPriceUpdate
 }) => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     console.log('تم تركيب مكون LiveTradingViewChart');
@@ -26,6 +27,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       if (price !== null) {
         console.log(`تم استخراج السعر المبدئي: ${price}`);
         setCurrentPrice(price);
+        setLastUpdateTime(new Date());
         onPriceUpdate?.(price);
       }
     };
@@ -38,6 +40,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         const price = event.detail.price;
         console.log(`تم استلام تحديث السعر من TradingView: ${price}`);
         setCurrentPrice(price);
+        setLastUpdateTime(new Date());
         onPriceUpdate?.(price);
       }
     };
@@ -59,9 +62,14 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         </div>
         <div className="text-center mt-2">
           {currentPrice && (
-            <p className="text-sm text-muted-foreground">
-              آخر تحديث للسعر: {currentPrice.toFixed(2)} دولار
-            </p>
+            <div>
+              <p className="text-2xl font-bold">
+                {currentPrice.toFixed(2)} دولار
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                آخر تحديث: {lastUpdateTime ? new Date(lastUpdateTime).toLocaleTimeString() : ''}
+              </p>
+            </div>
           )}
         </div>
       </CardContent>

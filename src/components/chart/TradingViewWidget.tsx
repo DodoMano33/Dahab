@@ -12,6 +12,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
   theme = 'light',
 }) => {
   const container = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (container.current) {
@@ -44,44 +45,55 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       // Append the widget container to our container
       container.current.appendChild(widgetContainer);
       
-      // Setup price extraction
+      // تأخير قليل للسماح للويدجيت بالتحميل
       setTimeout(() => {
         try {
           extractPriceFromWidget();
         } catch (error) {
-          console.error('Error extracting price:', error);
+          console.error('خطأ في استخراج السعر المبدئي:', error);
         }
       }, 2000);
       
-      // Set up interval for price updates
-      const priceInterval = setInterval(() => {
+      // إعداد التحديث كل ثانية لتحديثات السعر
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      
+      intervalRef.current = setInterval(() => {
         try {
           extractPriceFromWidget();
         } catch (error) {
-          console.error('Error extracting price in interval:', error);
+          console.error('خطأ في استخراج السعر في الفاصل الزمني:', error);
         }
-      }, 1000);
+      }, 1000) as unknown as number;
       
       return () => {
-        clearInterval(priceInterval);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       };
     }
   }, [symbol, theme]);
   
-  // Function to extract price from the widget
+  // دالة لاستخراج السعر من الويدجيت
   const extractPriceFromWidget = () => {
     if (!container.current) return;
     
-    // Try to find the price element in the Single Quote Widget
+    // البحث عن عنصر السعر في ويدجيت Single Quote
     const priceElement = container.current.querySelector('.tv-ticker-tape-price__value');
     
     if (priceElement && priceElement.textContent) {
       const priceText = priceElement.textContent.trim();
-      const price = parseFloat(priceText.replace(/[^\d.-]/g, ''));
+      // تنظيف النص واستخراج الرقم
+      const cleanText = priceText.replace(/[^\d.,]/g, '');
+      // التعامل مع الفاصلة والنقطة في تنسيقات الأرقام المختلفة
+      const normalizedText = cleanText.replace(/,/g, '.');
+      const price = parseFloat(normalizedText);
       
-      if (!isNaN(price)) {
-        console.log('Extracted price from widget:', price);
-        // Dispatch a custom event with the price
+      if (!isNaN(price) && price > 0) {
+        console.log('تم استخراج السعر من الويدجيت:', price);
+        // إرسال حدث مخصص بالسعر المستخرج
         window.dispatchEvent(
           new CustomEvent('tradingview-price-update', {
             detail: { price }
