@@ -13,6 +13,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
 }) => {
   const [localPrice, setLocalPrice] = useState<number | null>(price);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [retryCount, setRetryCount] = useState<number>(0);
   
   // استخدام السعر المقدم أو استخراج سعر جديد
   useEffect(() => {
@@ -28,16 +29,21 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
           console.log(`تم استخراج السعر مباشرة: ${extractedPrice}`);
           setLocalPrice(extractedPrice);
           setLastUpdated(new Date().toLocaleTimeString());
+          setRetryCount(0); // إعادة تعيين عدد المحاولات عند النجاح
+        } else {
+          // زيادة عدد المحاولات عند الفشل
+          setRetryCount(prev => prev + 1);
+          console.log(`فشل استخراج السعر - محاولة ${retryCount + 1}`);
         }
       };
       
       fetchPrice();
       
-      // جدولة تحديثات دورية
-      const interval = setInterval(fetchPrice, 10000);
+      // جدولة تحديثات دورية - محاولة أكثر تكرارًا عند الفشل
+      const interval = setInterval(fetchPrice, retryCount < 3 ? 3000 : 1000);
       return () => clearInterval(interval);
     }
-  }, [price]);
+  }, [price, retryCount]);
   
   // عرض رسالة عندما لا يتوفر سعر
   if (localPrice === null) {
@@ -54,6 +60,11 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
           </span>
           <div className="flex items-center">
             <span className="text-xs text-gray-400">الرجاء الانتظار</span>
+            {retryCount > 0 && (
+              <span className="text-xs text-yellow-500 mr-2">
+                (محاولة {retryCount})
+              </span>
+            )}
           </div>
         </div>
       </div>

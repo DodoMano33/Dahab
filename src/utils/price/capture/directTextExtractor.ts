@@ -16,6 +16,18 @@ export const extractPriceFromDirectText = (directText: string | null | undefined
   
   console.log('النص المستخرج من العنصر مباشرة:', directText);
   
+  // البحث عن نمط السعر في النص (رقم متبوع بنقطة وأرقام)
+  const priceMatch = directText.match(/\b(1|2|3)\d{2,3}(\.\d{1,2})?\b/);
+  if (priceMatch) {
+    const extractedPriceText = priceMatch[0];
+    console.log('تم العثور على نمط سعر في النص:', extractedPriceText);
+    const price = parseFloat(extractedPriceText);
+    
+    if (!isNaN(price) && isReasonableGoldPrice(price)) {
+      return price;
+    }
+  }
+  
   // تنظيف النص من أي أحرف غير رقمية باستثناء النقطة العشرية أو الفاصلة
   const cleanText = cleanPriceText(directText);
   console.log('النص بعد التنظيف:', cleanText);
