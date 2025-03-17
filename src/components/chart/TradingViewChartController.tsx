@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 
 interface TradingViewChartControllerProps {
@@ -62,6 +63,13 @@ export const TradingViewChartController = ({
         save_image: true,
         studies: ["MAExp@tv-basicstudies"],
         autosize: true,
+        hide_price_scale: true, // إضافة هذا الخيار لإخفاء عمود الأسعار الثابت
+        disabled_features: [
+          "header_symbol_search",
+          "header_compare",
+          "left_toolbar",
+          "show_left_price_scale"
+        ]
       });
 
       widgetRef.current = widget;
