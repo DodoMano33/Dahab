@@ -31,7 +31,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
     script.async = true;
     
-    // إعدادات الويدجيت
+    // إعدادات الويدجيت - تغيير لتطابق الصورة
     script.innerHTML = JSON.stringify({
       "symbol": "CFI:XAUUSD",
       "width": "100%",
@@ -46,27 +46,43 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     // إضافة الحاوية إلى العنصر الأصلي
     containerRef.current.appendChild(widgetContainer);
     
-    // استمع إلى تحديثات السعر من الويدجيت
-    const messageHandler = (event: MessageEvent) => {
+    // استمع إلى تحديثات السعر وابحث عنها دورياً
+    const priceCheckInterval = setInterval(() => {
       try {
-        if (event.data && typeof event.data === 'object' && event.data.name === 'tv-widget-symbol-update' && event.data.symbolName === 'CFI:XAUUSD') {
-          const price = event.data.price;
-          if (price && !isNaN(price)) {
-            console.log(`تم استلام تحديث سعر من Single Quote Widget: ${price}`);
-            onPriceUpdate?.(price);
+        // البحث عن عنصر السعر الرئيسي
+        const priceElement = document.querySelector('.tv-symbol-price-quote__value');
+        if (priceElement) {
+          const priceText = priceElement.textContent?.trim();
+          if (priceText) {
+            const price = parseFloat(priceText.replace(/,/g, '').replace(/[^\d.]/g, ''));
+            if (!isNaN(price) && price >= 1800 && price <= 3500) {
+              console.log(`تم العثور على سعر في ويدجيت TradingView: ${price}`);
+              onPriceUpdate?.(price);
+            }
+          }
+        }
+        
+        // البحث عن السعر بالنمط المرئي في الصورة
+        const allElements = document.querySelectorAll('*');
+        for (const element of allElements) {
+          const text = element.textContent?.trim();
+          if (text && /\b[1-3][\d,]{3,6}\.\d{1,3}\b/.test(text)) {
+            const price = parseFloat(text.replace(/,/g, '').replace(/[^\d.]/g, ''));
+            if (!isNaN(price) && price >= 1800 && price <= 3500) {
+              console.log(`تم العثور على سعر ذهب محتمل: ${price}`);
+              onPriceUpdate?.(price);
+              break;
+            }
           }
         }
       } catch (error) {
-        console.error('خطأ في معالجة رسالة تحديث السعر:', error);
+        console.error('خطأ في استخراج السعر:', error);
       }
-    };
-    
-    // إضافة مستمع الرسائل
-    window.addEventListener('message', messageHandler);
+    }, 1000);
     
     return () => {
-      // إزالة مستمع الرسائل عند إزالة المكون
-      window.removeEventListener('message', messageHandler);
+      // إزالة الفاصل الزمني عند إزالة المكون
+      clearInterval(priceCheckInterval);
       
       // تنظيف الحاوية
       if (containerRef.current) {

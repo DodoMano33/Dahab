@@ -14,20 +14,12 @@ export const findElementsWithPriceText = (): HTMLElement[] => {
   potentialElements.forEach(el => {
     const text = el.textContent?.trim();
     if (text) {
-      // البحث عن أنماط الأسعار المحتملة
-      // 1. رقم عشري مثل 1234.56
-      // 2. رقم مع فواصل مثل 1,234.56
-      // 3. رقم بسيط مثل 1234
-      if (/^[\s$£€¥]*\d{1,5}([.,]\d{1,4})?[\s]*$/.test(text)) {
+      // البحث عن نمط سعر الذهب كما يظهر في الصورة المرفقة (مثل 2,991.490)
+      if (/\b[1-3][\d,]{3,6}\.\d{1,3}\b/.test(text)) {
         elements.push(el as HTMLElement);
-      } else if (/\d{1,3}(,\d{3})*\.\d{1,4}/.test(text)) {
+      } else if (/\d{1,4}([.,]\d{1,4})?/.test(text)) {
+        // نمط أبسط للأرقام التي قد تكون أسعار
         elements.push(el as HTMLElement);
-      } else {
-        // محاولة استخراج الرقم من النص
-        const cleanedText = text.replace(/[^\d.,]/g, '');
-        if (cleanedText && /^\d{1,5}([.,]\d{1,4})?$/.test(cleanedText)) {
-          elements.push(el as HTMLElement);
-        }
       }
     }
   });
@@ -48,10 +40,10 @@ export const findBestPriceElement = (elements: HTMLElement[]): HTMLElement | nul
     // تنظيف النص
     const cleanedText = text.replace(/[^\d.,]/g, '');
     
-    // التأكد من أنه سعر محتمل للذهب (بين 500 و 5000)
+    // التأكد من أنه سعر محتمل للذهب (بين 1800 و 3500)
     if (cleanedText) {
       const potentialPrice = parseFloat(cleanedText.replace(',', '.'));
-      if (!isNaN(potentialPrice) && potentialPrice > 500 && potentialPrice < 5000) {
+      if (!isNaN(potentialPrice) && potentialPrice >= 1800 && potentialPrice <= 3500) {
         return true;
       }
     }
@@ -102,6 +94,16 @@ export const searchInIframes = (): HTMLElement | null => {
           if (element && isValidPriceElement(element)) {
             console.log(`تم العثور على عنصر السعر في الإطار ${i} باستخدام المحدد: ${selector}`);
             return element;
+          }
+        }
+        
+        // البحث عن نمط سعر الذهب في الإطار كما يظهر في الصورة
+        const allElements = iframe.contentDocument.querySelectorAll('*');
+        for (const el of allElements) {
+          const text = el.textContent?.trim();
+          if (text && /\b[1-3][\d,]{3,6}\.\d{1,3}\b/.test(text)) {
+            console.log(`تم العثور على نص يشبه سعر الذهب في الإطار ${i}: ${text}`);
+            return el as HTMLElement;
           }
         }
       }
