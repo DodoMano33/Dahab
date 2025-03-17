@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getLastExtractedPrice } from '@/utils/price/screenshotPriceExtractor';
 
 interface TradingViewStatsProps {
   symbol?: string;
@@ -10,30 +10,8 @@ interface TradingViewStatsProps {
 export const TradingViewStats: React.FC<TradingViewStatsProps> = ({ 
   symbol = "CFI:XAUUSD" 
 }) => {
-  const { currentPrice: hookPrice, marketData } = useCurrentPrice();
-  const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
+  const { currentPrice, marketData } = useCurrentPrice();
   const isMobile = useIsMobile();
-  
-  useEffect(() => {
-    const handlePriceUpdate = (event: CustomEvent) => {
-      if (event.detail && event.detail.price) {
-        setExtractedPrice(event.detail.price);
-      }
-    };
-
-    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
-    
-    const lastPrice = getLastExtractedPrice();
-    if (lastPrice !== null) {
-      setExtractedPrice(lastPrice);
-    }
-    
-    return () => {
-      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
-    };
-  }, []);
-  
-  const currentPrice = extractedPrice !== null ? extractedPrice : hookPrice;
   
   const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
   const dayHigh = marketData?.dayHigh || (currentPrice ? Math.round(currentPrice * 1.003) : 3005);
