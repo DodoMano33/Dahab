@@ -8,6 +8,11 @@ function TradingViewWidget() {
   const handlePriceUpdate = (price: number) => {
     console.log(`تم تحديث السعر في TradingViewWidget: ${price}`);
     setCurrentPrice(price);
+    
+    // إرسال تحديث أضافي لضمان وصوله إلى جميع أجزاء التطبيق
+    window.dispatchEvent(new CustomEvent('price-updated', {
+      detail: { price, source: 'tradingview-widget' }
+    }));
   };
 
   // الاستماع لتحديثات السعر الخارجية والتأكد من تحديث الواجهة
@@ -27,9 +32,13 @@ function TradingViewWidget() {
     // طلب التحديث الأولي للسعر
     window.dispatchEvent(new CustomEvent('request-current-price'));
     
+    // أيضًا نستمع للأحداث المرسلة من قبل المكونات الأخرى في التطبيق
+    window.addEventListener('price-updated', handleExternalPriceUpdate as EventListener);
+    
     return () => {
       window.removeEventListener('tradingview-price-update', handleExternalPriceUpdate as EventListener);
       window.removeEventListener('current-price-response', handleExternalPriceUpdate as EventListener);
+      window.removeEventListener('price-updated', handleExternalPriceUpdate as EventListener);
     };
   }, [currentPrice]);
 

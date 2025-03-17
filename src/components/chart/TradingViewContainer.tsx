@@ -50,7 +50,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     // استمع إلى تحديثات السعر وابحث عنها دورياً
     const priceCheckInterval = setInterval(() => {
       try {
-        // البحث عن عنصر السعر الرئيسي بشكل أكثر دقة
+        // نستخدم محدد أكثر دقة للعثور على عنصر السعر
         const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
         
         if (priceElements.length > 0) {
@@ -60,8 +60,8 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
               // استخراج الأرقام من النص (2,999.350 -> 2999.35)
               const price = parseFloat(priceText.replace(/,/g, ''));
               
-              if (!isNaN(price) && price >= 1800 && price <= 3500) {
-                console.log(`تم العثور على سعر دقيق في ويدجيت TradingView: ${price}`);
+              if (!isNaN(price) && price > 0) {
+                console.log(`تم العثور على سعر في ويدجيت TradingView: ${price}`);
                 
                 // تحديث السعر محلياً
                 onPriceUpdate?.(price);
@@ -76,15 +76,14 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
         
         // البحث بشكل أوسع عن أي أرقام تشبه سعر الذهب
         if (priceElements.length === 0) {
-          const allElements = document.querySelectorAll('div, span');
+          const allPriceElements = document.querySelectorAll('.tv-symbol-price-quote__value, .tv-symbol-header__first-line');
           
-          for (const element of allElements) {
+          for (const element of allPriceElements) {
             const text = element.textContent?.trim();
-            // نمط للبحث عن أرقام تشبه 2,999.350
-            if (text && /^\d{1,3}(,\d{3})*\.\d{1,3}$/.test(text)) {
+            if (text && /\d+,\d+\.\d+|\d+\.\d+/.test(text)) {
               const price = parseFloat(text.replace(/,/g, ''));
-              if (!isNaN(price) && price >= 1800 && price <= 3500) {
-                console.log(`تم العثور على سعر ذهب محتمل: ${price}`);
+              if (!isNaN(price) && price > 0) {
+                console.log(`تم العثور على سعر محتمل: ${price}`);
                 
                 // تحديث السعر محلياً
                 onPriceUpdate?.(price);
@@ -99,7 +98,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
       } catch (error) {
         console.error('خطأ في استخراج السعر:', error);
       }
-    }, 500); // تقليل الفاصل الزمني للتحقق من السعر بشكل أسرع
+    }, 500); // فاصل زمني أقصر للتحقق من السعر بشكل متكرر
     
     // إرسال طلب تحديث السعر الأولي بعد فترة قصيرة من تحميل الويدجيت
     const initialUpdateTimeout = setTimeout(() => {
@@ -109,7 +108,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
         const priceText = firstPriceElement.textContent?.trim();
         if (priceText) {
           const price = parseFloat(priceText.replace(/,/g, ''));
-          if (!isNaN(price) && price >= 1800 && price <= 3500) {
+          if (!isNaN(price) && price > 0) {
             console.log(`التحديث الأولي للسعر: ${price}`);
             onPriceUpdate?.(price);
             broadcastPrice(price, true, 'CFI:XAUUSD');

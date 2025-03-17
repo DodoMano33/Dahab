@@ -11,24 +11,43 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
 }) => {
   const { currentPrice } = useCurrentPrice();
   const [directPrice, setDirectPrice] = useState<number | null>(null);
-  const lastUpdated = new Date().toLocaleTimeString();
+  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
   
   // محاولة الحصول على السعر المباشر
   useEffect(() => {
     const updateDirectPrice = () => {
-      const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
-      for (const element of priceElements) {
-        const text = element.textContent?.trim();
-        if (text) {
-          const price = parseFloat(text.replace(/,/g, ''));
-          if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            setDirectPrice(price);
-            
-            // بث السعر المستخرج إلى التطبيق
-            window.dispatchEvent(new CustomEvent('tradingview-price-update', {
-              detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
-            }));
-            return;
+      const priceSelectors = [
+        '.tv-symbol-price-quote__value',
+        '.tv-symbol-header__first-line',
+        '.js-symbol-last'
+      ];
+      
+      for (const selector of priceSelectors) {
+        const elements = document.querySelectorAll(selector);
+        for (const element of elements) {
+          const text = element.textContent?.trim();
+          if (text && /\d+,\d+\.\d+|\d+\.\d+/.test(text)) {
+            const matches = text.match(/\b\d+,\d+\.\d+\b|\b\d+\.\d+\b/);
+            if (matches && matches[0]) {
+              const price = parseFloat(matches[0].replace(/,/g, ''));
+              if (!isNaN(price) && price > 0) {
+                console.log(`CurrentPriceDisplay: العثور على سعر مباشر = ${price}`);
+                setDirectPrice(price);
+                setLastUpdated(new Date().toLocaleTimeString());
+                
+                // بث السعر المستخرج إلى التطبيق
+                window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+                  detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+                }));
+                
+                // أيضًا إرسال الحدث البديل
+                window.dispatchEvent(new CustomEvent('price-updated', {
+                  detail: { price, source: 'price-display' }
+                }));
+                
+                return;
+              }
+            }
           }
         }
       }
@@ -38,9 +57,29 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
     updateDirectPrice();
     
     // تحديث دوري
-    const interval = setInterval(updateDirectPrice, 1000);
+    const interval = setInterval(() => {
+      updateDirectPrice();
+    }, 1000);
     
     return () => clearInterval(interval);
+  }, []);
+  
+  // الاستماع لتحديثات السعر
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail?.price) {
+        setDirectPrice(event.detail.price);
+        setLastUpdated(new Date().toLocaleTimeString());
+      }
+    };
+    
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('price-updated', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('price-updated', handlePriceUpdate as EventListener);
+    };
   }, []);
   
   // استخدام السعر المباشر إذا كان متاحاً، وإلا استخدام السعر من useCurrentPrice
@@ -78,7 +117,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
       </div>
       
       <div className="flex flex-col items-end">
-        <span className="font-bold text-2xl text-yellow-500" id="stats-price-display">
+        <span className="font-bold text-2xl text-yellow-500 price-display" id="stats-price-display">
           {displayPrice.toFixed(2)}
         </span>
         <div className="flex items-center">

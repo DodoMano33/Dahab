@@ -28,6 +28,24 @@ export const PriceInput = ({
     }
   }, [currentPrice, useAutoPrice, onChange]);
 
+  // الاستماع مباشرة للتحديثات من TradingView
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail?.price && useAutoPrice) {
+        onChange(event.detail.price.toString());
+      }
+    };
+    
+    // الاستماع لجميع أنواع أحداث تحديث السعر
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('price-updated', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('price-updated', handlePriceUpdate as EventListener);
+    };
+  }, [onChange, useAutoPrice]);
+
   // التعامل مع التبديل بين الوضع التلقائي واليدوي
   const toggleAutoPriceMode = () => {
     const newMode = !useAutoPrice;
@@ -64,7 +82,7 @@ export const PriceInput = ({
         placeholder={`أدخل السعر (إجباري)`}
         value={value}
         onChange={(e) => !useAutoPrice && onChange(e.target.value)}
-        className={`w-full ${useAutoPrice ? 'bg-gray-100' : ''}`}
+        className={`w-full ${useAutoPrice ? 'bg-gray-100 price-display' : ''}`}
         dir="ltr"
         disabled={useAutoPrice}
       />

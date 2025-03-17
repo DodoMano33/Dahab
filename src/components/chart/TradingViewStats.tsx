@@ -17,14 +17,37 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   // محاولة الحصول على السعر المباشر
   useEffect(() => {
     const updateDirectPrice = () => {
-      const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
-      for (const element of priceElements) {
-        const text = element.textContent?.trim();
-        if (text) {
-          const price = parseFloat(text.replace(/,/g, ''));
-          if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            setDirectPrice(price);
-            return;
+      const priceSelectors = [
+        '.tv-symbol-price-quote__value',
+        '.tv-symbol-header__first-line',
+        '.js-symbol-last'
+      ];
+      
+      for (const selector of priceSelectors) {
+        const elements = document.querySelectorAll(selector);
+        for (const element of elements) {
+          const text = element.textContent?.trim();
+          if (text && /\d+,\d+\.\d+|\d+\.\d+/.test(text)) {
+            const matches = text.match(/\b\d+,\d+\.\d+\b|\b\d+\.\d+\b/);
+            if (matches && matches[0]) {
+              const price = parseFloat(matches[0].replace(/,/g, ''));
+              if (!isNaN(price) && price > 0) {
+                console.log(`TradingViewStats: العثور على سعر مباشر = ${price}`);
+                setDirectPrice(price);
+                
+                // بث السعر المستخرج إلى التطبيق
+                window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+                  detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+                }));
+                
+                // أيضًا إرسال الحدث البديل
+                window.dispatchEvent(new CustomEvent('price-updated', {
+                  detail: { price, source: 'trading-view-stats' }
+                }));
+                
+                return;
+              }
+            }
           }
         }
       }
@@ -37,6 +60,23 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
     const interval = setInterval(updateDirectPrice, 1000);
     
     return () => clearInterval(interval);
+  }, []);
+  
+  // الاستماع لتحديثات السعر
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail?.price) {
+        setDirectPrice(event.detail.price);
+      }
+    };
+    
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('price-updated', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('price-updated', handlePriceUpdate as EventListener);
+    };
   }, []);
   
   // استخدام السعر المباشر إذا كان متاحاً، وإلا استخدام السعر من useCurrentPrice
@@ -81,7 +121,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
           <span className="text-yellow-500 mr-1">CFI:</span>XAUUSD
         </div>
         <div className="flex items-center">
-          <span className="text-4xl font-bold" id="stats-price-display">{displayPrice?.toFixed(2) || 'جاري التحميل...'}</span>
+          <span className="text-4xl font-bold price-display" id="stats-price-display">{displayPrice?.toFixed(2) || 'جاري التحميل...'}</span>
           <span className="ml-1 text-lg">USD</span>
         </div>
         <div className={changeColor}>
