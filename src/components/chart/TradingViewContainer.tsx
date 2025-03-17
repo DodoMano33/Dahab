@@ -54,6 +54,7 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
         if (priceElement) {
           const priceText = priceElement.textContent?.trim();
           if (priceText) {
+            // استخراج الرقم من النص (إزالة الفواصل والرموز غير الرقمية)
             const price = parseFloat(priceText.replace(/,/g, '').replace(/[^\d.]/g, ''));
             if (!isNaN(price) && price >= 1800 && price <= 3500) {
               console.log(`تم العثور على سعر في ويدجيت TradingView: ${price}`);
@@ -62,10 +63,11 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
           }
         }
         
-        // البحث عن السعر بالنمط المرئي في الصورة
+        // البحث عن السعر الكبير كما يظهر في الصورة المرفقة
         const allElements = document.querySelectorAll('*');
         for (const element of allElements) {
           const text = element.textContent?.trim();
+          // البحث عن نمط يشبه سعر الذهب (مثل 2,991.490)
           if (text && /\b[1-3][\d,]{3,6}\.\d{1,3}\b/.test(text)) {
             const price = parseFloat(text.replace(/,/g, '').replace(/[^\d.]/g, ''));
             if (!isNaN(price) && price >= 1800 && price <= 3500) {
