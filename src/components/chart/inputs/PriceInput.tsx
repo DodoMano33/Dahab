@@ -10,12 +10,30 @@ interface PriceInputProps {
 
 export const PriceInput = ({ value, onChange, defaultValue }: PriceInputProps) => {
   
-  // استخدام القيمة الافتراضية إذا لم تكن القيمة محددة
+  // استماع لتحديثات أسعار TradingView واستخدامها لتحديث القيمة
   useEffect(() => {
+    // استخدام القيمة الافتراضية إذا لم تكن القيمة محددة
     if (!value && defaultValue) {
       onChange(defaultValue);
     }
-  }, [defaultValue, value, onChange]);
+    
+    // مستمع لتحديثات السعر من TradingView
+    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        console.log("PriceInput: تحديث السعر تلقائيًا إلى:", event.detail.price);
+        onChange(event.detail.price.toString());
+      }
+    };
+    
+    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    
+    // طلب تحديث السعر الحالي (إذا كان متاحًا)
+    window.dispatchEvent(new Event('request-current-price'));
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    };
+  }, [onChange, defaultValue, value]);
 
   return (
     <div>

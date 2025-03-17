@@ -13,6 +13,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
 }) => {
   const container = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<number | null>(null);
+  const lastExtractedPrice = useRef<number | null>(null);
 
   useEffect(() => {
     if (container.current) {
@@ -52,7 +53,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         } catch (error) {
           console.error('خطأ في استخراج السعر المبدئي:', error);
         }
-      }, 2000);
+      }, 1000);
       
       // إعداد التحديث كل ثانية لتحديثات السعر
       if (intervalRef.current) {
@@ -65,7 +66,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         } catch (error) {
           console.error('خطأ في استخراج السعر في الفاصل الزمني:', error);
         }
-      }, 1000) as unknown as number;
+      }, 500) as unknown as number; // تحديث كل نصف ثانية للحصول على أكثر دقة
       
       return () => {
         if (intervalRef.current) {
@@ -91,8 +92,9 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       const normalizedText = cleanText.replace(/,/g, '.');
       const price = parseFloat(normalizedText);
       
-      if (!isNaN(price) && price > 0) {
+      if (!isNaN(price) && price > 0 && price !== lastExtractedPrice.current) {
         console.log('تم استخراج السعر من الويدجيت:', price);
+        lastExtractedPrice.current = price;
         // إرسال حدث مخصص بالسعر المستخرج
         window.dispatchEvent(
           new CustomEvent('tradingview-price-update', {

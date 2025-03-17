@@ -29,6 +29,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         setCurrentPrice(price);
         setLastUpdateTime(new Date());
         onPriceUpdate?.(price);
+        
+        // إرسال حدث تحديث السعر لباقي المكونات في التطبيق
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price }
+          })
+        );
       }
     };
     
@@ -45,13 +52,45 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       }
     };
     
+    // مستمع لطلبات السعر الحالي
+    const handleRequestCurrentPrice = () => {
+      if (currentPrice) {
+        console.log("تم استلام طلب للسعر الحالي، إرسال:", currentPrice);
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price: currentPrice }
+          })
+        );
+      }
+    };
+    
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    window.addEventListener('request-current-price', handleRequestCurrentPrice);
+    
+    const priceExtractInterval = setInterval(async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null && price !== currentPrice) {
+        console.log(`تم تحديث السعر تلقائيًا: ${price}`);
+        setCurrentPrice(price);
+        setLastUpdateTime(new Date());
+        onPriceUpdate?.(price);
+        
+        // إرسال حدث تحديث السعر لباقي المكونات
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price }
+          })
+        );
+      }
+    }, 1000); // تحديث كل ثانية
     
     return () => {
+      clearInterval(priceExtractInterval);
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+      window.removeEventListener('request-current-price', handleRequestCurrentPrice);
       console.log('تم إزالة مكون LiveTradingViewChart');
     };
-  }, [onPriceUpdate]);
+  }, [onPriceUpdate, currentPrice]);
 
   return (
     <Card className="w-full mb-6">
