@@ -131,7 +131,7 @@ export const formatResultDate = (timestamp: string | Date | null): string => {
   }
 };
 
-// دالة جديدة لحساب الفرق بين تاريخين بتنسيق ساعات:دقائق
+// دالة لحساب الفرق بين تاريخين بتنسيق ساعات:دقائق
 export const formatTimeDuration = (startDate: string | Date | null, endDate: string | Date | null): string => {
   if (!startDate || !endDate) return "-";
   
@@ -161,10 +161,7 @@ export const formatTimeDuration = (startDate: string | Date | null, endDate: str
     // التحقق من أن التواريخ مختلفة
     if (start.getTime() === end.getTime()) {
       console.warn(`Warning: Start and end dates are identical: ${start}`);
-      // إضافة دقائق عشوائية للتفريق بين التواريخ (للتصحيح التلقائي)
-      const randomMinutes = Math.floor(Math.random() * 30) + 15; // 15-45 دقيقة
-      end.setMinutes(end.getMinutes() + randomMinutes);
-      console.log(`Applied automatic correction: Added ${randomMinutes} minutes to end date`);
+      return "-"; // إذا كانت التواريخ متماثلة، نرجع "-" بدلاً من إضافة وقت عشوائي
     }
     
     // حساب الفرق بالدقائق

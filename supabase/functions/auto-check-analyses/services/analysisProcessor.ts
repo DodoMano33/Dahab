@@ -54,36 +54,6 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
           console.error(`Error checking updated analysis ${analysis.id}:`, checkError);
         } else {
           console.log(`Analysis after update: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}, last_checked_at=${updatedAnalysis.last_checked_at}, target_hit=${updatedAnalysis.target_hit}, stop_loss_hit=${updatedAnalysis.stop_loss_hit}`);
-          
-          // فحص إذا كانت النتيجة قد تم تعيينها (تم الوصول إلى الهدف أو وقف الخسارة) ولكن التاريخ غير صحيح
-          if ((updatedAnalysis.target_hit || updatedAnalysis.stop_loss_hit)) {
-            // إذا كان تاريخ النتيجة فارغًا أو يساوي تاريخ الإنشاء، نصحح المشكلة
-            if (!updatedAnalysis.result_timestamp || 
-                updatedAnalysis.result_timestamp === updatedAnalysis.created_at ||
-                updatedAnalysis.result_timestamp === updatedAnalysis.last_checked_at) {
-              console.log(`Setting correct result_timestamp for analysis ${analysis.id} as target/stop was hit`);
-              
-              // استخدام وقت تنفيذ الفحص الحالي كأساس
-              const now = new Date();
-              // إضافة من 10 إلى 60 دقيقة عشوائية
-              const randomMinutes = Math.floor(Math.random() * 50) + 10;
-              now.setMinutes(now.getMinutes() + randomMinutes);
-              const newResultTimestamp = now.toISOString();
-              
-              console.log(`Updating result_timestamp with random delay of ${randomMinutes} minutes, new value: ${newResultTimestamp}`);
-              
-              const { error: updateError } = await supabase
-                .from('search_history')
-                .update({ result_timestamp: newResultTimestamp })
-                .eq('id', analysis.id);
-                
-              if (updateError) {
-                console.error(`Error fixing date issue for analysis ${analysis.id}:`, updateError);
-              } else {
-                console.log(`Fixed date issue: Updated result_timestamp for analysis ${analysis.id} to ${newResultTimestamp}`);
-              }
-            }
-          }
         }
         
         console.log(`Successfully processed analysis ${analysis.id}`);
