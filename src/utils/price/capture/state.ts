@@ -1,17 +1,14 @@
 
 // حالة خدمة التقاط السعر
-let captureInterval: NodeJS.Timeout | null = null;
 let isCapturing = false;
 let lastExtractedPrice: number | null = null;
 let priceElement: HTMLElement | null = null;
-let ocrWorker: any = null;
 
 // الحصول على حالة التقاط
 export const getCaptureState = () => ({
   isCapturing,
   lastExtractedPrice,
-  hasPriceElement: priceElement !== null,
-  hasOcrWorker: ocrWorker !== null
+  hasPriceElement: priceElement !== null
 });
 
 // تعيين العنصر المستهدف
@@ -40,27 +37,9 @@ export const setCapturingState = (state: boolean) => {
 // الحصول على حالة التقاط
 export const isCapturingActive = () => isCapturing;
 
-// تعيين محرك OCR
-export const setOcrWorker = (worker: any) => {
-  ocrWorker = worker;
-};
-
-// الحصول على محرك OCR
-export const getOcrWorker = () => ocrWorker;
-
-// تعيين فاصل التقاط
-export const setCaptureInterval = (interval: NodeJS.Timeout | null) => {
-  captureInterval = interval;
-};
-
-// الحصول على فاصل التقاط
-export const getCaptureInterval = () => captureInterval;
-
 // إعادة تعيين الحالة
 export const resetState = () => {
-  captureInterval = null;
   isCapturing = false;
   lastExtractedPrice = null;
   priceElement = null;
-  // لا نعيد تعيين ocrWorker هنا لأنه سيتم تنظيفه في وظيفة منفصلة
 };

@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { TradingViewStats } from './TradingViewStats';
-import { useExtractedPrice } from '@/hooks/useExtractedPrice';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface CurrentPriceDisplayProps {
   price: number | null;
@@ -12,62 +11,33 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
   price: propPrice, 
   provider = 'CFI' 
 }) => {
-  // استخدام الهوك الجديد للحصول على السعر المستخرج
-  const { 
-    price: extractedPrice, 
-    priceSource, 
-    hasPrice, 
-    isAlphaVantagePrice 
-  } = useExtractedPrice({
-    defaultPrice: propPrice
-  });
+  const [displayPrice, setDisplayPrice] = useState<number | null>(propPrice);
 
-  // إضافة متغير لتخزين السعر المعروض على الشارت
-  const [chartPrice, setChartPrice] = useState<number | null>(null);
-
-  // الاستماع لتحديثات السعر المباشرة من الشارت
+  // تحديث السعر من الشارت بشكل دوري
   useEffect(() => {
-    const updateChartPrice = (event: any) => {
-      if (event.detail && event.detail.price) {
-        // تحديث السعر من الشارت مباشرة (للعرض فقط لا للاستخدام كأولوية)
-        setChartPrice(event.detail.price);
-        console.log('CurrentPriceDisplay: تم استلام السعر من الشارت:', event.detail.price);
+    // تحديث السعر من الخارج
+    if (propPrice !== null) {
+      setDisplayPrice(propPrice);
+    }
+    
+    // استخراج السعر من الشارت بشكل دوري
+    const updatePrice = async () => {
+      const extractedPrice = await extractPriceFromChart();
+      if (extractedPrice !== null) {
+        setDisplayPrice(extractedPrice);
       }
     };
-
-    // الاستماع لحدث السعر من الشارت مباشرة
-    window.addEventListener('chart-price-update', updateChartPrice);
+    
+    // تحديث فوري
+    updatePrice();
+    
+    // جدولة التحديثات
+    const interval = setInterval(updatePrice, 3000);
     
     return () => {
-      window.removeEventListener('chart-price-update', updateChartPrice);
+      clearInterval(interval);
     };
-  }, []);
-
-  // تحديد السعر الفعلي للعرض بشكل واضح والتأكد من تحديثه بشكل صحيح
-  const displayPrice = extractedPrice || chartPrice || propPrice;
-  
-  useEffect(() => {
-    console.log('CurrentPriceDisplay: القيم الحالية:', { 
-      extractedPrice, 
-      chartPrice, 
-      propPrice, 
-      displayPrice 
-    });
-  }, [extractedPrice, chartPrice, propPrice, displayPrice]);
-
-  // تحديد نص مصدر السعر
-  const getPriceSourceText = () => {
-    if (priceSource === 'extracted') {
-      return ` (${provider} - مستخرج)`;
-    } else if (isAlphaVantagePrice) {
-      return ' (Alpha Vantage API)';
-    } else if (chartPrice !== null && !extractedPrice) {
-      return ` (${provider} - مباشر)`;
-    } else if (priceSource === 'tradingview') {
-      return ` (${provider})`;
-    }
-    return ` (${provider})`;
-  };
+  }, [propPrice]);
 
   return (
     <div className="bg-black/95 text-white py-4 px-3 rounded-lg shadow-lg">
@@ -78,14 +48,12 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
             XAUUSD (الذهب)
           </div>
           <div className="text-sm" id="tradingview-price-display">
-            {hasPrice || chartPrice ? 
-              `السعر الحالي: ${displayPrice!.toFixed(2)}${getPriceSourceText()}` : 
+            {displayPrice ? 
+              `السعر الحالي: ${displayPrice.toFixed(2)}` : 
               'بانتظار السعر... (قد يستغرق التحميل بضع ثوانٍ)'
             }
           </div>
         </div>
-        
-        <TradingViewStats symbol={`${provider}:XAUUSD`} />
       </div>
     </div>
   );

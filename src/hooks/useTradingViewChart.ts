@@ -4,12 +4,8 @@
  */
 import { useEffect, useRef } from 'react';
 import { createTradingViewWidget } from '@/utils/tradingview/chartSetup';
-import { 
-  initPriceCapture, 
-  requestInitialPrice, 
-  setupPriceUpdateChecker 
-} from '@/utils/tradingview/priceUpdater';
-import { cleanupPriceCapture } from '@/utils/price/screenshotPriceExtractor';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
+import { setCapturingState } from '@/utils/price/capture/state';
 
 interface UseTradingViewChartProps {
   symbol?: string;
@@ -32,29 +28,47 @@ export const useTradingViewChart = ({
     // Create and setup the TradingView widget
     const { widgetDiv } = createTradingViewWidget(containerRef.current, symbol, priceProvider);
     
-    // Start price capture with timers
-    const startCaptureTimer = initPriceCapture();
+    // تفعيل وضع التقاط السعر
+    setCapturingState(true);
     
-    // Schedule multiple initial price requests to ensure we get a price
-    const initialPriceTimer = setTimeout(requestInitialPrice, 3000);
-    const secondPriceTimer = setTimeout(requestInitialPrice, 5000);
-    const thirdPriceTimer = setTimeout(requestInitialPrice, 8000);
+    // جدولة استخراج السعر بشكل دوري
+    const startPriceExtraction = () => {
+      // استخراج السعر المبدئي
+      const extractInitialPrice = async () => {
+        const price = await extractPriceFromChart();
+        if (price !== null) {
+          currentPriceRef.current = price;
+          onPriceUpdate?.(price);
+        }
+      };
+      
+      // محاولة استخراج السعر مبدئيًا
+      setTimeout(extractInitialPrice, 5000);
+      setTimeout(extractInitialPrice, 10000);
+      
+      // جدولة تحديثات منتظمة
+      const extractionInterval = setInterval(async () => {
+        const price = await extractPriceFromChart();
+        if (price !== null) {
+          currentPriceRef.current = price;
+          onPriceUpdate?.(price);
+        }
+      }, 3000);
+      
+      return extractionInterval;
+    };
     
-    // Setup periodic price update checker
-    const priceUpdateChecker = setupPriceUpdateChecker(currentPriceRef, priceProvider);
+    // بدء استخراج السعر
+    const extractionInterval = startPriceExtraction();
 
     return () => {
-      // Cleanup all timers
-      clearTimeout(startCaptureTimer);
-      clearTimeout(initialPriceTimer);
-      clearTimeout(secondPriceTimer);
-      clearTimeout(thirdPriceTimer);
-      clearInterval(priceUpdateChecker);
+      // إيقاف التقاط السعر
+      setCapturingState(false);
       
-      // Stop and cleanup price capture
-      cleanupPriceCapture();
+      // إيقاف التحديثات الدورية
+      clearInterval(extractionInterval);
       
-      // Clean container
+      // تنظيف المحتوى
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
       }

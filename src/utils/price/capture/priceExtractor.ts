@@ -1,13 +1,11 @@
 
 /**
- * وحدة استخراج السعر الرئيسية
+ * وحدة استخراج السعر من الشارت فقط
  */
 
 import { getPriceElementOrFind } from './elementFinder';
-import { isCapturingActive, getLastExtractedPrice, setLastExtractedPrice } from './state';
+import { setLastExtractedPrice } from './state';
 import { extractPriceFromDirectText } from './directTextExtractor';
-import { extractPriceUsingOCR } from './ocrExtractor';
-import { broadcastPrice, requestPriceUpdate } from './priceBroadcaster';
 
 /**
  * استخراج السعر من عنصر الشارت
@@ -21,91 +19,26 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       return null;
     }
     
-    // البحث عن نص CFI في أو حول العنصر للتأكد من أنه سعر CFI
-    const isCFIPrice = checkIfCFIPrice(priceElement);
-    
     // محاولة قراءة النص مباشرة من العنصر
     const directText = priceElement.textContent?.trim();
     const price = extractPriceFromDirectText(directText);
     
     if (price !== null) {
-      console.log(`تم استخراج سعر ${isCFIPrice ? 'CFI' : ''} بقيمة: ${price}`);
+      console.log(`تم استخراج سعر بقيمة: ${price}`);
       
       // حفظ السعر المستخرج
       setLastExtractedPrice(price);
       
-      // إرسال تحديث السعر مباشرة من الشارت باعتباره مصدر "extracted" للأولوية العالية
-      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-        detail: { 
-          price,
-          source: 'extracted',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-      
-      // إرسال تحديث لأي استجابة مطلوبة للسعر الحالي
-      window.dispatchEvent(new CustomEvent('current-price-response', { 
-        detail: { 
-          price,
-          source: 'extracted',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-      
-      // أيضًا إرسال كحدث chart-price-update للتوافق مع النظام القديم
-      window.dispatchEvent(new CustomEvent('chart-price-update', { 
-        detail: { 
-          price,
-          source: 'chart',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
+      // إبلاغ السعر مباشرة إلى أي عنصر مرئي للعرض
+      const priceDisplayElement = document.getElementById('tradingview-price-display');
+      if (priceDisplayElement) {
+        priceDisplayElement.textContent = `السعر الحالي: ${price.toFixed(2)}`;
+      }
       
       return price;
     }
     
-    // استخدام OCR كخطة احتياطية
-    const ocrPrice = await extractPriceUsingOCR(priceElement);
-    
-    if (ocrPrice !== null) {
-      // حفظ السعر المستخرج بواسطة OCR
-      setLastExtractedPrice(ocrPrice);
-      
-      // إرسال تحديث السعر عند نجاح استخراجه عبر OCR كمصدر "extracted" للأولوية العالية
-      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-        detail: { 
-          price: ocrPrice,
-          source: 'extracted',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-      
-      // إرسال تحديث لأي استجابة مطلوبة للسعر الحالي
-      window.dispatchEvent(new CustomEvent('current-price-response', { 
-        detail: { 
-          price: ocrPrice,
-          source: 'extracted',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-      
-      // أيضًا إرسال كحدث chart-price-update للتوافق
-      window.dispatchEvent(new CustomEvent('chart-price-update', { 
-        detail: { 
-          price: ocrPrice,
-          source: 'ocr',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-    }
-    
-    return ocrPrice;
+    return null;
   } catch (error) {
     console.error('فشل في استخراج السعر من الشارت:', error);
     return null;
@@ -113,55 +46,17 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
 };
 
 /**
- * التحقق مما إذا كان عنصر السعر ينتمي إلى CFI
- */
-const checkIfCFIPrice = (element: Element): boolean => {
-  try {
-    // البحث في العنصر وأي عناصر محيطة عن نص CFI أو تحديد آخر
-    const elementText = element.textContent || '';
-    if (elementText.includes('CFI')) return true;
-    
-    // البحث في العناصر القريبة
-    const parentElement = element.parentElement;
-    if (parentElement) {
-      if (parentElement.textContent?.includes('CFI')) return true;
-      
-      // التحقق من العناصر المجاورة
-      const siblings = Array.from(parentElement.children);
-      for (const sibling of siblings) {
-        if (sibling.textContent?.includes('CFI')) return true;
-      }
-    }
-    
-    // البحث في منطقة أوسع حول العنصر
-    const container = document.querySelector('.tv-chart-view__area') || document.body;
-    const cfiElements = container.querySelectorAll('*');
-    for (const el of Array.from(cfiElements).slice(0, 20)) { // تحقق من أول 20 عنصر فقط لتحسين الأداء
-      if (el.textContent?.includes('CFI')) return true;
-    }
-    
-    return false;
-  } catch (e) {
-    console.warn('خطأ أثناء التحقق من مصدر السعر:', e);
-    return false;
-  }
-};
-
-/**
- * الدالة الرئيسية لاستخراج السعر وبثه
+ * الدالة الرئيسية لاستخراج السعر
  */
 export const extractAndBroadcastPrice = async () => {
   try {
-    if (!isCapturingActive()) {
-      console.log('عملية التقاط السعر غير نشطة حالياً');
-      return;
-    }
-    
     console.log('بدء عملية استخراج السعر...');
     const price = await extractPriceFromChart();
     if (price !== null) {
-      // تحديد مصدر السعر إلى extracted في البث لإعطائه الأولوية القصوى
-      broadcastPrice(price, true, 'CFI:XAUUSD');
+      console.log(`تم استخراج السعر: ${price}`);
+      
+      // تحديث أي عناصر واجهة مستخدم
+      updateUIElements(price);
     } else {
       console.log('لم يتم استخراج سعر صالح');
     }
@@ -171,69 +66,28 @@ export const extractAndBroadcastPrice = async () => {
 };
 
 /**
- * الاستجابة لطلبات السعر المستخرج بشكل مباشر
+ * تحديث عناصر واجهة المستخدم بالسعر الجديد
  */
-export const handleExtractedPriceRequest = () => {
-  try {
-    const lastPrice = getLastExtractedPrice();
-    if (lastPrice) {
-      console.log('الاستجابة لطلب السعر المستخرج بقيمة:', lastPrice);
-      
-      // إرسال الحدث بجميع أنواع الأحداث للتوافق مع جميع المكونات
-      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-        detail: { 
-          price: lastPrice,
-          source: 'extracted',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-      
-      window.dispatchEvent(new CustomEvent('current-price-response', { 
-        detail: { 
-          price: lastPrice,
-          source: 'extracted',
-          timestamp: Date.now(),
-          provider: 'CFI'
-        }
-      }));
-      
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('خطأ في الاستجابة لطلب السعر المستخرج:', error);
-    return false;
-  }
-};
-
-// إضافة مستمع لطلبات السعر المستخرج
-if (typeof window !== 'undefined') {
-  window.addEventListener('request-extracted-price', () => {
-    handleExtractedPriceRequest();
+const updateUIElements = (price: number) => {
+  // تحديث أي عناصر عرض للسعر في واجهة المستخدم
+  const priceElements = document.querySelectorAll('[data-price-display]');
+  priceElements.forEach(element => {
+    element.textContent = price.toString();
   });
-}
+};
 
 /**
  * طلب تحديث فوري للسعر الحالي
  */
 export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
-  // محاولة بث السعر المخزن أولاً
-  if (handleExtractedPriceRequest() || requestPriceUpdate()) {
-    return true;
-  }
-  
-  // إذا لم يكن هناك سعر مخزن، حاول استخراج سعر جديد
+  // محاولة استخراج سعر جديد
   console.log('محاولة استخراج سعر جديد للتحديث الفوري...');
   const price = await extractPriceFromChart();
   
   if (price !== null) {
-    broadcastPrice(price, true, 'CFI:XAUUSD');
+    updateUIElements(price);
     return true;
   }
   
   return false;
 };
-
-// تصدير الوظائف الرئيسية للاستخدام من قبل ملفات أخرى
-export { broadcastPrice, requestPriceUpdate } from './priceBroadcaster';

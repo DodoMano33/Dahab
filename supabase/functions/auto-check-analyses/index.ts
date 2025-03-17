@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts';
 import { handleOptionsRequest, handleError, parseRequestBody, createSuccessResponse } from './utils/requestHandlers.ts';
 import { processAnalyses } from './services/analysisProcessor.ts';
-import { getLastStoredPrice, getEffectivePrice } from './services/priceService.ts';
+import { getEffectivePrice } from './services/priceService.ts';
 import { updateLastCheckedTime, getAnalysisStats } from './services/updateService.ts';
 
 Deno.serve(async (req) => {
@@ -54,29 +54,6 @@ Deno.serve(async (req) => {
     // الحصول على الوقت الحالي لجميع التحديثات
     const currentTime = new Date().toISOString();
     
-    // التحقق من تواريخ التحليلات في قاعدة البيانات للتشخيص
-    try {
-      const { data: sampleAnalyses, error: sampleError } = await supabase
-        .from('search_history')
-        .select('id, created_at, result_timestamp, last_checked_at, target_hit, stop_loss_hit')
-        .limit(3);
-        
-      if (!sampleError && sampleAnalyses && sampleAnalyses.length > 0) {
-        console.log('Sample analyses dates for debugging:');
-        sampleAnalyses.forEach(analysis => {
-          console.log(`Analysis ID ${analysis.id}:`, {
-            created_at: analysis.created_at,
-            result_timestamp: analysis.result_timestamp,
-            last_checked_at: analysis.last_checked_at,
-            target_hit: analysis.target_hit,
-            stop_loss_hit: analysis.stop_loss_hit
-          });
-        });
-      }
-    } catch (debugError) {
-      console.error('Error checking sample analyses dates:', debugError);
-    }
-    
     // الحصول على التحليلات النشطة وتحديث وقت آخر فحص
     const { analyses, count, fetchError } = await updateLastCheckedTime(supabase, currentTime, effectivePrice);
     
@@ -114,7 +91,6 @@ Deno.serve(async (req) => {
       currentTime,
       checked: processedCount,
       totalAnalyses: analyses.length,
-      tradingViewPriceUsed: effectivePrice !== null,
       errors: errors.length > 0 ? errors : undefined,
       symbol: requestData?.symbol || 'XAUUSD',
       price: effectivePrice,

@@ -1,74 +1,34 @@
 
 /**
- * Gets the last stored price from the database as fallback
+ * استخدام سعر الشارت المباشر فقط
  */
 export async function getLastStoredPrice(supabase: any): Promise<number> {
-  try {
-    console.log('Trying to get last stored price from database as fallback');
-    
-    const { data: lastPriceData, error: lastPriceError } = await supabase
-      .from('search_history')
-      .select('last_checked_price')
-      .is('last_checked_price', 'not.null')
-      .order('last_checked_at', { ascending: false })
-      .limit(1);
-    
-    if (!lastPriceError && lastPriceData?.length > 0) {
-      console.log('Using last stored price:', lastPriceData[0].last_checked_price);
-      return lastPriceData[0].last_checked_price;
-    } else {
-      if (lastPriceError) {
-        console.error('Database error when retrieving last price:', lastPriceError);
-      } else {
-        console.warn('No previous price records found in database');
-      }
-      console.warn('Could not retrieve last stored price, using default');
-      // استخدام قيمة افتراضية معقولة في أسوأ الحالات
-      return 2000; // قيمة افتراضية للذهب
-    }
-  } catch (lastPriceErr) {
-    console.error('Exception in getLastStoredPrice:', lastPriceErr);
-    // استخدام قيمة افتراضية
-    return 2000;
-  }
+  // سنستخدم قيمة افتراضية لأننا الآن نعتمد فقط على استخراج السعر من الشارت
+  console.log('استخدام قيمة افتراضية لسعر الذهب');
+  return 2000; // قيمة افتراضية للذهب
 }
 
 /**
- * Gets the current price either from the request or fallback methods
+ * الحصول على السعر المستخرج من الشارت فقط
  */
 export function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
   return new Promise(async (resolve) => {
     try {
-      // فحص معلومات التشخيص للطلب
-      console.log('Request price data:', {
-        hasCurrentPrice: Boolean(requestData?.currentPrice),
-        priceType: typeof requestData?.currentPrice,
-        priceValue: requestData?.currentPrice
-      });
+      // التحقق من وجود سعر من الشارت في طلب الـ API
+      const chartPrice = requestData?.currentPrice || null;
       
-      // محاولة استخدام السعر من الطلب (هذا سيكون السعر المستخرج من الصورة في الغالب)
-      const tradingViewPrice = requestData?.currentPrice || null;
-      
-      if (tradingViewPrice !== null && !isNaN(tradingViewPrice)) {
-        console.log('Using extracted price from request:', tradingViewPrice);
-        resolve(tradingViewPrice);
+      if (chartPrice !== null && !isNaN(chartPrice)) {
+        console.log('استخدام السعر المستخرج من الشارت:', chartPrice);
+        resolve(chartPrice);
         return;
       }
       
-      console.log('No valid price in request, falling back to last stored price');
-      
-      // استخدام آخر سعر محفوظ كخطة بديلة
-      try {
-        const lastPrice = await getLastStoredPrice(supabase);
-        console.log('Retrieved fallback price:', lastPrice);
-        resolve(lastPrice);
-      } catch (err) {
-        console.error('Failed to get last stored price, using null:', err);
-        resolve(null);
-      }
+      // إذا لم يكن هناك سعر من الشارت، استخدم القيمة الافتراضية
+      console.log('لا يوجد سعر مستخرج من الشارت، استخدام القيمة الافتراضية');
+      resolve(2000);
     } catch (err) {
-      console.error('Exception in getEffectivePrice:', err);
-      resolve(null);
+      console.error('خطأ في getEffectivePrice:', err);
+      resolve(2000);
     }
   });
 }

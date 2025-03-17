@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { useExtractedPrice } from "@/hooks/useExtractedPrice";
+import { extractPriceFromChart } from "@/utils/price/capture/priceExtractor";
 
 interface PriceInputProps {
   value: string;
@@ -19,23 +19,38 @@ export const PriceInput = ({
 }: PriceInputProps) => {
   // حالة للتبديل بين الوضع التلقائي واليدوي
   const [useAutoPrice, setUseAutoPrice] = useState(true);
+  const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
   
-  // استخدام الهوك الجديد للحصول على السعر المستخرج
-  const { price: extractedPrice, priceSource, hasPrice } = useExtractedPrice({
-    onPriceChange: (newPrice) => {
-      if (useAutoPrice) {
-        onChange(newPrice.toString());
-      }
-    },
-    defaultPrice: tradingViewPrice
-  });
-
-  // تحديث القيمة عند تغيير الوضع التلقائي
+  // استخراج السعر من الشارت بشكل دوري
   useEffect(() => {
-    if (useAutoPrice && hasPrice && extractedPrice !== null) {
-      onChange(extractedPrice.toString());
+    // التحقق من وجود سعر مباشر من TradingView أولاً
+    if (tradingViewPrice !== null && tradingViewPrice !== undefined) {
+      setExtractedPrice(tradingViewPrice);
+      if (useAutoPrice) {
+        onChange(tradingViewPrice.toString());
+      }
+      return;
     }
-  }, [useAutoPrice, hasPrice, extractedPrice, onChange]);
+    
+    // محاولة استخراج السعر من الشارت
+    const fetchPrice = async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        setExtractedPrice(price);
+        if (useAutoPrice) {
+          onChange(price.toString());
+        }
+      }
+    };
+    
+    // جلب السعر مباشرة ثم جدولة تحديثات دورية
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 3000);
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [tradingViewPrice, useAutoPrice, onChange]);
 
   // التعامل مع التبديل بين الوضع التلقائي واليدوي
   const toggleAutoPriceMode = () => {
@@ -44,20 +59,6 @@ export const PriceInput = ({
     
     if (newMode && extractedPrice !== null) {
       onChange(extractedPrice.toString());
-    }
-  };
-
-  // تحديد رسائل للعرض استناداً إلى مصدر السعر
-  const getPriceSourceLabel = () => {
-    switch (priceSource) {
-      case 'extracted':
-        return "السعر المباشر من الصورة:";
-      case 'tradingview':
-        return "السعر المباشر من TradingView:";
-      case 'default':
-        return "السعر الافتراضي:";
-      default:
-        return "السعر غير متاح";
     }
   };
 
@@ -91,9 +92,9 @@ export const PriceInput = ({
         dir="ltr"
         disabled={useAutoPrice}
       />
-      {hasPrice && (
+      {extractedPrice !== null && (
         <p className={`text-sm mt-1 ${useAutoPrice ? 'text-green-500' : 'text-gray-500'}`}>
-          {getPriceSourceLabel()} {formatPrice(extractedPrice)}
+          السعر المباشر من الشارت: {formatPrice(extractedPrice)}
         </p>
       )}
     </div>

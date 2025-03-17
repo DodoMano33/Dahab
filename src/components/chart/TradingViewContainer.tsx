@@ -1,8 +1,6 @@
 
-import React, { useEffect } from 'react';
-import { useTradingViewChart } from '@/hooks/useTradingViewChart';
-import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
-import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
+import React, { useEffect, useRef } from 'react';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 
 interface TradingViewContainerProps {
   symbol?: string;
@@ -18,49 +16,38 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
   // استخدام رمز ثابت مع مزود السعر المحدد
   const forcedSymbol = "XAUUSD"; 
   const priceProvider = "CFI";
+  const containerRef = useRef<HTMLDivElement>(null);
+  const currentPriceRef = useRef<number | null>(null);
   
-  // استخدام هوك الشارت
-  const { containerRef, currentPriceRef } = useTradingViewChart({ 
-    symbol: forcedSymbol,
-    onPriceUpdate
-  });
-
-  // استخدام هوك الرسائل لتلقي تحديثات السعر
-  const { currentPrice } = useTradingViewMessages({
-    symbol: forcedSymbol,
-    onSymbolChange,
-    onPriceUpdate: (price) => {
-      currentPriceRef.current = price;
-      onPriceUpdate?.(price);
-      
-      // إرسال تحديث السعر إلى جميع مكونات التطبيق مع تحديد المزود
-      window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
-        detail: { 
-          price, 
-          symbol: `${priceProvider}:${forcedSymbol}`,
-          timestamp: Date.now(),
-          provider: priceProvider
-        }
-      }));
-      
-      // إضافة حدث مخصص لتحديثات سعر الشارت مباشرة
-      window.dispatchEvent(new CustomEvent('chart-price-update', { 
-        detail: { 
-          price, 
-          symbol: `${priceProvider}:${forcedSymbol}`,
-          timestamp: Date.now(),
-          provider: priceProvider,
-          source: 'tradingview'
-        }
-      }));
-    }
-  });
-
-  // تفعيل فحص التحليلات
-  useAnalysisChecker({
-    symbol: forcedSymbol,
-    currentPriceRef
-  });
+  // استخراج السعر من الشارت بشكل دوري
+  useEffect(() => {
+    // استخراج السعر عند التحميل
+    const extractInitialPrice = async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        currentPriceRef.current = price;
+        onPriceUpdate?.(price);
+      }
+    };
+    
+    // جدولة استخراج متكرر للسعر
+    const extractionInterval = setInterval(async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null && price !== currentPriceRef.current) {
+        currentPriceRef.current = price;
+        onPriceUpdate?.(price);
+      }
+    }, 3000);
+    
+    // البدء باستخراج السعر بعد تحميل الشارت
+    const initialExtractionTimeout = setTimeout(extractInitialPrice, 5000);
+    
+    // التنظيف عند إلغاء تحميل المكون
+    return () => {
+      clearInterval(extractionInterval);
+      clearTimeout(initialExtractionTimeout);
+    };
+  }, [onPriceUpdate]);
 
   return (
     <div 
