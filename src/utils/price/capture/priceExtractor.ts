@@ -27,7 +27,7 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       const chartPriceElements = document.querySelectorAll('.chart-toolbar .chart-container .chart-price, .chart-title-indicator, .pane-legend-line .pane-legend-line__value');
       for (const element of chartPriceElements) {
         const text = element.textContent?.trim();
-        if (text && /\b(1|2|3)\d{3}(\.\d{1,2})?\b/.test(text)) {
+        if (text && /\b(2|3)\d{3}(\.\d{1,2})?\b/.test(text)) {
           console.log('تم العثور على عنصر سعر في الشارت:', text);
           const price = parseFloat(text.replace(/[^\d.]/g, ''));
           if (!isNaN(price) && price >= 1800 && price <= 3500) {
@@ -41,11 +41,11 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       // البحث في جميع العناصر للعثور على سعر معقول
       for (const element of allElements) {
         const text = element.textContent?.trim();
-        if (text && /\b(1|2|3)\d{3}(\.\d{1,2})?\b/.test(text)) {
+        if (text && /\b(2|3)\d{3}(\.\d{1,2})?\b/.test(text)) {
           console.log('تم العثور على عنصر يحتوي على نص يشبه سعر الذهب:', text);
           const price = parseFloat(text.replace(/[^\d.]/g, ''));
           if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            console.log(`تم استخراج سعر يبدو منطقياً: ${price}`);
+            console.log(`تم استخراج سعر يبدو منطقيًا: ${price}`);
             setLastExtractedPrice(price);
             return price;
           }
@@ -55,7 +55,7 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       // محاولة البحث عن السعر مباشرة في العنوان
       const titleElement = document.querySelector('.chart-title-price');
       if (titleElement && titleElement.textContent) {
-        const priceMatch = titleElement.textContent.match(/\b(1|2|3)\d{3}(\.\d{1,2})?\b/);
+        const priceMatch = titleElement.textContent.match(/\b(2|3)\d{3}(\.\d{1,2})?\b/);
         if (priceMatch) {
           const price = parseFloat(priceMatch[0]);
           console.log(`تم استخراج السعر من عنوان الشارت: ${price}`);
@@ -93,19 +93,6 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
           console.log(`تم استخراج السعر من .js-symbol-last: ${price}`);
           setLastExtractedPrice(price);
           return price;
-        }
-      }
-      
-      // البحث في العناصر المضافة حديثًا بواسطة TradingView
-      const tradingviewPriceElements = document.querySelectorAll('.tv-symbol-price-quote__value, .price-oGzGICxJ, .lastValue-l9kLD2Bx');
-      for (const element of tradingviewPriceElements) {
-        if (element.textContent) {
-          const price = parseFloat(element.textContent.replace(/[^\d.]/g, ''));
-          if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            console.log(`تم استخراج السعر من عنصر TradingView الجديد: ${price}`);
-            setLastExtractedPrice(price);
-            return price;
-          }
         }
       }
       
