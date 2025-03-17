@@ -67,6 +67,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     window.addEventListener('request-current-price', handleRequestCurrentPrice);
     
+    // تعديل الفاصل الزمني إلى 1 ثانية
     const priceExtractInterval = setInterval(async () => {
       const price = await extractPriceFromChart();
       if (price !== null && price !== currentPrice) {
@@ -82,7 +83,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           })
         );
       }
-    }, 1000); // تحديث كل ثانية
+    }, 1000); // تحديث كل 1 ثانية
     
     return () => {
       clearInterval(priceExtractInterval);

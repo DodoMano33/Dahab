@@ -55,7 +55,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         }
       }, 1000);
       
-      // إعداد التحديث كل ثانية لتحديثات السعر
+      // إعداد التحديث كل نصف ثانية لتحديثات السعر (أسرع من قبل)
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
