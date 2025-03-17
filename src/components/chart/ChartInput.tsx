@@ -6,7 +6,6 @@ interface ChartInputProps {
   onTradingViewConfig: (
     symbol: string,
     timeframe: string,
-    providedPrice?: number,
     isScalping?: boolean,
     isAI?: boolean,
     isSMC?: boolean,
@@ -31,7 +30,6 @@ interface ChartInputProps {
   isAnalyzing: boolean;
   currentAnalysis?: string;
   defaultSymbol?: string;
-  defaultPrice?: number | null;
 }
 
 export const ChartInput = ({
@@ -39,8 +37,7 @@ export const ChartInput = ({
   onHistoryClick,
   isAnalyzing,
   currentAnalysis,
-  defaultSymbol,
-  defaultPrice
+  defaultSymbol
 }: ChartInputProps) => {
   return (
     <ChartAnalysisForm
@@ -49,7 +46,6 @@ export const ChartInput = ({
       onHistoryClick={onHistoryClick || (() => {})}
       currentAnalysis={currentAnalysis}
       defaultSymbol={defaultSymbol}
-      defaultPrice={defaultPrice}
     />
   );
 };

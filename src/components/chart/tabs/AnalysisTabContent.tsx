@@ -21,6 +21,9 @@ interface AnalysisTabContentProps {
   setIsHistoryOpen: (open: boolean) => void;
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
+  onManualCheck: () => void;
+  isCheckLoading: boolean;
+  lastCheckTime: Date | null;
 }
 
 export const AnalysisTabContent = ({
@@ -36,6 +39,9 @@ export const AnalysisTabContent = ({
   setIsHistoryOpen,
   onAnalysisComplete,
   chartDisplayComponent,
+  onManualCheck,
+  isCheckLoading,
+  lastCheckTime
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">

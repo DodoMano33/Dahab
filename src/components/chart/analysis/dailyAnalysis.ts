@@ -34,27 +34,26 @@ export const analyzeDailyChart = async (
         return;
       }
 
-      const prices = detectPrices(imageData, currentPrice);
+      const prices = detectPrices(imageData);
       console.log("الأسعار المكتشفة للتحليل اليومي:", prices);
 
       const direction = detectTrend(prices) as "صاعد" | "هابط";
-      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
-      const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
+      const { support, resistance } = calculateSupportResistance(prices);
+      const stopLoss = calculateStopLoss(currentPrice, direction);
       const fibLevelsObj = calculateFibonacciLevels(resistance, support);
       const fibLevels = fibLevelsObj.allLevels ? fibLevelsObj.allLevels : 
                          fibLevelsObj.retracementLevels.map(level => ({ 
                            level: level.level, 
                            price: level.price 
                          }));
-      const targetPrices = calculateTargets(currentPrice, direction, support, resistance, timeframe);
+      const targetPrices = calculateTargets(currentPrice, direction);
 
       const bestEntryPoint = calculateBestEntryPoint(
         currentPrice,
         direction,
         support,
         resistance,
-        fibLevels,
-        timeframe
+        fibLevels
       );
 
       const pattern = direction === "صاعد" ? 
@@ -92,12 +91,12 @@ export const analyzeDailyChart = async (
   });
 };
 
-const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {
+const detectPrices = (imageData: ImageData): number[] => {
   const prices: number[] = [];
   const height = imageData.height;
   
   const currentPriceRow = Math.floor(height * 0.5); 
-  let currentPrice = providedCurrentPrice || 2622; 
+  let currentPrice = 2622; // قيمة ثابتة
   
   for (let y = 0; y < height; y += height / 10) {
     let sum = 0;

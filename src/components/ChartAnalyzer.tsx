@@ -36,7 +36,6 @@ export const ChartAnalyzer = () => {
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [autoSymbol, setAutoSymbol] = useState<string>("XAUUSD");
-  const [autoPrice, setAutoPrice] = useState<number | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -68,11 +67,6 @@ export const ChartAnalyzer = () => {
   const handleSymbolChange = useCallback((symbol: string) => {
     console.log("Chart symbol changed to:", symbol);
     setAutoSymbol(symbol);
-  }, []);
-
-  const handlePriceUpdate = useCallback((price: number) => {
-    console.log("Chart price updated to:", price);
-    setAutoPrice(price);
   }, []);
 
   const handleAnalysisComplete = useCallback((newItem: SearchHistoryItem) => {
@@ -116,9 +110,7 @@ export const ChartAnalyzer = () => {
         searchHistoryStats={analysisStats}
         isRefreshing={isRefreshing}
         autoSymbol={autoSymbol}
-        autoPrice={autoPrice}
         onSymbolChange={handleSymbolChange}
-        onPriceUpdate={handlePriceUpdate}
         onAddToSearchHistory={addToSearchHistory}
         isAnalyzing={isAnalyzing}
         currentAnalysis={currentAnalysis || ""}

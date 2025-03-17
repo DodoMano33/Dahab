@@ -70,6 +70,8 @@ export const AnalysisForm = ({
       }}
       onHistoryClick={onHistoryClick}
       isAnalyzing={isAnalyzing}
+      currentAnalysis={currentAnalysis}
+      defaultSymbol={defaultSymbol}
     />
   );
 };

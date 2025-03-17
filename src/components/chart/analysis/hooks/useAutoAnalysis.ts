@@ -89,10 +89,12 @@ export const useAutoAnalysis = () => {
           
           console.log(`Using analysis type: ${randomAnalysisType}, timeframe: ${randomTimeframe}`);
           
-          const { handleTradingViewConfig } = await import("../../analysis/AnalysisHandler");
+          // تحميل مكون AnalysisHandler ديناميكيًا
+          const AnalysisHandlerModule = await import("../../analysis/AnalysisHandler");
+          const handler = AnalysisHandlerModule.useAnalysisHandler();
           
           // إجراء التحليل باستخدام قيمة ثابتة بدلاً من السعر الفعلي
-          analysisPromiseRef.current = handleTradingViewConfig(
+          analysisPromiseRef.current = handler.handleTradingViewConfig(
             symbol, 
             randomTimeframe,
             randomAnalysisType === 'scalping',

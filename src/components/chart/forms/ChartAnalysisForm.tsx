@@ -77,7 +77,7 @@ export const ChartAnalysisForm = ({
       
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
-        onSubmit={handleSubmit}
+        onSubmit={(type) => handleSubmit(type)} 
         onHistoryClick={onHistoryClick}
         currentAnalysis={currentAnalysis}
       />

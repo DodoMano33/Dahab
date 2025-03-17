@@ -1,7 +1,6 @@
 
 import { TableRow } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
-import { useState, useEffect } from "react";
 import { CheckboxCell } from "./cells/CheckboxCell";
 import { MarketStatusCell } from "./cells/MarketStatusCell";
 import { LastCheckedCell } from "./cells/LastCheckedCell";
@@ -29,6 +28,7 @@ interface HistoryRowProps {
   onSelect?: () => void;
   analysis_duration_hours?: number;
   last_checked_at?: Date | string | null;
+  last_checked_price?: number;
 }
 
 export const HistoryRow = ({
@@ -43,6 +43,7 @@ export const HistoryRow = ({
   onSelect,
   analysis_duration_hours,
   last_checked_at,
+  last_checked_price,
 }: HistoryRowProps) => {
   // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
   const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 

@@ -59,7 +59,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
 
       // تحميل مكون AnalysisHandler ديناميكيًا
       const { useAnalysisHandler } = await import("../AnalysisHandler");
-      const { handleTradingViewConfig } = useAnalysisHandler();
+      const handler = useAnalysisHandler();
+      const { handleTradingViewConfig } = handler;
 
       // إجراء التحليل باستخدام قيمة ثابتة بدل السعر
       const analysisResult = await handleTradingViewConfig(
