@@ -3,127 +3,109 @@ import React, { useEffect, useRef } from 'react';
 
 interface TradingViewWidgetProps {
   symbol?: string;
-  interval?: string;
   theme?: string;
   allowSymbolChange?: boolean;
 }
 
 const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
   symbol = 'XAUUSD',
-  interval = '1D',
-  theme = 'dark',
-  allowSymbolChange = true,
+  theme = 'light',
 }) => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/tv.js";
-    script.async = true;
-    script.onload = () => createWidget();
-    document.head.appendChild(script);
-
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (window.TradingView) {
-      createWidget();
-    }
-  }, [symbol, interval, theme, allowSymbolChange]);
-
-  const createWidget = () => {
-    if (container.current && window.TradingView) {
+    if (container.current) {
       container.current.innerHTML = '';
-      const widgetOptions = {
-        container_id: 'tradingview_chart',
-        symbol: symbol,
-        interval: interval,
-        theme: theme,
-        style: '1',
-        locale: 'ar_AE',
-        toolbar_bg: '#f1f3f6',
-        enable_publishing: false,
-        hide_side_toolbar: false,
-        allow_symbol_change: allowSymbolChange,
-        save_image: true,
-        height: 500,
-        width: '100%',
-        autosize: true,
-      };
-
-      const tvWidget = new window.TradingView.widget(widgetOptions);
-
-      tvWidget.onChartReady(() => {
-        console.log('TradingView chart ready');
-        
-        // إضافة مستمع لتغيير الرمز
-        if (allowSymbolChange) {
-          tvWidget.chart().onSymbolChanged().subscribe(null, (symbolInfo) => {
-            const newSymbol = symbolInfo.name;
-            console.log('Symbol changed to:', newSymbol);
-            
-            // إطلاق حدث تغيير الرمز
-            window.dispatchEvent(
-              new CustomEvent('tradingview-symbol-change', {
-                detail: { symbol: newSymbol }
-              })
-            );
-          });
-        }
-
-        // استخراج السعر وإرسال حدث
-        const extractPriceInterval = setInterval(() => {
-          try {
-            let priceValue = null;
-            
-            // محاولة استخراج السعر من واجهة برمجة التطبيق
-            try {
-              const symbolInfo = tvWidget.chart().symbolExt();
-              if (symbolInfo && symbolInfo.last) {
-                priceValue = symbolInfo.last;
-              }
-            } catch (apiError) {
-              console.warn('لم نتمكن من الحصول على السعر من API:', apiError);
-            }
-            
-            // إذا فشلت محاولة API، نحاول استخراج السعر من العناصر المرئية
-            if (!priceValue) {
-              const priceElements = document.querySelectorAll('.pane-legend-line > .pane-legend-item-value');
-              if (priceElements && priceElements.length > 0) {
-                // السعر عادة في أول عنصر
-                const priceText = priceElements[0].textContent;
-                if (priceText) {
-                  // تنظيف النص واستخراج الرقم
-                  priceValue = parseFloat(priceText.replace(/[^\d.-]/g, ''));
-                }
-              }
-            }
-
-            if (priceValue !== null && !isNaN(priceValue)) {
-              console.log('Current price from TradingView:', priceValue);
-              window.dispatchEvent(
-                new CustomEvent('tradingview-price-update', {
-                  detail: { price: priceValue }
-                })
-              );
-            }
-          } catch (error) {
-            console.error('Error extracting price from TradingView:', error);
-          }
-        }, 1000);
-
-        // تنظيف interval عند إزالة المكون
-        return () => clearInterval(extractPriceInterval);
+      
+      // Create the widget container
+      const widgetContainer = document.createElement('div');
+      widgetContainer.className = 'tradingview-widget-container';
+      widgetContainer.style.width = '100%';
+      widgetContainer.style.height = '100%';
+      
+      // Create script element for the Single Quote Widget
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.async = true;
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+      
+      // Set the configuration
+      script.innerHTML = JSON.stringify({
+        symbol: `CFI:${symbol}`,
+        width: "100%",
+        colorTheme: theme,
+        isTransparent: false,
+        locale: "ar"
       });
+      
+      // Append the script to the widget container
+      widgetContainer.appendChild(script);
+      
+      // Append the widget container to our container
+      container.current.appendChild(widgetContainer);
+      
+      // Setup price extraction
+      setTimeout(() => {
+        try {
+          extractPriceFromWidget();
+        } catch (error) {
+          console.error('Error extracting price:', error);
+        }
+      }, 2000);
+      
+      // Set up interval for price updates
+      const priceInterval = setInterval(() => {
+        try {
+          extractPriceFromWidget();
+        } catch (error) {
+          console.error('Error extracting price in interval:', error);
+        }
+      }, 1000);
+      
+      return () => {
+        clearInterval(priceInterval);
+      };
+    }
+  }, [symbol, theme]);
+  
+  // Function to extract price from the widget
+  const extractPriceFromWidget = () => {
+    if (!container.current) return;
+    
+    // Try to find the price element in the Single Quote Widget
+    const priceElement = container.current.querySelector('.tv-ticker-tape-price__value');
+    
+    if (priceElement && priceElement.textContent) {
+      const priceText = priceElement.textContent.trim();
+      const price = parseFloat(priceText.replace(/[^\d.-]/g, ''));
+      
+      if (!isNaN(price)) {
+        console.log('Extracted price from widget:', price);
+        // Dispatch a custom event with the price
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price }
+          })
+        );
+      }
     }
   };
 
-  return <div id="tradingview_chart" ref={container} style={{ height: 500, width: '100%' }}></div>;
+  return (
+    <div 
+      ref={container} 
+      style={{ 
+        width: '100%', 
+        height: '150px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f9f9f9',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }}
+    />
+  );
 };
 
 export default TradingViewWidget;

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -31,33 +32,39 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     
     fetchInitialPrice();
     
-    // جدولة تحديث دوري
-    const interval = setInterval(async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log(`تم تحديث السعر: ${price}`);
+    // مستمع لتحديثات السعر من TradingView
+    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        const price = event.detail.price;
+        console.log(`تم استلام تحديث السعر من TradingView: ${price}`);
         setCurrentPrice(price);
         onPriceUpdate?.(price);
       }
-    }, 5000);
+    };
+    
+    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     
     return () => {
-      clearInterval(interval);
+      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       console.log('تم إزالة مكون LiveTradingViewChart');
     };
   }, [onPriceUpdate]);
 
-  const handlePriceUpdate = (price: number) => {
-    console.log(`LiveTradingViewChart استلم تحديث السعر: ${price}`);
-    setCurrentPrice(price);
-    onPriceUpdate?.(price);
-  };
-
   return (
-    <div className="w-full mb-6">
-      <div className="p-1 bg-gray-800 rounded-lg">
-        <TradingViewWidget />
-      </div>
-    </div>
+    <Card className="w-full mb-6">
+      <CardContent className="p-4">
+        <h3 className="text-lg font-medium mb-2 text-center">سعر الذهب الحالي</h3>
+        <div className="pb-1">
+          <TradingViewWidget symbol={symbol} />
+        </div>
+        <div className="text-center mt-2">
+          {currentPrice && (
+            <p className="text-sm text-muted-foreground">
+              آخر تحديث للسعر: {currentPrice.toFixed(2)} دولار
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
