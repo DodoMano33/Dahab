@@ -14,12 +14,10 @@ export const PriceInput = ({
   onChange,
   defaultValue
 }: PriceInputProps) => {
-  // حالة للتبديل بين الوضع التلقائي واليدوي
   const [useAutoPrice, setUseAutoPrice] = useState(true);
-  // حالة لتخزين السعر الحالي
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   
-  // الاستماع للسعر من TradingViewWidget فقط
+  // الاستماع فقط لأحداث تحديث السعر
   useEffect(() => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail?.price && useAutoPrice) {
@@ -29,7 +27,6 @@ export const PriceInput = ({
       }
     };
     
-    // الاستماع فقط لحدث price-updated من TradingViewWidget
     window.addEventListener('price-updated', handlePriceUpdate as EventListener);
     
     return () => {

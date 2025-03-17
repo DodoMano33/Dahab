@@ -9,9 +9,9 @@ function TradingViewWidget() {
     console.log(`تم تحديث السعر في TradingViewWidget: ${price}`);
     setCurrentPrice(price);
     
-    // بث السعر لباقي التطبيق
+    // بث السعر كمصدر واحد للتطبيق
     window.dispatchEvent(new CustomEvent('price-updated', {
-      detail: { price, source: 'tradingview-widget' }
+      detail: { price }
     }));
   };
 

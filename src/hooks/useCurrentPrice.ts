@@ -18,7 +18,7 @@ export const useCurrentPrice = () => {
   const [marketData, setMarketData] = useState<MarketData | undefined>(undefined);
 
   useEffect(() => {
-    // الاستماع فقط لأحداث تحديث السعر من TradingViewWidget
+    // الاستماع فقط لأحداث تحديث السعر
     const handlePriceUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<{ price: number }>;
       if (customEvent.detail?.price) {
@@ -42,7 +42,6 @@ export const useCurrentPrice = () => {
       }
     };
     
-    // استمع فقط لـ price-updated من TradingViewWidget
     window.addEventListener('price-updated', handlePriceUpdate);
     
     return () => {

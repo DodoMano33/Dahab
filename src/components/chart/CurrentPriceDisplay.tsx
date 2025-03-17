@@ -11,7 +11,7 @@ export const CurrentPriceDisplay: React.FC<CurrentPriceDisplayProps> = ({
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
   
-  // الاستماع فقط لأحداث تحديث السعر من TradingViewWidget
+  // الاستماع فقط لأحداث تحديث السعر
   useEffect(() => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail?.price) {
