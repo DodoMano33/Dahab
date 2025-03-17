@@ -14,11 +14,13 @@ export const fetchAnalysesWithCurrentPrice = async (
     requestedAt: new Date().toISOString()
   };
   
-  // إضافة سعر ثابت دائمًا
-  requestBody.currentPrice = 100; // قيمة ثابتة
+  // استخدام السعر المستلم إن وجد، وإلا استخدام القيمة الثابتة
+  requestBody.currentPrice = price !== null ? price : 100;
 
   const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
   const { data: authSession } = await supabase.auth.getSession();
+  
+  console.log(`Sending request to check analyses for ${fixedSymbol} with price:`, requestBody.currentPrice);
   
   // تحسين المعلومات التشخيصية
   const requestOptions = {
@@ -35,7 +37,6 @@ export const fetchAnalysesWithCurrentPrice = async (
   };
 
   try {
-    console.log(`Sending request to check analyses for XAUUSD with fixed price: 100`);
     const response = await fetch(`${supabaseUrl}/functions/v1/auto-check-analyses`, requestOptions);
     
     if (!response.ok) {

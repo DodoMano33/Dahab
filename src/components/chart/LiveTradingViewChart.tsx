@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -11,6 +11,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -43,14 +44,49 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     widgetContainer.appendChild(script);
     containerRef.current.appendChild(widgetContainer);
 
-  }, [symbol]);
+    // Function to extract price from widget
+    const extractPriceInterval = setInterval(() => {
+      try {
+        if (containerRef.current) {
+          // Try to find the price element in the widget
+          const priceElement = containerRef.current.querySelector('.tv-ticker-item-last__last');
+          if (priceElement) {
+            const priceText = priceElement.textContent || '';
+            const price = parseFloat(priceText.replace(',', ''));
+            if (!isNaN(price)) {
+              setCurrentPrice(price);
+              console.log('Gold price extracted:', price);
+              
+              // Emit price change if callback exists
+              if (onSymbolChange) {
+                onSymbolChange(symbol);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error extracting price:', error);
+      }
+    }, 2000); // Check every 2 seconds
+
+    return () => {
+      clearInterval(extractPriceInterval);
+    };
+  }, [symbol, onSymbolChange]);
 
   return (
     <div className="w-full mb-6">
-      <div className="p-1 bg-gray-800 rounded-lg h-64 flex items-center justify-center">
+      <div className="p-1 bg-gray-800 rounded-lg h-64 flex flex-col">
         <div ref={containerRef} className="w-full h-full">
           {/* TradingView Widget will be inserted here */}
         </div>
+        {currentPrice && (
+          <div className="text-center p-2 bg-white rounded-b-lg">
+            <p className="text-lg font-bold text-green-600">
+              سعر الذهب الحالي: {currentPrice.toFixed(2)} دولار
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
