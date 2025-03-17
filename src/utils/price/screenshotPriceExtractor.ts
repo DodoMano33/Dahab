@@ -17,7 +17,8 @@ export {
 
 // تصدير وظائف استخراج السعر
 export {
-  extractPriceFromChart
+  extractPriceFromChart,
+  requestImmediatePriceUpdate
 } from './capture/priceExtractor';
 
 // تصدير أنواع البيانات إذا كانت مطلوبة
