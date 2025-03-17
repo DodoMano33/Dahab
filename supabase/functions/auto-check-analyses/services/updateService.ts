@@ -60,12 +60,12 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
           // التحقق من التحديث
           const { data: updated, error: checkError } = await supabase
             .from('search_history')
-            .select('id, created_at, result_timestamp, last_checked_at, last_checked_price')
+            .select('id, created_at, result_timestamp, last_checked_at, last_checked_price, target_hit, stop_loss_hit')
             .in('id', analyses.slice(0, 2).map((a: any) => a.id)); // نتحقق من أول تحليلين فقط
             
           if (!checkError && updated && updated.length > 0) {
             updated.forEach(analysis => {
-              console.log(`Updated analysis: id=${analysis.id}, created_at=${analysis.created_at}, result_timestamp=${analysis.result_timestamp}, last_checked_at=${analysis.last_checked_at}, last_checked_price=${analysis.last_checked_price}`);
+              console.log(`Updated analysis: id=${analysis.id}, created_at=${analysis.created_at}, result_timestamp=${analysis.result_timestamp}, last_checked_at=${analysis.last_checked_at}, last_checked_price=${analysis.last_checked_price}, target_hit=${analysis.target_hit}, stop_loss_hit=${analysis.stop_loss_hit}`);
               
               // التحقق من صحة القيم بعد التحديث
               if (analysis.result_timestamp !== null) {
@@ -75,15 +75,21 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
                 if (analysis.result_timestamp === analysis.created_at) {
                   console.log(`Fixing date issue: result_timestamp equals created_at for analysis ${analysis.id}`);
                   
+                  // نقوم بتعيين تاريخ النتيجة كوقت حالي + دقيقة واحدة 
+                  // لإظهار أن النتيجة حدثت بعد الإنشاء
+                  const now = new Date();
+                  now.setMinutes(now.getMinutes() + 1);
+                  const fixedTimestamp = now.toISOString();
+                  
                   supabase
                     .from('search_history')
-                    .update({ result_timestamp: currentTime })
+                    .update({ result_timestamp: fixedTimestamp })
                     .eq('id', analysis.id)
                     .then(({ error }) => {
                       if (error) {
                         console.error(`Error fixing date issue for analysis ${analysis.id}:`, error);
                       } else {
-                        console.log(`Fixed date issue for analysis ${analysis.id}`);
+                        console.log(`Fixed date issue for analysis ${analysis.id} to ${fixedTimestamp}`);
                       }
                     });
                 }

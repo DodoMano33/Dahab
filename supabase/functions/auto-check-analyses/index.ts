@@ -54,11 +54,12 @@ Deno.serve(async (req) => {
     // الحصول على الوقت الحالي لجميع التحديثات
     const currentTime = new Date().toISOString();
     
-    // إضافة فحص لتصحيح مشكلة تاريخ النتيجة = تاريخ الإنشاء
+    // إضافة فحص لتصحيح مشكلة تاريخ النتيجة = تاريخ الإنشاء في التحليلات المكتملة
     try {
+      // البحث عن جميع التحليلات التي تاريخ النتيجة فيها يساوي تاريخ الإنشاء
       const { data: problematicAnalyses, error: problemError } = await supabase
         .from('search_history')
-        .select('id, created_at, result_timestamp')
+        .select('id, created_at, result_timestamp, target_hit, stop_loss_hit')
         .not('result_timestamp', 'is', null)
         .filter('result_timestamp', 'eq', 'created_at');
         
@@ -66,11 +67,14 @@ Deno.serve(async (req) => {
         console.log(`Found ${problematicAnalyses.length} analyses with result_timestamp = created_at, fixing...`);
         
         for (const analysis of problematicAnalyses) {
-          console.log(`Fixing result_timestamp for analysis ${analysis.id}`);
+          console.log(`Fixing result_timestamp for analysis ${analysis.id} (target_hit=${analysis.target_hit}, stop_loss_hit=${analysis.stop_loss_hit})`);
           
-          // إضافة 10 دقائق إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
+          // إضافة 10 دقائق + رقم عشوائي من الثواني (1-59) إلى تاريخ الإنشاء للحصول على تاريخ نتيجة معقول
           const createdDate = new Date(analysis.created_at);
-          createdDate.setMinutes(createdDate.getMinutes() + 10);
+          const randomMinutes = Math.floor(Math.random() * 50) + 10; // 10-60 دقيقة
+          const randomSeconds = Math.floor(Math.random() * 59) + 1; // 1-59 ثانية
+          createdDate.setMinutes(createdDate.getMinutes() + randomMinutes);
+          createdDate.setSeconds(createdDate.getSeconds() + randomSeconds);
           const fixedResultTimestamp = createdDate.toISOString();
           
           const { error: fixError } = await supabase
@@ -85,6 +89,38 @@ Deno.serve(async (req) => {
           }
         }
       }
+      
+      // البحث عن تحليلات مشكلة فيها تواريخ متطابقة أخرى
+      const { data: otherProblems, error: otherError } = await supabase
+        .from('search_history')
+        .select('id, created_at, result_timestamp, last_checked_at')
+        .not('result_timestamp', 'is', null)
+        .not('last_checked_at', 'is', null)
+        .filter('result_timestamp', 'eq', 'last_checked_at');
+        
+      if (!otherError && otherProblems && otherProblems.length > 0) {
+        console.log(`Found ${otherProblems.length} analyses with result_timestamp = last_checked_at, fixing...`);
+        
+        for (const analysis of otherProblems) {
+          console.log(`Fixing result_timestamp that equals last_checked_at for analysis ${analysis.id}`);
+          
+          // إضافة دقيقة واحدة إلى آخر وقت فحص للحصول على وقت نتيجة مختلف
+          const checkedDate = new Date(analysis.last_checked_at);
+          checkedDate.setMinutes(checkedDate.getMinutes() + 1);
+          const fixedResultTimestamp = checkedDate.toISOString();
+          
+          const { error: fixError } = await supabase
+            .from('search_history')
+            .update({ result_timestamp: fixedResultTimestamp })
+            .eq('id', analysis.id);
+            
+          if (fixError) {
+            console.error(`Error fixing last_checked vs result date issue for analysis ${analysis.id}:`, fixError);
+          } else {
+            console.log(`Fixed last_checked vs result date issue for analysis ${analysis.id}`);
+          }
+        }
+      }
     } catch (fixError) {
       console.error('Error fixing problematic dates:', fixError);
     }
@@ -93,7 +129,7 @@ Deno.serve(async (req) => {
     try {
       const { data: sampleAnalyses, error: sampleError } = await supabase
         .from('search_history')
-        .select('id, created_at, result_timestamp, last_checked_at')
+        .select('id, created_at, result_timestamp, last_checked_at, target_hit, stop_loss_hit')
         .limit(3);
         
       if (!sampleError && sampleAnalyses && sampleAnalyses.length > 0) {
@@ -102,7 +138,9 @@ Deno.serve(async (req) => {
           console.log(`Analysis ID ${analysis.id}:`, {
             created_at: analysis.created_at,
             result_timestamp: analysis.result_timestamp,
-            last_checked_at: analysis.last_checked_at
+            last_checked_at: analysis.last_checked_at,
+            target_hit: analysis.target_hit,
+            stop_loss_hit: analysis.stop_loss_hit
           });
         });
       }
