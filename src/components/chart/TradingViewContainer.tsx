@@ -51,33 +51,37 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
     const priceCheckInterval = setInterval(() => {
       try {
         // البحث عن عنصر السعر الرئيسي بشكل أكثر دقة
-        const priceElement = document.querySelector('.tv-symbol-price-quote__value');
+        const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
         
-        if (priceElement) {
-          const priceText = priceElement.textContent?.trim();
-          if (priceText) {
-            // استخراج الأرقام من النص (2,999.350 -> 2999.35)
-            const price = parseFloat(priceText.replace(/,/g, ''));
-            
-            if (!isNaN(price) && price >= 1800 && price <= 3500) {
-              console.log(`تم العثور على سعر دقيق في ويدجيت TradingView: ${price}`);
+        if (priceElements.length > 0) {
+          for (const element of priceElements) {
+            const priceText = element.textContent?.trim();
+            if (priceText) {
+              // استخراج الأرقام من النص (2,999.350 -> 2999.35)
+              const price = parseFloat(priceText.replace(/,/g, ''));
               
-              // تحديث السعر محلياً
-              onPriceUpdate?.(price);
-              
-              // بث السعر لكامل التطبيق مع التأكيد على ضمان وصوله لجميع المكونات
-              broadcastPrice(price, true, 'CFI:XAUUSD');
+              if (!isNaN(price) && price >= 1800 && price <= 3500) {
+                console.log(`تم العثور على سعر دقيق في ويدجيت TradingView: ${price}`);
+                
+                // تحديث السعر محلياً
+                onPriceUpdate?.(price);
+                
+                // بث السعر لكامل التطبيق مع إجبار التحديث
+                broadcastPrice(price, true, 'CFI:XAUUSD');
+                break;
+              }
             }
           }
         }
         
-        // البحث بشكل أوسع عن أرقام تطابق نمط سعر الذهب في الصفحة (كاحتياط)
-        if (!priceElement) {
+        // البحث بشكل أوسع عن أي أرقام تشبه سعر الذهب
+        if (priceElements.length === 0) {
           const allElements = document.querySelectorAll('div, span');
+          
           for (const element of allElements) {
             const text = element.textContent?.trim();
-            // نمط البحث محسن للكشف عن أرقام مثل 2,999.350
-            if (text && /\d{1,3}(,\d{3})*\.\d{1,3}/.test(text)) {
+            // نمط للبحث عن أرقام تشبه 2,999.350
+            if (text && /^\d{1,3}(,\d{3})*\.\d{1,3}$/.test(text)) {
               const price = parseFloat(text.replace(/,/g, ''));
               if (!isNaN(price) && price >= 1800 && price <= 3500) {
                 console.log(`تم العثور على سعر ذهب محتمل: ${price}`);
@@ -95,11 +99,29 @@ export const TradingViewContainer: React.FC<TradingViewContainerProps> = ({
       } catch (error) {
         console.error('خطأ في استخراج السعر:', error);
       }
-    }, 1000);
+    }, 500); // تقليل الفاصل الزمني للتحقق من السعر بشكل أسرع
+    
+    // إرسال طلب تحديث السعر الأولي بعد فترة قصيرة من تحميل الويدجيت
+    const initialUpdateTimeout = setTimeout(() => {
+      const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
+      if (priceElements.length > 0) {
+        const firstPriceElement = priceElements[0];
+        const priceText = firstPriceElement.textContent?.trim();
+        if (priceText) {
+          const price = parseFloat(priceText.replace(/,/g, ''));
+          if (!isNaN(price) && price >= 1800 && price <= 3500) {
+            console.log(`التحديث الأولي للسعر: ${price}`);
+            onPriceUpdate?.(price);
+            broadcastPrice(price, true, 'CFI:XAUUSD');
+          }
+        }
+      }
+    }, 1500);
     
     return () => {
-      // إزالة الفاصل الزمني عند إزالة المكون
+      // إزالة الفاصل الزمني والمؤقت عند إزالة المكون
       clearInterval(priceCheckInterval);
+      clearTimeout(initialUpdateTimeout);
       
       // تنظيف الحاوية
       if (containerRef.current) {

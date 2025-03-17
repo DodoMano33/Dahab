@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -11,10 +11,39 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   symbol = "CFI:XAUUSD" 
 }) => {
   const { currentPrice, marketData } = useCurrentPrice();
+  const [directPrice, setDirectPrice] = useState<number | null>(null);
   const isMobile = useIsMobile();
   
-  const dayLow = marketData?.dayLow || (currentPrice ? Math.round(currentPrice * 0.997) : 2978);
-  const dayHigh = marketData?.dayHigh || (currentPrice ? Math.round(currentPrice * 1.003) : 3005);
+  // محاولة الحصول على السعر المباشر
+  useEffect(() => {
+    const updateDirectPrice = () => {
+      const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
+      for (const element of priceElements) {
+        const text = element.textContent?.trim();
+        if (text) {
+          const price = parseFloat(text.replace(/,/g, ''));
+          if (!isNaN(price) && price >= 1800 && price <= 3500) {
+            setDirectPrice(price);
+            return;
+          }
+        }
+      }
+    };
+    
+    // التحديث الأولي
+    updateDirectPrice();
+    
+    // تحديث دوري
+    const interval = setInterval(updateDirectPrice, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  // استخدام السعر المباشر إذا كان متاحاً، وإلا استخدام السعر من useCurrentPrice
+  const displayPrice = directPrice || currentPrice;
+  
+  const dayLow = marketData?.dayLow || (displayPrice ? Math.round(displayPrice * 0.997) : 2978);
+  const dayHigh = marketData?.dayHigh || (displayPrice ? Math.round(displayPrice * 1.003) : 3005);
   const weekLow = marketData?.weekLow || 2146;
   const weekHigh = marketData?.weekHigh || 3005;
   
@@ -37,12 +66,12 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
   const changePercent = marketData?.changePercent !== undefined ? marketData.changePercent : -0.13;
   const changeColor = change >= 0 ? "text-green-500" : "text-red-500";
   
-  const dayRangePercentage = currentPrice 
-    ? Math.min(100, Math.max(0, ((currentPrice - dayLow) / (dayHigh - dayLow)) * 100)) 
+  const dayRangePercentage = displayPrice 
+    ? Math.min(100, Math.max(0, ((displayPrice - dayLow) / (dayHigh - dayLow)) * 100)) 
     : 30;
   
-  const weekRangePercentage = currentPrice 
-    ? Math.min(100, Math.max(0, ((currentPrice - weekLow) / (weekHigh - weekLow)) * 100)) 
+  const weekRangePercentage = displayPrice 
+    ? Math.min(100, Math.max(0, ((displayPrice - weekLow) / (weekHigh - weekLow)) * 100)) 
     : 95;
 
   return (
@@ -52,7 +81,7 @@ export const TradingViewStats: React.FC<TradingViewStatsProps> = ({
           <span className="text-yellow-500 mr-1">CFI:</span>XAUUSD
         </div>
         <div className="flex items-center">
-          <span className="text-4xl font-bold" id="stats-price-display">{currentPrice?.toFixed(2) || '2984.91'}</span>
+          <span className="text-4xl font-bold" id="stats-price-display">{displayPrice?.toFixed(2) || 'جاري التحميل...'}</span>
           <span className="ml-1 text-lg">USD</span>
         </div>
         <div className={changeColor}>

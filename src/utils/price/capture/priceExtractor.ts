@@ -18,9 +18,11 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     const priceSelectors = [
       '.tv-symbol-price-quote__value',        // محدد السعر الرئيسي
       '[data-name="legend-series-item"] .tv-symbol-price-quote__value',
+      '.js-symbol-last',                      // محدد آخر سعر
       '.tv-symbol-price-quote__value--large', // محدد للنسخة الكبيرة من السعر
       '.chart-toolbar-price-value',           // محدد لشريط الأدوات
-      '.chart-status-price'                   // محدد لحالة الشارت
+      '.chart-status-price',                  // محدد لحالة الشارت
+      '.tv-symbol-header__first-line'         // محدد آخر للسعر في الترويسة
     ];
 
     // تجربة كل محدد على حدة
@@ -29,12 +31,21 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       for (const element of elements) {
         const priceText = element.textContent?.trim();
         if (priceText) {
-          // استخراج الرقم بشكل صحيح من النص (مثل 2,999.350)
-          const price = parseFloat(priceText.replace(/,/g, ''));
-          if (!isNaN(price) && price >= 1800 && price <= 3500) {
-            console.log(`تم استخراج سعر من المحدد "${selector}": ${price}`);
-            setLastExtractedPrice(price);
-            return price;
+          // التحقق من وجود نمط مثل 2,999.350
+          if (/\d{1,3}(,\d{3})*\.\d{1,3}/.test(priceText)) {
+            // استخراج الرقم بشكل صحيح من النص (مثل 2,999.350)
+            const price = parseFloat(priceText.replace(/,/g, ''));
+            if (!isNaN(price) && price >= 1800 && price <= 3500) {
+              console.log(`تم استخراج سعر من المحدد "${selector}": ${price}`);
+              setLastExtractedPrice(price);
+              
+              // بث السعر المستخرج للتطبيق
+              window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+                detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+              }));
+              
+              return price;
+            }
           }
         }
       }
@@ -45,31 +56,23 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
     for (const element of allPriceElements) {
       const text = element.textContent?.trim();
       // البحث عن نمط نصي يمثل سعر ذهب (مثل 2,999.350)
-      if (text && /\b[1-3](,\d{3})*\.\d{1,3}\b/.test(text)) {
+      if (text && /\b\d{1,3}(,\d{3})*\.\d{1,3}\b/.test(text)) {
         const price = parseFloat(text.replace(/,/g, ''));
         if (!isNaN(price) && price >= 1800 && price <= 3500) {
           console.log(`تم استخراج سعر من نص عام: ${price} (${text})`);
           setLastExtractedPrice(price);
+          
+          // بث السعر المستخرج للتطبيق
+          window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+            detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+          }));
+          
           return price;
         }
       }
     }
     
-    // الطريقة الاحتياطية - البحث في عناصر الصفحة عن أي رقم يشبه سعر الذهب
-    const bodyText = document.body.textContent || '';
-    const goldPriceMatches = bodyText.match(/\b[1-3](,\d{3})*\.\d{1,3}\b/g);
-    if (goldPriceMatches) {
-      for (const match of goldPriceMatches) {
-        const price = parseFloat(match.replace(/,/g, ''));
-        if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج سعر من نص الصفحة: ${price} (${match})`);
-          setLastExtractedPrice(price);
-          return price;
-        }
-      }
-    }
-    
-    // إذا لم ننجح بالطرق المباشرة، نستخدم طريقة العنصر
+    // إذا لم ننجح بالطرق المباشرة، نستخدم طريقة استخراج السعر من العنصر 
     const priceElement = getPriceElementOrFind();
     if (priceElement) {
       const directText = priceElement.textContent?.trim();
@@ -78,20 +81,13 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
       if (price !== null && price >= 1800 && price <= 3500) {
         console.log(`تم استخراج سعر بقيمة: ${price}`);
         setLastExtractedPrice(price);
+        
+        // بث السعر المستخرج للتطبيق
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+          detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+        }));
+        
         return price;
-      }
-    }
-    
-    // كرجعة أخيرة، نبحث عن أرقام تبدأ بـ 2 أو 3 وتحتوي على نقطة عشرية
-    const digitMatches = document.body.textContent?.match(/\b[23]\d*\.\d+\b/g);
-    if (digitMatches) {
-      for (const match of digitMatches) {
-        const price = parseFloat(match);
-        if (!isNaN(price) && price >= 1800 && price <= 3500) {
-          console.log(`تم استخراج سعر محتمل من نص عام: ${price}`);
-          setLastExtractedPrice(price);
-          return price;
-        }
       }
     }
     
@@ -107,7 +103,30 @@ export const extractPriceFromChart = async (): Promise<number | null> => {
  * طلب تحديث فوري للسعر الحالي
  */
 export const requestImmediatePriceUpdate = async (): Promise<boolean> => {
-  // محاولة استخراج سعر جديد
+  // محاولة الحصول على السعر من العناصر المرئية أولاً
+  const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value, .js-symbol-last');
+  
+  for (const element of priceElements) {
+    const text = element.textContent?.trim();
+    if (text) {
+      const price = parseFloat(text.replace(/,/g, ''));
+      if (!isNaN(price) && price >= 1800 && price <= 3500) {
+        console.log(`تم استخراج سعر مباشر للتحديث الفوري: ${price}`);
+        
+        // تحديث آخر سعر تم استخراجه
+        setLastExtractedPrice(price);
+        
+        // بث تحديث السعر
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+          detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+        }));
+        
+        return true;
+      }
+    }
+  }
+  
+  // محاولة استخراج سعر جديد إذا لم نجد في العناصر المرئية
   console.log('محاولة استخراج سعر جديد للتحديث الفوري...');
   const price = await extractPriceFromChart();
   

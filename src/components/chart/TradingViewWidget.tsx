@@ -8,26 +8,28 @@ function TradingViewWidget() {
   const handlePriceUpdate = (price: number) => {
     console.log(`تم تحديث السعر في TradingViewWidget: ${price}`);
     setCurrentPrice(price);
-    
-    // تحديث سعر العنصر بشكل مباشر
-    const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
-    if (priceElements.length > 0) {
-      console.log(`تم العثور على ${priceElements.length} عنصر سعر لتحديثه`);
-    }
   };
 
   // الاستماع لتحديثات السعر الخارجية والتأكد من تحديث الواجهة
   useEffect(() => {
     const handleExternalPriceUpdate = (event: CustomEvent) => {
-      if (event.detail?.price && event.detail.price !== currentPrice) {
+      if (event.detail?.price && 
+          (currentPrice === null || 
+           Math.abs(event.detail.price - currentPrice) >= 0.01)) {
+        console.log(`تم استلام تحديث سعر خارجي: ${event.detail.price}`);
         setCurrentPrice(event.detail.price);
       }
     };
 
     window.addEventListener('tradingview-price-update', handleExternalPriceUpdate as EventListener);
+    window.addEventListener('current-price-response', handleExternalPriceUpdate as EventListener);
+    
+    // طلب التحديث الأولي للسعر
+    window.dispatchEvent(new CustomEvent('request-current-price'));
     
     return () => {
       window.removeEventListener('tradingview-price-update', handleExternalPriceUpdate as EventListener);
+      window.removeEventListener('current-price-response', handleExternalPriceUpdate as EventListener);
     };
   }, [currentPrice]);
 

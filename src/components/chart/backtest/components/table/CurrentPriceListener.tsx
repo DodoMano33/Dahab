@@ -12,26 +12,60 @@ export const CurrentPriceListener = ({ children }: CurrentPriceListenerProps) =>
   
   // التحقق من السعر وضمان تحديثه
   useEffect(() => {
-    setVerifiedPrice(currentPrice);
-    
-    // طلب تحديث إضافي للسعر إذا لم يكن متوفراً
-    if (currentPrice === null) {
+    if (currentPrice !== null) {
+      console.log(`CurrentPriceListener: تم تحديث السعر إلى ${currentPrice}`);
+      setVerifiedPrice(currentPrice);
+    } else {
+      // طلب تحديث إضافي للسعر إذا لم يكن متوفراً
       window.dispatchEvent(new CustomEvent('request-current-price'));
       
       // محاولة العثور على السعر مباشرة من العناصر المرئية
       const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
-      priceElements.forEach(element => {
+      for (const element of priceElements) {
         const text = element.textContent?.trim();
         if (text) {
           const price = parseFloat(text.replace(/,/g, ''));
           if (!isNaN(price) && price >= 1800 && price <= 3500) {
             console.log(`CurrentPriceListener: العثور على سعر مباشرة = ${price}`);
             setVerifiedPrice(price);
+            
+            // بث السعر المكتشف لباقي التطبيق
+            window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+              detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+            }));
           }
         }
-      });
+      }
     }
   }, [currentPrice]);
+  
+  // استمع إلى تحديثات السعر المباشرة من الشارت
+  useEffect(() => {
+    const directPriceUpdateInterval = setInterval(() => {
+      if (verifiedPrice === null) {
+        const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
+        for (const element of priceElements) {
+          const text = element.textContent?.trim();
+          if (text) {
+            const price = parseFloat(text.replace(/,/g, ''));
+            if (!isNaN(price) && price >= 1800 && price <= 3500) {
+              console.log(`CurrentPriceListener: تحديث من الفاصل الزمني = ${price}`);
+              setVerifiedPrice(price);
+              
+              // بث السعر المكتشف لباقي التطبيق
+              window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+                detail: { price, symbol: 'CFI:XAUUSD', timestamp: Date.now() }
+              }));
+            }
+          }
+        }
+      }
+    }, 1000);
+    
+    return () => {
+      clearInterval(directPriceUpdateInterval);
+    };
+  }, [verifiedPrice]);
   
   return <>{children(verifiedPrice)}</>;
 };

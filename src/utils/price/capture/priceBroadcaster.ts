@@ -64,6 +64,12 @@ export const broadcastPrice = (price: number, force: boolean = false, source: st
     }
   }));
   
+  // تحديث مباشر لعناصر السعر في واجهة المستخدم
+  const priceDisplayElements = document.querySelectorAll('#stats-price-display');
+  priceDisplayElements.forEach(element => {
+    element.textContent = price.toFixed(2);
+  });
+  
   console.log(`تم نشر تحديث السعر في كامل التطبيق (${source}): ${price}`);
 };
 
@@ -77,6 +83,20 @@ export const requestPriceUpdate = (source: string = 'CFI:XAUUSD') => {
   if (lastPrice !== null) {
     broadcastPrice(lastPrice, true, source);
     return true;
+  }
+  
+  // محاولة استخراج السعر مباشرة من عناصر الصفحة
+  const priceElements = document.querySelectorAll('.tv-symbol-price-quote__value');
+  for (const element of priceElements) {
+    const text = element.textContent?.trim();
+    if (text) {
+      const price = parseFloat(text.replace(/,/g, ''));
+      if (!isNaN(price) && price >= 1800 && price <= 3500) {
+        console.log(`تم العثور على سعر مباشر من العناصر: ${price}`);
+        broadcastPrice(price, true, source);
+        return true;
+      }
+    }
   }
   
   return false;
