@@ -1,3 +1,4 @@
+
 // تكوين التقاط السعر
 export const CAPTURE_INTERVAL = 1000; // 1 ثانية
 
@@ -6,16 +7,24 @@ export const PRICE_SELECTOR = '.tv-symbol-price-quote__value.js-symbol-last';
 
 // قائمة بمحددات CSS البديلة للعثور على عنصر السعر
 export const ALTERNATIVE_SELECTORS = [
+  // محدد TradingView الرئيسي
+  '.tv-symbol-price-quote__value',
+  '.js-symbol-last',
+  '.pane-legend-item-value-wrap',
+  '.chart-container [data-name="legend-values-item"] [data-name="value"]',
+  '.tv-chart-view__header-symbol-price',
+  // المزيد من محددات TradingView المحتملة
+  '.price-axis__last-value',
+  '.pane-legend-line span.pane-legend-item-value-wrap',
+  '.price-axis__price-level',
+  '.price-current',
+  '.infobar__value',
+  '.price-quote',
   // استخدام المعرف المقدم مباشرة
   '#price-12345',
   // المسار الهيكلي الدقيق
   'div.chart-container > div.price-section > span.last-price',
   // محددات TradingView المحددة
-  '.price-axis__last-value',
-  '.pane-legend-item-value-wrap',
-  '.chart-container [data-name="legend-values-item"] [data-name="value"]',
-  // أمثلة أكثر دقة للمواقع المحتملة للسعر في TradingView
-  '.tv-chart-view__header-symbol-price',
   '.tv-market-status__ticker-price',
   '.tv-symbol-price-quote__value',
   '.chart-status-price',
@@ -34,12 +43,10 @@ export const ALTERNATIVE_SELECTORS = [
   '#tv-chart-price-display',
   '.ts-price-display',
   '.price-value',
-  '.pane-legend-line span.pane-legend-item-value-wrap',
   '.js-last-price',
   '.dl-last-quote',
   '.chart-price-display',
   '.chart-price',
-  '.tv-symbol-price-quote__value',
   '.pane-legend-line__value',
   '.chart-title-price',
   '.js-symbol-last'
