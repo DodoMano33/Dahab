@@ -8,7 +8,24 @@ import {
   resetState 
 } from './state';
 import { initOCR, cleanupOCR } from './ocrService';
-import { extractAndBroadcastPrice } from './priceExtractor';
+import { extractPriceFromChart } from './priceExtractor';
+
+// دالة لاستخراج ونشر السعر
+const extractAndBroadcastPrice = async () => {
+  try {
+    const price = await extractPriceFromChart();
+    if (price !== null) {
+      // نشر الحدث مع السعر
+      window.dispatchEvent(new CustomEvent('tradingview-price-update', {
+        detail: { price, timestamp: Date.now() }
+      }));
+      return true;
+    }
+  } catch (error) {
+    console.error('فشل في استخراج ونشر السعر:', error);
+  }
+  return false;
+};
 
 // بدء عملية التقاط السعر
 export const startPriceCapture = async () => {
@@ -58,3 +75,6 @@ export const cleanupPriceCapture = async () => {
   await cleanupOCR();
   resetState();
 };
+
+// تصدير دالة استخراج ونشر السعر
+export { extractAndBroadcastPrice };

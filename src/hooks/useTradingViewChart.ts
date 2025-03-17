@@ -26,7 +26,7 @@ export const useTradingViewChart = ({
     console.log('TradingViewWidget mounted with symbol:', symbol, 'provider:', priceProvider);
     
     // Create and setup the TradingView widget
-    const { widgetDiv } = createTradingViewWidget(containerRef.current, symbol, priceProvider);
+    const { widgetDiv } = createTradingViewWidget(containerRef.current);
     
     // تفعيل وضع التقاط السعر
     setCapturingState(true);

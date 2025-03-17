@@ -6,7 +6,8 @@ export {
   startPriceCapture,
   stopPriceCapture,
   resetPriceCapture,
-  cleanupPriceCapture
+  cleanupPriceCapture,
+  extractAndBroadcastPrice
 } from './capture/captureController';
 
 // تصدير وظائف الحالة
@@ -14,10 +15,9 @@ export {
   getLastExtractedPrice
 } from './capture/state';
 
-// تصدير وظائف استخراج السعر والبث
+// تصدير وظائف استخراج السعر
 export {
-  extractAndBroadcastPrice,
-  requestImmediatePriceUpdate
+  extractPriceFromChart
 } from './capture/priceExtractor';
 
 // تصدير أنواع البيانات إذا كانت مطلوبة

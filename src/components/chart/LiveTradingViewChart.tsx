@@ -57,11 +57,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   return (
     <div className="w-full mb-6">
       <div className="p-1 bg-gray-800 rounded-lg">
-        <TradingViewWidget 
-          symbol="XAUUSD"
-          onSymbolChange={onSymbolChange}
-          onPriceUpdate={handlePriceUpdate}
-        />
+        <TradingViewWidget />
       </div>
       
       {/* إضافة شريط عرض السعر أسفل الشارت */}
