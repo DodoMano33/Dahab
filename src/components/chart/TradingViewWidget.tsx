@@ -84,8 +84,6 @@ function TradingViewWidget({
           onPriceUpdate={handlePriceUpdate}
         />
       </div>
-      
-      {/* إزالة عرض السعر المكرر من هنا */}
     </div>
   );
 }
