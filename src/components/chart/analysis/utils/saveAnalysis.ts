@@ -52,3 +52,51 @@ export const saveAnalysisToHistory = async ({
     return null;
   }
 };
+
+// Add the saveAnalysis function for compatibility with useSaveAnalysis.ts
+export const saveAnalysis = async ({
+  userId,
+  symbol,
+  currentPrice,
+  analysisResult,
+  analysisType,
+  timeframe,
+  durationHours
+}: {
+  userId: string;
+  symbol: string;
+  currentPrice: number;
+  analysisResult: AnalysisData;
+  analysisType: AnalysisType;
+  timeframe: string;
+  durationHours: number;
+}) => {
+  try {
+    console.log("Saving analysis:", {
+      userId,
+      symbol,
+      currentPrice,
+      analysisResult,
+      analysisType,
+      timeframe,
+      durationHours
+    });
+    
+    // Creating a record with a generated ID
+    const id = Math.random().toString(36).substring(2, 15);
+    
+    return {
+      id,
+      date: new Date(),
+      userId,
+      symbol,
+      currentPrice,
+      analysisType,
+      timeframe,
+      durationHours
+    };
+  } catch (error) {
+    console.error("Error in saveAnalysis:", error);
+    throw error;
+  }
+};

@@ -62,6 +62,11 @@ export const ChartAnalysisForm = ({
     onSubmit
   });
 
+  // Function to bridge the type mismatch between AnalysisButtonGroup and handleSubmit
+  const handleButtonClick = (type: string) => {
+    handleSubmit(type);
+  };
+
   return (
     <form className="space-y-4 bg-white p-6 rounded-lg shadow-md">
       <FormHeader />
@@ -77,7 +82,7 @@ export const ChartAnalysisForm = ({
       
       <AnalysisButtonGroup
         isAnalyzing={isAnalyzing}
-        onSubmit={(type) => handleSubmit(type)} 
+        onSubmit={handleButtonClick}
         onHistoryClick={onHistoryClick}
         currentAnalysis={currentAnalysis}
       />
