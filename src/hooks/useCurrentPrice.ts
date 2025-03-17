@@ -1,15 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
-
-interface UseCurrentPriceResult {
-  currentPrice: number | null;
-  priceUpdateCount: number;
-}
+import { UseCurrentPriceResult, MarketData } from '@/hooks/current-price/types';
 
 export const useCurrentPrice = (): UseCurrentPriceResult => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
+  const [marketData, setMarketData] = useState<MarketData | undefined>(undefined);
 
   useEffect(() => {
     // استخراج السعر الأولي
@@ -29,6 +26,18 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       if (price !== null && price !== currentPrice) {
         setCurrentPrice(price);
         setPriceUpdateCount(prev => prev + 1);
+        
+        // تحديث بيانات السوق التقديرية
+        setMarketData({
+          symbol: "XAUUSD",
+          dayLow: Math.round(price * 0.997),
+          dayHigh: Math.round(price * 1.003),
+          weekLow: Math.round(price * 0.95),
+          weekHigh: Math.round(price * 1.05),
+          change: -3.785,
+          changePercent: -0.13,
+          recommendation: "Strong buy"
+        });
       }
     }, 3000);
     
@@ -37,5 +46,5 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
     };
   }, [currentPrice]);
 
-  return { currentPrice, priceUpdateCount };
+  return { currentPrice, priceUpdateCount, marketData };
 };

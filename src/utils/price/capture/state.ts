@@ -3,6 +3,8 @@
 let isCapturing = false;
 let lastExtractedPrice: number | null = null;
 let priceElement: HTMLElement | null = null;
+let captureInterval: NodeJS.Timeout | null = null;
+let ocrWorker: any = null; // نوع محرك OCR
 
 // الحصول على حالة التقاط
 export const getCaptureState = () => ({
@@ -42,4 +44,22 @@ export const resetState = () => {
   isCapturing = false;
   lastExtractedPrice = null;
   priceElement = null;
+};
+
+// إضافة وظائف لإدارة فاصل التقاط
+export const setCaptureInterval = (interval: NodeJS.Timeout | null) => {
+  captureInterval = interval;
+};
+
+export const getCaptureInterval = (): NodeJS.Timeout | null => {
+  return captureInterval;
+};
+
+// إضافة وظائف لإدارة محرك OCR
+export const setOcrWorker = (worker: any) => {
+  ocrWorker = worker;
+};
+
+export const getOcrWorker = () => {
+  return ocrWorker;
 };
