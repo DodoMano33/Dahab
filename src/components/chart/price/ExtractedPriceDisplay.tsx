@@ -6,10 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
 export const ExtractedPriceDisplay: React.FC = () => {
-  const { currentPrice, priceUpdateCount } = useCurrentPrice();
+  const { currentPrice, priceUpdateCount, updatePrice } = useCurrentPrice();
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [isExtracting, setIsExtracting] = useState<boolean>(true);
+  const [extractionAttempts, setExtractionAttempts] = useState<number>(0);
 
+  // تحديث وقت آخر تعديل عندما يتغير السعر
   useEffect(() => {
     if (currentPrice !== null) {
       setLastUpdateTime(new Date());
@@ -17,19 +19,50 @@ export const ExtractedPriceDisplay: React.FC = () => {
     }
   }, [currentPrice]);
 
-  // طلب السعر الحالي عند تحميل المكون وتكرار الطلب
+  // محاولة استخراج السعر بشكل دوري
   useEffect(() => {
-    console.log("ExtractedPriceDisplay: طلب السعر الحالي");
-    window.dispatchEvent(new Event('request-current-price'));
+    console.log("ExtractedPriceDisplay: تم تركيب المكون - بدء استخراج السعر");
     
-    // إضافة مستمع للتحديثات المستمرة
+    // محاولة فورية عند تحميل المكون
+    window.dispatchEvent(new Event('request-current-price'));
+    setExtractionAttempts(prev => prev + 1);
+    
+    // محاولات متكررة لاستخراج السعر كل ثانية
     const intervalId = setInterval(() => {
       window.dispatchEvent(new Event('request-current-price'));
       console.log("ExtractedPriceDisplay: تم إرسال طلب تحديث السعر");
-    }, 1000); // طلب تحديث كل ثانية
+      setExtractionAttempts(prev => prev + 1);
+    }, 1000);
     
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      console.log("ExtractedPriceDisplay: تم إزالة المكون وإيقاف طلبات تحديث السعر");
+    };
   }, []);
+
+  // الاستماع لتحديثات السعر مباشرة من TradingView
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && !isNaN(event.detail.price)) {
+        console.log("ExtractedPriceDisplay: تم استلام تحديث سعر مباشر:", event.detail.price);
+        updatePrice(event.detail.price);
+        setLastUpdateTime(new Date());
+        setIsExtracting(false);
+      }
+    };
+
+    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    };
+  }, [updatePrice]);
+
+  // عرض حالة السعر الحالي مع تأثيرات بصرية
+  const getPriceDisplayClass = () => {
+    if (currentPrice === null) return "text-yellow-500";
+    return "text-green-600 dark:text-green-400";
+  };
 
   return (
     <Card className="w-full bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 shadow-md border-2 border-slate-200 dark:border-slate-700">
@@ -39,7 +72,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
           <div className="text-xl font-bold">
             {currentPrice !== null ? (
               <span className="flex items-center">
-                <span className="text-green-600 dark:text-green-400">{currentPrice.toFixed(2)}</span>
+                <span className={getPriceDisplayClass()}>{currentPrice.toFixed(2)}</span>
                 <span className="text-sm mr-1">دولار</span>
               </span>
             ) : (
@@ -60,9 +93,13 @@ export const ExtractedPriceDisplay: React.FC = () => {
           تم تحديث السعر {priceUpdateCount} مرة
         </div>
         
-        {isExtracting && (
+        {isExtracting ? (
           <p className="text-center text-amber-500 text-sm mt-2">
-            جاري استخراج السعر من الويدجت...
+            جاري استخراج السعر من الويدجت... (محاولة {extractionAttempts})
+          </p>
+        ) : (
+          <p className="text-center text-green-500 text-sm mt-2">
+            تم استخراج السعر بنجاح!
           </p>
         )}
       </CardContent>
