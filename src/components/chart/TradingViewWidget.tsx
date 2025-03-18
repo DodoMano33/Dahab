@@ -19,11 +19,18 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     if (container.current) {
       container.current.innerHTML = '';
       
-      // Create the widget container
+      // Create the widget container with specific dimensions
       const widgetContainer = document.createElement('div');
       widgetContainer.className = 'tradingview-widget-container';
-      widgetContainer.style.width = '100%';
-      widgetContainer.style.height = '100%';
+      widgetContainer.style.width = '120px'; // 120px ≈ 3.2cm
+      widgetContainer.style.height = '95px'; // 95px ≈ 2.5cm
+      
+      // Create the widget div
+      const widgetDiv = document.createElement('div');
+      widgetDiv.className = 'tradingview-widget-container__widget';
+      widgetDiv.style.width = '100%';
+      widgetDiv.style.height = '100%';
+      widgetContainer.appendChild(widgetDiv);
       
       // Create script element for the Single Quote Widget
       const script = document.createElement('script');
@@ -37,7 +44,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         width: "100%",
         colorTheme: theme,
         isTransparent: false,
-        locale: "ar"
+        locale: "en" // تغيير إلى "en" بدلاً من "ar"
       });
       
       // Append the script to the widget container
@@ -77,7 +84,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     }
   }, [symbol, theme]);
   
-  // دالة لاستخراج السعر من الويدجيت
+  // دالة لاستخراج السعر من الويدجت
   const extractPriceFromWidget = () => {
     if (!container.current) return;
     
@@ -109,8 +116,8 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     <div 
       ref={container} 
       style={{ 
-        width: '100%', 
-        height: '150px',
+        width: '120px', 
+        height: '95px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
