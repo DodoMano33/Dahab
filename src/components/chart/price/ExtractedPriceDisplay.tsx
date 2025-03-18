@@ -31,8 +31,8 @@ export const ExtractedPriceDisplay: React.FC = () => {
   }, []);
 
   // تحويل سنتيمتر إلى بكسل (تقريباً 38 بكسل للسنتيمتر الواحد في معظم الشاشات)
-  const widthInPx = 2 * 38;  // 2 سم
-  const heightInPx = 3 * 38; // 3 سم
+  const widthInPx = 3.5 * 38;  // 3.5 سم - زيادة العرض
+  const heightInPx = 2.5 * 38; // 2.5 سم - تغيير الارتفاع
 
   return (
     <div className="w-full">
@@ -47,7 +47,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
         </p>
       )}
       
-      {/* المستطيل الفارغ بحجم 2*3 سم */}
+      {/* المستطيل الفارغ بحجم عرضي 3.5*2.5 سم */}
       <div 
         className={cn(
           "mt-4 mx-auto border-2 border-slate-200 rounded-md",
