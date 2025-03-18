@@ -5,6 +5,7 @@ import { useImageCapture } from '@/hooks/useImageCapture';
 import { useOcrProcessor } from '@/hooks/useOcrProcessor';
 import { CapturedImageDisplay } from './CapturedImageDisplay';
 import { RecognizedTextDisplay } from './RecognizedTextDisplay';
+
 export const ExtractedPriceDisplay: React.FC = () => {
   const {
     currentPrice,
@@ -27,6 +28,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
     isProcessingOCR,
     processImageWithOCR
   } = useOcrProcessor();
+  
   useEffect(() => {
     if (currentPrice !== null) {
       setLastUpdateTime(new Date());
@@ -36,24 +38,20 @@ export const ExtractedPriceDisplay: React.FC = () => {
     }
   }, [currentPrice]);
 
-  // طلب السعر الحالي عند تحميل المكون
   useEffect(() => {
     window.dispatchEvent(new Event('request-current-price'));
 
-    // إضافة مستمع للتحديثات المستمرة
     const intervalId = setInterval(() => {
       window.dispatchEvent(new Event('request-current-price'));
-    }, 1000); // طلب تحديث كل ثانية
+    }, 1000);
 
     return () => clearInterval(intervalId);
   }, []);
 
-  // معالجة نتائج OCR وتحديث السعر
   useEffect(() => {
     if (extractedPrice !== null) {
       updatePrice(extractedPrice);
 
-      // إرسال حدث تحديث السعر
       window.dispatchEvent(new CustomEvent('image-price-update', {
         detail: {
           price: extractedPrice
@@ -62,7 +60,6 @@ export const ExtractedPriceDisplay: React.FC = () => {
     }
   }, [extractedPrice, updatePrice]);
 
-  // تنفيذ التقاط الصورة ومعالجتها
   const handleCaptureAndProcess = async () => {
     const imageUrl = await captureTradingViewWidget();
     if (imageUrl) {
@@ -70,32 +67,27 @@ export const ExtractedPriceDisplay: React.FC = () => {
     }
   };
 
-  // تنفيذ التقاط الصورة وتحديثها بشكل دوري
   useEffect(() => {
-    // تأخير أكبر للتأكد من تحميل TradingView بالكامل
     const initialDelay = setTimeout(() => {
       console.log('بدء محاولة التقاط الصورة الأولى...');
       handleCaptureAndProcess();
 
-      // جدولة التقاط متكرر للصور مع فاصل زمني أطول
       const captureInterval = setInterval(() => {
         handleCaptureAndProcess();
-      }, 2000); // التقاط كل 2 ثوان لتقليل الحمل وزيادة فرص نجاح الالتقاط
+      }, 2000);
 
-      // تنظيف عند إزالة المكون
       return () => {
         clearInterval(captureInterval);
       };
-    }, 2500); // تأخير أولي 2.5 ثانية للسماح بتحميل الويدجت بالكامل
+    }, 2500);
 
     return () => {
       clearTimeout(initialDelay);
     };
   }, []);
 
-  // تحويل سنتيمتر إلى بكسل (تقريباً 38 بكسل للسنتيمتر الواحد في معظم الشاشات)
-  const widthInPx = 5 * 38; // 5 سم - تعديل العرض
-  const heightInPx = 2.5 * 38; // 2.5 سم - تحديث الارتفاع
+  const widthInPx = 5 * 38;
+  const heightInPx = 2.5 * 38;
 
   return <div className="w-full">
       <PriceDisplay currentPrice={extractedPrice !== null ? extractedPrice : currentPrice} priceUpdateCount={priceUpdateCount} lastUpdateTime={lastUpdateTime} />
@@ -106,10 +98,14 @@ export const ExtractedPriceDisplay: React.FC = () => {
       
       {isProcessingOCR}
       
-      {/* عرض الصورة الملتقطة */}
-      <CapturedImageDisplay capturedImage={capturedImage} captureAttempts={captureAttempts} widthInPx={widthInPx} heightInPx={heightInPx} onManualCapture={handleCaptureAndProcess} />
+      <CapturedImageDisplay 
+        capturedImage={capturedImage} 
+        captureAttempts={captureAttempts} 
+        widthInPx={widthInPx} 
+        heightInPx={heightInPx} 
+        onManualCapture={handleCaptureAndProcess} 
+      />
       
-      {/* عرض النص المستخرج والسعر */}
       <RecognizedTextDisplay recognizedText={recognizedText} extractedPrice={extractedPrice} />
     </div>;
 };
