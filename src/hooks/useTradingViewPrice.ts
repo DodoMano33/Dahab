@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
 /**
  * هوك مخصص للتعامل مع استخراج السعر من ويدجيت TradingView
@@ -8,10 +8,19 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
   const intervalRef = useRef<number | null>(null);
   const lastExtractedPrice = useRef<number | null>(null);
   const widgetLoadedRef = useRef<boolean>(false);
+  const extractionAttemptsRef = useRef<number>(0);
 
   // دالة محسنة لاستخراج السعر من الويدجيت البسيط
-  const extractPriceFromWidget = () => {
-    if (!containerRef.current) return;
+  const extractPriceFromWidget = useCallback(() => {
+    if (!containerRef.current || !widgetLoadedRef.current) return;
+    
+    // حد لعدد محاولات الاستخراج
+    if (extractionAttemptsRef.current > 30 && lastExtractedPrice.current !== null) {
+      console.log("تم الوصول للحد الأقصى من محاولات استخراج السعر، استخدام آخر سعر معروف");
+      return;
+    }
+    
+    extractionAttemptsRef.current++;
     
     // الويدجيت البسيط - يظهر السعر في عنصر strong
     const priceSelectors = [
@@ -19,7 +28,9 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
       '.tv-ticker-tape-price__value', // احتياطي
       '.tv-symbol-price-quote__value', // احتياطي
       '[data-field="last"]', // احتياطي
-      '.price-value'  // احتياطي
+      '.price-value',  // احتياطي
+      '.tv-symbol-header__first-line', // احتياطي
+      '.apply-common-tooltip' // احتياطي
     ];
     
     // البحث عن عنصر السعر باستخدام المحددات
@@ -30,10 +41,6 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
         for (const element of elements) {
           const priceText = element.textContent;
           if (priceText) {
-            console.log(`TradingViewWidget: النص المستخرج من '${selector}': "${priceText}"`);
-            
-            // تنظيف النص واستخراج الرقم - نتوقع صيغة مثل "3,030.519"
-            // نزيل الفواصل ونحول النقاط إلى فواصل عشرية
             const cleanText = priceText.trim().replace(/[^\d.,]/g, '');
             
             if (cleanText.match(/\d+([.,]\d+)?/)) {
@@ -87,7 +94,7 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
         }
       }
     }
-  };
+  }, [containerRef]);
 
   useEffect(() => {
     return () => {
@@ -95,18 +102,25 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      widgetLoadedRef.current = false;
+      extractionAttemptsRef.current = 0;
     };
   }, []);
 
-  const setupPriceExtraction = () => {
+  const setupPriceExtraction = useCallback(() => {
+    console.log("إعداد استخراج السعر من ويدجيت TradingView");
+    
     widgetLoadedRef.current = true;
+    extractionAttemptsRef.current = 0;
     
     // تأخير أطول للتأكد من تحميل الويدجيت بالكامل
     setTimeout(() => {
-      extractPriceFromWidget();
-      
-      // طلب التقاط صورة للويدجيت بعد تحميله
-      window.dispatchEvent(new Event('request-capture-widget'));
+      if (widgetLoadedRef.current) {
+        extractPriceFromWidget();
+        
+        // طلب التقاط صورة للويدجيت بعد تحميله
+        window.dispatchEvent(new Event('request-capture-widget'));
+      }
     }, 2000);
     
     // إعداد فاصل زمني لتحديث السعر
@@ -118,8 +132,8 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
       if (widgetLoadedRef.current) {
         extractPriceFromWidget();
       }
-    }, 1000) as unknown as number;
-  };
+    }, 2000) as unknown as number; // زيادة الفاصل الزمني إلى 2 ثانية
+  }, [extractPriceFromWidget]);
 
   return {
     setupPriceExtraction,
