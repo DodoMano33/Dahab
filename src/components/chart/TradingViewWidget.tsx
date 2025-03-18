@@ -19,19 +19,19 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     if (container.current) {
       container.current.innerHTML = '';
       
-      // إنشاء حاوية العنصر
+      // Create the widget container
       const widgetContainer = document.createElement('div');
       widgetContainer.className = 'tradingview-widget-container';
       widgetContainer.style.width = '100%';
       widgetContainer.style.height = '100%';
       
-      // إنشاء عنصر النص البرمجي للويدجت
+      // Create script element for the Single Quote Widget
       const script = document.createElement('script');
       script.type = 'text/javascript';
       script.async = true;
       script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
       
-      // ضبط الإعدادات
+      // Set the configuration
       script.innerHTML = JSON.stringify({
         symbol: `CFI:${symbol}`,
         width: "100%",
@@ -40,21 +40,22 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         locale: "ar"
       });
       
-      // إضافة العناصر للصفحة
+      // Append the script to the widget container
       widgetContainer.appendChild(script);
+      
+      // Append the widget container to our container
       container.current.appendChild(widgetContainer);
       
-      // تأخير قليل للسماح للويدجت بالتحميل
-      const initialTimeout = setTimeout(() => {
+      // تأخير قليل للسماح للويدجيت بالتحميل
+      setTimeout(() => {
         try {
           extractPriceFromWidget();
-          console.log("تم محاولة استخراج السعر المبدئي");
         } catch (error) {
           console.error('خطأ في استخراج السعر المبدئي:', error);
         }
-      }, 2000); // زيادة المهلة إلى 2 ثانية للتأكد من تحميل الويدجت
+      }, 1000);
       
-      // إعداد التحديث كل نصف ثانية لتحديثات السعر
+      // إعداد التحديث كل نصف ثانية لتحديثات السعر (أسرع من قبل)
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
@@ -68,7 +69,6 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       }, 500) as unknown as number; // تحديث كل نصف ثانية للحصول على أكثر دقة
       
       return () => {
-        clearTimeout(initialTimeout);
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -77,11 +77,11 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     }
   }, [symbol, theme]);
   
-  // دالة محسنة لاستخراج السعر من الويدجت
+  // دالة لاستخراج السعر من الويدجيت
   const extractPriceFromWidget = () => {
     if (!container.current) return;
     
-    // محاولة 1: البحث عن عنصر السعر في ويدجت Single Quote
+    // البحث عن عنصر السعر في ويدجيت Single Quote
     const priceElement = container.current.querySelector('.tv-ticker-tape-price__value');
     
     if (priceElement && priceElement.textContent) {
@@ -93,7 +93,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       const price = parseFloat(normalizedText);
       
       if (!isNaN(price) && price > 0 && price !== lastExtractedPrice.current) {
-        console.log('تم استخراج السعر من الويدجت:', price);
+        console.log('تم استخراج السعر من الويدجيت:', price);
         lastExtractedPrice.current = price;
         // إرسال حدث مخصص بالسعر المستخرج
         window.dispatchEvent(
@@ -102,42 +102,6 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
           })
         );
       }
-      return;
-    }
-    
-    // محاولة 2: البحث عن عناصر بقيمة رقمية في أي مكان داخل الويدجت
-    const allElements = container.current.querySelectorAll('div, span, p, td');
-    for (let i = 0; i < allElements.length; i++) {
-      const element = allElements[i];
-      if (element.textContent && /^\s*[\d,]+\.\d+\s*$/.test(element.textContent)) {
-        const priceText = element.textContent.trim();
-        const cleanText = priceText.replace(/[^\d.,]/g, '');
-        const normalizedText = cleanText.replace(/,/g, '.');
-        const price = parseFloat(normalizedText);
-        
-        if (!isNaN(price) && price > 0 && price !== lastExtractedPrice.current) {
-          console.log('تم استخراج السعر من عنصر ويدجت عام:', price);
-          lastExtractedPrice.current = price;
-          window.dispatchEvent(
-            new CustomEvent('tradingview-price-update', {
-              detail: { price }
-            })
-          );
-          return;
-        }
-      }
-    }
-    
-    // إذا وصلنا إلى هنا، فلم نجد عنصر سعر صالح
-    if (!lastExtractedPrice.current) {
-      // استخدام سعر افتراضي فقط إذا لم نجد أي سعر بعد
-      console.log('لم نتمكن من استخراج سعر، استخدام قيمة افتراضية (2000)');
-      lastExtractedPrice.current = 2000; // قيمة افتراضية للذهب
-      window.dispatchEvent(
-        new CustomEvent('tradingview-price-update', {
-          detail: { price: 2000 }
-        })
-      );
     }
   };
 

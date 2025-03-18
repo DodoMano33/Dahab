@@ -12,7 +12,7 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
 
   const updatePrice = (price: number) => {
-    if ((price !== currentPrice && !isNaN(price)) || currentPrice === null) {
+    if (price !== currentPrice && !isNaN(price)) {
       console.log(`useCurrentPrice: تحديث السعر إلى ${price}`);
       setCurrentPrice(price);
       setPriceUpdateCount((prev) => prev + 1);
@@ -30,8 +30,16 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       const price = parseFloat(savedPrice);
       if (!isNaN(price)) {
         setCurrentPrice(price);
-        setPriceUpdateCount(1);
-        console.log(`useCurrentPrice: تم استرداد السعر المحفوظ: ${price}`);
+        // نضيف فقط للعداد إذا كان السعر محدثًا في آخر 5 دقائق
+        const lastUpdateTime = localStorage.getItem('lastPriceUpdateTime');
+        if (lastUpdateTime) {
+          const lastUpdate = new Date(lastUpdateTime);
+          const now = new Date();
+          const timeDiff = now.getTime() - lastUpdate.getTime();
+          if (timeDiff < 5 * 60 * 1000) { // 5 دقائق
+            setPriceUpdateCount(1);
+          }
+        }
       }
     }
     
@@ -47,28 +55,35 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       console.log("useCurrentPrice: تم استلام طلب تحديث السعر");
       // إذا كان لدينا سعر حالي، نستجيب للطلب
       if (currentPrice !== null) {
-        console.log("useCurrentPrice: إرسال السعر الحالي:", currentPrice);
         window.dispatchEvent(
-          new CustomEvent('tradingview-price-update', {
+          new CustomEvent('current-price-response', {
             detail: { price: currentPrice }
           })
         );
-      } else {
-        console.log("useCurrentPrice: لا يوجد سعر حالي للإرسال");
+      }
+    };
+
+    // مستمع لحدث محدد لتحديث السعر من الصورة
+    const handleImagePriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        console.log("useCurrentPrice: تحديث السعر من الصورة:", event.detail.price);
+        updatePrice(event.detail.price);
       }
     };
 
     // إضافة المستمعين
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     window.addEventListener('request-current-price', handleRequestPrice);
+    window.addEventListener('image-price-update', handleImagePriceUpdate as EventListener);
     
-    console.log("useCurrentPrice: تم إضافة المستمعين");
-    
-    // التنظيف عند إزالة المكون
+    // عند التركيب، نطلب السعر المستخرج من الرسم البياني
+    window.dispatchEvent(new Event('request-extracted-price'));
+
+    // تنظيف المستمعين
     return () => {
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('request-current-price', handleRequestPrice);
-      console.log("useCurrentPrice: تم إزالة المستمعين");
+      window.removeEventListener('image-price-update', handleImagePriceUpdate as EventListener);
     };
   }, [currentPrice]);
 
