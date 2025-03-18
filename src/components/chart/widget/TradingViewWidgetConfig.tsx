@@ -7,11 +7,10 @@ interface TradingViewWidgetConfigProps {
   onLoad: () => void;
 }
 
-export const TradingViewWidgetConfig: React.FC<TradingViewWidgetConfigProps> = ({
-  symbol = 'XAUUSD',
-  theme = 'light',
-  onLoad
-}) => {
+// تصدير وظيفة عادية وليس كمكون React
+export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => {
+  const { symbol = 'XAUUSD', theme = 'light', onLoad } = props;
+  
   // تهيئة الويدجيت وإعداده
   const initializeWidget = (widgetDiv: HTMLDivElement) => {
     // إنشاء سكريبت الويدجيت
@@ -58,5 +57,6 @@ export const TradingViewWidgetConfig: React.FC<TradingViewWidgetConfigProps> = (
     return widgetContainer;
   };
 
+  // إرجاع كائن يحتوي على الدوال المطلوبة
   return { createWidgetContainer };
 };

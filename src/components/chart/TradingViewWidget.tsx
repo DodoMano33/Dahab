@@ -22,14 +22,14 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       container.current.innerHTML = '';
       
       // تهيئة المكون المساعد
-      const { createWidgetContainer } = TradingViewWidgetConfig({
+      const widgetConfig = TradingViewWidgetConfig({
         symbol,
         theme,
         onLoad: setupPriceExtraction
       });
       
       // إنشاء حاوية الويدجيت
-      const widgetContainer = createWidgetContainer();
+      const widgetContainer = widgetConfig.createWidgetContainer();
       
       // إضافة حاوية الويدجيت إلى الحاوية المرجعية
       container.current.appendChild(widgetContainer);
