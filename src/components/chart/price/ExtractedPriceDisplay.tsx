@@ -83,8 +83,8 @@ export const ExtractedPriceDisplay: React.FC = () => {
   }, []);
 
   // تحويل سنتيمتر إلى بكسل (تقريباً 38 بكسل للسنتيمتر الواحد في معظم الشاشات)
-  const widthInPx = 3.5 * 38;  // 3.5 سم - زيادة العرض
-  const heightInPx = 2.5 * 38; // 2.5 سم - تغيير الارتفاع
+  const widthInPx = 4 * 38;    // 4 سم - تعديل العرض
+  const heightInPx = 2.5 * 38; // 2.5 سم - تحديث الارتفاع
 
   return (
     <div className="w-full">
