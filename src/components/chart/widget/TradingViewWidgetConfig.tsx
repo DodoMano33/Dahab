@@ -1,6 +1,4 @@
 
-import React from 'react';
-
 interface TradingViewWidgetConfigProps {
   symbol?: string;
   theme?: string;
@@ -26,21 +24,25 @@ export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => 
     script.async = true;
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
     
-    // تعيين التكوين مع تحديث لاستخدام سعر الذهب العالمي
-    script.innerHTML = JSON.stringify({
-      symbol: `FX_IDC:${symbol}`, // استخدام مصدر بيانات أكثر دقة للذهب
-      width: "100%",
-      colorTheme: theme,
-      isTransparent: false,
-      locale: "en"
-    });
+    // تحسين التكوين لضمان ظهور الويدجيت
+    const widgetConfig = {
+      "symbol": `FX_IDC:${symbol}`,
+      "width": "100%",
+      "height": "100%",
+      "colorTheme": theme,
+      "isTransparent": false,
+      "locale": "ar"
+    };
+    
+    // تعيين محتوى السكريبت بتكوين الويدجيت
+    script.innerHTML = JSON.stringify(widgetConfig);
     
     // معالج لتحميل الويدجيت
     script.onload = () => {
       console.log("تم تحميل سكريبت TradingView بنجاح");
       setTimeout(() => {
         onLoad();
-      }, 500);
+      }, 1000);
     };
     
     // إضافة السكريبت إلى الحاوية
@@ -53,8 +55,8 @@ export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => 
   const createWidgetContainer = (): HTMLDivElement => {
     const widgetContainer = document.createElement('div');
     widgetContainer.className = 'tradingview-widget-container';
-    widgetContainer.style.width = '187.5px';
-    widgetContainer.style.height = '95px';
+    widgetContainer.style.width = '100%';
+    widgetContainer.style.height = '100%';
     
     initializeWidget(widgetContainer);
     

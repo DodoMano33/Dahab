@@ -4,6 +4,7 @@ import TradingViewWidget from './TradingViewWidget';
 import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 import { Card, CardContent } from '@/components/ui/card';
 import html2canvas from 'html2canvas';
+import { useImageCapture } from '@/hooks/useImageCapture';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -18,73 +19,8 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
 }) => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
-
-  // استخراج السعر من الويدجيت مباشرة
-  const captureWidgetImage = async () => {
-    try {
-      console.log("بدء محاولة التقاط صورة الويدجيت");
-      
-      // 1. البحث عن العنصر المناسب للتقاط الصورة
-      const widgetElement = document.querySelector('.tradingview-widget-container');
-      
-      if (!widgetElement) {
-        console.log('لم يتم العثور على ويدجيت TradingView');
-        
-        // محاولة بديلة - التقاط الحاوية الرئيسية للمكون نفسه
-        if (widgetRef.current) {
-          console.log('استخدام الحاوية الرئيسية كبديل');
-          const canvas = await html2canvas(widgetRef.current, {
-            logging: true,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 2,
-          });
-          
-          const imageUrl = canvas.toDataURL('image/png');
-          console.log('تم التقاط صورة الويدجيت من الحاوية الرئيسية، طول البيانات:', imageUrl.length);
-          setCapturedImage(imageUrl);
-          
-          // إرسال حدث يحتوي على الصورة
-          window.dispatchEvent(
-            new CustomEvent('widget-image-captured', {
-              detail: { imageUrl }
-            })
-          );
-          
-          return imageUrl;
-        }
-        return null;
-      }
-      
-      // 2. التقاط الصورة باستخدام html2canvas
-      const canvas = await html2canvas(widgetElement as HTMLElement, {
-        logging: true,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        scale: 2,
-      });
-      
-      const imageUrl = canvas.toDataURL('image/png');
-      console.log('تم التقاط صورة الويدجيت بنجاح، طول البيانات:', imageUrl.length);
-      setCapturedImage(imageUrl);
-      
-      // 3. إرسال حدث يحتوي على الصورة
-      window.dispatchEvent(
-        new CustomEvent('widget-image-captured', {
-          detail: { imageUrl }
-        })
-      );
-      
-      return imageUrl;
-    } catch (error) {
-      console.error('خطأ في التقاط صورة ويدجيت TradingView:', error);
-      return null;
-    }
-  };
+  const { capturedImage, captureTradingViewWidget } = useImageCapture();
 
   useEffect(() => {
     console.log('تم تركيب مكون LiveTradingViewChart');
@@ -107,9 +43,9 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       }
       
       // التقاط صورة الويدجيت بعد تحميله
-      setTimeout(() => {
-        captureWidgetImage();
-      }, 2000);
+      setTimeout(async () => {
+        await captureTradingViewWidget();
+      }, 3000);
     };
     
     fetchInitialPrice();
@@ -127,7 +63,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         const now = new Date();
         const lastUpdate = lastUpdateTime || new Date(0);
         if (now.getTime() - lastUpdate.getTime() > 10000) {
-          captureWidgetImage();
+          captureTradingViewWidget();
         }
       }
     };
@@ -153,7 +89,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     // مستمع لطلبات التقاط الصورة
     const handleRequestCapture = () => {
       console.log("تم استلام طلب لالتقاط صورة الويدجيت");
-      captureWidgetImage();
+      captureTradingViewWidget();
     };
     
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
@@ -170,7 +106,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         onPriceUpdate?.(price);
         
         // التقاط صورة عند تغير السعر
-        captureWidgetImage();
+        captureTradingViewWidget();
         
         // إرسال حدث تحديث السعر لباقي المكونات
         window.dispatchEvent(
@@ -188,13 +124,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       window.removeEventListener('request-capture-widget', handleRequestCapture);
       console.log('تم إزالة مكون LiveTradingViewChart');
     };
-  }, [onPriceUpdate, currentPrice, lastUpdateTime]);
+  }, [onPriceUpdate, currentPrice, lastUpdateTime, captureTradingViewWidget]);
 
   return (
     <Card className="w-full mb-6" ref={widgetRef}>
       <CardContent className="p-4">
         <h3 className="text-lg font-medium mb-2 text-center">سعر الذهب الحالي</h3>
-        <div className="pb-1 flex justify-center">
+        <div className="pb-1 flex justify-center" style={{ height: '95px' }}>
           <TradingViewWidget symbol={symbol} />
         </div>
         <div className="text-center mt-2">
@@ -208,7 +144,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
               </p>
               <button 
                 className="text-xs text-blue-500 hover:text-blue-700 mt-1"
-                onClick={captureWidgetImage}
+                onClick={() => captureTradingViewWidget()}
               >
                 تحديث السعر
               </button>

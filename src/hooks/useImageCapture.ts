@@ -17,11 +17,17 @@ export const useImageCapture = (): UseImageCaptureResult => {
       setCaptureAttempts(prev => prev + 1);
       console.log(`محاولة التقاط صورة جديدة (المحاولة رقم ${captureAttempts + 1})`);
       
-      // 1. بحث مباشر عن ويدجيت TradingView
-      const widgetElement = document.querySelector('.tradingview-widget-container');
+      // 1. بحث دقيق عن ويدجيت TradingView
+      const widgetElements = document.querySelectorAll('.tradingview-widget-container');
       
-      if (widgetElement) {
-        console.log('تم العثور على عنصر الويدجيت مباشرة');
+      if (widgetElements && widgetElements.length > 0) {
+        console.log(`تم العثور على ${widgetElements.length} عنصر للويدجيت مباشرة`);
+        
+        // استخدم أول ويدجيت وجدناه
+        const widgetElement = widgetElements[0];
+        
+        // انتظر 1 ثانية إضافية للتأكد من تحميل الويدجيت بشكل كامل
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         const canvas = await html2canvas(widgetElement as HTMLElement, {
           logging: true,
@@ -35,10 +41,17 @@ export const useImageCapture = (): UseImageCaptureResult => {
         console.log('تم التقاط صورة ويدجيت بنجاح، طول البيانات:', imageUrl.length);
         setCapturedImage(imageUrl);
         
+        // إرسال حدث يحتوي على الصورة
+        window.dispatchEvent(
+          new CustomEvent('widget-image-captured', {
+            detail: { imageUrl }
+          })
+        );
+        
         return imageUrl;
       }
       
-      // 2. العثور على المنطقة المستهدفة بشكل مباشر (البحث عن العنصر الذي يحتوي على العنوان "سعر الذهب الحالي")
+      // 2. البحث عن المنطقة المستهدفة بشكل مباشر (البحث عن العنصر الذي يحتوي على العنوان "سعر الذهب الحالي")
       const goldPriceSection = document.querySelector('h3.text-lg.font-medium.mb-2.text-center');
       
       if (goldPriceSection) {
@@ -70,53 +83,6 @@ export const useImageCapture = (): UseImageCaptureResult => {
             
             return imageUrl;
           }
-          
-          // في حالة الفشل، نلتقط الكارد بالكامل
-          console.log('محاولة التقاط الكارد بالكامل');
-          const canvas = await html2canvas(cardElement as HTMLElement, {
-            logging: true,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 2
-          });
-          
-          const imageUrl = canvas.toDataURL('image/png');
-          console.log('تم التقاط صورة الكارد بالكامل، طول البيانات:', imageUrl.length);
-          setCapturedImage(imageUrl);
-          
-          return imageUrl;
-        }
-      }
-      
-      // 3. محاولة شاملة - البحث عن أي عنصر في الصفحة قد يكون الويدجيت
-      console.log('لم يتم العثور على أي عناصر محددة، محاولة البحث الشامل');
-      
-      const possibleWidgets = document.querySelectorAll('div[style*="height"]');
-      for (let i = 0; i < possibleWidgets.length; i++) {
-        const element = possibleWidgets[i] as HTMLElement;
-        
-        // التحقق مما إذا كان العنصر يحتوي على أي مؤشر لويدجيت TradingView
-        if (
-          element.innerHTML.includes('tradingview') || 
-          element.className.includes('trading') ||
-          element.querySelector('.tradingview-widget-container')
-        ) {
-          console.log('تم العثور على عنصر محتمل للويدجيت:', element);
-          
-          const canvas = await html2canvas(element, {
-            logging: true,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 2
-          });
-          
-          const imageUrl = canvas.toDataURL('image/png');
-          console.log('تم التقاط صورة العنصر المحتمل، طول البيانات:', imageUrl.length);
-          setCapturedImage(imageUrl);
-          
-          return imageUrl;
         }
       }
       

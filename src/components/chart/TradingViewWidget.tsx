@@ -48,8 +48,9 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     <div 
       ref={container} 
       style={{ 
-        width: '187.5px',
-        height: '95px',
+        width: '100%',
+        height: '100%',
+        minHeight: '95px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

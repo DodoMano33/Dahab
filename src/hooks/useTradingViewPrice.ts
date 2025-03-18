@@ -65,6 +65,21 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
         }
       }
       
+      // في حال فشل جميع المحددات الأولية، قم بتجربة محددات إضافية
+      const additionalSelectors = [
+        '.tv-lightweight-charts strong',
+        '.tv-lightweight-charts span',
+        '.chart-markup-table',
+        '.pane-legend-line'
+      ];
+      
+      for (const selector of additionalSelectors) {
+        const elements = containerRef.current.querySelectorAll(selector);
+        if (elements && elements.length > 0) {
+          console.log(`محاولة إضافية باستخدام المحدد '${selector}'، تم العثور على ${elements.length} عنصر`);
+        }
+      }
+      
       // البحث عن نمط السعر في نص الويدجيت بالكامل
       const allText = containerRef.current.textContent || '';
       
@@ -113,6 +128,8 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
           }
         }
       }
+
+      console.log("لم يتم العثور على سعر في الويدجيت بعد محاولات متعددة");
     } catch (error) {
       console.error("خطأ أثناء استخراج السعر:", error);
     }
@@ -137,7 +154,7 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
       
       // طلب التقاط صورة للويدجيت بعد تحميله
       window.dispatchEvent(new Event('request-capture-widget'));
-    }, 1000);
+    }, 2000);
     
     // إعداد فاصل زمني لتحديث السعر
     if (intervalRef.current) {
