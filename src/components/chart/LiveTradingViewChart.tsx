@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 import { Card, CardContent } from '@/components/ui/card';
 import html2canvas from 'html2canvas';
@@ -19,6 +19,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [captureAttempts, setCaptureAttempts] = useState(0);
+  const widgetRef = useRef<HTMLDivElement>(null);
 
   // استخراج السعر من الويدجيت مباشرة
   const captureWidgetImage = async () => {
@@ -26,11 +27,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       setCaptureAttempts(prev => prev + 1);
       console.log(`محاولة التقاط صورة #${captureAttempts + 1}`);
       
-      const widgetElement = document.querySelector('.tradingview-widget-container');
+      const widgetElement = document.querySelector('.tradingview-widget-container') || widgetRef.current?.querySelector('.tradingview-widget-wrapper');
       if (!widgetElement) {
         console.log('لم يتم العثور على ويدجيت TradingView');
         return null;
       }
+      
+      console.log('تم العثور على عنصر الويدجيت:', widgetElement);
       
       // تأخير قصير لضمان أن الويدجيت قد تم تحميله بالكامل
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -40,8 +43,8 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         logging: true,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: null,
-        scale: 3, // زيادة دقة الصورة
+        backgroundColor: '#ffffff',
+        scale: 4, // زيادة دقة الصورة
         imageTimeout: 0, // تعطيل المهلة
       });
       
@@ -77,15 +80,21 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         console.log("محاولة التقاط الصورة الأولية...");
         captureWidgetImage();
       }, 3000);
+      
+      // محاولات متعددة للتقاط الصورة
+      setTimeout(() => captureWidgetImage(), 5000);
+      setTimeout(() => captureWidgetImage(), 7000);
+      setTimeout(() => captureWidgetImage(), 10000);
     };
     
     captureInitialImage();
     
     // مستمع لتحديثات السعر من OCR
-    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number, source?: string }>) => {
       if (event.detail && event.detail.price) {
         const price = event.detail.price;
-        console.log(`تم استلام تحديث السعر من OCR: ${price}`);
+        const source = event.detail.source || 'unknown';
+        console.log(`تم استلام تحديث السعر من ${source}: ${price}`);
         setCurrentPrice(price);
         setLastUpdateTime(new Date());
         onPriceUpdate?.(price);
@@ -98,7 +107,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
         console.log("تم استلام طلب للسعر الحالي، إرسال:", currentPrice);
         window.dispatchEvent(
           new CustomEvent('tradingview-price-update', {
-            detail: { price: currentPrice }
+            detail: { price: currentPrice, source: 'livechart-request' }
           })
         );
       }
@@ -129,7 +138,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   }, [onPriceUpdate, currentPrice, captureAttempts]);
 
   return (
-    <Card className="w-full mb-6">
+    <Card className="w-full mb-6" ref={widgetRef}>
       <CardContent className="p-4">
         <h3 className="text-lg font-medium mb-2 text-center">سعر الذهب الحالي</h3>
         <div className="pb-1">

@@ -13,8 +13,8 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
 
   const updatePrice = useCallback((price: number) => {
     if (!isNaN(price) && price > 0) {
-      // تحديث السعر فقط إذا كان في النطاق المتوقع للذهب (2000-4000)
-      if (price > 2000 && price < 4000) {
+      // تحديث السعر فقط إذا كان في النطاق المتوقع للذهب (1000-5000)
+      if (price > 1000 && price < 5000) {
         console.log(`useCurrentPrice: تحديث السعر إلى ${price}`);
         
         // تحديث السعر فقط إذا تغير، أو لم يكن هناك سعر سابق
@@ -60,22 +60,46 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       const price = parseFloat(savedPrice);
       if (!isNaN(price)) {
         setCurrentPrice(price);
-        // نضيف فقط للعداد إذا كان السعر محدثًا في آخر 5 دقائق
+        // نضيف فقط للعداد إذا كان السعر محدثًا في آخر 30 دقيقة
         const lastUpdateTime = localStorage.getItem('lastPriceUpdateTime');
         if (lastUpdateTime) {
           const lastUpdate = new Date(lastUpdateTime);
           const now = new Date();
           const timeDiff = now.getTime() - lastUpdate.getTime();
-          if (timeDiff < 5 * 60 * 1000) { // 5 دقائق
+          if (timeDiff < 30 * 60 * 1000) { // 30 دقيقة
             setPriceUpdateCount(1);
           }
         }
       }
     }
     
+    // محاولة استخراج السعر من HTML مباشرة (كآلية إضافية)
+    try {
+      const extractPriceFromHtml = () => {
+        // البحث عن أنماط سعر الذهب في كل النص
+        const bodyText = document.body.innerText || '';
+        const priceMatch = bodyText.match(/\b([123][,\d]{0,3}\.\d{1,2})\b/);
+        if (priceMatch && priceMatch[1]) {
+          const price = parseFloat(priceMatch[1].replace(/,/g, ''));
+          if (!isNaN(price) && price > 1000 && price < 5000) {
+            console.log(`استخراج السعر مباشرة من HTML: ${price}`);
+            updatePrice(price);
+          }
+        }
+      };
+      
+      // استخراج السعر بعد تحميل الصفحة وبعد فترات منتظمة
+      setTimeout(extractPriceFromHtml, 3000);
+      setTimeout(extractPriceFromHtml, 6000);
+      setTimeout(extractPriceFromHtml, 10000);
+    } catch (error) {
+      console.error('خطأ في استخراج السعر من HTML:', error);
+    }
+    
     // مستمع لسعر TradingView
-    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number, source?: string }>) => {
       if (event.detail && event.detail.price) {
+        console.log(`استلام تحديث السعر من ${event.detail.source || 'غير معروف'}: ${event.detail.price}`);
         updatePrice(event.detail.price);
       }
     };
@@ -89,6 +113,9 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
             detail: { price: currentPrice }
           })
         );
+      } else {
+        // إذا لم يكن هناك سعر حالي، نطلب تحديث السعر
+        window.dispatchEvent(new Event('request-capture-widget'));
       }
     };
 
@@ -124,6 +151,7 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
     
     // عند التركيب، نطلب السعر المستخرج من الرسم البياني
     window.dispatchEvent(new Event('request-extracted-price'));
+    window.dispatchEvent(new Event('request-capture-widget'));
     
     // طلب السعر الحالي كل ثانية
     const intervalId = setInterval(() => {
