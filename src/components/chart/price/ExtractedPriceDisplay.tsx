@@ -16,6 +16,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const updateSuccessRef = useRef<boolean>(false);
+  const [lastCapturedImage, setLastCapturedImage] = useState<string | null>(null);
 
   // استخدام الهوكات المخصصة
   const {
@@ -29,6 +30,29 @@ export const ExtractedPriceDisplay: React.FC = () => {
     isProcessingOCR,
     processImageWithOCR
   } = useOcrProcessor();
+  
+  // استماع لحدث التقاط صورة من الويدجيت
+  useEffect(() => {
+    const handleWidgetImageCaptured = (event: CustomEvent<{ imageUrl: string }>) => {
+      if (event.detail && event.detail.imageUrl) {
+        console.log("ExtractedPriceDisplay: تم استلام صورة من الويدجيت");
+        setLastCapturedImage(event.detail.imageUrl);
+        
+        // معالجة الصورة باستخدام OCR
+        processImageWithOCR(event.detail.imageUrl).then(price => {
+          if (price !== null) {
+            console.log("تم استخراج السعر من صورة الويدجيت:", price);
+          }
+        });
+      }
+    };
+    
+    window.addEventListener('widget-image-captured', handleWidgetImageCaptured as EventListener);
+    
+    return () => {
+      window.removeEventListener('widget-image-captured', handleWidgetImageCaptured as EventListener);
+    };
+  }, [processImageWithOCR]);
   
   // تحديث الوقت عند تغير السعر
   useEffect(() => {
@@ -55,6 +79,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
     
     // طلب تحديث السعر بشكل فوري وبشكل دوري
     window.dispatchEvent(new Event('request-current-price'));
+    window.dispatchEvent(new Event('request-capture-widget'));
     
     const intervalId = setInterval(() => {
       window.dispatchEvent(new Event('request-current-price'));
@@ -86,11 +111,17 @@ export const ExtractedPriceDisplay: React.FC = () => {
   // التقاط الصورة ومعالجتها
   const handleCaptureAndProcess = async () => {
     setIsExtracting(true);
+    
+    // إرسال طلب لالتقاط صورة من LiveTradingViewChart
+    window.dispatchEvent(new Event('request-capture-widget'));
+    
+    // كبديل، يمكننا أيضًا استخدام الطريقة القديمة
     const imageUrl = await captureTradingViewWidget();
     if (imageUrl) {
       console.log("ExtractedPriceDisplay: تم التقاط صورة بنجاح");
       await processImageWithOCR(imageUrl);
     }
+    
     setTimeout(() => {
       if (!updateSuccessRef.current) {
         setIsExtracting(false);
@@ -109,7 +140,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
           console.log("ExtractedPriceDisplay: محاولة تحديث السعر تلقائيًا");
           handleCaptureAndProcess();
         }
-      }, 2000);
+      }, 5000); // تقليل تواتر التحديثات
 
       return () => {
         clearInterval(captureInterval);
@@ -137,7 +168,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
       </p>}
       
       <CapturedImageDisplay 
-        capturedImage={capturedImage} 
+        capturedImage={lastCapturedImage || capturedImage} 
         captureAttempts={captureAttempts} 
         widthInPx={widthInPx} 
         heightInPx={heightInPx} 

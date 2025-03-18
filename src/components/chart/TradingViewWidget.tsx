@@ -57,6 +57,9 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         // تأخير أطول للتأكد من تحميل الويدجيت بالكامل
         setTimeout(() => {
           extractPriceFromWidget();
+          
+          // طلب التقاط صورة للويدجيت بعد تحميله
+          window.dispatchEvent(new Event('request-capture-widget'));
         }, 2000);
       };
       
@@ -86,23 +89,20 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     }
   }, [symbol, theme]);
   
-  // دالة محسنة لاستخراج السعر من الويدجيت
+  // دالة محسنة لاستخراج السعر من الويدجيت البسيط
   const extractPriceFromWidget = () => {
     if (!container.current) return;
     
-    // المحددات المحسنة للبحث عن عناصر السعر
+    // الويدجيت البسيط - يظهر السعر في عنصر strong
     const priceSelectors = [
-      '.tv-ticker-tape-price__value',
-      '.chart-markup-table.pane-legend-line.main-serie .tv-symbol-price-quote__value',
-      '.tv-symbol-header__first-line .tv-symbol-price-quote__value',
-      '.tv-symbol-price-quote__value',
-      '.apply-overflow-tooltip.apply-common-tooltip',
-      '[data-name="legend-source-item"] .tv-symbol-price-quote__value',
-      '.tv-ticker__item--last .tv-ticker__field--last-value',
-      'strong'  // التحديثات الأخيرة في TradingView قد تستخدم هذا
+      'strong', // الويدجيت البسيط يضع السعر في عنصر strong
+      '.tv-ticker-tape-price__value', // احتياطي
+      '.tv-symbol-price-quote__value', // احتياطي
+      '[data-field="last"]', // احتياطي
+      '.price-value'  // احتياطي
     ];
     
-    // البحث عن عناصر السعر باستخدام المحددات المختلفة
+    // البحث عن عنصر السعر باستخدام المحددات
     for (const selector of priceSelectors) {
       const elements = container.current.querySelectorAll(selector);
       
@@ -110,41 +110,27 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         for (const element of elements) {
           const priceText = element.textContent;
           if (priceText) {
-            console.log(`TradingViewWidget: النص المستخرج باستخدام المحدد '${selector}': "${priceText}"`);
+            console.log(`TradingViewWidget: النص المستخرج من '${selector}': "${priceText}"`);
             
-            // تنظيف النص واستخراج الرقم
+            // تنظيف النص واستخراج الرقم - نتوقع صيغة مثل "3,030.519"
+            // نزيل الفواصل ونحول النقاط إلى فواصل عشرية
             const cleanText = priceText.trim().replace(/[^\d.,]/g, '');
             
-            // التحقق من صحة التنسيق
             if (cleanText.match(/\d+([.,]\d+)?/)) {
               const normalizedText = cleanText.replace(/,/g, '.');
               const price = parseFloat(normalizedText);
               
               if (!isNaN(price) && price > 0) {
-                // التحقق من أن السعر في نطاق معقول للذهب (500-5000)
-                if (price > 500 && price < 5000) {
+                // التحقق من نطاق سعر الذهب - حاليًا بين 2000-4000
+                if (price > 2000 && price < 4000) {
                   if (price !== lastExtractedPrice.current) {
-                    console.log(`تم استخراج سعر جديد: ${price}`);
+                    console.log(`تم استخراج سعر ذهب جديد: ${price}`);
                     lastExtractedPrice.current = price;
                     
                     // إرسال حدث مخصص بالسعر المستخرج
                     window.dispatchEvent(
                       new CustomEvent('tradingview-price-update', {
                         detail: { price }
-                      })
-                    );
-                  }
-                  return;
-                } else if (price > 0.5 && price < 5) {
-                  // قد يكون السعر بالآلاف لكن بصيغة مختصرة
-                  const adjustedPrice = price * 1000;
-                  if (adjustedPrice !== lastExtractedPrice.current) {
-                    console.log(`تم تعديل السعر من ${price} إلى ${adjustedPrice}`);
-                    lastExtractedPrice.current = adjustedPrice;
-                    
-                    window.dispatchEvent(
-                      new CustomEvent('tradingview-price-update', {
-                        detail: { price: adjustedPrice }
                       })
                     );
                   }
@@ -157,16 +143,18 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       }
     }
     
-    // البحث في كامل الحاوية عن أي نص قد يكون السعر
-    if (lastExtractedPrice.current === null) {
-      const allText = container.current.textContent || '';
-      const priceMatches = allText.match(/\b(\d{1,4})[.,](\d{1,3})\b/g);
-      
-      if (priceMatches) {
-        for (const match of priceMatches) {
-          const price = parseFloat(match.replace(/,/g, '.'));
-          if (!isNaN(price) && price > 1000 && price < 3000) {
-            console.log(`تم استخراج سعر محتمل من نص الحاوية: ${price}`);
+    // البحث عن نمط السعر في نص الويدجيت بالكامل
+    const allText = container.current.textContent || '';
+    const pricePattern = /\b[23],\d{3}\.\d{1,3}\b/g; // نمط مثل "3,030.51"
+    const matches = allText.match(pricePattern);
+    
+    if (matches && matches.length > 0) {
+      for (const match of matches) {
+        const price = parseFloat(match.replace(/,/g, ''));
+        if (!isNaN(price) && price > 2000 && price < 4000) {
+          console.log(`تم استخراج سعر من نص كامل الويدجيت: ${price}`);
+          
+          if (price !== lastExtractedPrice.current) {
             lastExtractedPrice.current = price;
             
             window.dispatchEvent(
@@ -174,8 +162,8 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
                 detail: { price }
               })
             );
-            break;
           }
+          return;
         }
       }
     }
