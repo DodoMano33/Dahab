@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface UseCurrentPriceResult {
   currentPrice: number | null;
@@ -11,8 +11,8 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
 
-  const updatePrice = (price: number) => {
-    if (price !== currentPrice && !isNaN(price)) {
+  const updatePrice = useCallback((price: number) => {
+    if (!isNaN(price) && price > 0) {
       console.log(`useCurrentPrice: تحديث السعر إلى ${price}`);
       setCurrentPrice(price);
       setPriceUpdateCount((prev) => prev + 1);
@@ -20,8 +20,17 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       // تخزين السعر في localStorage لحالات تحديث الصفحة
       localStorage.setItem('lastExtractedPrice', price.toString());
       localStorage.setItem('lastPriceUpdateTime', new Date().toISOString());
+      
+      // إطلاق حدث تحديث واجهة المستخدم
+      window.dispatchEvent(
+        new CustomEvent('ui-price-update', {
+          detail: { price }
+        })
+      );
+    } else {
+      console.warn(`useCurrentPrice: تم تجاهل السعر غير الصالح: ${price}`);
     }
-  };
+  }, []);
 
   useEffect(() => {
     // محاولة استرداد السعر المحفوظ عند بدء التشغيل
@@ -71,21 +80,34 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       }
     };
 
+    // مستمع لتحديث واجهة المستخدم
+    const handleUiPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      console.log("useCurrentPrice: تم استلام طلب تحديث واجهة المستخدم:", event.detail?.price);
+    };
+
     // إضافة المستمعين
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     window.addEventListener('request-current-price', handleRequestPrice);
     window.addEventListener('image-price-update', handleImagePriceUpdate as EventListener);
+    window.addEventListener('ui-price-update', handleUiPriceUpdate as EventListener);
     
     // عند التركيب، نطلب السعر المستخرج من الرسم البياني
     window.dispatchEvent(new Event('request-extracted-price'));
+    
+    // طلب السعر الحالي كل ثانية
+    const intervalId = setInterval(() => {
+      window.dispatchEvent(new Event('request-current-price'));
+    }, 1000);
 
     // تنظيف المستمعين
     return () => {
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('request-current-price', handleRequestPrice);
       window.removeEventListener('image-price-update', handleImagePriceUpdate as EventListener);
+      window.removeEventListener('ui-price-update', handleUiPriceUpdate as EventListener);
+      clearInterval(intervalId);
     };
-  }, [currentPrice]);
+  }, [updatePrice, currentPrice]);
 
   return { currentPrice, priceUpdateCount, updatePrice };
 };

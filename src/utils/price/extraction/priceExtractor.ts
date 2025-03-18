@@ -12,16 +12,34 @@ export const extractPriceFromText = (text: string): number | null => {
     return null;
   }
   
-  // تنظيف النص من الأحرف غير المرغوب فيها
+  // تنظيف النص من الأحرف غير المرغوب فيها ولكن الاحتفاظ بالنقاط والفواصل
   const cleanedText = text.replace(/[^\d,.]/g, ' ').trim();
   console.log('النص بعد التنظيف:', cleanedText);
+
+  // البحث عن "دولار" أو "USD" والأرقام القريبة منها
+  if (text.includes('دولار') || text.includes('USD') || text.includes('usd')) {
+    console.log('تم العثور على كلمة دولار في النص');
+    
+    // استخراج الرقم القريب من كلمة دولار
+    const matches = text.match(/(\d{1,4})[,.](\d{1,3})[\s]*(?:دولار|USD|usd)/i) || 
+                    text.match(/(?:دولار|USD|usd)[\s]*(\d{1,4})[,.](\d{1,3})/i);
+    
+    if (matches) {
+      console.log('تم العثور على نمط سعر قرب كلمة دولار:', matches[0]);
+      const price = parseFloat(matches[1] + '.' + matches[2]);
+      
+      if (!isNaN(price) && price > 500 && price < 5000) {
+        console.log('تم استخراج السعر بنجاح (من قرب كلمة دولار):', price);
+        return price;
+      }
+    }
+  }
   
-  // محاولة 1: البحث عن نمط الأرقام المكونة من 1-4 خانات أساسية و3 خانات عشرية بالضبط
-  // مثال: 1234.567 أو 2345.678 أو 3,027.990
-  const pricePattern = /\b(\d{1,4})[.,](\d{3})\b/g;
+  // محاولة 1: البحث عن نمط الأرقام المكونة من 1-4 خانات أساسية و2-3 خانات عشرية
+  const pricePattern = /(\d{1,4})[.,](\d{2,3})\b/g;
   const matches = text.match(pricePattern);
   
-  console.log('الأرقام المطابقة للنمط (1-4 أرقام + 3 أرقام عشرية):', matches);
+  console.log('الأرقام المطابقة للنمط (1-4 أرقام + 2-3 أرقام عشرية):', matches);
   
   if (matches && matches.length > 0) {
     // التحقق من كل مطابقة محتملة
@@ -39,8 +57,22 @@ export const extractPriceFromText = (text: string): number | null => {
     }
   }
   
+  // محاولة إضافية: البحث عن أرقام 4 خانات مباشرة (مثل 2032)
+  const fourDigitPattern = /\b(\d{4})\b/g;
+  const fourDigitMatches = text.match(fourDigitPattern);
+  
+  if (fourDigitMatches && fourDigitMatches.length > 0) {
+    for (const match of fourDigitMatches) {
+      const price = parseInt(match, 10);
+      if (price > 1500 && price < 3000) {
+        console.log('تم استخراج سعر من رقم مكون من 4 خانات:', price);
+        return price;
+      }
+    }
+  }
+  
   // محاولة 2: البحث عن أنماط أخرى في النص الأصلي
-  const digitsPattern = /(\d{1,4})[.,](\d{3})/g;
+  const digitsPattern = /(\d{1,4})[.,](\d{1,3})/g;
   let match;
   const possiblePrices = [];
   
@@ -64,7 +96,7 @@ export const extractPriceFromText = (text: string): number | null => {
   }
   
   // محاولة 3: البحث عن أنماط مختلفة من الأرقام
-  const generalNumberPattern = /(\d{1,4})[.,](\d{2,3})/g;
+  const generalNumberPattern = /(\d{1,4})[.,](\d{1,3})/g;
   const generalMatches = [];
   
   while ((match = generalNumberPattern.exec(text)) !== null) {

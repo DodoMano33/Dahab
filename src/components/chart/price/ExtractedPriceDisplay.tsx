@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { PriceDisplay } from '../backtest/components/PriceDisplay';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
@@ -14,7 +15,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
   } = useCurrentPrice();
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
-  const widgetRef = useRef<HTMLDivElement | null>(null);
+  const updateSuccessRef = useRef<boolean>(false);
 
   // استخدام الهوكات المخصصة
   const {
@@ -29,6 +30,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
     processImageWithOCR
   } = useOcrProcessor();
   
+  // تحديث الوقت عند تغير السعر
   useEffect(() => {
     if (currentPrice !== null) {
       setLastUpdateTime(new Date());
@@ -38,20 +40,41 @@ export const ExtractedPriceDisplay: React.FC = () => {
     }
   }, [currentPrice]);
 
+  // طلب تحديث السعر الحالي بشكل دوري
   useEffect(() => {
+    console.log("تفعيل استماع لأحداث السعر");
+    
+    const handlePriceResponse = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        console.log("ExtractedPriceDisplay: تم استلام استجابة سعر:", event.detail.price);
+        updateSuccessRef.current = true;
+      }
+    };
+    
+    window.addEventListener('current-price-response', handlePriceResponse as EventListener);
+    
+    // طلب تحديث السعر بشكل فوري وبشكل دوري
     window.dispatchEvent(new Event('request-current-price'));
-
+    
     const intervalId = setInterval(() => {
       window.dispatchEvent(new Event('request-current-price'));
     }, 1000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      window.removeEventListener('current-price-response', handlePriceResponse as EventListener);
+      clearInterval(intervalId);
+    };
   }, []);
 
+  // تحديث السعر عند استخراجه من الصورة
   useEffect(() => {
     if (extractedPrice !== null) {
+      console.log("ExtractedPriceDisplay: تم استخراج سعر من صورة:", extractedPrice);
       updatePrice(extractedPrice);
+      setLastUpdateTime(new Date());
+      updateSuccessRef.current = true;
 
+      // إرسال حدث لتحديث السعر في باقي التطبيق
       window.dispatchEvent(new CustomEvent('image-price-update', {
         detail: {
           price: extractedPrice
@@ -60,43 +83,58 @@ export const ExtractedPriceDisplay: React.FC = () => {
     }
   }, [extractedPrice, updatePrice]);
 
+  // التقاط الصورة ومعالجتها
   const handleCaptureAndProcess = async () => {
+    setIsExtracting(true);
     const imageUrl = await captureTradingViewWidget();
     if (imageUrl) {
+      console.log("ExtractedPriceDisplay: تم التقاط صورة بنجاح");
       await processImageWithOCR(imageUrl);
     }
+    setTimeout(() => {
+      if (!updateSuccessRef.current) {
+        setIsExtracting(false);
+      }
+    }, 3000);
   };
 
+  // بدء التقاط الصور عند تحميل المكون
   useEffect(() => {
     const initialDelay = setTimeout(() => {
       console.log('بدء محاولة التقاط الصورة الأولى...');
       handleCaptureAndProcess();
 
       const captureInterval = setInterval(() => {
-        handleCaptureAndProcess();
+        if (!updateSuccessRef.current || Date.now() - (lastUpdateTime?.getTime() || 0) > 10000) {
+          console.log("ExtractedPriceDisplay: محاولة تحديث السعر تلقائيًا");
+          handleCaptureAndProcess();
+        }
       }, 2000);
 
       return () => {
         clearInterval(captureInterval);
       };
-    }, 2500);
+    }, 1500); // تقليل وقت التأخير الأولي
 
     return () => {
       clearTimeout(initialDelay);
     };
-  }, []);
+  }, [lastUpdateTime]);
 
   const widthInPx = 5 * 38;
   const heightInPx = 2.5 * 38;
 
-  return <div className="w-full">
-      <PriceDisplay currentPrice={extractedPrice !== null ? extractedPrice : currentPrice} priceUpdateCount={priceUpdateCount} lastUpdateTime={lastUpdateTime} />
+  return (
+    <div className="w-full">
+      <PriceDisplay 
+        currentPrice={extractedPrice !== null ? extractedPrice : currentPrice} 
+        priceUpdateCount={priceUpdateCount} 
+        lastUpdateTime={lastUpdateTime} 
+      />
       
       {isExtracting && <p className="text-center text-amber-500 text-sm mt-1">
-          جاري استخراج السعر الحالي من الصورة...
-        </p>}
-      
-      {isProcessingOCR}
+        جاري استخراج السعر الحالي من الصورة...
+      </p>}
       
       <CapturedImageDisplay 
         capturedImage={capturedImage} 
@@ -106,6 +144,10 @@ export const ExtractedPriceDisplay: React.FC = () => {
         onManualCapture={handleCaptureAndProcess} 
       />
       
-      <RecognizedTextDisplay recognizedText={recognizedText} extractedPrice={extractedPrice} />
-    </div>;
+      <RecognizedTextDisplay 
+        recognizedText={recognizedText} 
+        extractedPrice={extractedPrice} 
+      />
+    </div>
+  );
 };
