@@ -18,26 +18,39 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [captureAttempts, setCaptureAttempts] = useState(0);
 
   // استخراج السعر من الويدجيت مباشرة
   const captureWidgetImage = async () => {
     try {
+      setCaptureAttempts(prev => prev + 1);
+      console.log(`محاولة التقاط صورة #${captureAttempts + 1}`);
+      
       const widgetElement = document.querySelector('.tradingview-widget-container');
       if (!widgetElement) {
         console.log('لم يتم العثور على ويدجيت TradingView');
         return null;
       }
       
+      // تأخير قصير لضمان أن الويدجيت قد تم تحميله بالكامل
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // تحسين جودة الصورة الملتقطة
       const canvas = await html2canvas(widgetElement as HTMLElement, {
         logging: true,
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
-        scale: 2,
+        scale: 3, // زيادة دقة الصورة
+        imageTimeout: 0, // تعطيل المهلة
       });
       
-      const imageUrl = canvas.toDataURL('image/png');
+      const imageUrl = canvas.toDataURL('image/png', 1.0); // جودة أعلى للصورة
       console.log('تم التقاط صورة الويدجيت بنجاح، طول البيانات:', imageUrl.length);
+      
+      // طباعة حجم الصورة للتشخيص
+      console.log(`أبعاد الصورة الملتقطة: ${canvas.width}x${canvas.height}`);
+      
       setCapturedImage(imageUrl);
       
       // إرسال حدث يحتوي على الصورة
@@ -57,12 +70,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   useEffect(() => {
     console.log('تم تركيب مكون LiveTradingViewChart');
     
-    // استخراج السعر المبدئي باستخدام OCR
+    // استخراج السعر المبدئي باستخدام OCR بعد تحميل الويدجيت
     const captureInitialImage = async () => {
-      // التقاط صورة الويدجيت بعد تحميله
+      // التقاط صورة الويدجيت بعد تحميله بوقت كافي
       setTimeout(() => {
+        console.log("محاولة التقاط الصورة الأولية...");
         captureWidgetImage();
-      }, 1500);
+      }, 3000);
     };
     
     captureInitialImage();
@@ -100,10 +114,10 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     window.addEventListener('request-current-price', handleRequestCurrentPrice);
     window.addEventListener('request-capture-widget', handleRequestCapture as EventListener);
     
-    // جدولة التقاط الصورة بشكل دوري
+    // جدولة التقاط الصورة بشكل دوري (تقليل التواتر لتجنب التحميل الزائد)
     const captureInterval = setInterval(() => {
       captureWidgetImage();
-    }, 5000); // التقاط كل 5 ثوانٍ
+    }, 10000); // التقاط كل 10 ثوانٍ
     
     return () => {
       clearInterval(captureInterval);
@@ -112,7 +126,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
       window.removeEventListener('request-capture-widget', handleRequestCapture as EventListener);
       console.log('تم إزالة مكون LiveTradingViewChart');
     };
-  }, [onPriceUpdate, currentPrice]);
+  }, [onPriceUpdate, currentPrice, captureAttempts]);
 
   return (
     <Card className="w-full mb-6">
@@ -122,7 +136,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
           <TradingViewWidget symbol={symbol} />
         </div>
         <div className="text-center mt-2">
-          {currentPrice && (
+          {currentPrice ? (
             <div>
               <p className="text-2xl font-bold">
                 {currentPrice.toFixed(2)} دولار
@@ -130,6 +144,16 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
               <p className="text-xs text-muted-foreground mt-1">
                 آخر تحديث: {lastUpdateTime ? new Date(lastUpdateTime).toLocaleTimeString() : ''}
               </p>
+              <button 
+                className="text-xs text-blue-500 hover:text-blue-700 mt-1"
+                onClick={captureWidgetImage}
+              >
+                تحديث السعر
+              </button>
+            </div>
+          ) : (
+            <div>
+              <p className="text-amber-500">جارٍ استخراج السعر...</p>
               <button 
                 className="text-xs text-blue-500 hover:text-blue-700 mt-1"
                 onClick={captureWidgetImage}

@@ -9,64 +9,110 @@ export const extractPriceFromText = (text: string): number | null => {
   
   console.log("استخراج السعر من النص:", text);
   
-  // نمط لاستخراج سعر الذهب (مثلاً 2,345.67 أو 3045.12)
-  // يجب أن يبدأ بـ 2 أو 3 (أسعار الذهب عادةً بين 2000-3999)
+  // تنظيف النص وإزالة الأحرف غير الأرقام والأرقام العشرية والفواصل
+  const cleanedText = text.replace(/[^\d.,]/g, ' ');
+  console.log("النص بعد التنظيف:", cleanedText);
   
-  // نمط 1: مع فاصلة مثل 3,065.48
-  const pattern1 = /\b([23]),(\d{3})\.(\d{1,2})\b/;
-  const match1 = text.match(pattern1);
-  if (match1) {
-    const price = parseFloat(`${match1[1]}${match1[2]}.${match1[3]}`);
-    console.log("تم استخراج السعر بنمط الفاصلة:", price);
-    if (!isNaN(price) && price > 2000 && price < 4000) {
+  // محاولة 1: البحث عن نمط سعر الذهب النموذجي (مثل 3065.48)
+  const goldPattern = /\b([23]\d{3}\.?\d{0,2})\b/;
+  const goldMatch = text.match(goldPattern);
+  
+  if (goldMatch && goldMatch[1]) {
+    const price = parseFloat(goldMatch[1]);
+    console.log("تم استخراج سعر الذهب من النمط الأساسي:", price);
+    if (!isNaN(price) && price > 1000 && price < 5000) {
       return price;
     }
   }
   
-  // نمط 2: بدون فاصلة مثل 3065.48
-  const pattern2 = /\b([23]\d{3})\.(\d{1,2})\b/;
-  const match2 = text.match(pattern2);
-  if (match2) {
-    const price = parseFloat(`${match2[1]}.${match2[2]}`);
-    console.log("تم استخراج السعر بنمط بدون فاصلة:", price);
-    if (!isNaN(price) && price > 2000 && price < 4000) {
-      return price;
+  // محاولة 2: البحث عن أنماط متعددة لسعر الذهب
+  const patterns = [
+    /\b([23]),?(\d{3})\.(\d{1,2})\b/, // نمط مع فاصلة مثل 3,065.48
+    /\b([23])(\d{3})\.(\d{1,2})\b/,   // نمط بدون فاصلة مثل 3065.48
+    /\b([23])(\d{2,3})\.(\d{1,2})\b/, // نمط مرن للأرقام
+    /(\d{1,4})[.,](\d{1,2})/,         // نمط مرن أكثر للأرقام
+  ];
+  
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let price;
+      if (match.length === 4) {
+        // نمط مع مجموعات متعددة (الأرقام مفصولة)
+        if (match[2].length === 3) {
+          // نمط مثل 3,065.48 أو 3065.48
+          price = parseFloat(`${match[1]}${match[2]}.${match[3]}`);
+        } else {
+          // نمط آخر
+          const combinedDigits = match[1] + match[2];
+          price = parseFloat(`${combinedDigits}.${match[3]}`);
+        }
+      } else {
+        // نمط بسيط
+        price = parseFloat(match[0].replace(/,/g, '.'));
+      }
+      
+      console.log("تم استخراج سعر محتمل من النمط الثانوي:", price);
+      if (!isNaN(price) && price > 1000 && price < 5000) {
+        return price;
+      }
     }
   }
   
-  // نمط 3: محاولة التعامل مع نص متفرق
-  const digitsOnly = text.replace(/[^\d\.]/g, ' ').split(' ').filter(Boolean);
-  console.log("الأرقام المستخرجة:", digitsOnly);
+  // محاولة 3: البحث عن أي رقم يشبه سعر الذهب
+  // تقسيم النص إلى كلمات وتحليل كل واحدة
+  const words = cleanedText.split(/\s+/).filter(Boolean);
+  console.log("الكلمات المستخرجة:", words);
   
-  for (const digit of digitsOnly) {
-    if (digit.includes('.')) {
-      const numVal = parseFloat(digit);
-      if (!isNaN(numVal)) {
-        // التعامل مع أعداد مثل 3.06 (قد تكون 3065)
-        if (numVal > 2 && numVal < 4 && digit.split('.')[1].length === 2) {
-          const price = numVal * 1000;
-          console.log("تم العثور على سعر محتمل بنمط القيمة المنخفضة:", numVal, "-> تعديله إلى", price);
+  for (const word of words) {
+    // تنظيف الكلمة من أي أحرف غير الأرقام والنقطة
+    const cleanWord = word.replace(/[^\d.]/g, '');
+    if (cleanWord.length > 0 && cleanWord.includes('.')) {
+      const price = parseFloat(cleanWord);
+      console.log("سعر محتمل من كلمة:", price);
+      
+      if (!isNaN(price)) {
+        // التحقق من نطاق سعر الذهب
+        if (price > 1000 && price < 5000) {
+          console.log("تم العثور على سعر ذهب محتمل:", price);
           return price;
         }
-        
-        // التعامل مع الأعداد العادية
-        if (numVal > 2000 && numVal < 4000) {
-          console.log("تم العثور على سعر محتمل بنمط الأرقام فقط:", numVal);
-          return numVal;
+        // التعامل مع أسعار مثل 3.06 (تعني 3060)
+        else if (price > 1 && price < 10) {
+          const adjustedPrice = price * 1000;
+          console.log("تعديل السعر من:", price, "إلى:", adjustedPrice);
+          return adjustedPrice;
         }
       }
     }
   }
   
-  // ابحث عن أي أرقام بين 2000 و 4000
-  const allNumbers = text.match(/\d+(\.\d+)?/g);
+  // محاولة 4: البحث عن أرقام في النص الأصلي
+  const allNumbers = text.match(/\d+\.\d+|\d+/g);
   if (allNumbers) {
-    console.log("كل الأرقام الموجودة في النص:", allNumbers);
+    console.log("جميع الأرقام المستخرجة:", allNumbers);
+    
+    // البحث عن أرقام قريبة من نطاق سعر الذهب
     for (const num of allNumbers) {
-      const parsedNum = parseFloat(num);
-      if (!isNaN(parsedNum) && parsedNum > 2000 && parsedNum < 4000) {
-        console.log("تم العثور على رقم يمكن أن يكون سعر الذهب:", parsedNum);
-        return parsedNum;
+      const price = parseFloat(num);
+      if (!isNaN(price)) {
+        if (price > 1000 && price < 5000) {
+          console.log("سعر محتمل من الأرقام المستخرجة:", price);
+          return price;
+        }
+      }
+    }
+    
+    // البحث عن الأرقام الكبيرة (قد تكون سعر الذهب بدون نقطة عشرية)
+    for (const num of allNumbers) {
+      const price = parseFloat(num);
+      if (!isNaN(price) && price > 100 && price < 999) {
+        // قد يكون هذا الرقم في الواقع 2000+
+        const adjustedPrice = price * 10;
+        if (adjustedPrice > 1000 && adjustedPrice < 5000) {
+          console.log("تعديل الرقم الكبير من:", price, "إلى:", adjustedPrice);
+          return adjustedPrice;
+        }
       }
     }
   }
