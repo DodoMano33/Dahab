@@ -11,6 +11,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const captureTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const widgetRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (currentPrice !== null) {
@@ -44,9 +45,11 @@ export const ExtractedPriceDisplay: React.FC = () => {
         return;
       }
       
+      console.log('تم العثور على عنصر TradingView:', widgetElement);
+      
       // استخدام html2canvas لالتقاط الصورة
       const canvas = await html2canvas(widgetElement as HTMLElement, {
-        logging: false,
+        logging: true, // تمكين التسجيل للتصحيح
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
@@ -55,6 +58,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
       
       // تحويل Canvas إلى URL صورة
       const imageUrl = canvas.toDataURL('image/png');
+      console.log('تم إنشاء الصورة بنجاح، طول البيانات:', imageUrl.length);
       setCapturedImage(imageUrl);
       
     } catch (error) {
@@ -64,21 +68,23 @@ export const ExtractedPriceDisplay: React.FC = () => {
 
   // تنفيذ التقاط الصورة وتحديثها كل ثانية
   useEffect(() => {
-    const captureAndUpdate = () => {
+    // تأخير صغير للتأكد من تحميل TradingView أولاً
+    const initialDelay = setTimeout(() => {
       captureTradingViewWidget();
       
-      // جدولة التقاط الصورة التالي
-      captureTimeoutRef.current = setTimeout(captureAndUpdate, 1000);
-    };
+      // جدولة التقاط متكرر للصور
+      const captureInterval = setInterval(() => {
+        captureTradingViewWidget();
+      }, 2000); // التقاط كل ثانيتين لتقليل الحمل
+      
+      // تنظيف عند إزالة المكون
+      return () => {
+        clearInterval(captureInterval);
+      };
+    }, 1500); // تأخير أولي 1.5 ثانية
     
-    // بدء عملية التقاط الصور
-    captureAndUpdate();
-    
-    // تنظيف عند إزالة المكون
     return () => {
-      if (captureTimeoutRef.current) {
-        clearTimeout(captureTimeoutRef.current);
-      }
+      clearTimeout(initialDelay);
     };
   }, []);
 
@@ -109,16 +115,28 @@ export const ExtractedPriceDisplay: React.FC = () => {
           width: `${widthInPx}px`, 
           height: `${heightInPx}px`,
         }}
+        ref={widgetRef}
       >
         {capturedImage ? (
           <img 
             src={capturedImage} 
             alt="سعر TradingView" 
-            className="object-cover w-full h-full"
+            className="object-contain w-full h-full"
+            onError={(e) => console.error("خطأ في تحميل الصورة:", e)}
           />
         ) : (
           <div className="text-sm text-slate-400">جاري التقاط الصورة...</div>
         )}
+      </div>
+      
+      {/* إضافة زر يدوي لإعادة محاولة التقاط الصورة */}
+      <div className="text-center mt-2">
+        <button
+          onClick={() => captureTradingViewWidget()}
+          className="text-xs text-blue-500 hover:text-blue-700"
+        >
+          تحديث الصورة
+        </button>
       </div>
     </div>
   );
