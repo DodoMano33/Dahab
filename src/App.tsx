@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 دقائق
       retry: 1,
       retryDelay: 1000,
-      // تم حذف useErrorBoundary لأنه غير متوافق مع الإصدار الحالي
+      useErrorBoundary: false, // تعطيل حدود الخطأ لمنع انهيار التطبيق
     },
   },
 });
