@@ -14,66 +14,68 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
   const container = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<number | null>(null);
   const lastExtractedPrice = useRef<number | null>(null);
+  const widgetLoadedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (container.current) {
+      // تنظيف الحاوية
       container.current.innerHTML = '';
       
-      // Create the widget container with specific dimensions
+      // إنشاء حاوية الويدجيت
       const widgetContainer = document.createElement('div');
       widgetContainer.className = 'tradingview-widget-container';
-      widgetContainer.style.width = '187.5px'; // تحديث العرض إلى 187.5px (5 سم)
-      widgetContainer.style.height = '95px'; // 95px ≈ 2.5 سم
+      widgetContainer.style.width = '187.5px';
+      widgetContainer.style.height = '95px';
       
-      // Create the widget div
+      // إنشاء div الويدجيت
       const widgetDiv = document.createElement('div');
       widgetDiv.className = 'tradingview-widget-container__widget';
       widgetDiv.style.width = '100%';
       widgetDiv.style.height = '100%';
       widgetContainer.appendChild(widgetDiv);
       
-      // Create script element for the Single Quote Widget
+      // إنشاء سكريبت الويدجيت
       const script = document.createElement('script');
       script.type = 'text/javascript';
       script.async = true;
       script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
       
-      // Set the configuration
+      // تعيين التكوين مع تحديث لاستخدام سعر الذهب العالمي
       script.innerHTML = JSON.stringify({
-        symbol: `CFI:${symbol}`,
+        symbol: `FX_IDC:XAUUSD`, // استخدام مصدر بيانات أكثر دقة للذهب
         width: "100%",
         colorTheme: theme,
         isTransparent: false,
         locale: "en"
       });
       
-      // Append the script to the widget container
+      // معالج لتحميل الويدجيت
+      script.onload = () => {
+        console.log("تم تحميل سكريبت TradingView بنجاح");
+        widgetLoadedRef.current = true;
+        
+        // تأخير أطول للتأكد من تحميل الويدجيت بالكامل
+        setTimeout(() => {
+          extractPriceFromWidget();
+        }, 2000);
+      };
+      
+      // إضافة السكريبت إلى الحاوية
       widgetContainer.appendChild(script);
       
-      // Append the widget container to our container
+      // إضافة حاوية الويدجيت إلى الحاوية المرجعية
       container.current.appendChild(widgetContainer);
       
-      // تأخير قليل للسماح للويدجيت بالتحميل
-      setTimeout(() => {
-        try {
-          extractPriceFromWidget();
-        } catch (error) {
-          console.error('خطأ في استخراج السعر المبدئي:', error);
-        }
-      }, 1000);
-      
-      // إعداد التحديث كل نصف ثانية لتحديثات السعر
+      // إعداد فاصل زمني لتحديث السعر
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
       
       intervalRef.current = setInterval(() => {
-        try {
+        if (widgetLoadedRef.current) {
           extractPriceFromWidget();
-        } catch (error) {
-          console.error('خطأ في استخراج السعر في الفاصل الزمني:', error);
         }
-      }, 500) as unknown as number; // تحديث كل نصف ثانية للحصول على أكثر دقة
+      }, 1000) as unknown as number;
       
       return () => {
         if (intervalRef.current) {
@@ -84,33 +86,96 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     }
   }, [symbol, theme]);
   
-  // دالة لاستخراج السعر من الويدجت
+  // دالة محسنة لاستخراج السعر من الويدجيت
   const extractPriceFromWidget = () => {
     if (!container.current) return;
     
-    // البحث عن عنصر السعر في ويدجيت Single Quote
-    const priceElement = container.current.querySelector('.tv-ticker-tape-price__value');
+    // المحددات المحسنة للبحث عن عناصر السعر
+    const priceSelectors = [
+      '.tv-ticker-tape-price__value',
+      '.chart-markup-table.pane-legend-line.main-serie .tv-symbol-price-quote__value',
+      '.tv-symbol-header__first-line .tv-symbol-price-quote__value',
+      '.tv-symbol-price-quote__value',
+      '.apply-overflow-tooltip.apply-common-tooltip',
+      '[data-name="legend-source-item"] .tv-symbol-price-quote__value',
+      '.tv-ticker__item--last .tv-ticker__field--last-value',
+      'strong'  // التحديثات الأخيرة في TradingView قد تستخدم هذا
+    ];
     
-    if (priceElement && priceElement.textContent) {
-      const priceText = priceElement.textContent.trim();
-      // تنظيف النص واستخراج الرقم - نزيل أي أحرف غير الأرقام والفواصل والنقاط
-      const cleanText = priceText.replace(/[^\d.,]/g, '');
+    // البحث عن عناصر السعر باستخدام المحددات المختلفة
+    for (const selector of priceSelectors) {
+      const elements = container.current.querySelectorAll(selector);
       
-      // التحقق من أن النص يحتوي على فاصلة أو نقطة عشرية
-      if (cleanText.includes('.') || cleanText.includes(',')) {
-        // التعامل مع الفاصلة والنقطة في تنسيقات الأرقام المختلفة
-        const normalizedText = cleanText.replace(/,/g, '.');
-        const price = parseFloat(normalizedText);
-        
-        if (!isNaN(price) && price > 0 && price !== lastExtractedPrice.current) {
-          console.log('تم استخراج السعر من الويدجيت:', price);
-          lastExtractedPrice.current = price;
-          // إرسال حدث مخصص بالسعر المستخرج
-          window.dispatchEvent(
-            new CustomEvent('tradingview-price-update', {
-              detail: { price }
-            })
-          );
+      if (elements && elements.length > 0) {
+        for (const element of elements) {
+          const priceText = element.textContent;
+          if (priceText) {
+            console.log(`TradingViewWidget: النص المستخرج باستخدام المحدد '${selector}': "${priceText}"`);
+            
+            // تنظيف النص واستخراج الرقم
+            const cleanText = priceText.trim().replace(/[^\d.,]/g, '');
+            
+            // التحقق من صحة التنسيق
+            if (cleanText.match(/\d+([.,]\d+)?/)) {
+              const normalizedText = cleanText.replace(/,/g, '.');
+              const price = parseFloat(normalizedText);
+              
+              if (!isNaN(price) && price > 0) {
+                // التحقق من أن السعر في نطاق معقول للذهب (500-5000)
+                if (price > 500 && price < 5000) {
+                  if (price !== lastExtractedPrice.current) {
+                    console.log(`تم استخراج سعر جديد: ${price}`);
+                    lastExtractedPrice.current = price;
+                    
+                    // إرسال حدث مخصص بالسعر المستخرج
+                    window.dispatchEvent(
+                      new CustomEvent('tradingview-price-update', {
+                        detail: { price }
+                      })
+                    );
+                  }
+                  return;
+                } else if (price > 0.5 && price < 5) {
+                  // قد يكون السعر بالآلاف لكن بصيغة مختصرة
+                  const adjustedPrice = price * 1000;
+                  if (adjustedPrice !== lastExtractedPrice.current) {
+                    console.log(`تم تعديل السعر من ${price} إلى ${adjustedPrice}`);
+                    lastExtractedPrice.current = adjustedPrice;
+                    
+                    window.dispatchEvent(
+                      new CustomEvent('tradingview-price-update', {
+                        detail: { price: adjustedPrice }
+                      })
+                    );
+                  }
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // البحث في كامل الحاوية عن أي نص قد يكون السعر
+    if (lastExtractedPrice.current === null) {
+      const allText = container.current.textContent || '';
+      const priceMatches = allText.match(/\b(\d{1,4})[.,](\d{1,3})\b/g);
+      
+      if (priceMatches) {
+        for (const match of priceMatches) {
+          const price = parseFloat(match.replace(/,/g, '.'));
+          if (!isNaN(price) && price > 1000 && price < 3000) {
+            console.log(`تم استخراج سعر محتمل من نص الحاوية: ${price}`);
+            lastExtractedPrice.current = price;
+            
+            window.dispatchEvent(
+              new CustomEvent('tradingview-price-update', {
+                detail: { price }
+              })
+            );
+            break;
+          }
         }
       }
     }
@@ -120,7 +185,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     <div 
       ref={container} 
       style={{ 
-        width: '187.5px', // تحديث العرض إلى 187.5px (5 سم)
+        width: '187.5px',
         height: '95px',
         display: 'flex',
         justifyContent: 'center',
