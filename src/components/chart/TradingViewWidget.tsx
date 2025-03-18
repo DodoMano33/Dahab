@@ -44,14 +44,13 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       script.async = true;
       script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
       
-      // تحديث تكوين الويدجيت - استخدام رمز FX:XAUUSD بدلاً من FX_IDC:XAUUSD
+      // تحديد تكوين الويدجيت - تغيير إلى FX_IDC لتحسين دقة عرض سعر الذهب
       script.innerHTML = JSON.stringify({
-        symbol: `FX:${symbol}`,
+        symbol: `FX_IDC:${symbol}`,
         width: "100%",
         colorTheme: theme,
         isTransparent: false,
-        locale: "en",
-        largeChartUrl: ""
+        locale: "en"
       });
       
       // إضافة السكريبت إلى حاوية الويدجيت
@@ -63,11 +62,11 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       // تعيين الحالة كمهيأة
       setIsInitialized(true);
       
-      // تأخير أطول للسماح بتحميل الويدجيت بشكل كامل
+      // زيادة التأخير لإعطاء مزيد من الوقت لتحميل الويدجيت
       setTimeout(() => {
         console.log("بدء استخراج السعر من الويدجيت بعد التحميل");
         setupPriceExtraction();
-      }, 5000); // زيادة التأخير إلى 5 ثوانٍ
+      }, 3000);
     }
   }, [symbol, theme, setupPriceExtraction, isInitialized]);
 

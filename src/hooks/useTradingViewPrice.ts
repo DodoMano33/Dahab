@@ -30,6 +30,9 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
         return;
       }
       
+      // طباعة محتوى الويدجيت للتشخيص
+      console.log("محتوى الويدجيت:", widgetContainer.innerHTML);
+      
       // محاولة استخراج السعر من العناصر المختلفة بترتيب الأولوية
       const priceSelectors = [
         '.tv-symbol-price-quote__value',
@@ -38,16 +41,7 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
         'strong',
         'span[data-field="last"]',
         '.price-value',
-        '[data-name="legend-value-item"]',
-        // محاولة اختيار عناصر إضافية قد تحتوي على السعر
-        '.tv-symbol-header__first-line',
-        '.tv-fundamental-block__value',
-        '.tv-ticker-item-last__value',
-        '.js-symbol-last',
-        // محاولة استهداف عناصر عامة
-        'div div strong',
-        '.text-xl',
-        '.font-bold'
+        '[data-name="legend-value-item"]'
       ];
       
       // البحث عن السعر باستخدام جميع المحددات
@@ -59,33 +53,6 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
           const priceText = element.textContent;
           if (priceText) {
             console.log(`النص المستخرج من المحدد ${selector}: "${priceText}"`);
-            
-            // محاولة العثور على نمط السعر مباشرة (مثل "3,065.48" أو "3065.48")
-            const pricePattern = /([123][,\d]{0,3}\.?\d{0,2})/;
-            const priceMatch = priceText.match(pricePattern);
-            
-            if (priceMatch && priceMatch[1]) {
-              const cleanPrice = priceMatch[1].replace(/,/g, '');
-              const price = parseFloat(cleanPrice);
-              
-              if (!isNaN(price) && price > 1000 && price < 5000) {
-                console.log(`تم استخراج سعر ذهب: ${price} من محدد ${selector}`);
-                if (price !== lastExtractedPrice.current) {
-                  console.log(`تحديث السعر من ${lastExtractedPrice.current || 'غير معروف'} إلى ${price}`);
-                  lastExtractedPrice.current = price;
-                  
-                  // إرسال حدث مخصص بالسعر المستخرج
-                  window.dispatchEvent(
-                    new CustomEvent('tradingview-price-update', {
-                      detail: { price, source: 'widget-extraction' }
-                    })
-                  );
-                  
-                  return;
-                }
-              }
-            }
-            
             // تنظيف النص لاستخراج الأرقام
             const cleanText = priceText.trim().replace(/[^\d.,]/g, '');
             
@@ -104,10 +71,12 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
                     // إرسال حدث مخصص بالسعر المستخرج
                     window.dispatchEvent(
                       new CustomEvent('tradingview-price-update', {
-                        detail: { price, source: 'widget-extraction' }
+                        detail: { price }
                       })
                     );
                     
+                    // طلب التقاط صورة للتحقق من السعر باستخدام OCR
+                    window.dispatchEvent(new Event('request-capture-widget'));
                     return;
                   }
                 }
@@ -119,7 +88,7 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
                     lastExtractedPrice.current = adjustedPrice;
                     window.dispatchEvent(
                       new CustomEvent('tradingview-price-update', {
-                        detail: { price: adjustedPrice, source: 'widget-extraction-adjusted' }
+                        detail: { price: adjustedPrice }
                       })
                     );
                     return;
@@ -133,68 +102,22 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
       
       // فحص النص الكامل للويدجيت للبحث عن أنماط سعر الذهب
       const widgetText = widgetContainer.textContent || '';
-      console.log("النص الكامل للويدجيت:", widgetText);
+      const goldPricePattern = /\b([23][\d]{3}\.[\d]{1,2})\b/;
+      const match = widgetText.match(goldPricePattern);
       
-      // محاولة استخراج مباشرة باستخدام أنماط خاصة للذهب
-      const goldPatterns = [
-        /\b([123][\d]{3}\.[\d]{1,2})\b/, // 3065.48
-        /\b([123]),(\d{3})\.(\d{1,2})\b/, // 3,065.48
-        /XAUUSD[^0-9]*([123][\d]{3}\.[\d]{1,2})/ // XAUUSD: 3065.48
-      ];
-      
-      for (const pattern of goldPatterns) {
-        const match = widgetText.match(pattern);
-        if (match) {
-          let price;
-          if (match.length >= 4) {
-            // نمط مثل 3,065.48
-            price = parseFloat(`${match[1]}${match[2]}.${match[3]}`);
-          } else if (match[1]) {
-            // نمط بسيط مثل 3065.48
-            price = parseFloat(match[1]);
-          }
-          
-          if (price && !isNaN(price) && price > 1000 && price < 5000) {
-            console.log(`تم استخراج سعر من النص الكامل: ${price}`);
-            if (price !== lastExtractedPrice.current) {
-              lastExtractedPrice.current = price;
-              window.dispatchEvent(
-                new CustomEvent('tradingview-price-update', {
-                  detail: { price, source: 'widget-fulltext' }
-                })
-              );
-              return;
-            }
+      if (match && match[1]) {
+        const price = parseFloat(match[1]);
+        if (!isNaN(price) && price > 1000 && price < 5000) {
+          console.log(`تم استخراج سعر من النص الكامل: ${price}`);
+          if (price !== lastExtractedPrice.current) {
+            lastExtractedPrice.current = price;
+            window.dispatchEvent(
+              new CustomEvent('tradingview-price-update', {
+                detail: { price }
+              })
+            );
           }
         }
-      }
-      
-      // آخر محاولة: البحث عن أي رقم في النطاق المناسب
-      const anyNumberPattern = /\b(\d{1,4}\.?\d{0,2})\b/g;
-      const numberMatches = widgetText.match(anyNumberPattern);
-      
-      if (numberMatches) {
-        for (const numStr of numberMatches) {
-          const num = parseFloat(numStr);
-          if (!isNaN(num) && num > 1000 && num < 5000) {
-            console.log(`تم العثور على رقم محتمل في النص الكامل: ${num}`);
-            if (num !== lastExtractedPrice.current) {
-              lastExtractedPrice.current = num;
-              window.dispatchEvent(
-                new CustomEvent('tradingview-price-update', {
-                  detail: { price: num, source: 'widget-number-extraction' }
-                })
-              );
-              return;
-            }
-          }
-        }
-      }
-      
-      // محاولة يدوية لاستخراج السعر
-      if (extractionAttemptsRef.current % 5 === 0) { // كل 5 محاولات
-        console.log("محاولة يدوية لالتقاط صورة والتعرف على السعر");
-        window.dispatchEvent(new Event('request-capture-widget'));
       }
     } catch (error) {
       console.error('خطأ أثناء استخراج السعر من الويدجيت:', error);
@@ -220,26 +143,25 @@ export const useTradingViewPrice = (containerRef: React.RefObject<HTMLDivElement
     widgetLoadedRef.current = true;
     extractionAttemptsRef.current = 0;
     
-    // استخراج فوري للسعر
-    extractPriceFromWidget();
-    
-    // البدء بفحص وجود السعر بفاصل زمني
+    // البدء بفحص ووجود السعر بفاصل زمني
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
     
-    // استخراج السعر بشكل دوري
+    // استخراج السعر الأولي بعد تحميل الويدجيت
+    setTimeout(() => {
+      if (widgetLoadedRef.current) {
+        console.log("محاولة استخراج السعر الأولي من الويدجيت");
+        extractPriceFromWidget();
+      }
+    }, 2000);
+    
+    // إعداد فاصل زمني لتحديث السعر كل ثانية
     intervalRef.current = setInterval(() => {
       if (widgetLoadedRef.current) {
         extractPriceFromWidget();
       }
     }, 1000) as unknown as number;
-    
-    // محاولة استخراج السعر بعد التأخيرات المختلفة للتأكد من تحميل الويدجيت بالكامل
-    setTimeout(() => extractPriceFromWidget(), 1000);
-    setTimeout(() => extractPriceFromWidget(), 3000);
-    setTimeout(() => extractPriceFromWidget(), 5000);
-    setTimeout(() => extractPriceFromWidget(), 10000);
   }, [extractPriceFromWidget]);
 
   return {

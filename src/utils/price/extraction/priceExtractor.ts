@@ -13,19 +13,8 @@ export const extractPriceFromText = (text: string): number | null => {
   const cleanedText = text.replace(/[^\d.,]/g, ' ');
   console.log("النص بعد التنظيف:", cleanedText);
   
-  // محاولة 1: البحث عن نمط سعر الذهب المباشر (مثال XAUUSD=3065.48)
-  const directGoldPattern = /(?:XAUUSD|Gold)[\s=:]*([123][0-9]{3}\.?[0-9]{0,2})/i;
-  const directMatch = text.match(directGoldPattern);
-  if (directMatch && directMatch[1]) {
-    const price = parseFloat(directMatch[1]);
-    console.log("تم استخراج سعر الذهب من النمط المباشر:", price);
-    if (!isNaN(price) && price > 1000 && price < 5000) {
-      return price;
-    }
-  }
-  
-  // محاولة 2: البحث عن نمط سعر الذهب النموذجي (مثل 3065.48)
-  const goldPattern = /\b([123]\d{3}\.?\d{0,2})\b/;
+  // محاولة 1: البحث عن نمط سعر الذهب النموذجي (مثل 3065.48)
+  const goldPattern = /\b([23]\d{3}\.?\d{0,2})\b/;
   const goldMatch = text.match(goldPattern);
   
   if (goldMatch && goldMatch[1]) {
@@ -36,11 +25,11 @@ export const extractPriceFromText = (text: string): number | null => {
     }
   }
   
-  // محاولة 3: البحث عن أنماط متعددة لسعر الذهب
+  // محاولة 2: البحث عن أنماط متعددة لسعر الذهب
   const patterns = [
-    /\b([123]),?(\d{3})\.(\d{1,2})\b/, // نمط مع فاصلة مثل 3,065.48
-    /\b([123])(\d{3})\.(\d{1,2})\b/,   // نمط بدون فاصلة مثل 3065.48
-    /\b([123])(\d{2,3})\.(\d{1,2})\b/, // نمط مرن للأرقام
+    /\b([23]),?(\d{3})\.(\d{1,2})\b/, // نمط مع فاصلة مثل 3,065.48
+    /\b([23])(\d{3})\.(\d{1,2})\b/,   // نمط بدون فاصلة مثل 3065.48
+    /\b([23])(\d{2,3})\.(\d{1,2})\b/, // نمط مرن للأرقام
     /(\d{1,4})[.,](\d{1,2})/,         // نمط مرن أكثر للأرقام
   ];
   
@@ -70,7 +59,7 @@ export const extractPriceFromText = (text: string): number | null => {
     }
   }
   
-  // محاولة 4: البحث عن أي رقم يشبه سعر الذهب
+  // محاولة 3: البحث عن أي رقم يشبه سعر الذهب
   // تقسيم النص إلى كلمات وتحليل كل واحدة
   const words = cleanedText.split(/\s+/).filter(Boolean);
   console.log("الكلمات المستخرجة:", words);
@@ -83,7 +72,7 @@ export const extractPriceFromText = (text: string): number | null => {
       console.log("سعر محتمل من كلمة:", price);
       
       if (!isNaN(price)) {
-        // التحقق من نطاق سعر الذهب (1000-5000)
+        // التحقق من نطاق سعر الذهب
         if (price > 1000 && price < 5000) {
           console.log("تم العثور على سعر ذهب محتمل:", price);
           return price;
@@ -98,7 +87,7 @@ export const extractPriceFromText = (text: string): number | null => {
     }
   }
   
-  // محاولة 5: البحث عن أرقام في النص الأصلي
+  // محاولة 4: البحث عن أرقام في النص الأصلي
   const allNumbers = text.match(/\d+\.\d+|\d+/g);
   if (allNumbers) {
     console.log("جميع الأرقام المستخرجة:", allNumbers);
