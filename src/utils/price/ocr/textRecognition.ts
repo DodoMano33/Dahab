@@ -1,5 +1,6 @@
 
 import Tesseract from 'tesseract.js';
+import { enhanceImageForOcr } from '@/utils/price/image/imageEnhancer';
 
 /**
  * معالجة الصورة باستخدام OCR لاستخراج النص
@@ -15,9 +16,14 @@ export const recognizeTextFromImage = async (imageUrl: string): Promise<string> 
       return '';
     }
     
+    // تحسين الصورة قبل معالجتها
+    console.log('تحسين الصورة قبل معالجتها...');
+    const enhancedImageUrl = await enhanceImageForOcr(imageUrl);
+    console.log('تم تحسين الصورة بنجاح');
+    
     // إعدادات متقدمة للتعرف على النص
     const result = await Tesseract.recognize(
-      imageUrl,
+      enhancedImageUrl,
       'eng', // نستخدم اللغة الإنجليزية لاستخراج الأرقام
       { 
         logger: message => console.log('Tesseract:', message),

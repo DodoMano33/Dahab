@@ -28,6 +28,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
     recognizedText,
     extractedPrice,
     isProcessingOCR,
+    enhancedImage,
     processImageWithOCR
   } = useOcrProcessor();
   
@@ -177,7 +178,8 @@ export const ExtractedPriceDisplay: React.FC = () => {
       
       <RecognizedTextDisplay 
         recognizedText={recognizedText} 
-        extractedPrice={extractedPrice} 
+        extractedPrice={extractedPrice}
+        enhancedImage={enhancedImage}
       />
     </div>
   );

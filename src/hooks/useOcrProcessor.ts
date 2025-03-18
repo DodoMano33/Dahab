@@ -7,6 +7,7 @@ interface UseOcrProcessorResult {
   recognizedText: string;
   extractedPrice: number | null;
   isProcessingOCR: boolean;
+  enhancedImage: string | null;
   processImageWithOCR: (imageUrl: string) => Promise<number | null>;
 }
 
@@ -14,6 +15,7 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
   const [recognizedText, setRecognizedText] = useState<string>('');
   const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
   const [isProcessingOCR, setIsProcessingOCR] = useState<boolean>(false);
+  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
 
   const processImageWithOCR = useCallback(async (imageUrl: string): Promise<number | null> => {
     if (!imageUrl || imageUrl.length < 100) {
@@ -31,9 +33,19 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       
       // استخراج النص من الصورة
       console.log("بدء استخراج النص من الصورة...");
+      // الصورة المحسنة سيتم تعيينها داخل recognizeTextFromImage
       const extractedText = await recognizeTextFromImage(imageUrl);
       console.log("النص المستخرج من الصورة:", extractedText);
       setRecognizedText(extractedText);
+      
+      // تحديث الصورة المحسنة
+      // سنستمع لحدث تحسين الصورة
+      window.addEventListener('image-enhanced', ((event: CustomEvent) => {
+        if (event.detail && event.detail.enhancedImageUrl) {
+          console.log("تم استلام الصورة المحسنة");
+          setEnhancedImage(event.detail.enhancedImageUrl);
+        }
+      }) as EventListener, { once: true });
       
       // البحث عن أنماط خاصة بسعر الذهب
       const goldPriceRegex = /\b([23]([\d,]{3}|[\d]{3})\.[\d]{1,2})\b/g;
@@ -87,6 +99,7 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
     recognizedText,
     extractedPrice,
     isProcessingOCR,
+    enhancedImage,
     processImageWithOCR
   };
 };
