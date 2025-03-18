@@ -22,8 +22,8 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       // Create the widget container with specific dimensions
       const widgetContainer = document.createElement('div');
       widgetContainer.className = 'tradingview-widget-container';
-      widgetContainer.style.width = '120px'; // 120px ≈ 3.2cm
-      widgetContainer.style.height = '95px'; // 95px ≈ 2.5cm
+      widgetContainer.style.width = '150px'; // تحديث العرض إلى 150px (4 سم)
+      widgetContainer.style.height = '95px'; // 95px ≈ 2.5 سم
       
       // Create the widget div
       const widgetDiv = document.createElement('div');
@@ -44,7 +44,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         width: "100%",
         colorTheme: theme,
         isTransparent: false,
-        locale: "en" // تغيير إلى "en" بدلاً من "ar"
+        locale: "en"
       });
       
       // Append the script to the widget container
@@ -116,7 +116,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     <div 
       ref={container} 
       style={{ 
-        width: '120px', 
+        width: '150px', // تحديث العرض إلى 150px (4 سم)
         height: '95px',
         display: 'flex',
         justifyContent: 'center',
