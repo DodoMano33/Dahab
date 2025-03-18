@@ -2,13 +2,15 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
-import { ChartDisplay } from "./ChartDisplay";
+import { ChartDisplay } from "./chart/ChartDisplay";
 import { useSearchHistory } from "./hooks/search-history";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
+import { toast } from "sonner";
 
+// Export directly without using default export for better loading
 export const ChartAnalyzer = () => {
   const {
     isAnalyzing,
@@ -37,8 +39,15 @@ export const ChartAnalyzer = () => {
   const [selectedInterval, setSelectedInterval] = useState<string>("");
   const [autoSymbol, setAutoSymbol] = useState<string>("XAUUSD");
   const [autoPrice, setAutoPrice] = useState<number | null>(null);
+  const [isComponentMounted, setIsComponentMounted] = useState(false);
 
   const queryClient = useQueryClient();
+
+  // إعلام المستخدم أن المكون جاهز
+  useEffect(() => {
+    setIsComponentMounted(true);
+    toast.success("تم تحميل محرك التحليل بنجاح");
+  }, []);
 
   // useMemo for search history stats
   const analysisStats = useMemo(() => {
@@ -110,6 +119,16 @@ export const ChartAnalyzer = () => {
     return null;
   }, [image, analysis, isAnalyzing, currentSymbol, currentAnalysis, setImage, setAnalysis]);
 
+  // في حالة عدم تحميل المكون بعد، عرض رسالة تحميل
+  if (!isComponentMounted) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+        <span>جاري تهيئة محرك التحليل...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col space-y-6 animate-fade-in">
       <ChartAnalyzerTabs
@@ -146,5 +165,5 @@ export const ChartAnalyzer = () => {
   );
 };
 
-// استخدام default export للتوافق مع التحميل البطيء
+// لتسهيل استخدام التحميل البطيء
 export default ChartAnalyzer;

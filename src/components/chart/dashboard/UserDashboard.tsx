@@ -8,12 +8,25 @@ import { CalendarCard } from "./CalendarCard";
 import { DetailedStatsTabs } from "./DetailedStatsTabs";
 import { LatestAnalyses } from "./LatestAnalyses";
 import { useDashboardStats } from "./hooks/useDashboardStats";
+import { toast } from "sonner";
 
 export function UserDashboard() {
   const { user } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { stats, isLoading, dashboardStats, setStats, setIsLoading } = useDashboardStats(user?.id);
   const queryClient = useQueryClient();
+  const [isDashboardReady, setIsDashboardReady] = useState(false);
+
+  // تهيئة لوحة المعلومات
+  useEffect(() => {
+    // إظهار لوحة المعلومات بعد فترة قصيرة
+    const timer = setTimeout(() => {
+      setIsDashboardReady(true);
+      toast.success("تم تحميل لوحة المعلومات بنجاح");
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // For periodic data updates
   useEffect(() => {
@@ -34,6 +47,16 @@ export function UserDashboard() {
           </CardDescription>
         </CardHeader>
       </Card>
+    );
+  }
+
+  // عرض رسالة تحميل أثناء تهيئة لوحة المعلومات
+  if (!isDashboardReady) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+        <span>جاري تحميل لوحة المعلومات...</span>
+      </div>
     );
   }
 
@@ -63,3 +86,5 @@ export function UserDashboard() {
     </div>
   );
 }
+
+export default UserDashboard;
