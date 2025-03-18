@@ -18,6 +18,7 @@ export const ChartAnalyzer = () => {
     currentAnalysis,
     setImage,
     setAnalysis,
+    tradingViewPrice
   } = useAnalysisHandler();
 
   const {
@@ -80,6 +81,22 @@ export const ChartAnalyzer = () => {
     addToSearchHistory(newItem);
     setIsHistoryOpen(true);
   }, [addToSearchHistory, setIsHistoryOpen]);
+
+  // استماع لتحديثات السعر من OCR
+  useEffect(() => {
+    const handleOcrPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        console.log("ChartAnalyzer استلم تحديث سعر من OCR:", event.detail.price);
+        setAutoPrice(event.detail.price);
+      }
+    };
+
+    window.addEventListener('tradingview-price-update', handleOcrPriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('tradingview-price-update', handleOcrPriceUpdate as EventListener);
+    };
+  }, []);
 
   // For periodic data updates
   useEffect(() => {

@@ -33,19 +33,19 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       
       // استخراج النص من الصورة
       console.log("بدء استخراج النص من الصورة...");
-      // الصورة المحسنة سيتم تعيينها داخل recognizeTextFromImage
-      const extractedText = await recognizeTextFromImage(imageUrl);
-      console.log("النص المستخرج من الصورة:", extractedText);
-      setRecognizedText(extractedText);
       
-      // تحديث الصورة المحسنة
-      // سنستمع لحدث تحسين الصورة
+      // استماع لحدث تحسين الصورة
       window.addEventListener('image-enhanced', ((event: CustomEvent) => {
         if (event.detail && event.detail.enhancedImageUrl) {
           console.log("تم استلام الصورة المحسنة");
           setEnhancedImage(event.detail.enhancedImageUrl);
         }
       }) as EventListener, { once: true });
+      
+      // معالجة الصورة باستخدام OCR
+      const extractedText = await recognizeTextFromImage(imageUrl);
+      console.log("النص المستخرج من الصورة:", extractedText);
+      setRecognizedText(extractedText);
       
       // البحث عن أنماط خاصة بسعر الذهب
       const goldPriceRegex = /\b([23]([\d,]{3}|[\d]{3})\.[\d]{1,2})\b/g;

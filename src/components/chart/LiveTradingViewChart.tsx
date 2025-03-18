@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
-import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 import { Card, CardContent } from '@/components/ui/card';
 import html2canvas from 'html2canvas';
 
@@ -58,36 +57,21 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   useEffect(() => {
     console.log('تم تركيب مكون LiveTradingViewChart');
     
-    // استخراج السعر المبدئي
-    const fetchInitialPrice = async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null) {
-        console.log(`تم استخراج السعر المبدئي: ${price}`);
-        setCurrentPrice(price);
-        setLastUpdateTime(new Date());
-        onPriceUpdate?.(price);
-        
-        // إرسال حدث تحديث السعر لباقي المكونات في التطبيق
-        window.dispatchEvent(
-          new CustomEvent('tradingview-price-update', {
-            detail: { price }
-          })
-        );
-      }
-      
+    // استخراج السعر المبدئي باستخدام OCR
+    const captureInitialImage = async () => {
       // التقاط صورة الويدجيت بعد تحميله
       setTimeout(() => {
         captureWidgetImage();
       }, 1500);
     };
     
-    fetchInitialPrice();
+    captureInitialImage();
     
-    // مستمع لتحديثات السعر من TradingView
+    // مستمع لتحديثات السعر من OCR
     const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
       if (event.detail && event.detail.price) {
         const price = event.detail.price;
-        console.log(`تم استلام تحديث السعر من TradingView: ${price}`);
+        console.log(`تم استلام تحديث السعر من OCR: ${price}`);
         setCurrentPrice(price);
         setLastUpdateTime(new Date());
         onPriceUpdate?.(price);
@@ -116,29 +100,13 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
     window.addEventListener('request-current-price', handleRequestCurrentPrice);
     window.addEventListener('request-capture-widget', handleRequestCapture as EventListener);
     
-    // تعديل الفاصل الزمني إلى 1 ثانية
-    const priceExtractInterval = setInterval(async () => {
-      const price = await extractPriceFromChart();
-      if (price !== null && price !== currentPrice) {
-        console.log(`تم تحديث السعر تلقائيًا: ${price}`);
-        setCurrentPrice(price);
-        setLastUpdateTime(new Date());
-        onPriceUpdate?.(price);
-        
-        // التقاط صورة عند تغير السعر
-        captureWidgetImage();
-        
-        // إرسال حدث تحديث السعر لباقي المكونات
-        window.dispatchEvent(
-          new CustomEvent('tradingview-price-update', {
-            detail: { price }
-          })
-        );
-      }
-    }, 1000); // تحديث كل 1 ثانية
+    // جدولة التقاط الصورة بشكل دوري
+    const captureInterval = setInterval(() => {
+      captureWidgetImage();
+    }, 5000); // التقاط كل 5 ثوانٍ
     
     return () => {
-      clearInterval(priceExtractInterval);
+      clearInterval(captureInterval);
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('request-current-price', handleRequestCurrentPrice);
       window.removeEventListener('request-capture-widget', handleRequestCapture as EventListener);
@@ -168,19 +136,6 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
               >
                 تحديث السعر
               </button>
-            </div>
-          )}
-          {capturedImage && (
-            <div className="mt-3">
-              <p className="text-xs text-muted-foreground mb-1">الصورة الملتقطة للويدجيت:</p>
-              <div className="border border-gray-200 rounded p-1 inline-block">
-                <img 
-                  src={capturedImage} 
-                  alt="صورة ويدجيت التداول" 
-                  className="max-w-full h-auto"
-                  style={{ maxHeight: '100px' }}
-                />
-              </div>
             </div>
           )}
         </div>

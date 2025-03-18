@@ -21,14 +21,19 @@ export const recognizeTextFromImage = async (imageUrl: string): Promise<string> 
     const enhancedImageUrl = await enhanceImageForOcr(imageUrl);
     console.log('تم تحسين الصورة بنجاح');
     
+    // إرسال حدث يحتوي على الصورة المحسنة
+    window.dispatchEvent(
+      new CustomEvent('image-enhanced', {
+        detail: { enhancedImageUrl }
+      })
+    );
+    
     // إعدادات متقدمة للتعرف على النص
     const result = await Tesseract.recognize(
       enhancedImageUrl,
       'eng', // نستخدم اللغة الإنجليزية لاستخراج الأرقام
       { 
         logger: message => console.log('Tesseract:', message),
-        // استخدام إعدادات متوافقة مع TypeScript للتركيز على الأرقام والأسعار
-        // تم حذف الإعدادات غير المدعومة في Tesseract.js v5
         langPath: 'https://tessdata.projectnaptha.com/4.0.0',
         cachePath: '.',
         errorHandler: error => console.error('Tesseract error:', error)
