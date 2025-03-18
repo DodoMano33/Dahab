@@ -17,8 +17,8 @@ export const TradingViewWidgetConfig = ({
     if (!widgetDiv) {
       widgetDiv = document.createElement('div');
       widgetDiv.className = 'tradingview-widget-container__widget';
-      widgetDiv.style.width = '100%';
-      widgetDiv.style.height = '100%';
+      (widgetDiv as HTMLElement).style.width = '100%';
+      (widgetDiv as HTMLElement).style.height = '100%';
       widgetContainer.appendChild(widgetDiv);
     } else {
       // تنظيف المحتوى الحالي إذا كان موجوداً

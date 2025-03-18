@@ -15,73 +15,84 @@ export const useImageCapture = (): UseImageCaptureResult => {
   const captureTradingViewWidget = useCallback(async (): Promise<string | null> => {
     try {
       setCaptureAttempts(prev => prev + 1);
+      console.log(`محاولة التقاط صورة #${captureAttempts + 1}`);
       
-      // تحديد المنطقة المستهدفة بشكل مباشر (البحث عن العنصر الذي يحتوي على العنوان "سعر الذهب الحالي")
-      const goldPriceSection = document.querySelector('h3.text-lg.font-medium.mb-2.text-center');
+      // تحديد العناصر المستهدفة بالترتيب التنازلي حسب الأولوية
+      const selectors = [
+        '.tradingview-widget-container',
+        '.tradingview-widget-wrapper',
+        '.tv-ticker-tape-wrapper',
+        'h3.text-lg:contains("سعر الذهب") + div',
+        'div:contains("3")'
+      ];
       
-      if (!goldPriceSection) {
-        console.log('لم يتم العثور على قسم سعر الذهب الحالي');
-        return null;
-      }
+      let targetElement = null;
       
-      // العثور على الكارد الأصلي الذي يحتوي على الويدجيت
-      const cardElement = goldPriceSection.closest('.w-full.mb-6');
-      
-      if (!cardElement) {
-        console.log('لم يتم العثور على كارد سعر الذهب');
-        return null;
-      }
-      
-      // البحث عن الويدجيت نفسه داخل الكارد (المنطقة المحددة باللون الأحمر)
-      const widgetContainer = cardElement.querySelector('.tv-ticker-tape-wrapper') || 
-                             cardElement.querySelector('.tradingview-widget-container');
-      
-      if (!widgetContainer) {
-        console.log('لم يتم العثور على ويدجيت TradingView داخل الكارد');
-        
-        // محاولة أخرى للعثور على أي عنصر داخل الكارد يمكن أن يكون الويدجيت
-        const anyPossibleWidget = cardElement.querySelector('div:not(.text-center)');
-        
-        if (!anyPossibleWidget) {
-          console.log('لم يتم العثور على أي عنصر يمكن أن يكون الويدجيت');
-          
-          // في حالة الفشل، نعرض الكارد بالكامل
-          console.log('محاولة التقاط الكارد بالكامل كحل بديل');
-          const canvas = await html2canvas(cardElement as HTMLElement, {
-            logging: true,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 2
-          });
-          
-          const imageUrl = canvas.toDataURL('image/png');
-          console.log('تم التقاط صورة الكارد بالكامل، طول البيانات:', imageUrl.length);
-          setCapturedImage(imageUrl);
-          
-          return imageUrl;
+      // البحث عن العناصر حسب ترتيب الأولوية
+      for (const selector of selectors) {
+        let elements;
+        if (selector.includes(':contains')) {
+          // معالجة خاصة لـ :contains
+          const [tag, searchText] = selector.split(':contains(');
+          const text = searchText.replace(/[")]/g, '');
+          const allElements = document.querySelectorAll(tag);
+          elements = Array.from(allElements).filter(el => 
+            el.textContent && el.textContent.includes(text)
+          );
+        } else {
+          elements = document.querySelectorAll(selector);
         }
         
-        console.log('محاولة التقاط أي عنصر محتمل داخل الكارد');
-        const canvas = await html2canvas(anyPossibleWidget as HTMLElement, {
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null,
-          scale: 2
-        });
-        
-        const imageUrl = canvas.toDataURL('image/png');
-        console.log('تم التقاط صورة للعنصر المحتمل، طول البيانات:', imageUrl.length);
-        setCapturedImage(imageUrl);
-        
-        return imageUrl;
+        if (elements && elements.length > 0) {
+          console.log(`تم العثور على ${elements.length} عنصر باستخدام المحدد: ${selector}`);
+          targetElement = elements[0] as HTMLElement;
+          break;
+        }
       }
       
-      console.log('تم العثور على ويدجيت TradingView:', widgetContainer);
+      // إذا لم يتم العثور على أي عنصر محدد مسبقًا، نبحث عن أي حاوية تحتوي على سعر الذهب
+      if (!targetElement) {
+        console.log("البحث عن أي حاوية تحتوي على سعر الذهب");
+        const textNodes = document.createTreeWalker(
+          document.body,
+          NodeFilter.SHOW_TEXT,
+          null
+        );
+        
+        let node;
+        while (node = textNodes.nextNode()) {
+          const text = node.textContent || '';
+          if (text.match(/\b[23]\d{3}\.\d{1,2}\b/) || text.match(/\b[23],\d{3}\.\d{1,2}\b/)) {
+            let parent = node.parentElement;
+            for (let i = 0; i < 5 && parent; i++) { // نصعد حتى 5 مستويات للعثور على حاوية مناسبة
+              if (parent.clientWidth > 100 && parent.clientHeight > 50) {
+                console.log("تم العثور على حاوية محتملة تحتوي على سعر الذهب:", parent);
+                targetElement = parent;
+                break;
+              }
+              parent = parent.parentElement;
+            }
+            if (targetElement) break;
+          }
+        }
+      }
+      
+      // إذا لم نعثر على أي عنصر محدد، نستخدم حاوية الكارد
+      if (!targetElement) {
+        console.log("لم يتم العثور على أي عنصر محدد، استخدام حاوية الكارد");
+        targetElement = document.querySelector('.w-full.mb-6') as HTMLElement;
+      }
+      
+      // إذا لم نتمكن من العثور على أي عنصر، نخرج
+      if (!targetElement) {
+        console.log("لم يتم العثور على أي عنصر مناسب للالتقاط");
+        return null;
+      }
+      
+      console.log("التقاط صورة للعنصر:", targetElement);
       
       // استخدام html2canvas لالتقاط الصورة
-      const canvas = await html2canvas(widgetContainer as HTMLElement, {
+      const canvas = await html2canvas(targetElement, {
         logging: true,
         useCORS: true,
         allowTaint: true,
@@ -92,41 +103,64 @@ export const useImageCapture = (): UseImageCaptureResult => {
       // تحويل Canvas إلى URL صورة
       const imageUrl = canvas.toDataURL('image/png');
       console.log('تم إنشاء الصورة بنجاح، طول البيانات:', imageUrl.length);
+      
+      // حفظ الصورة وإرسال حدث للإعلام بالالتقاط
       setCapturedImage(imageUrl);
+      window.dispatchEvent(
+        new CustomEvent('widget-image-captured', {
+          detail: { imageUrl }
+        })
+      );
       
       return imageUrl;
       
     } catch (error) {
       console.error('خطأ في التقاط صورة ويدجيت TradingView:', error);
       
-      // محاولة بديلة - التقاط الصورة من TradingViewWidget مباشرة
+      // محاولة أخيرة - التقاط الصورة مباشرة من جسم الصفحة
       try {
-        // عنصر من مكون TradingViewWidget نفسه
-        const directWidgetElement = document.querySelector('.tradingview-widget-container');
+        console.log("محاولة أخيرة: التقاط قسم من الصفحة");
+        const viewport = document.createElement('div');
+        viewport.style.position = 'absolute';
+        viewport.style.top = '0';
+        viewport.style.left = '0';
+        viewport.style.width = '300px';
+        viewport.style.height = '150px';
+        viewport.style.overflow = 'hidden';
+        document.body.appendChild(viewport);
         
-        if (directWidgetElement) {
-          console.log('محاولة بديلة: التقاط الويدجيت مباشرة');
-          const canvas = await html2canvas(directWidgetElement as HTMLElement, {
-            logging: true,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 2
-          });
-          
-          const imageUrl = canvas.toDataURL('image/png');
-          console.log('محاولة بديلة ناجحة، طول البيانات:', imageUrl.length);
-          setCapturedImage(imageUrl);
-          
-          return imageUrl;
-        }
+        const canvas = await html2canvas(document.body, {
+          logging: true,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          scale: 1,
+          x: 0,
+          y: 0,
+          width: 300,
+          height: 150
+        });
+        
+        document.body.removeChild(viewport);
+        
+        const imageUrl = canvas.toDataURL('image/png');
+        console.log('تم التقاط قسم من الصفحة، طول البيانات:', imageUrl.length);
+        setCapturedImage(imageUrl);
+        
+        window.dispatchEvent(
+          new CustomEvent('widget-image-captured', {
+            detail: { imageUrl }
+          })
+        );
+        
+        return imageUrl;
       } catch (secondError) {
         console.error('فشلت المحاولة البديلة أيضًا:', secondError);
       }
       
       return null;
     }
-  }, []);
+  }, [captureAttempts]);
 
   return {
     capturedImage,
