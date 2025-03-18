@@ -12,7 +12,14 @@ export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => 
   const { symbol = 'XAUUSD', theme = 'light', onLoad } = props;
   
   // تهيئة الويدجيت وإعداده
-  const initializeWidget = (widgetDiv: HTMLDivElement) => {
+  const initializeWidget = (widgetContainer: HTMLDivElement) => {
+    // إنشاء div الويدجيت
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget';
+    widgetDiv.style.width = '100%';
+    widgetDiv.style.height = '100%';
+    widgetContainer.appendChild(widgetDiv);
+
     // إنشاء سكريبت الويدجيت
     const script = document.createElement('script');
     script.type = 'text/javascript';
@@ -21,7 +28,7 @@ export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => 
     
     // تعيين التكوين مع تحديث لاستخدام سعر الذهب العالمي
     script.innerHTML = JSON.stringify({
-      symbol: `FX_IDC:XAUUSD`, // استخدام مصدر بيانات أكثر دقة للذهب
+      symbol: `FX_IDC:${symbol}`, // استخدام مصدر بيانات أكثر دقة للذهب
       width: "100%",
       colorTheme: theme,
       isTransparent: false,
@@ -31,11 +38,15 @@ export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => 
     // معالج لتحميل الويدجيت
     script.onload = () => {
       console.log("تم تحميل سكريبت TradingView بنجاح");
-      onLoad();
+      setTimeout(() => {
+        onLoad();
+      }, 500);
     };
     
     // إضافة السكريبت إلى الحاوية
-    widgetDiv.appendChild(script);
+    widgetContainer.appendChild(script);
+    
+    return widgetDiv;
   };
 
   // إنشاء حاوية الويدجيت
@@ -44,13 +55,6 @@ export const TradingViewWidgetConfig = (props: TradingViewWidgetConfigProps) => 
     widgetContainer.className = 'tradingview-widget-container';
     widgetContainer.style.width = '187.5px';
     widgetContainer.style.height = '95px';
-    
-    // إنشاء div الويدجيت
-    const widgetDiv = document.createElement('div');
-    widgetDiv.className = 'tradingview-widget-container__widget';
-    widgetDiv.style.width = '100%';
-    widgetDiv.style.height = '100%';
-    widgetContainer.appendChild(widgetDiv);
     
     initializeWidget(widgetContainer);
     

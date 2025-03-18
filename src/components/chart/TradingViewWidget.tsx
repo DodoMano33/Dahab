@@ -33,7 +33,15 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       
       // إضافة حاوية الويدجيت إلى الحاوية المرجعية
       container.current.appendChild(widgetContainer);
+      
+      // تسجيل رسالة للتأكد من تحميل الويدجيت
+      console.log("تم تركيب حاوية ويدجيت TradingView");
     }
+    
+    // دالة التنظيف عند إزالة المكون
+    return () => {
+      console.log("تم إزالة مكون TradingViewWidget");
+    };
   }, [symbol, theme, setupPriceExtraction]);
 
   return (
