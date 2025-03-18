@@ -111,12 +111,13 @@ export const ExtractedPriceDisplay: React.FC = () => {
       setIsProcessingOCR(true);
       console.log('بدء معالجة الصورة باستخدام OCR...');
       
+      // تحديث: إزالة خيار tessedit_char_whitelist غير المدعوم واستخدام خيارات صحيحة فقط
       const result = await Tesseract.recognize(
         imageUrl,
         'eng', // نستخدم اللغة الإنجليزية لاستخراج الأرقام
         { 
-          logger: message => console.log('Tesseract:', message),
-          tessedit_char_whitelist: '0123456789.,', // السماح فقط بالأرقام والنقطة والفاصلة
+          logger: message => console.log('Tesseract:', message)
+          // تمت إزالة tessedit_char_whitelist لأنه غير مدعوم في التعريف الحالي للـ WorkerOptions
         }
       );
       
