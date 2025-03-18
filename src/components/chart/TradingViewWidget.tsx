@@ -62,7 +62,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
         }
       }, 1000);
       
-      // إعداد التحديث كل نصف ثانية لتحديثات السعر (أسرع من قبل)
+      // إعداد التحديث كل نصف ثانية لتحديثات السعر
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
@@ -93,21 +93,25 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
     
     if (priceElement && priceElement.textContent) {
       const priceText = priceElement.textContent.trim();
-      // تنظيف النص واستخراج الرقم
+      // تنظيف النص واستخراج الرقم - نزيل أي أحرف غير الأرقام والفواصل والنقاط
       const cleanText = priceText.replace(/[^\d.,]/g, '');
-      // التعامل مع الفاصلة والنقطة في تنسيقات الأرقام المختلفة
-      const normalizedText = cleanText.replace(/,/g, '.');
-      const price = parseFloat(normalizedText);
       
-      if (!isNaN(price) && price > 0 && price !== lastExtractedPrice.current) {
-        console.log('تم استخراج السعر من الويدجيت:', price);
-        lastExtractedPrice.current = price;
-        // إرسال حدث مخصص بالسعر المستخرج
-        window.dispatchEvent(
-          new CustomEvent('tradingview-price-update', {
-            detail: { price }
-          })
-        );
+      // التحقق من أن النص يحتوي على فاصلة أو نقطة عشرية
+      if (cleanText.includes('.') || cleanText.includes(',')) {
+        // التعامل مع الفاصلة والنقطة في تنسيقات الأرقام المختلفة
+        const normalizedText = cleanText.replace(/,/g, '.');
+        const price = parseFloat(normalizedText);
+        
+        if (!isNaN(price) && price > 0 && price !== lastExtractedPrice.current) {
+          console.log('تم استخراج السعر من الويدجيت:', price);
+          lastExtractedPrice.current = price;
+          // إرسال حدث مخصص بالسعر المستخرج
+          window.dispatchEvent(
+            new CustomEvent('tradingview-price-update', {
+              detail: { price }
+            })
+          );
+        }
       }
     }
   };
