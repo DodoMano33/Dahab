@@ -73,6 +73,13 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       }
     }
     
+    // مستمع لسعر TradingView
+    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        updatePrice(event.detail.price);
+      }
+    };
+
     // مستمع لطلب تحديث السعر
     const handleRequestPrice = () => {
       if (currentPrice !== null) {
@@ -104,25 +111,33 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
     const handleGlobalPriceUpdate = (event: CustomEvent<{ price: number, source: string }>) => {
       if (event.detail && event.detail.price && event.detail.source !== 'useCurrentPrice') {
         console.log(`useCurrentPrice: تم استلام تحديث سعر عام من ${event.detail.source}:`, event.detail.price);
-        // نقوم فقط بتحديث السعر إذا كان مصدره هو تحليل الصور وليس مصادر أخرى
-        if (event.detail.source === 'image-processing') {
-          updatePrice(event.detail.price);
-        }
+        updatePrice(event.detail.price);
       }
     };
 
-    // إضافة المستمعين - حذف مستمع TradingView لأننا لن نستخدمه
+    // إضافة المستمعين
+    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
     window.addEventListener('request-current-price', handleRequestPrice);
     window.addEventListener('image-price-update', handleImagePriceUpdate as EventListener);
     window.addEventListener('ui-price-update', handleUiPriceUpdate as EventListener);
     window.addEventListener('global-price-update', handleGlobalPriceUpdate as EventListener);
     
+    // عند التركيب، نطلب السعر المستخرج من الرسم البياني
+    window.dispatchEvent(new Event('request-extracted-price'));
+    
+    // طلب السعر الحالي كل ثانية
+    const intervalId = setInterval(() => {
+      window.dispatchEvent(new Event('request-current-price'));
+    }, 1000);
+
     // تنظيف المستمعين
     return () => {
+      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
       window.removeEventListener('request-current-price', handleRequestPrice);
       window.removeEventListener('image-price-update', handleImagePriceUpdate as EventListener);
       window.removeEventListener('ui-price-update', handleUiPriceUpdate as EventListener);
       window.removeEventListener('global-price-update', handleGlobalPriceUpdate as EventListener);
+      clearInterval(intervalId);
     };
   }, [updatePrice, currentPrice]);
 

@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
+import { extractPriceFromChart } from '@/utils/price/capture/priceExtractor';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface LiveTradingViewChartProps {
@@ -14,34 +15,88 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   onSymbolChange,
   onPriceUpdate
 }) => {
-  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     console.log('تم تركيب مكون LiveTradingViewChart');
     
-    // نستمع فقط لتحديثات سعر الصورة ولا نقوم باستخراج من الرسم البياني
-    const handleGlobalPriceUpdate = (event: CustomEvent<{ price: number, source: string }>) => {
-      if (event.detail && event.detail.price && event.detail.source === 'image-processing') {
-        console.log(`LiveTradingViewChart: تم استلام تحديث سعر من الصورة:`, event.detail.price);
-        setCurrentPrice(event.detail.price);
+    // استخراج السعر المبدئي
+    const fetchInitialPrice = async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null) {
+        console.log(`تم استخراج السعر المبدئي: ${price}`);
+        setCurrentPrice(price);
         setLastUpdateTime(new Date());
-        onPriceUpdate?.(event.detail.price);
+        onPriceUpdate?.(price);
+        
+        // إرسال حدث تحديث السعر لباقي المكونات في التطبيق
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price }
+          })
+        );
       }
     };
     
-    window.addEventListener('global-price-update', handleGlobalPriceUpdate as EventListener);
+    fetchInitialPrice();
+    
+    // مستمع لتحديثات السعر من TradingView
+    const handleTradingViewPriceUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        const price = event.detail.price;
+        console.log(`تم استلام تحديث السعر من TradingView: ${price}`);
+        setCurrentPrice(price);
+        setLastUpdateTime(new Date());
+        onPriceUpdate?.(price);
+      }
+    };
+    
+    // مستمع لطلبات السعر الحالي
+    const handleRequestCurrentPrice = () => {
+      if (currentPrice) {
+        console.log("تم استلام طلب للسعر الحالي، إرسال:", currentPrice);
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price: currentPrice }
+          })
+        );
+      }
+    };
+    
+    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    window.addEventListener('request-current-price', handleRequestCurrentPrice);
+    
+    // تعديل الفاصل الزمني إلى 1 ثانية
+    const priceExtractInterval = setInterval(async () => {
+      const price = await extractPriceFromChart();
+      if (price !== null && price !== currentPrice) {
+        console.log(`تم تحديث السعر تلقائيًا: ${price}`);
+        setCurrentPrice(price);
+        setLastUpdateTime(new Date());
+        onPriceUpdate?.(price);
+        
+        // إرسال حدث تحديث السعر لباقي المكونات
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price }
+          })
+        );
+      }
+    }, 1000); // تحديث كل 1 ثانية
     
     return () => {
-      window.removeEventListener('global-price-update', handleGlobalPriceUpdate as EventListener);
+      clearInterval(priceExtractInterval);
+      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+      window.removeEventListener('request-current-price', handleRequestCurrentPrice);
       console.log('تم إزالة مكون LiveTradingViewChart');
     };
-  }, [onPriceUpdate]);
+  }, [onPriceUpdate, currentPrice]);
 
   return (
     <Card className="w-full mb-6">
       <CardContent className="p-4">
-        <h3 className="text-lg font-medium mb-2 text-center">سعر الذهب الحالي (عرض الرسم البياني فقط)</h3>
+        <h3 className="text-lg font-medium mb-2 text-center">سعر الذهب الحالي</h3>
         <div className="pb-1">
           <TradingViewWidget symbol={symbol} />
         </div>
@@ -53,9 +108,6 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 آخر تحديث: {lastUpdateTime ? new Date(lastUpdateTime).toLocaleTimeString() : ''}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                (السعر مستخرج من الصورة وليس من الرسم البياني)
               </p>
             </div>
           )}
