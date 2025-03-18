@@ -29,6 +29,18 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       const price = extractPriceFromText(extractedText);
       setExtractedPrice(price);
       
+      // إذا تم العثور على سعر، قم بإرسال حدث
+      if (price !== null) {
+        window.dispatchEvent(
+          new CustomEvent('global-price-update', {
+            detail: {
+              price: price,
+              source: 'image-processing'
+            }
+          })
+        );
+      }
+      
       return price;
     } catch (error) {
       console.error('خطأ في معالجة الصورة باستخدام OCR:', error);
