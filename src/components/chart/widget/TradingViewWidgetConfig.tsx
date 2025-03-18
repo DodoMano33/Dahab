@@ -31,9 +31,9 @@ export const TradingViewWidgetConfig = ({
     script.async = true;
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
     
-    // تعيين التكوين مع تحديث لاستخدام سعر الذهب العالمي
+    // تعيين التكوين بالضبط كما تم طلبه
     script.innerHTML = JSON.stringify({
-      symbol: `FX_IDC:${symbol}`, // استخدام مصدر بيانات أكثر دقة للذهب
+      symbol: `CFI:${symbol}`,
       width: "100%",
       colorTheme: theme,
       isTransparent: false,
