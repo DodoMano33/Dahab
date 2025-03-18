@@ -1,6 +1,4 @@
 
-
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useTradingViewPrice } from '@/hooks/useTradingViewPrice';
 import { TradingViewWidgetConfig } from './widget/TradingViewWidgetConfig';
@@ -10,7 +8,6 @@ interface TradingViewWidgetProps {
   theme?: string;
   allowSymbolChange?: boolean;
 }
-
 
 const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
   symbol = 'XAUUSD',
