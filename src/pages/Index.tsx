@@ -1,4 +1,3 @@
-
 import { useState, useEffect, lazy, Suspense, memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -11,19 +10,9 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام التحميل المباشر بدلاً من البطيء للمكونات الرئيسية
-import { ChartAnalyzer } from "@/components/ChartAnalyzer";
-import { UserDashboard } from "@/components/chart/dashboard/UserDashboard";
-
-// مكون loading محسن
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center py-12 min-h-[60vh]">
-    <div className="flex flex-col items-center space-y-4">
-      <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
-      <p className="text-muted-foreground">جاري تحميل المحتوى...</p>
-    </div>
-  </div>
-);
+// استخدام التحميل البطيء للمكونات الثقيلة
+const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer").then(module => ({ default: module.ChartAnalyzer })));
+const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء
 const Header = memo(({ 
@@ -69,9 +58,8 @@ function Index() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { triggerManualCheck } = useBackTest(); // Keep this import but don't use the functionality
   const [activePage, setActivePage] = useState<'analysis' | 'dashboard'>('analysis');
-  const [isReady, setIsReady] = useState(false);
 
-  // هذه الدالة تبقى كما هي ولكن لا تفعل شيئًا
+  // Keep this function but make it do nothing
   const handleManualCheck = () => {
     console.log("تم إيقاف وظيفة فحص التحليلات");
   };
@@ -84,19 +72,6 @@ function Index() {
       setActivePage('analysis');
     }
   }, [location.pathname]);
-
-  // تأكيد جاهزية التطبيق بعد التحميل المبدئي
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!isReady) {
-    return <LoadingFallback />;
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,7 +105,7 @@ function Index() {
       
       {/* Main Content */}
       <main className="container mx-auto py-6 px-4">
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={<div className="flex items-center justify-center py-20">جاري تحميل المحتوى...</div>}>
           <Routes>
             <Route 
               path="/" 
