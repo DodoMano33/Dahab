@@ -4,13 +4,17 @@ import { PriceDisplay } from '../backtest/components/PriceDisplay';
 import { useCurrentPrice } from '@/hooks/useCurrentPrice';
 import { cn } from '@/lib/utils';
 import html2canvas from 'html2canvas';
+import Tesseract from 'tesseract.js';
 
 export const ExtractedPriceDisplay: React.FC = () => {
-  const { currentPrice, priceUpdateCount } = useCurrentPrice();
+  const { currentPrice, priceUpdateCount, updatePrice } = useCurrentPrice();
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [captureAttempts, setCaptureAttempts] = useState<number>(0);
+  const [recognizedText, setRecognizedText] = useState<string>('');
+  const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
+  const [isProcessingOCR, setIsProcessingOCR] = useState<boolean>(false);
   const widgetRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -34,7 +38,105 @@ export const ExtractedPriceDisplay: React.FC = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // وظيفة التقاط الصورة من ويدجيت TradingView (محدث للجزء المعلم باللون الأحمر)
+  // استخراج الرقم من النص المستخرج من الصورة
+  const extractPriceFromText = (text: string) => {
+    console.log('النص المستخرج من الصورة:', text);
+    
+    // البحث عن نمط الأرقام ذات 4 خانات و3 فواصل عشرية (مثل 2134.567)
+    const pricePattern = /\b\d{1,4}[.,]\d{1,3}\b/g;
+    const matches = text.match(pricePattern);
+    
+    console.log('الأرقام المطابقة المستخرجة:', matches);
+    
+    if (matches && matches.length > 0) {
+      // أخذ أول رقم مطابق
+      const priceText = matches[0].replace(',', '.');
+      const price = parseFloat(priceText);
+      
+      if (!isNaN(price) && price > 0) {
+        console.log('تم استخراج السعر بنجاح:', price);
+        setExtractedPrice(price);
+        
+        // تحديث السعر المستخرج في النظام
+        updatePrice(price);
+        
+        // إرسال حدث تحديث السعر
+        window.dispatchEvent(
+          new CustomEvent('image-price-update', {
+            detail: { price }
+          })
+        );
+        
+        return price;
+      }
+    }
+    
+    // محاولة بديلة للبحث عن أي رقم في النص
+    const anyNumberPattern = /\d+[.,]\d+/g;
+    const anyMatches = text.match(anyNumberPattern);
+    
+    if (anyMatches && anyMatches.length > 0) {
+      // ترتيب الأرقام حسب الطول (الأطول أولاً) للعثور على الرقم الأكثر احتمالاً
+      const sortedMatches = [...anyMatches].sort((a, b) => b.length - a.length);
+      const priceText = sortedMatches[0].replace(',', '.');
+      const price = parseFloat(priceText);
+      
+      if (!isNaN(price) && price > 0) {
+        console.log('تم استخراج السعر باستخدام الطريقة البديلة:', price);
+        setExtractedPrice(price);
+        
+        // تحديث السعر المستخرج في النظام
+        updatePrice(price);
+        
+        // إرسال حدث تحديث السعر
+        window.dispatchEvent(
+          new CustomEvent('image-price-update', {
+            detail: { price }
+          })
+        );
+        
+        return price;
+      }
+    }
+    
+    console.log('فشل في استخراج السعر من النص');
+    return null;
+  };
+
+  // وظيفة معالجة الصورة باستخدام OCR
+  const processImageWithOCR = async (imageUrl: string) => {
+    if (isProcessingOCR) return;
+    
+    try {
+      setIsProcessingOCR(true);
+      console.log('بدء معالجة الصورة باستخدام OCR...');
+      
+      const result = await Tesseract.recognize(
+        imageUrl,
+        'eng', // نستخدم اللغة الإنجليزية لاستخراج الأرقام
+        { 
+          logger: message => console.log('Tesseract:', message),
+          tessedit_char_whitelist: '0123456789.,', // السماح فقط بالأرقام والنقطة والفاصلة
+        }
+      );
+      
+      const extractedText = result.data.text;
+      console.log('النص المستخرج من Tesseract:', extractedText);
+      setRecognizedText(extractedText);
+      
+      // استخراج السعر من النص
+      const price = extractPriceFromText(extractedText);
+      
+      return price;
+    } catch (error) {
+      console.error('خطأ في معالجة الصورة باستخدام OCR:', error);
+      return null;
+    } finally {
+      setIsProcessingOCR(false);
+    }
+  };
+
+  // وظيفة التقاط الصورة من ويدجيت TradingView
   const captureTradingViewWidget = async () => {
     try {
       setCaptureAttempts(prev => prev + 1);
@@ -81,6 +183,9 @@ export const ExtractedPriceDisplay: React.FC = () => {
           const imageUrl = canvas.toDataURL('image/png');
           console.log('تم التقاط صورة الكارد بالكامل، طول البيانات:', imageUrl.length);
           setCapturedImage(imageUrl);
+          
+          // معالجة الصورة باستخدام OCR
+          await processImageWithOCR(imageUrl);
           return;
         }
         
@@ -96,6 +201,9 @@ export const ExtractedPriceDisplay: React.FC = () => {
         const imageUrl = canvas.toDataURL('image/png');
         console.log('تم التقاط صورة للعنصر المحتمل، طول البيانات:', imageUrl.length);
         setCapturedImage(imageUrl);
+        
+        // معالجة الصورة باستخدام OCR
+        await processImageWithOCR(imageUrl);
         return;
       }
       
@@ -114,6 +222,9 @@ export const ExtractedPriceDisplay: React.FC = () => {
       const imageUrl = canvas.toDataURL('image/png');
       console.log('تم إنشاء الصورة بنجاح، طول البيانات:', imageUrl.length);
       setCapturedImage(imageUrl);
+      
+      // معالجة الصورة باستخدام OCR
+      await processImageWithOCR(imageUrl);
       
     } catch (error) {
       console.error('خطأ في التقاط صورة ويدجيت TradingView:', error);
@@ -136,6 +247,9 @@ export const ExtractedPriceDisplay: React.FC = () => {
           const imageUrl = canvas.toDataURL('image/png');
           console.log('محاولة بديلة ناجحة، طول البيانات:', imageUrl.length);
           setCapturedImage(imageUrl);
+          
+          // معالجة الصورة باستخدام OCR
+          await processImageWithOCR(imageUrl);
           return;
         }
       } catch (secondError) {
@@ -154,7 +268,7 @@ export const ExtractedPriceDisplay: React.FC = () => {
       // جدولة التقاط متكرر للصور مع فاصل زمني أطول
       const captureInterval = setInterval(() => {
         captureTradingViewWidget();
-      }, 3000); // التقاط كل 3 ثوان لتقليل الحمل وزيادة فرص نجاح الالتقاط
+      }, 2000); // التقاط كل 2 ثوان لتقليل الحمل وزيادة فرص نجاح الالتقاط
       
       // تنظيف عند إزالة المكون
       return () => {
@@ -174,13 +288,18 @@ export const ExtractedPriceDisplay: React.FC = () => {
   return (
     <div className="w-full">
       <PriceDisplay 
-        currentPrice={currentPrice} 
+        currentPrice={extractedPrice !== null ? extractedPrice : currentPrice} 
         priceUpdateCount={priceUpdateCount}
         lastUpdateTime={lastUpdateTime}
       />
       {isExtracting && (
         <p className="text-center text-amber-500 text-sm mt-1">
           جاري استخراج السعر الحالي من الصورة...
+        </p>
+      )}
+      {isProcessingOCR && (
+        <p className="text-center text-amber-500 text-sm mt-1">
+          جاري معالجة الصورة لاستخراج السعر...
         </p>
       )}
       
@@ -209,6 +328,18 @@ export const ExtractedPriceDisplay: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* عرض النص المستخرج من الصورة */}
+      {recognizedText && (
+        <div className="mt-2 text-xs text-center text-gray-600">
+          <div>النص المستخرج: <span className="font-mono">{recognizedText}</span></div>
+          {extractedPrice && (
+            <div className="font-bold text-green-600">
+              السعر المستخرج: {extractedPrice.toFixed(2)}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* إضافة معلومات تشخيصية وزر يدوي لإعادة محاولة التقاط الصورة */}
       <div className="text-center mt-2 space-y-1">
