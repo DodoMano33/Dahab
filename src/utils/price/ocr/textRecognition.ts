@@ -21,9 +21,11 @@ export const recognizeTextFromImage = async (imageUrl: string): Promise<string> 
       'eng', // نستخدم اللغة الإنجليزية لاستخراج الأرقام
       { 
         logger: message => console.log('Tesseract:', message),
-        // ضبط إعدادات التعرف للتركيز على الأرقام والأسعار
-        tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
-        tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT
+        // استخدام إعدادات متوافقة مع TypeScript للتركيز على الأرقام والأسعار
+        // تم حذف الإعدادات غير المدعومة في Tesseract.js v5
+        langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+        cachePath: '.',
+        errorHandler: error => console.error('Tesseract error:', error)
       }
     );
     
