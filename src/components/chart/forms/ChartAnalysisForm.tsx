@@ -49,7 +49,6 @@ export const ChartAnalysisForm = ({
   // تثبيت رمز الذهب كقيمة افتراضية
   const fixedSymbol = "XAUUSD";
   const [symbol, setSymbol] = useState(fixedSymbol);
-  const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
   const [duration, setDuration] = useState("8");
 
@@ -61,7 +60,7 @@ export const ChartAnalysisForm = ({
   } = useFormSubmit({
     symbol: fixedSymbol,
     defaultSymbol: fixedSymbol,
-    price,
+    price: "",
     defaultPrice,
     timeframe,
     duration,
@@ -75,8 +74,6 @@ export const ChartAnalysisForm = ({
       <FormInputs
         symbol={fixedSymbol}
         setSymbol={setSymbol}
-        price={price}
-        setPrice={setPrice}
         timeframe={timeframe}
         setTimeframe={setTimeframe}
         duration={duration}

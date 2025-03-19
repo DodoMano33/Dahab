@@ -69,9 +69,6 @@ export const EntryPointRow = ({
   // تحديد لون النص بناءً على نجاح/فشل التحليل
   const profitLossClass = result.is_success ? 'text-success' : 'text-destructive';
 
-  // طباعة تشخيصية للسعر الحالي
-  console.log(`EntryPointRow: السعر الحالي المستلم = ${currentPrice}`);
-
   return (
     <div
       className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
@@ -137,7 +134,7 @@ export const EntryPointRow = ({
         label="تاريخ النتيجة" 
         value={formatDateArabic(result.result_timestamp)} 
       />
-      <div className="text-center font-bold text-primary">
+      <div className="text-center">
         {currentPrice ? formatNumber(currentPrice) : "-"}
       </div>
     </div>
