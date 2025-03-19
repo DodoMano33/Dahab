@@ -13,12 +13,13 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
 
   const updatePrice = useCallback((price: number) => {
     if (!isNaN(price) && price > 0) {
-      // تحديث السعر فقط إذا كان في النطاق المتوقع للذهب (2000-4000)
-      if (price > 2000 && price < 4000) {
+      // تحديث السعر فقط إذا كان في النطاق المتوقع للذهب (1000-9000)
+      // مع إعطاء أولوية للنطاق الحالي (3000-3100)
+      if ((price >= 3000 && price <= 3100) || (price > 1000 && price < 9000)) {
         console.log(`useCurrentPrice: تحديث السعر إلى ${price}`);
         
         // تحديث السعر فقط إذا تغير، أو لم يكن هناك سعر سابق
-        if (currentPrice === null || Math.abs(currentPrice - price) > 0.5) {
+        if (currentPrice === null || Math.abs(currentPrice - price) > 0.1) {
           setCurrentPrice(price);
           setPriceUpdateCount((prev) => prev + 1);
           
