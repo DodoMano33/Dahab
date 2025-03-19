@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatDateArabic, formatTimeDuration } from "@/utils/technicalAnalysis/timeUtils";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
+import { useEffect, useState } from "react";
 
 interface AnalysisRowProps {
   id: string;
@@ -42,6 +43,30 @@ export const AnalysisRow = ({
   onSelect,
   current_price
 }: AnalysisRowProps) => {
+  const [livePrice, setLivePrice] = useState<number | undefined>(current_price);
+
+  // الاستماع لتحديثات سعر Alpha Vantage
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        setLivePrice(event.detail.price);
+      }
+    };
+
+    window.addEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    };
+  }, []);
+
+  // تحديث السعر عند تغير الـ prop
+  useEffect(() => {
+    if (current_price !== undefined) {
+      setLivePrice(current_price);
+    }
+  }, [current_price]);
+
   // Format numbers for display with 2 decimal places
   const formatNumber = (num: number) => {
     return num !== undefined && num !== null ? Number(num).toFixed(2) : "-";
@@ -105,7 +130,7 @@ export const AnalysisRow = ({
         {result_timestamp ? formatDateArabic(result_timestamp) : "-"}
       </TableCell>
       <TableCell className="text-center p-2 font-bold text-primary">
-        {current_price ? formatNumber(current_price) : "-"}
+        {livePrice ? formatNumber(livePrice) : "-"}
       </TableCell>
     </TableRow>
   );

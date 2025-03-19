@@ -4,6 +4,7 @@ import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { formatDateArabic, formatTimeDuration } from "@/utils/technicalAnalysis/timeUtils";
 import { TableCell } from "./TableCell";
 import { DirectionIndicator } from "@/components/chart/history/DirectionIndicator";
+import { useEffect, useState } from "react";
 
 interface EntryPointRowProps {
   result: any;
@@ -18,6 +19,30 @@ export const EntryPointRow = ({
   onSelect,
   currentPrice
 }: EntryPointRowProps) => {
+  const [livePrice, setLivePrice] = useState<number | null>(currentPrice);
+
+  // الاستماع لتحديثات سعر Alpha Vantage
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        setLivePrice(event.detail.price);
+      }
+    };
+
+    window.addEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    };
+  }, []);
+
+  // تحديث السعر عند تغير الـ prop
+  useEffect(() => {
+    if (currentPrice !== null) {
+      setLivePrice(currentPrice);
+    }
+  }, [currentPrice]);
+
   // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
   const formatNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return "-";
@@ -134,8 +159,8 @@ export const EntryPointRow = ({
         label="تاريخ النتيجة" 
         value={formatDateArabic(result.result_timestamp)} 
       />
-      <div className="text-center">
-        {currentPrice ? formatNumber(currentPrice) : "-"}
+      <div className="text-center font-bold text-primary">
+        {livePrice ? formatNumber(livePrice) : "-"}
       </div>
     </div>
   );

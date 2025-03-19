@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 
 interface AnalysisResultProps {
   analysis: {
@@ -31,6 +32,24 @@ interface AnalysisResultProps {
 }
 
 export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => {
+  const [livePrice, setLivePrice] = useState<number>(analysis.currentPrice);
+
+  // الاستماع لتحديثات سعر Alpha Vantage
+  useEffect(() => {
+    const handlePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        setLivePrice(event.detail.price);
+        console.log("تحديث السعر في نتائج التحليل:", event.detail.price);
+      }
+    };
+
+    window.addEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
@@ -39,12 +58,12 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
     );
   }
 
-  const isPriceHigher = (price: number) => price > analysis.currentPrice;
+  const isPriceHigher = (price: number) => price > livePrice;
   const getDirectionColor = (direction: string) => 
     direction === "صاعد" ? "text-green-600" : "text-red-600";
   
   const getPercentageDiff = (price: number) => {
-    const diff = ((price - analysis.currentPrice) / analysis.currentPrice) * 100;
+    const diff = ((price - livePrice) / livePrice) * 100;
     return diff.toFixed(2) + '%';
   };
 
@@ -72,7 +91,10 @@ export const AnalysisResult = ({ analysis, isLoading }: AnalysisResultProps) => 
             <CardTitle className="text-xl">السعر الحالي</CardTitle>
           </CardHeader>
           <CardContent className="py-2">
-            <p className="text-2xl font-bold">{analysis.currentPrice}</p>
+            <p className="text-2xl font-bold">{livePrice.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {livePrice !== analysis.currentPrice ? `تم التحديث من Alpha Vantage` : null}
+            </p>
           </CardContent>
         </Card>
       </div>
