@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import { ALPHA_VANTAGE_API_KEY } from './price/config';
 
@@ -36,10 +37,9 @@ class PriceUpdater {
         return cached.price;
       }
 
-      // استخدام السعر المقدم كسعر افتراضي
-      console.log(`استخدام السعر المقدم كسعر افتراضي للرمز ${symbol}`);
-      return providedPrice || 0;
-
+      // إذا لم يتم توفير سعر ولم يكن هناك سعر مخزن حديث، أرجع صفر
+      console.log(`لم يتم توفير سعر للرمز ${symbol}، إرجاع صفر`);
+      return 0;
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
       throw error;
