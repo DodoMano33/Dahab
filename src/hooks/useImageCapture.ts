@@ -113,7 +113,8 @@ export const useImageCapture = (): UseImageCaptureResult => {
           // تحسين مظهر الصفحة المستنسخة قبل التقاط الصورة
           const clonedBody = documentClone.body;
           if (clonedBody) {
-            clonedBody.style.overflow = 'visible';
+            // استخدام casting لتجنب خطأ TypeScript
+            (clonedBody as HTMLElement).style.overflow = 'visible';
           }
         }
       });
@@ -191,7 +192,7 @@ export const useImageCapture = (): UseImageCaptureResult => {
           // تجاهل بعض العناصر التي قد تسبب مشاكل
           return element.tagName === 'SCRIPT' || 
                  element.classList.contains('hidden') ||
-                 element.style.display === 'none';
+                 (element as HTMLElement).style?.display === 'none';
         }
       });
       
