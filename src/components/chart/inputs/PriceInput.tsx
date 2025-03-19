@@ -18,24 +18,24 @@ export const PriceInput = ({
 }: PriceInputProps) => {
   const [useAutoPrice, setUseAutoPrice] = useState(false);
   
-  // استخدام السعر من TradingView تلقائيًا
+  // استخدام السعر من Alpha Vantage تلقائيًا
   useEffect(() => {
     if (useAutoPrice && tradingViewPrice !== null && tradingViewPrice !== undefined) {
       onChange(tradingViewPrice.toString());
     }
   }, [tradingViewPrice, useAutoPrice, onChange]);
 
-  // استمع للتحديثات المباشرة من TradingView
+  // استمع للتحديثات المباشرة من Alpha Vantage
   useEffect(() => {
-    const handleTradingViewPriceUpdate = (event: CustomEvent) => {
+    const handleAlphaVantagePriceUpdate = (event: CustomEvent) => {
       if (useAutoPrice && event.detail && event.detail.price) {
         onChange(event.detail.price.toString());
       }
     };
 
-    window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    window.addEventListener('alpha-vantage-price-update', handleAlphaVantagePriceUpdate as EventListener);
     return () => {
-      window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+      window.removeEventListener('alpha-vantage-price-update', handleAlphaVantagePriceUpdate as EventListener);
     };
   }, [useAutoPrice, onChange]);
 
@@ -79,12 +79,12 @@ export const PriceInput = ({
       />
       {useAutoPrice && (
         <p className="text-sm text-green-500 mt-1">
-          السعر المباشر من TradingView: {displayPrice}
+          السعر المباشر من Alpha Vantage: {displayPrice}
         </p>
       )}
       {!useAutoPrice && tradingViewPrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
-          السعر المتاح من TradingView: {displayPrice}
+          السعر المتاح من Alpha Vantage: {displayPrice}
         </p>
       )}
     </div>

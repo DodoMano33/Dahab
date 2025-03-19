@@ -15,9 +15,12 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
   } = usePriceEventHandlers();
 
   useEffect(() => {
-    // الاستماع لتحديثات السعر من TradingView
-    window.addEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
-    window.addEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+    // تنظيف مستمعي الأحداث السابقة (إذا وجدت)
+    window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+    
+    // إضافة مستمع لتحديثات السعر المخصصة
+    window.addEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
     
     // طلب السعر الحالي عند تحميل المكون
     requestCurrentPrice();
@@ -27,8 +30,8 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
       console.log(`تم تحديث السعر من Alpha Vantage: ${price}`);
       setCurrentPrice(price);
       
-      // إطلاق حدث تحديث سعر TradingView لضمان انتشار السعر في التطبيق
-      const event = new CustomEvent('tradingview-price-update', {
+      // إطلاق حدث تحديث سعر مخصص لضمان انتشار السعر في التطبيق
+      const event = new CustomEvent('alpha-vantage-price-update', {
         detail: { price }
       });
       window.dispatchEvent(event);
@@ -45,15 +48,23 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
       onError: handlePriceError
     });
     
-    // تحديث السعر كل 30 ثانية كآلية احتياطية
+    // تحديث السعر كل 30 ثانية
     const priceRefreshInterval = setInterval(() => {
-      requestCurrentPrice();
+      // إعادة طلب السعر من Alpha Vantage مباشرة
+      priceUpdater.fetchPrice(symbol)
+        .then(price => {
+          if (price !== null) {
+            handlePriceUpdated(price);
+          }
+        })
+        .catch(error => {
+          console.error('فشل في تحديث السعر:', error);
+        });
     }, 30000);
     
     // تنظيف مستمعي الأحداث والاشتراكات عند إزالة المكون
     return () => {
-      window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
-      window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
+      window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
       clearInterval(priceRefreshInterval);
       priceUpdater.unsubscribe(symbol, handlePriceUpdated);
     };

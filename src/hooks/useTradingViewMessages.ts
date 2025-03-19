@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from 'react';
+import { priceUpdater } from '@/utils/priceUpdater';
 
 interface UseTradingViewMessagesProps {
   symbol: string;
@@ -16,38 +17,78 @@ export const useTradingViewMessages = ({
   const priceUpdateCountRef = useRef<number>(0);
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
+    // بدلاً من الاستماع لرسائل TradingView، نستخدم Alpha Vantage مباشرة
+    const fetchInitialPrice = async () => {
       try {
-        if (event.data.name === 'symbol-change') {
-          console.log('Symbol changed to:', event.data.symbol);
-          onSymbolChange?.(event.data.symbol);
-        }
-        if (event.data.name === 'price-update') {
-          const price = event.data.price;
-          if (price === null || price === undefined || isNaN(price)) {
-            console.warn('Received invalid price from TradingView:', price);
-            return;
-          }
-          
+        const price = await priceUpdater.fetchPrice(symbol);
+        if (price) {
           priceUpdateCountRef.current += 1;
-          console.log(`★★★ Price updated from TradingView (${priceUpdateCountRef.current}):`, price, 'for symbol:', symbol);
+          console.log(`★★★ تم تحديث السعر من Alpha Vantage (${priceUpdateCountRef.current}):`, price, 'للرمز:', symbol);
           
           currentPriceRef.current = price;
           onPriceUpdate?.(price);
           
-          window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+          // إطلاق حدث تحديث السعر للمكونات الأخرى
+          window.dispatchEvent(new CustomEvent('alpha-vantage-price-update', { 
             detail: { price, symbol }
           }));
-          
-          console.log('Current price saved in ref:', currentPriceRef.current);
         }
       } catch (error) {
-        console.error('Error handling TradingView message:', error);
+        console.error('خطأ في جلب السعر الأولي من Alpha Vantage:', error);
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    fetchInitialPrice();
+
+    // الاشتراك في تحديثات Alpha Vantage
+    const handlePriceUpdated = (price: number) => {
+      priceUpdateCountRef.current += 1;
+      console.log(`★★★ تم تحديث السعر من Alpha Vantage (${priceUpdateCountRef.current}):`, price, 'للرمز:', symbol);
+      
+      currentPriceRef.current = price;
+      onPriceUpdate?.(price);
+    };
+    
+    const handlePriceError = (error: Error) => {
+      console.error('خطأ في تحديث السعر من Alpha Vantage:', error);
+    };
+    
+    // الاشتراك في تحديثات السعر
+    priceUpdater.subscribe({
+      symbol,
+      onUpdate: handlePriceUpdated,
+      onError: handlePriceError
+    });
+    
+    // الاستماع لتحديثات السعر العامة
+    const handleAlphaVantagePriceUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.price) {
+        priceUpdateCountRef.current += 1;
+        currentPriceRef.current = event.detail.price;
+        console.log('تم استلام تحديث السعر عبر حدث alpha-vantage-price-update:', event.detail.price);
+      }
+    };
+    
+    window.addEventListener('alpha-vantage-price-update', handleAlphaVantagePriceUpdate as EventListener);
+    
+    // تحديث السعر كل 30 ثانية
+    const intervalId = setInterval(() => {
+      priceUpdater.fetchPrice(symbol)
+        .then(price => {
+          if (price !== null) {
+            handlePriceUpdated(price);
+          }
+        })
+        .catch(error => {
+          console.error('فشل في تحديث السعر من التحديث الدوري:', error);
+        });
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('alpha-vantage-price-update', handleAlphaVantagePriceUpdate as EventListener);
+      priceUpdater.unsubscribe(symbol, handlePriceUpdated);
+      clearInterval(intervalId);
+    };
   }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return {

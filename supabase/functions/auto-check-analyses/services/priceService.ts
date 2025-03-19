@@ -1,16 +1,16 @@
 
 /**
- * Gets the current price from the request
+ * Gets the current price from Alpha Vantage
  */
 export function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
   return new Promise(async (resolve) => {
     try {
-      // محاولة استخدام السعر من الطلب
-      const tradingViewPrice = requestData?.currentPrice || null;
+      // استخدام السعر من الطلب
+      const providedPrice = requestData?.currentPrice || null;
       
-      if (tradingViewPrice !== null && !isNaN(tradingViewPrice)) {
-        console.log('Using price from request:', tradingViewPrice);
-        resolve(tradingViewPrice);
+      if (providedPrice !== null && !isNaN(providedPrice)) {
+        console.log('Using provided price from request:', providedPrice);
+        resolve(providedPrice);
         return;
       }
       

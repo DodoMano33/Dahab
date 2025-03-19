@@ -8,14 +8,14 @@ export const PriceDisplay = ({ currentPrice, priceUpdateCount }: PriceDisplayPro
   if (currentPrice) {
     return (
       <p className="text-xs font-semibold text-green-600 mt-1">
-        السعر الحالي: {currentPrice} (تم التحديث {priceUpdateCount} مرة)
+        السعر الحالي من Alpha Vantage: {currentPrice} (تم التحديث {priceUpdateCount} مرة)
       </p>
     );
   }
   
   return (
     <p className="text-xs font-semibold text-yellow-600 mt-1">
-      بانتظار السعر... (سيتم المحاولة مجددًا)
+      بانتظار السعر من Alpha Vantage... (سيتم المحاولة مجددًا)
     </p>
   );
 };

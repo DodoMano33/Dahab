@@ -18,7 +18,7 @@ class PriceUpdater {
 
   async fetchPrice(symbol: string, providedPrice?: number): Promise<number> {
     try {
-      console.log(`بدء محاولة جلب السعر للرمز ${symbol}`);
+      console.log(`بدء محاولة جلب السعر للرمز ${symbol} من Alpha Vantage`);
 
       if (!symbol) {
         throw new Error("الرمز غير صالح");
@@ -34,7 +34,7 @@ class PriceUpdater {
       // التحقق من الذاكرة المؤقتة (صالحة لمدة 5 ثوانٍ)
       const cached = this.lastPrices.get(symbol);
       if (cached && Date.now() - cached.timestamp < 5000) {
-        console.log(`استخدام السعر المخزن للرمز ${symbol}: ${cached.price}`);
+        console.log(`استخدام السعر المخزن مؤقتًا للرمز ${symbol}: ${cached.price}`);
         return cached.price;
       }
 
@@ -55,14 +55,20 @@ class PriceUpdater {
       }
 
       if (price !== null) {
-        console.log(`تم جلب السعر للرمز ${symbol}: ${price}`);
+        console.log(`تم جلب السعر من Alpha Vantage للرمز ${symbol}: ${price}`);
         this.lastPrices.set(symbol, { price, timestamp: Date.now() });
+        
+        // إرسال حدث تحديث السعر
+        window.dispatchEvent(new CustomEvent('alpha-vantage-price-update', {
+          detail: { price, symbol }
+        }));
+        
         return price;
       }
 
-      // إذا لم يتم العثور على سعر، أرجع آخر سعر معروف أو صفر
+      // إذا لم يتم العثور على سعر، استخدم آخر سعر معروف أو صفر
       const lastKnownPrice = cached?.price || 0;
-      console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر معروف: ${lastKnownPrice}`);
+      console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر مخزن: ${lastKnownPrice}`);
       return lastKnownPrice;
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
@@ -120,7 +126,7 @@ class PriceUpdater {
   private startPolling() {
     if (this.polling) return;
     
-    console.log("بدء التحديث الدوري للأسعار");
+    console.log("بدء التحديث الدوري للأسعار من Alpha Vantage");
     this.polling = true;
     
     this.intervalId = setInterval(async () => {
