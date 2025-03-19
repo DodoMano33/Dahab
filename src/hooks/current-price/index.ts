@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePriceEventHandlers } from './usePriceEventHandlers';
 import { UseCurrentPriceResult } from './types';
 import { priceUpdater } from '@/utils/priceUpdater';
@@ -14,7 +14,18 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
     setCurrentPrice
   } = usePriceEventHandlers();
 
+  const [priceUpdateInterval, setPriceUpdateInterval] = useState<number>(30000); // القيمة الافتراضية 30 ثانية
+
   useEffect(() => {
+    // الاستماع لتغييرات إعدادات المستخدم
+    const handleSettingsUpdate = ((event: CustomEvent) => {
+      if (event.detail && event.detail.priceUpdateInterval) {
+        setPriceUpdateInterval(event.detail.priceUpdateInterval * 1000);
+      }
+    }) as EventListener;
+
+    window.addEventListener('user-settings-updated', handleSettingsUpdate);
+
     // تنظيف مستمعي الأحداث السابقة (إذا وجدت)
     window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
     window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
@@ -48,7 +59,7 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
       onError: handlePriceError
     });
     
-    // تحديث السعر كل 30 ثانية
+    // تحديث السعر بناءً على الفاصل الزمني المحدد من المستخدم
     const priceRefreshInterval = setInterval(() => {
       // إعادة طلب السعر من Alpha Vantage مباشرة
       priceUpdater.fetchPrice(symbol)
@@ -60,15 +71,16 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
         .catch(error => {
           console.error('فشل في تحديث السعر:', error);
         });
-    }, 30000);
+    }, priceUpdateInterval);
     
     // تنظيف مستمعي الأحداث والاشتراكات عند إزالة المكون
     return () => {
       window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('user-settings-updated', handleSettingsUpdate);
       clearInterval(priceRefreshInterval);
       priceUpdater.unsubscribe(symbol, handlePriceUpdated);
     };
-  }, [handlePriceUpdate, handleCurrentPriceResponse, requestCurrentPrice, setCurrentPrice, symbol]);
+  }, [handlePriceUpdate, handleCurrentPriceResponse, requestCurrentPrice, setCurrentPrice, symbol, priceUpdateInterval]);
 
   return { currentPrice, priceUpdateCount };
 };

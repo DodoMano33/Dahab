@@ -12,12 +12,40 @@ interface PriceSubscription {
 class PriceUpdater {
   private subscriptions: Map<string, PriceSubscription[]> = new Map();
   private polling: boolean = false;
-  private pollingInterval: number = 300000; // 5 دقائق بدلاً من 5 ثوان
+  private pollingInterval: number = 30000; // القيمة الافتراضية 30 ثانية
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, { price: number; timestamp: number }> = new Map();
   private rateLimited: boolean = false;
   private rateLimitTimestamp: number = 0;
   private RATE_LIMIT_DURATION = 24 * 60 * 60 * 1000; // 24 ساعة
+  private customApiKey: string = ALPHA_VANTAGE_API_KEY;
+
+  constructor() {
+    this.setupSettingsListener();
+  }
+
+  private setupSettingsListener() {
+    // الاستماع لتغييرات الإعدادات
+    window.addEventListener('user-settings-updated', ((event: CustomEvent) => {
+      if (event.detail) {
+        if (event.detail.priceUpdateInterval) {
+          this.pollingInterval = event.detail.priceUpdateInterval * 1000;
+          console.log(`تم تحديث فاصل تحديث السعر إلى: ${this.pollingInterval}ms`);
+          
+          // إعادة تشغيل التحديث الدوري بالفاصل الزمني الجديد
+          if (this.polling) {
+            this.stopPolling();
+            this.startPolling();
+          }
+        }
+        
+        if (event.detail.apiKey) {
+          this.customApiKey = event.detail.apiKey;
+          console.log("تم تحديث مفتاح API");
+        }
+      }
+    }) as EventListener);
+  }
 
   async fetchPrice(symbol: string, providedPrice?: number): Promise<number | null> {
     try {
@@ -153,10 +181,11 @@ class PriceUpdater {
   private startPolling() {
     if (this.polling) return;
     
-    console.log("بدء التحديث الدوري للأسعار من Alpha Vantage");
+    console.log(`بدء التحديث الدوري للأسعار من Alpha Vantage، فاصل زمني: ${this.pollingInterval}ms`);
     this.polling = true;
     
     this.intervalId = setInterval(async () => {
+      console.log("تنفيذ تحديث دوري للأسعار");
       for (const [symbol, subs] of this.subscriptions.entries()) {
         try {
           const price = await this.fetchPrice(symbol);
@@ -183,6 +212,11 @@ class PriceUpdater {
       clearInterval(this.intervalId);
       this.intervalId = undefined;
     }
+  }
+  
+  // الحصول على مفتاح API المخصص
+  getCustomApiKey(): string {
+    return this.customApiKey;
   }
 }
 
