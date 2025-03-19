@@ -10,7 +10,7 @@ import { SymbolType } from "./types";
 /**
  * الحصول على مفتاح API
  */
-export const getMetalPriceApiKey = async (): Promise<string> => {
+export const getMetalPriceApiKey = (): string => {
   console.log("استخدام مفتاح Metal Price API المكوّن مسبقاً");
   return METAL_PRICE_API_KEY;
 };
