@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -34,7 +33,6 @@ export function SettingsTab({
   const [metalPriceApiKey, setMetalPriceApiKey] = useState(userProfile.metalPriceApiKey || '42ed2fe2e7d1d8f688ddeb027219c766');
   const [isSaving, setIsSaving] = useState(false);
 
-  // تحديث المفتاح تلقائيًا عند تغييره
   useEffect(() => {
     const updateApiKey = async () => {
       if (metalPriceApiKey && metalPriceApiKey !== userProfile.metalPriceApiKey) {
@@ -69,15 +67,12 @@ export function SettingsTab({
     updateApiKey();
   }, [metalPriceApiKey]);
 
-  // تفعيل أو تعطيل الفحص التلقائي
   useEffect(() => {
     const setupAutoCheck = async () => {
       try {
         if (userProfile.autoCheckEnabled) {
-          // جدولة الفحص التلقائي
           console.log("Setting up auto-check with interval:", userProfile.autoCheckInterval);
           
-          // استدعاء وظيفة الفحص التلقائي كل فترة
           const checkFunction = async () => {
             try {
               const { data, error } = await supabase.functions.invoke('auto-check-analyses');
@@ -86,7 +81,6 @@ export function SettingsTab({
                 console.error("Error invoking auto-check function:", error);
               } else if (data) {
                 console.log("Auto-check completed:", data);
-                // إطلاق حدث تحديث التاريخ مع timestamp
                 if (data.timestamp) {
                   const event = new CustomEvent('historyUpdated', {
                     detail: { timestamp: data.timestamp }
@@ -99,10 +93,8 @@ export function SettingsTab({
             }
           };
           
-          // تنفيذ فحص أولي
           checkFunction();
           
-          // جدولة الفحص كل 5 دقائق
           const intervalId = setInterval(checkFunction, 5 * 60 * 1000);
           
           return () => {
@@ -198,6 +190,7 @@ export function SettingsTab({
               toast.info("تم إيقاف الفحص التلقائي");
             }
           }}
+          defaultChecked={true}
         />
       </div>
       

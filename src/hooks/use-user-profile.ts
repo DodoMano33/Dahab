@@ -10,7 +10,7 @@ export function useUserProfile(user: any) {
     theme: "system" as "light" | "dark" | "system",
     email: "",
     notificationsEnabled: true,
-    autoCheckEnabled: false,
+    autoCheckEnabled: true,
     autoCheckInterval: 300000,
     priceUpdateInterval: 30000,
     metalPriceApiKey: "42ed2fe2e7d1d8f688ddeb027219c766",
@@ -48,7 +48,7 @@ export function useUserProfile(user: any) {
           email: data.email || user?.email || "",
           theme: data.theme || "system",
           notificationsEnabled: data.notifications_enabled !== false,
-          autoCheckEnabled: data.auto_check_enabled || false,
+          autoCheckEnabled: data.auto_check_enabled !== false, // Default to true if not explicitly false
           autoCheckInterval: data.auto_check_interval || 300000,
           priceUpdateInterval: data.price_update_interval || 30000,
           metalPriceApiKey: data.metal_price_api_key || "42ed2fe2e7d1d8f688ddeb027219c766",
