@@ -88,6 +88,23 @@ export function SettingsTab({
     setupAutoCheck();
   }, [userProfile.autoCheckEnabled, userProfile.autoCheckInterval]);
 
+  // تحديث ApiKey في userProfile عند تغييره
+  useEffect(() => {
+    // تحديث userProfile فقط عندما يكون هناك تغيير فعلي في القيمة
+    if (apiKey !== userProfile.apiKey) {
+      setUserProfile({ ...userProfile, apiKey });
+      
+      // إرسال حدث تحديث مفتاح API
+      window.dispatchEvent(new CustomEvent('user-settings-updated', {
+        detail: {
+          apiKey
+        }
+      }));
+      
+      toast.success("تم تحديث مفتاح API بنجاح");
+    }
+  }, [apiKey]);
+
   return (
     <div className="grid gap-4 py-4">
       <div className="space-y-2">
@@ -111,16 +128,6 @@ export function SettingsTab({
               موقع Alpha Vantage
             </a>
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setUserProfile({ ...userProfile, apiKey: apiKey });
-              toast.success("تم تحديث مفتاح API بنجاح");
-            }}
-          >
-            حفظ المفتاح
-          </Button>
         </div>
       </div>
 
