@@ -19,10 +19,12 @@ export function ApiKeySettings({
   const [isSaving, setIsSaving] = useState(false);
   const updateTimeoutRef = useRef<number | undefined>(undefined);
   const initialValueRef = useRef(apiKey || '');
-
+  const isMountedRef = useRef(true);
+  
   // تنظيف المؤقتات عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (updateTimeoutRef.current !== undefined) {
         window.clearTimeout(updateTimeoutRef.current);
         updateTimeoutRef.current = undefined;
@@ -37,7 +39,7 @@ export function ApiKeySettings({
       setMetalPriceApiKey(apiKey || '');
       initialValueRef.current = apiKey || '';
     }
-  }, [apiKey]);
+  }, [apiKey, metalPriceApiKey]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -53,6 +55,8 @@ export function ApiKeySettings({
     if (newValue && newValue !== userProfile.metalPriceApiKey && newValue.length > 10) {
       // إعداد مؤقت جديد للتحديث بتأخير أطول
       updateTimeoutRef.current = window.setTimeout(() => {
+        if (!isMountedRef.current) return;
+        
         setIsSaving(true);
         try {
           // فقط نقوم بتحديث الملف الشخصي بدون عمليات حفظ مباشرة في قاعدة البيانات
@@ -65,11 +69,15 @@ export function ApiKeySettings({
           toast.success("تم تحديث مفتاح API. اضغط على حفظ التغييرات لتأكيد التحديث");
         } catch (error) {
           console.error("Error updating API key:", error);
-          toast.error("حدث خطأ أثناء تحديث مفتاح API");
+          if (isMountedRef.current) {
+            toast.error("حدث خطأ أثناء تحديث مفتاح API");
+          }
         } finally {
-          setIsSaving(false);
+          if (isMountedRef.current) {
+            setIsSaving(false);
+          }
         }
-      }, 2000); // تأخير أطول لتقليل عدد التحديثات
+      }, 3000); // تأخير أطول لتقليل عدد التحديثات
     }
   };
   

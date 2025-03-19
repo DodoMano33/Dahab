@@ -1,5 +1,5 @@
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { fetchAnalysesWithCurrentPrice } from './analysisFetchService';
 import { CheckAnalysesOptions } from './types';
 
@@ -9,8 +9,16 @@ export const useAnalysisCheckerProcess = () => {
   const [consecutiveErrors, setConsecutiveErrors] = useState(0);
   const retryCountRef = useRef(0);
   const requestTimeoutRef = useRef<number | null>(null);
-  const maxRetries = 2; // تقليل عدد المحاولات لتجنب الضغط على الخادم
+  const maxRetries = 1; // تقليل عدد المحاولات لتجنب الضغط على الخادم
   const requestInProgressRef = useRef(false); // لمنع الطلبات المتزامنة
+  const controllerRef = useRef<AbortController | null>(null);
+
+  // تنظيف الموارد عند إلغاء تحميل المكون
+  useEffect(() => {
+    return () => {
+      clearPendingRequests();
+    };
+  }, []);
 
   const dispatchAnalysisEvents = useCallback((data: any) => {
     // إرسال الأحداث بعد الفحص الناجح
@@ -39,9 +47,15 @@ export const useAnalysisCheckerProcess = () => {
 
   const clearPendingRequests = useCallback(() => {
     if (requestTimeoutRef.current !== null) {
-      clearTimeout(requestTimeoutRef.current);
+      window.clearTimeout(requestTimeoutRef.current);
       requestTimeoutRef.current = null;
     }
+    
+    if (controllerRef.current) {
+      controllerRef.current.abort();
+      controllerRef.current = null;
+    }
+    
     requestInProgressRef.current = false;
   }, []);
 
@@ -52,27 +66,26 @@ export const useAnalysisCheckerProcess = () => {
       return;
     }
     
+    // تنظيف أي محاولات سابقة معلقة
+    clearPendingRequests();
+    
     try {
       setIsChecking(true);
       requestInProgressRef.current = true;
       
       console.log(`Triggering ${isManualCheck ? 'manual' : 'auto'} check for active analyses with current price:`, price);
       
-      // تنظيف أي محاولات سابقة معلقة
-      if (requestTimeoutRef.current !== null) {
-        clearTimeout(requestTimeoutRef.current);
-        requestTimeoutRef.current = null;
-      }
-      
-      // إنشاء AbortController للتمكن من إلغاء الطلب إذا استغرق وقتًا طويلًا
-      const controller = new AbortController();
+      // إنشاء AbortController جديد للتمكن من إلغاء الطلب إذا استغرق وقتًا طويلًا
+      controllerRef.current = new AbortController();
       const timeoutId = setTimeout(() => {
-        controller.abort();
-        console.log('Request timed out, aborting');
-      }, 20000); // تقليل وقت الانتظار إلى 20 ثانية
+        if (controllerRef.current) {
+          controllerRef.current.abort();
+          console.log('Request timed out, aborting');
+        }
+      }, 15000); // تقليل وقت الانتظار إلى 15 ثانية
 
       try {
-        const data = await fetchAnalysesWithCurrentPrice(price, symbol, controller);
+        const data = await fetchAnalysesWithCurrentPrice(price, symbol, controllerRef.current);
         clearTimeout(timeoutId);
         
         console.log('Analyses check result:', data);
@@ -103,7 +116,7 @@ export const useAnalysisCheckerProcess = () => {
             retryCountRef.current++;
           }
           
-          const retryDelay = isManualCheck ? 2000 : Math.pow(2, retryCountRef.current) * 2000; // تأخير أطول للمحاولات التلقائية
+          const retryDelay = isManualCheck ? 2000 : 5000; // تأخير ثابت لتقليل الضغط على الشبكة
           
           console.log(`${isManualCheck ? 'Manual retry' : `Retry ${retryCountRef.current}/${maxRetries}`} will occur in ${retryDelay}ms`);
           
@@ -129,7 +142,7 @@ export const useAnalysisCheckerProcess = () => {
       setIsChecking(false);
       requestInProgressRef.current = false;
     }
-  }, [dispatchAnalysisEvents, dispatchErrorEvent]);
+  }, [dispatchAnalysisEvents, dispatchErrorEvent, clearPendingRequests]);
 
   return {
     isChecking,

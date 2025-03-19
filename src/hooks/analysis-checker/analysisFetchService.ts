@@ -27,35 +27,56 @@ export const fetchAnalysesWithCurrentPrice = async (
     console.log('Sending fetch request to:', `${supabaseUrl}/functions/auto-check-analyses`);
     console.log('With body:', JSON.stringify(requestBody));
     
-    const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
-        'Authorization': authSession?.session?.access_token 
-          ? `Bearer ${authSession.session.access_token}` 
-          : ''
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-      cache: 'no-store',
-      credentials: 'omit'
-    });
+    // Implement fetch with timeout and retry logic
+    let retryCount = 0;
+    const maxRetries = 1; // Reduce max retries to avoid excessive attempts
     
-    if (!response.ok) {
-      const responseText = await response.text();
-      console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
-      throw new Error(`Error status: ${response.status} ${response.statusText}, Server response: ${responseText}`);
+    while (retryCount <= maxRetries) {
+      try {
+        const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
+            'Authorization': authSession?.session?.access_token 
+              ? `Bearer ${authSession.session.access_token}` 
+              : ''
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+          cache: 'no-store',
+          credentials: 'omit'
+        });
+        
+        if (!response.ok) {
+          const responseText = await response.text();
+          console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
+          throw new Error(`Error status: ${response.status} ${response.statusText}, Server response: ${responseText}`);
+        }
+        
+        const responseText = await response.text();
+        
+        try {
+          return JSON.parse(responseText);
+        } catch (jsonError) {
+          console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
+          throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+        }
+      } catch (fetchError) {
+        // Only retry on network errors, not on API errors
+        if (fetchError instanceof TypeError && fetchError.message.includes('Failed to fetch')) {
+          retryCount++;
+          if (retryCount <= maxRetries) {
+            console.log(`Network error, retry attempt ${retryCount}/${maxRetries}`);
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+            continue;
+          }
+        }
+        throw fetchError; // Throw other errors or if max retries reached
+      }
     }
     
-    const responseText = await response.text();
-    
-    try {
-      return JSON.parse(responseText);
-    } catch (jsonError) {
-      console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
-      throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
-    }
+    throw new Error('Maximum retry attempts reached');
   } catch (error) {
     // تحسين رسائل الخطأ لتمييز أنواع مختلفة من الأخطاء
     if (error instanceof DOMException && error.name === 'AbortError') {
