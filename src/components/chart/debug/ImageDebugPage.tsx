@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import TradingViewWidget from '../TradingViewWidget';
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { Home, Camera, Download, Image } from 'lucide-react';
 
 export const ImageDebugPage: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -32,6 +32,52 @@ export const ImageDebugPage: React.FC = () => {
       }
     } catch (error) {
       console.error('خطأ في التقاط الصورة:', error);
+    }
+  };
+  
+  const handleTradingViewScreenshot = () => {
+    // استخدام الدالة العامة التي أضفناها في مكون TradingViewWidget
+    if (typeof (window as any).takeWidgetScreenshot === 'function') {
+      (window as any).takeWidgetScreenshot();
+    } else {
+      console.error('وظيفة التقاط الشاشة غير متاحة');
+      // محاولة بديلة باستخدام html2canvas
+      takeFallbackScreenshot();
+    }
+  };
+
+  const takeFallbackScreenshot = async () => {
+    try {
+      const widgetElement = document.querySelector('.tradingview-widget-container') as HTMLElement;
+      if (!widgetElement) {
+        console.error('لم يتم العثور على عنصر ويدجيت TradingView');
+        return;
+      }
+
+      console.log('استخدام html2canvas كبديل للتقاط الشاشة...');
+      const canvas = await html2canvas(widgetElement, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: 2,
+      });
+
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `tradingview-fallback-${new Date().toISOString().split('T')[0]}.png`;
+      link.click();
+    } catch (error) {
+      console.error('فشل التقاط الشاشة البديل:', error);
+    }
+  };
+
+  const handleDownloadImage = () => {
+    if (originalImage) {
+      const link = document.createElement('a');
+      link.href = originalImage;
+      link.download = `tradingview-capture-${new Date().toISOString().split('T')[0]}.png`;
+      link.click();
     }
   };
   
@@ -69,13 +115,32 @@ export const ImageDebugPage: React.FC = () => {
         </Card>
       </div>
       
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-center mb-4 gap-3">
         <Button 
           onClick={handleCaptureImage} 
-          className="bg-blue-600 text-white hover:bg-blue-700"
+          className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2"
         >
+          <Camera size={16} />
           التقاط صورة للويدجيت
         </Button>
+        
+        <Button 
+          onClick={handleTradingViewScreenshot} 
+          className="bg-green-600 text-white hover:bg-green-700 flex items-center gap-2"
+        >
+          <Image size={16} />
+          استخدام TakeScreenshot
+        </Button>
+        
+        {originalImage && (
+          <Button 
+            onClick={handleDownloadImage} 
+            className="bg-purple-600 text-white hover:bg-purple-700 flex items-center gap-2"
+          >
+            <Download size={16} />
+            تنزيل الصورة
+          </Button>
+        )}
       </div>
       
       {captureTime && (
