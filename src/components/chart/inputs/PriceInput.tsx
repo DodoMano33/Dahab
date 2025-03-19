@@ -18,24 +18,24 @@ export const PriceInput = ({
 }: PriceInputProps) => {
   const [useAutoPrice, setUseAutoPrice] = useState(false);
   
-  // استخدام السعر من Alpha Vantage تلقائيًا
+  // استخدام السعر من Metal Price API تلقائيًا
   useEffect(() => {
     if (useAutoPrice && tradingViewPrice !== null && tradingViewPrice !== undefined) {
       onChange(tradingViewPrice.toString());
     }
   }, [tradingViewPrice, useAutoPrice, onChange]);
 
-  // استمع للتحديثات المباشرة من Alpha Vantage
+  // استمع للتحديثات المباشرة من Metal Price API
   useEffect(() => {
-    const handleAlphaVantagePriceUpdate = (event: CustomEvent) => {
+    const handleMetalPriceUpdate = (event: CustomEvent) => {
       if (useAutoPrice && event.detail && event.detail.price) {
         onChange(event.detail.price.toString());
       }
     };
 
-    window.addEventListener('alpha-vantage-price-update', handleAlphaVantagePriceUpdate as EventListener);
+    window.addEventListener('metal-price-update', handleMetalPriceUpdate as EventListener);
     return () => {
-      window.removeEventListener('alpha-vantage-price-update', handleAlphaVantagePriceUpdate as EventListener);
+      window.removeEventListener('metal-price-update', handleMetalPriceUpdate as EventListener);
     };
   }, [useAutoPrice, onChange]);
 
@@ -79,12 +79,12 @@ export const PriceInput = ({
       />
       {useAutoPrice && (
         <p className="text-sm text-green-500 mt-1">
-          السعر المباشر من Alpha Vantage: {displayPrice}
+          السعر المباشر من Metal Price API: {displayPrice}
         </p>
       )}
       {!useAutoPrice && tradingViewPrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
-          السعر المتاح من Alpha Vantage: {displayPrice}
+          السعر المتاح من Metal Price API: {displayPrice}
         </p>
       )}
     </div>

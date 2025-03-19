@@ -1,6 +1,4 @@
 
-import axios from "axios";
-import { ALPHA_VANTAGE_API_KEY } from './price/config';
 import { fetchCryptoPrice, fetchForexPrice, fetchGoldPrice } from './price/api';
 
 interface PriceSubscription {
@@ -21,7 +19,7 @@ class PriceUpdater {
 
   async fetchPrice(symbol: string, providedPrice?: number): Promise<number | null> {
     try {
-      console.log(`بدء محاولة جلب السعر للرمز ${symbol} من Alpha Vantage`);
+      console.log(`بدء محاولة جلب السعر للرمز ${symbol} من Metal Price API`);
 
       if (!symbol) {
         throw new Error("الرمز غير صالح");
@@ -50,7 +48,7 @@ class PriceUpdater {
         this.rateLimited = false;
       }
 
-      // محاولة جلب السعر من Alpha Vantage
+      // محاولة جلب السعر من Metal Price API
       let price = null;
       
       // معالجة خاصة للذهب
@@ -67,11 +65,11 @@ class PriceUpdater {
       }
 
       if (price !== null) {
-        console.log(`تم جلب السعر من Alpha Vantage للرمز ${symbol}: ${price}`);
+        console.log(`تم جلب السعر من Metal Price API للرمز ${symbol}: ${price}`);
         this.lastPrices.set(symbol, { price, timestamp: Date.now() });
         
         // إرسال حدث تحديث السعر
-        window.dispatchEvent(new CustomEvent('alpha-vantage-price-update', {
+        window.dispatchEvent(new CustomEvent('metal-price-update', {
           detail: { price, symbol }
         }));
         
@@ -153,7 +151,7 @@ class PriceUpdater {
   private startPolling() {
     if (this.polling) return;
     
-    console.log("بدء التحديث الدوري للأسعار من Alpha Vantage");
+    console.log("بدء التحديث الدوري للأسعار من Metal Price API");
     this.polling = true;
     
     this.intervalId = setInterval(async () => {

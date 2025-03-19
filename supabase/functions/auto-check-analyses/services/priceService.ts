@@ -1,6 +1,6 @@
 
 /**
- * Gets the current price from Alpha Vantage
+ * Gets the current price from Metal Price API
  */
 export function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
   return new Promise(async (resolve) => {

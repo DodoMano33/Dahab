@@ -17,28 +17,29 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
   useEffect(() => {
     // تنظيف مستمعي الأحداث السابقة (إذا وجدت)
     window.removeEventListener('tradingview-price-update', handlePriceUpdate as EventListener);
+    window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
     window.removeEventListener('current-price-response', handleCurrentPriceResponse as EventListener);
     
     // إضافة مستمع لتحديثات السعر المخصصة
-    window.addEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+    window.addEventListener('metal-price-update', handlePriceUpdate as EventListener);
     
     // طلب السعر الحالي عند تحميل المكون
     requestCurrentPrice();
     
-    // الاشتراك في تحديثات السعر من Alpha Vantage
+    // الاشتراك في تحديثات السعر من Metal Price API
     const handlePriceUpdated = (price: number) => {
-      console.log(`تم تحديث السعر من Alpha Vantage: ${price}`);
+      console.log(`تم تحديث السعر من Metal Price API: ${price}`);
       setCurrentPrice(price);
       
       // إطلاق حدث تحديث سعر مخصص لضمان انتشار السعر في التطبيق
-      const event = new CustomEvent('alpha-vantage-price-update', {
+      const event = new CustomEvent('metal-price-update', {
         detail: { price }
       });
       window.dispatchEvent(event);
     };
     
     const handlePriceError = (error: Error) => {
-      console.error(`خطأ في تحديث السعر من Alpha Vantage:`, error);
+      console.error(`خطأ في تحديث السعر من Metal Price API:`, error);
     };
     
     // الاشتراك في تحديثات السعر
@@ -50,7 +51,7 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
     
     // تحديث السعر كل 30 ثانية
     const priceRefreshInterval = setInterval(() => {
-      // إعادة طلب السعر من Alpha Vantage مباشرة
+      // إعادة طلب السعر من Metal Price API مباشرة
       priceUpdater.fetchPrice(symbol)
         .then(price => {
           if (price !== null) {
@@ -64,7 +65,7 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
     
     // تنظيف مستمعي الأحداث والاشتراكات عند إزالة المكون
     return () => {
-      window.removeEventListener('alpha-vantage-price-update', handlePriceUpdate as EventListener);
+      window.removeEventListener('metal-price-update', handlePriceUpdate as EventListener);
       clearInterval(priceRefreshInterval);
       priceUpdater.unsubscribe(symbol, handlePriceUpdated);
     };

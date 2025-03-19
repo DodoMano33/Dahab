@@ -1,5 +1,7 @@
 
-export const ALPHA_VANTAGE_API_KEY = '9Q0LHPLPMFGOFSFV';
+// مفتاح API لـ Metal Price API
+export const METAL_PRICE_API_KEY = '42ed2fe2e7d1d8f688ddeb027219c766';
+export const METAL_PRICE_API_URL = 'https://api.metalpriceapi.com/v1';
 
 export const FOREX_SYMBOLS = {
   'EURUSD': { from: 'EUR', to: 'USD' },

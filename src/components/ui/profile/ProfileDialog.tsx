@@ -27,6 +27,8 @@ interface ProfileDialogProps {
     notificationsEnabled: boolean;
     autoCheckEnabled: boolean;
     autoCheckInterval: number;
+    priceUpdateInterval: number;
+    metalPriceApiKey: string;
   };
   setUserProfile: (profile: any) => void;
   user: any;
@@ -58,6 +60,8 @@ export function ProfileDialog({
           notifications_enabled: userProfile.notificationsEnabled,
           auto_check_enabled: userProfile.autoCheckEnabled,
           auto_check_interval: userProfile.autoCheckInterval,
+          price_update_interval: userProfile.priceUpdateInterval,
+          metal_price_api_key: userProfile.metalPriceApiKey,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);

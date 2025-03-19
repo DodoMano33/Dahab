@@ -11,7 +11,9 @@ export function useUserProfile(user: any) {
     email: "",
     notificationsEnabled: true,
     autoCheckEnabled: false,
-    autoCheckInterval: 30,
+    autoCheckInterval: 300000,
+    priceUpdateInterval: 30000,
+    metalPriceApiKey: "42ed2fe2e7d1d8f688ddeb027219c766",
   });
   
   const [profileLoading, setProfileLoading] = useState(true);
@@ -47,7 +49,9 @@ export function useUserProfile(user: any) {
           theme: data.theme || "system",
           notificationsEnabled: data.notifications_enabled !== false,
           autoCheckEnabled: data.auto_check_enabled || false,
-          autoCheckInterval: data.auto_check_interval || 30,
+          autoCheckInterval: data.auto_check_interval || 300000,
+          priceUpdateInterval: data.price_update_interval || 30000,
+          metalPriceApiKey: data.metal_price_api_key || "42ed2fe2e7d1d8f688ddeb027219c766",
         });
 
         if (data.theme !== theme) {
@@ -90,6 +94,8 @@ export function useUserProfile(user: any) {
           notifications_enabled: userProfile.notificationsEnabled,
           auto_check_enabled: userProfile.autoCheckEnabled,
           auto_check_interval: userProfile.autoCheckInterval,
+          price_update_interval: userProfile.priceUpdateInterval,
+          metal_price_api_key: userProfile.metalPriceApiKey,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
