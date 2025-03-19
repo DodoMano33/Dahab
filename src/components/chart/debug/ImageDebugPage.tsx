@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import TradingViewWidget from '../TradingViewWidget';
 import html2canvas from 'html2canvas';
+import { Link } from 'react-router-dom';
+import { Home } from 'lucide-react';
 
 export const ImageDebugPage: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -67,6 +69,16 @@ export const ImageDebugPage: React.FC = () => {
 
   return (
     <div className="container mx-auto my-8 p-4 max-w-4xl">
+      {/* زر الرجوع إلى الصفحة الرئيسية */}
+      <div className="mb-6">
+        <Link to="/">
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Home size={16} />
+            <span>الرجوع إلى الصفحة الرئيسية</span>
+          </Button>
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold text-center mb-8">صفحة فحص وتصحيح الصور</h1>
       
       <div className="flex justify-center mb-8">
