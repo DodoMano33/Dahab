@@ -14,8 +14,8 @@ export const PriceDisplay = ({ currentPrice, priceUpdateCount }: PriceDisplayPro
   }
   
   return (
-    <p className="text-xs font-semibold text-yellow-600 mt-1">
-      بانتظار السعر من Alpha Vantage... (سيتم المحاولة مجددًا)
+    <p className="text-xs font-semibold text-red-600 mt-1">
+      لا يتوفر السعر حاليًا - تم تجاوز حد معدل API (25 طلب/يوم)
     </p>
   );
 };

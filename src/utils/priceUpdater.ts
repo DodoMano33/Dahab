@@ -12,11 +12,14 @@ interface PriceSubscription {
 class PriceUpdater {
   private subscriptions: Map<string, PriceSubscription[]> = new Map();
   private polling: boolean = false;
-  private pollingInterval: number = 5000; // 5 seconds
+  private pollingInterval: number = 300000; // 5 دقائق بدلاً من 5 ثوان
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, { price: number; timestamp: number }> = new Map();
+  private rateLimited: boolean = false;
+  private rateLimitTimestamp: number = 0;
+  private RATE_LIMIT_DURATION = 24 * 60 * 60 * 1000; // 24 ساعة
 
-  async fetchPrice(symbol: string, providedPrice?: number): Promise<number> {
+  async fetchPrice(symbol: string, providedPrice?: number): Promise<number | null> {
     try {
       console.log(`بدء محاولة جلب السعر للرمز ${symbol} من Alpha Vantage`);
 
@@ -31,18 +34,27 @@ class PriceUpdater {
         return providedPrice;
       }
 
-      // التحقق من الذاكرة المؤقتة (صالحة لمدة 5 ثوانٍ)
+      // التحقق من الذاكرة المؤقتة (صالحة لمدة 5 دقائق)
       const cached = this.lastPrices.get(symbol);
-      if (cached && Date.now() - cached.timestamp < 5000) {
+      if (cached && Date.now() - cached.timestamp < 300000) {
         console.log(`استخدام السعر المخزن مؤقتًا للرمز ${symbol}: ${cached.price}`);
         return cached.price;
+      }
+
+      // التحقق من حالة حد معدل الاستخدام
+      if (this.rateLimited && Date.now() - this.rateLimitTimestamp < this.RATE_LIMIT_DURATION) {
+        console.log(`تم تجاوز حد معدل API للرمز ${symbol}`);
+        return null;
+      } else if (this.rateLimited) {
+        // إعادة ضبط حالة حد معدل الاستخدام بعد انقضاء المدة
+        this.rateLimited = false;
       }
 
       // محاولة جلب السعر من Alpha Vantage
       let price = null;
       
       // معالجة خاصة للذهب
-      if (symbol.toUpperCase() === 'XAUUSD' || symbol.toUpperCase() === 'GOLD') {
+      if (symbol.toUpperCase() === 'XAUUSD' || symbol.toUpperCase() === 'GOLD' || symbol.toUpperCase() === 'XAU') {
         price = await fetchGoldPrice();
       } 
       // محاولة جلب سعر العملات المشفرة
@@ -66,14 +78,24 @@ class PriceUpdater {
         return price;
       }
 
-      // إذا لم يتم العثور على سعر، استخدم آخر سعر معروف أو صفر
-      const lastKnownPrice = cached?.price || 0;
-      console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر مخزن: ${lastKnownPrice}`);
-      return lastKnownPrice;
+      // إذا لم يتم العثور على سعر، استخدم آخر سعر معروف أو null
+      if (cached) {
+        console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر مخزن: ${cached.price}`);
+        return cached.price;
+      }
+      
+      console.log(`لم يتم العثور على سعر للرمز ${symbol}`);
+      return null;
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      const lastKnownPrice = this.lastPrices.get(symbol)?.price || 0;
-      return lastKnownPrice;
+      
+      // في حالة الخطأ، نستخدم آخر سعر معروف أو null
+      const cached = this.lastPrices.get(symbol);
+      if (cached) {
+        return cached.price;
+      }
+      
+      return null;
     }
   }
 
@@ -89,8 +111,13 @@ class PriceUpdater {
     // جلب السعر الأولي
     this.fetchPrice(symbol, providedPrice)
       .then(price => {
-        console.log(`تم جلب السعر الأولي للرمز ${symbol}: ${price}`);
-        subscription.onUpdate(price);
+        if (price !== null) {
+          console.log(`تم جلب السعر الأولي للرمز ${symbol}: ${price}`);
+          subscription.onUpdate(price);
+        } else {
+          console.error(`لم يتم العثور على سعر أولي للرمز ${symbol}`);
+          subscription.onError(new Error(`لم يتم العثور على سعر للرمز ${symbol}`));
+        }
       })
       .catch(error => {
         console.error(`خطأ في جلب السعر الأولي للرمز ${symbol}:`, error);
@@ -133,7 +160,11 @@ class PriceUpdater {
       for (const [symbol, subs] of this.subscriptions.entries()) {
         try {
           const price = await this.fetchPrice(symbol);
-          subs.forEach(sub => sub.onUpdate(price));
+          if (price !== null) {
+            subs.forEach(sub => sub.onUpdate(price));
+          } else {
+            subs.forEach(sub => sub.onError(new Error(`لم يتم العثور على سعر للرمز ${symbol}`)));
+          }
         } catch (error) {
           console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
           subs.forEach(sub => sub.onError(error as Error));

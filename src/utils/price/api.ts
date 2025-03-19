@@ -8,8 +8,25 @@ export const getAlphaVantageKey = async (): Promise<string> => {
   return ALPHA_VANTAGE_API_KEY;
 };
 
+// تخزين حالة حد معدل الاستخدام
+let isRateLimited = false;
+let rateLimitResetTime = 0;
+const RATE_LIMIT_RESET_DURATION = 24 * 60 * 60 * 1000; // 24 ساعة
+
 export const fetchCryptoPrice = async (symbol: string): Promise<number | null> => {
   try {
+    // التحقق مما إذا تم تجاوز حد معدل الاستخدام
+    if (isRateLimited) {
+      const now = Date.now();
+      if (now - rateLimitResetTime < RATE_LIMIT_RESET_DURATION) {
+        console.error("تم تجاوز حد معدل API للعملة المشفرة", symbol);
+        toast.error("تم تجاوز حد معدل API - يرجى المحاولة لاحقًا");
+        return null;
+      } else {
+        isRateLimited = false;
+      }
+    }
+
     const apiKey = await getAlphaVantageKey();
     if (!apiKey) {
       console.error("مفتاح API غير متوفر");
@@ -34,9 +51,19 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number | null> =
 
     const data = await response.json();
     
-    if (data.Note) {
+    if (data.Note && data.Note.includes("API call frequency")) {
       console.error("تم تجاوز حد معدل API:", data.Note);
-      toast.error("تم تجاوز حد معدل API");
+      isRateLimited = true;
+      rateLimitResetTime = Date.now();
+      toast.error("تم تجاوز حد معدل API (25 طلب/يوم) - يرجى المحاولة غدًا");
+      return null;
+    }
+    
+    if (data.Information && data.Information.includes("API rate limit")) {
+      console.error("تم تجاوز حد معدل API:", data.Information);
+      isRateLimited = true;
+      rateLimitResetTime = Date.now();
+      toast.error("تم تجاوز حد معدل API (25 طلب/يوم) - يرجى المحاولة غدًا");
       return null;
     }
 
@@ -56,6 +83,18 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number | null> =
 
 export const fetchForexPrice = async (symbol: string): Promise<number | null> => {
   try {
+    // التحقق مما إذا تم تجاوز حد معدل الاستخدام
+    if (isRateLimited) {
+      const now = Date.now();
+      if (now - rateLimitResetTime < RATE_LIMIT_RESET_DURATION) {
+        console.error("تم تجاوز حد معدل API للفوركس", symbol);
+        toast.error("تم تجاوز حد معدل API - يرجى المحاولة لاحقًا");
+        return null;
+      } else {
+        isRateLimited = false;
+      }
+    }
+
     const apiKey = await getAlphaVantageKey();
     if (!apiKey) {
       console.error("مفتاح API غير متوفر");
@@ -84,9 +123,19 @@ export const fetchForexPrice = async (symbol: string): Promise<number | null> =>
 
     const data = await response.json();
     
-    if (data.Note) {
+    if (data.Note && data.Note.includes("API call frequency")) {
       console.error("تم تجاوز حد معدل API:", data.Note);
-      toast.error("تم تجاوز حد معدل API");
+      isRateLimited = true;
+      rateLimitResetTime = Date.now();
+      toast.error("تم تجاوز حد معدل API (25 طلب/يوم) - يرجى المحاولة غدًا");
+      return null;
+    }
+    
+    if (data.Information && data.Information.includes("API rate limit")) {
+      console.error("تم تجاوز حد معدل API:", data.Information);
+      isRateLimited = true;
+      rateLimitResetTime = Date.now();
+      toast.error("تم تجاوز حد معدل API (25 طلب/يوم) - يرجى المحاولة غدًا");
       return null;
     }
 
@@ -107,6 +156,18 @@ export const fetchForexPrice = async (symbol: string): Promise<number | null> =>
 // دالة خاصة للذهب
 export const fetchGoldPrice = async (): Promise<number | null> => {
   try {
+    // التحقق مما إذا تم تجاوز حد معدل الاستخدام
+    if (isRateLimited) {
+      const now = Date.now();
+      if (now - rateLimitResetTime < RATE_LIMIT_RESET_DURATION) {
+        console.error("تم تجاوز حد معدل API للذهب");
+        toast.error("تم تجاوز حد معدل API - يرجى المحاولة لاحقًا");
+        return null;
+      } else {
+        isRateLimited = false;
+      }
+    }
+
     const apiKey = await getAlphaVantageKey();
     if (!apiKey) {
       console.error("مفتاح API غير متوفر");
@@ -131,9 +192,19 @@ export const fetchGoldPrice = async (): Promise<number | null> => {
 
     const data = await response.json();
     
-    if (data.Note) {
+    if (data.Note && data.Note.includes("API call frequency")) {
       console.error("تم تجاوز حد معدل API:", data.Note);
-      toast.error("تم تجاوز حد معدل API");
+      isRateLimited = true;
+      rateLimitResetTime = Date.now();
+      toast.error("تم تجاوز حد معدل API (25 طلب/يوم) - يرجى المحاولة غدًا");
+      return null;
+    }
+    
+    if (data.Information && data.Information.includes("API rate limit")) {
+      console.error("تم تجاوز حد معدل API:", data.Information);
+      isRateLimited = true;
+      rateLimitResetTime = Date.now();
+      toast.error("تم تجاوز حد معدل API (25 طلب/يوم) - يرجى المحاولة غدًا");
       return null;
     }
 
