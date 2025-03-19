@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const fetchAnalysesWithCurrentPrice = async (
@@ -18,21 +18,33 @@ export const fetchAnalysesWithCurrentPrice = async (
     }
 
     const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
-    const { data: authSession } = await supabase.auth.getSession();
+    
+    // الحصول على جلسة المستخدم
+    const { data: authSession, error: authError } = await supabase.auth.getSession();
+    
+    if (authError) {
+      console.error('خطأ في جلسة المستخدم:', authError);
+      throw new Error('خطأ في جلسة المستخدم: ' + authError.message);
+    }
     
     if (!authSession?.session?.access_token) {
-      console.error('No auth session available');
+      console.error('لا توجد جلسة متاحة للمستخدم');
       toast.error('يجب تسجيل الدخول أولاً');
-      throw new Error('User authentication required');
+      throw new Error('يرجى تسجيل الدخول لاستخدام هذه الميزة');
     }
     
     // إضافة timeout لمنع استمرار الطلب لفترة طويلة
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 8000); // تقليل زمن الانتظار إلى 8 ثوان
+    }, 12000); // زيادة زمن الانتظار إلى 12 ثانية
     
     try {
-      console.log('Sending fetch request to auto-check-analyses');
+      console.log('إرسال طلب الفحص مع البيانات:', {
+        symbol: requestBody.symbol,
+        hasPrice: requestBody.currentPrice !== undefined,
+        priceValue: requestBody.currentPrice,
+        timestamp: requestBody.requestedAt
+      });
       
       // التحقق من اتصال الإنترنت قبل إرسال الطلب
       if (!navigator.onLine) {
@@ -40,68 +52,74 @@ export const fetchAnalysesWithCurrentPrice = async (
         throw new Error('لا يوجد اتصال بالإنترنت');
       }
       
-      const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
-          'Authorization': `Bearer ${authSession.session.access_token}`
-        },
-        body: JSON.stringify(requestBody),
-        signal: controller.signal,
-        cache: 'no-store',
-        credentials: 'omit',
-        // إضافة timeout إضافي على مستوى الطلب
-        // @ts-ignore - خاصية غير قياسية في بعض المتصفحات الحديثة
-        timeout: 7000
-      });
-      
-      clearTimeout(timeout);
-      
-      if (!response.ok) {
-        const responseText = await response.text();
-        console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
+      // التحقق من صلاحية الـ token قبل إرسال الطلب
+      if (authSession.session.expires_at) {
+        const expiresAt = new Date(authSession.session.expires_at * 1000);
+        const now = new Date();
         
-        // رسائل أكثر تحديداً للأخطاء الشائعة
-        if (response.status === 401 || response.status === 403) {
-          throw new Error(`خطأ في التحقق من المستخدم: ${response.status}`);
-        } else if (response.status === 404) {
-          throw new Error(`الخدمة غير متوفرة حالياً: ${response.status}`);
-        } else if (response.status === 429) {
-          throw new Error(`تم تجاوز الحد الأقصى للطلبات: ${response.status}`);
-        } else if (response.status >= 500) {
-          throw new Error(`خطأ في الخادم: ${response.status}`);
-        } else {
-          throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
+        if (expiresAt <= now) {
+          clearTimeout(timeout);
+          console.error('انتهت صلاحية جلسة المستخدم', {
+            expiresAt: expiresAt.toISOString(),
+            now: now.toISOString()
+          });
+          
+          // محاولة تحديث الجلسة
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            throw new Error('انتهت صلاحية الجلسة ولم يتم تحديثها بنجاح');
+          }
+          
+          // الحصول على الجلسة الجديدة
+          const { data: newSession } = await supabase.auth.getSession();
+          if (!newSession?.session?.access_token) {
+            throw new Error('فشل في تحديث جلسة المستخدم');
+          }
         }
       }
       
-      const responseText = await response.text();
-      console.log('Received response from auto-check-analyses:', responseText.substring(0, 100) + '...');
+      // إرسال الطلب باستخدام وظيفة invoke مباشرة من supabase
+      const { data, error } = await supabase.functions.invoke(
+        'auto-check-analyses',
+        {
+          body: JSON.stringify(requestBody),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
       
-      try {
-        return JSON.parse(responseText);
-      } catch (jsonError) {
-        console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
-        throw new Error(`خطأ في تحليل البيانات`);
+      clearTimeout(timeout);
+      
+      if (error) {
+        console.error('خطأ في طلب فحص التحليلات:', error);
+        throw new Error(error.message || 'حدث خطأ أثناء فحص التحليلات');
       }
+      
+      console.log('تم استلام استجابة من auto-check-analyses:', data);
+      return data;
     } catch (error) {
       clearTimeout(timeout);
       throw error;
     }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log('Request was aborted due to timeout');
+      console.log('تم إلغاء الطلب بسبب انتهاء المهلة');
       throw new Error('انتهت مهلة الاتصال');
     }
     
-    // تحسين رسائل الخطأ لسهولة الفهم
+    // تحسين رسائل الخطأ
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      console.error('Network error - Failed to fetch:', error);
+      console.error('خطأ في الشبكة - فشل في الاتصال:', error);
       throw new Error('خطأ في الاتصال: تعذر الوصول للخادم');
     }
     
-    console.error('Error in fetchAnalysesWithCurrentPrice:', error);
-    throw error;
+    if (error instanceof Error) {
+      console.error('خطأ في fetchAnalysesWithCurrentPrice:', error.message, error.stack);
+      throw error;
+    }
+    
+    console.error('خطأ غير معروف في fetchAnalysesWithCurrentPrice:', error);
+    throw new Error('حدث خطأ غير متوقع أثناء فحص التحليلات');
   }
 };

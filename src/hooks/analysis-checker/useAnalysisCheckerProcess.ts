@@ -9,7 +9,7 @@ export const useAnalysisCheckerProcess = () => {
   const [consecutiveErrors, setConsecutiveErrors] = useState(0);
   const retryCountRef = useRef(0);
   const requestTimeoutRef = useRef<number | null>(null);
-  const maxRetries = 1; // تقليل عدد المحاولات لتجنب الضغط على الخادم
+  const maxRetries = 2; // زيادة عدد المحاولات إلى 2
   const requestInProgressRef = useRef(false); // لمنع الطلبات المتزامنة
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -59,10 +59,24 @@ export const useAnalysisCheckerProcess = () => {
     requestInProgressRef.current = false;
   }, []);
 
+  const reconnectAuth = useCallback(async () => {
+    try {
+      const { data, error } = await fetch('/api/refresh-auth', {
+        method: 'POST',
+        credentials: 'include'
+      }).then(res => res.json());
+      
+      return !error;
+    } catch (e) {
+      console.error('فشل في إعادة الاتصال بالمصادقة:', e);
+      return false;
+    }
+  }, []);
+
   const checkAnalyses = useCallback(async ({ price, symbol, isManualCheck = false }: CheckAnalysesOptions) => {
     // منع الطلبات المتزامنة
     if (requestInProgressRef.current) {
-      console.log('Request already in progress, skipping this request');
+      console.log('طلب قيد التنفيذ بالفعل، تخطي هذا الطلب');
       return;
     }
     
@@ -73,22 +87,31 @@ export const useAnalysisCheckerProcess = () => {
       setIsChecking(true);
       requestInProgressRef.current = true;
       
-      console.log(`Triggering ${isManualCheck ? 'manual' : 'auto'} check for active analyses with current price:`, price);
+      // إضافة تسجيل أكثر تفصيلاً للمساعدة في تشخيص المشكلات
+      console.log(`بدء ${isManualCheck ? 'فحص يدوي' : 'فحص تلقائي'} للتحليلات النشطة بالسعر الحالي:`, {
+        price,
+        symbol,
+        isManualCheck,
+        timeISOString: new Date().toISOString(),
+        timeMs: Date.now()
+      });
       
       // إنشاء AbortController جديد للتمكن من إلغاء الطلب إذا استغرق وقتًا طويلًا
       controllerRef.current = new AbortController();
+      
+      // زيادة المهلة الزمنية للطلب
       const timeoutId = setTimeout(() => {
         if (controllerRef.current) {
           controllerRef.current.abort();
-          console.log('Request timed out, aborting');
+          console.log('انتهت مهلة الطلب، إلغاء');
         }
-      }, 15000); // تقليل وقت الانتظار إلى 15 ثانية
+      }, 20000); // زيادة وقت الانتظار إلى 20 ثانية
 
       try {
         const data = await fetchAnalysesWithCurrentPrice(price, symbol, controllerRef.current);
         clearTimeout(timeoutId);
         
-        console.log('Analyses check result:', data);
+        console.log('نتيجة فحص التحليلات:', data);
         
         // إعادة تعيين عدادات الأخطاء بعد النجاح
         setConsecutiveErrors(0);
@@ -100,28 +123,46 @@ export const useAnalysisCheckerProcess = () => {
         clearTimeout(timeoutId);
         
         // تسجيل خطأ الاتصال مع تفاصيل إضافية
-        console.error('Fetch error details:', {
+        console.error('تفاصيل خطأ الاتصال:', {
           message: fetchError instanceof Error ? fetchError.message : String(fetchError),
           type: fetchError instanceof Error ? fetchError.name : typeof fetchError,
-          stack: fetchError instanceof Error ? fetchError.stack : 'No stack trace',
-          isAbortError: fetchError instanceof DOMException && fetchError.name === 'AbortError'
+          stack: fetchError instanceof Error ? fetchError.stack : 'بدون سجل التتبع',
+          isAbortError: fetchError instanceof DOMException && fetchError.name === 'AbortError',
+          isAuthError: fetchError instanceof Error && fetchError.message.includes('auth')
         });
         
         setLastErrorTime(new Date());
         setConsecutiveErrors(prev => prev + 1);
         
+        // محاولة إعادة الاتصال بالمصادقة إذا كانت المشكلة تتعلق بالمصادقة
+        if (fetchError instanceof Error && 
+            (fetchError.message.includes('auth') || 
+             fetchError.message.includes('jwt') || 
+             fetchError.message.includes('token') ||
+             fetchError.message.includes('session'))) {
+          console.log('محاولة إعادة الاتصال بالمصادقة...');
+          const reconnected = await reconnectAuth();
+          if (reconnected) {
+            console.log('تم إعادة الاتصال بالمصادقة بنجاح، إعادة المحاولة');
+            // إعادة المحاولة بعد إعادة الاتصال بالمصادقة
+            requestInProgressRef.current = false;
+            checkAnalyses({ price, symbol, isManualCheck });
+            return;
+          }
+        }
+        
         if (isManualCheck || retryCountRef.current < maxRetries) {
-          // زيادة عدد المحاولات وتأخير المحاولة التالية إذا كانت تلقائية
+          // زيادة عدد المحاولات وتأخير المحاولة التالية
           if (!isManualCheck) {
             retryCountRef.current++;
           }
           
-          const retryDelay = isManualCheck ? 2000 : 5000; // تأخير ثابت لتقليل الضغط على الشبكة
+          const retryDelay = isManualCheck ? 2000 : 3000; // تأخير ثابت لتقليل الضغط على الشبكة
           
-          console.log(`${isManualCheck ? 'Manual retry' : `Retry ${retryCountRef.current}/${maxRetries}`} will occur in ${retryDelay}ms`);
+          console.log(`${isManualCheck ? 'إعادة محاولة يدوية' : `محاولة ${retryCountRef.current}/${maxRetries}`} ستحدث خلال ${retryDelay}مللي ثانية`);
           
           requestTimeoutRef.current = window.setTimeout(() => {
-            console.log(`Executing ${isManualCheck ? 'manual retry' : `retry ${retryCountRef.current}`} for analyses check`);
+            console.log(`تنفيذ ${isManualCheck ? 'إعادة محاولة يدوية' : `محاولة ${retryCountRef.current}`} لفحص التحليلات`);
             requestInProgressRef.current = false; // إعادة تعيين العلم قبل المحاولة التالية
             checkAnalyses({ price, symbol, isManualCheck });
           }, retryDelay);
@@ -132,7 +173,7 @@ export const useAnalysisCheckerProcess = () => {
         dispatchErrorEvent(fetchError);
       }
     } catch (error) {
-      console.error('Failed to check active analyses:', error);
+      console.error('فشل في فحص التحليلات النشطة:', error);
       
       setLastErrorTime(new Date());
       setConsecutiveErrors(prev => prev + 1);
@@ -142,7 +183,7 @@ export const useAnalysisCheckerProcess = () => {
       setIsChecking(false);
       requestInProgressRef.current = false;
     }
-  }, [dispatchAnalysisEvents, dispatchErrorEvent, clearPendingRequests]);
+  }, [dispatchAnalysisEvents, dispatchErrorEvent, clearPendingRequests, reconnectAuth]);
 
   return {
     isChecking,
