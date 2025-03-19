@@ -5,13 +5,19 @@ import html2canvas from 'html2canvas';
 interface UseImageCaptureResult {
   captureAttempts: number;
   captureTradingViewWidget: () => Promise<string | null>;
+  isCapturing: boolean;
+  captureError: string | null;
 }
 
 export const useImageCapture = (): UseImageCaptureResult => {
   const [captureAttempts, setCaptureAttempts] = useState<number>(0);
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
+  const [captureError, setCaptureError] = useState<string | null>(null);
 
   const captureTradingViewWidget = useCallback(async (): Promise<string | null> => {
     try {
+      setIsCapturing(true);
+      setCaptureError(null);
       setCaptureAttempts(prev => prev + 1);
       console.log(`محاولة التقاط صورة #${captureAttempts + 1}`);
       
@@ -20,26 +26,15 @@ export const useImageCapture = (): UseImageCaptureResult => {
         '.tradingview-widget-container',
         '.tradingview-widget-wrapper',
         '.tv-ticker-tape-wrapper',
-        'h3.text-lg:contains("سعر الذهب") + div',
-        'div:contains("3")'
+        'iframe',
+        '.tradingview-widget-container iframe'
       ];
       
       let targetElement = null;
       
       // البحث عن العناصر حسب ترتيب الأولوية
       for (const selector of selectors) {
-        let elements;
-        if (selector.includes(':contains')) {
-          // معالجة خاصة لـ :contains
-          const [tag, searchText] = selector.split(':contains(');
-          const text = searchText.replace(/[")]/g, '');
-          const allElements = document.querySelectorAll(tag);
-          elements = Array.from(allElements).filter(el => 
-            el.textContent && el.textContent.includes(text)
-          );
-        } else {
-          elements = document.querySelectorAll(selector);
-        }
+        const elements = document.querySelectorAll(selector);
         
         if (elements && elements.length > 0) {
           console.log(`تم العثور على ${elements.length} عنصر باستخدام المحدد: ${selector}`);
@@ -48,46 +43,70 @@ export const useImageCapture = (): UseImageCaptureResult => {
         }
       }
       
-      // إذا لم يتم العثور على أي عنصر محدد مسبقًا، نبحث عن أي حاوية تحتوي على سعر الذهب
+      // إذا لم يتم العثور على أي عنصر محدد، نستخدم حاوية الكارد
       if (!targetElement) {
-        console.log("البحث عن أي حاوية تحتوي على سعر الذهب");
-        const textNodes = document.createTreeWalker(
-          document.body,
-          NodeFilter.SHOW_TEXT,
-          null
-        );
-        
-        let node;
-        while (node = textNodes.nextNode()) {
-          const text = node.textContent || '';
-          if (text.match(/\b[23]\d{3}\.\d{1,2}\b/) || text.match(/\b[23],\d{3}\.\d{1,2}\b/)) {
-            let parent = node.parentElement;
-            for (let i = 0; i < 5 && parent; i++) { // نصعد حتى 5 مستويات للعثور على حاوية مناسبة
-              if (parent.clientWidth > 100 && parent.clientHeight > 50) {
-                console.log("تم العثور على حاوية محتملة تحتوي على سعر الذهب:", parent);
-                targetElement = parent;
-                break;
-              }
-              parent = parent.parentElement;
-            }
-            if (targetElement) break;
-          }
-        }
-      }
-      
-      // إذا لم نعثر على أي عنصر محدد، نستخدم حاوية الكارد
-      if (!targetElement) {
-        console.log("لم يتم العثور على أي عنصر محدد، استخدام حاوية الكارد");
-        targetElement = document.querySelector('.w-full.mb-6') as HTMLElement;
+        console.log("محاولة البحث عن عناصر أخرى...");
+        targetElement = document.querySelector('.tradingview-widget-wrapper') as HTMLElement ||
+                       document.querySelector('iframe') as HTMLElement;
       }
       
       // إذا لم نتمكن من العثور على أي عنصر، نخرج
       if (!targetElement) {
         console.log("لم يتم العثور على أي عنصر مناسب للالتقاط");
+        setCaptureError("لم يتم العثور على عنصر ويدجيت TradingView");
+        setIsCapturing(false);
         return null;
       }
       
       console.log("التقاط صورة للعنصر:", targetElement);
+      
+      // محاولة خاصة للإطار الداخلي
+      if (targetElement.tagName === 'IFRAME') {
+        try {
+          const iframe = targetElement as HTMLIFrameElement;
+          console.log("محاولة التقاط محتوى الإطار الداخلي:", iframe.src);
+          
+          // عنصر الكانفاس للتصوير
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // ضبط أبعاد الكانفاس
+          canvas.width = iframe.offsetWidth * 2;  // مضاعفة للحصول على دقة أفضل
+          canvas.height = iframe.offsetHeight * 2;
+          
+          // تعبئة الخلفية
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // إنشاء صورة وتعيين المصدر للإطار
+            const img = new Image();
+            
+            // الانتظار لتحميل الإطار بالكامل
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            
+            // محاولة الحصول على لقطة شاشة باستخدام html2canvas
+            const iframeCanvas = await html2canvas(iframe, {
+              useCORS: true,
+              allowTaint: true,
+              scale: 2,
+              logging: true,
+            });
+            
+            // رسم محتوى الإطار على الكانفاس
+            ctx.drawImage(iframeCanvas, 0, 0, canvas.width, canvas.height);
+            
+            // تحويل الكانفاس إلى URL صورة
+            const imageUrl = canvas.toDataURL('image/png');
+            console.log('تم إنشاء صورة الإطار الداخلي بنجاح، طول البيانات:', imageUrl.length);
+            
+            setIsCapturing(false);
+            return imageUrl;
+          }
+        } catch (iframeError) {
+          console.error("خطأ في التقاط الإطار الداخلي:", iframeError);
+        }
+      }
       
       // استخدام html2canvas لالتقاط الصورة
       const canvas = await html2canvas(targetElement, {
@@ -109,57 +128,62 @@ export const useImageCapture = (): UseImageCaptureResult => {
         })
       );
       
+      setIsCapturing(false);
       return imageUrl;
       
     } catch (error) {
       console.error('خطأ في التقاط صورة ويدجيت TradingView:', error);
+      setCaptureError("حدث خطأ أثناء التقاط الصورة");
       
-      // محاولة أخيرة - التقاط الصورة مباشرة من جسم الصفحة
+      // محاولة أخيرة - التقاط الصورة مباشرة من أي عنصر مرئي
       try {
-        console.log("محاولة أخيرة: التقاط قسم من الصفحة");
-        const viewport = document.createElement('div');
-        viewport.style.position = 'absolute';
-        viewport.style.top = '0';
-        viewport.style.left = '0';
-        viewport.style.width = '300px';
-        viewport.style.height = '150px';
-        viewport.style.overflow = 'hidden';
-        document.body.appendChild(viewport);
-        
-        const canvas = await html2canvas(document.body, {
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null,
-          scale: 1,
-          x: 0,
-          y: 0,
-          width: 300,
-          height: 150
+        console.log("محاولة أخيرة: التقاط أي عنصر مرئي");
+        const visibleElements = Array.from(document.querySelectorAll('*')).filter(el => {
+          const style = window.getComputedStyle(el as HTMLElement);
+          const rect = (el as HTMLElement).getBoundingClientRect();
+          return style.display !== 'none' && 
+                 style.visibility !== 'hidden' && 
+                 rect.width > 100 && 
+                 rect.height > 100;
         });
         
-        document.body.removeChild(viewport);
-        
-        const imageUrl = canvas.toDataURL('image/png');
-        console.log('تم التقاط قسم من الصفحة، طول البيانات:', imageUrl.length);
-        
-        window.dispatchEvent(
-          new CustomEvent('widget-image-captured', {
-            detail: { imageUrl }
-          })
-        );
-        
-        return imageUrl;
+        if (visibleElements.length > 0) {
+          // التقاط أكبر عنصر مرئي
+          const largestElement = visibleElements.reduce((prev, curr) => {
+            const prevRect = (prev as HTMLElement).getBoundingClientRect();
+            const currRect = (curr as HTMLElement).getBoundingClientRect();
+            return (prevRect.width * prevRect.height > currRect.width * currRect.height) ? prev : curr;
+          });
+          
+          console.log("محاولة التقاط العنصر المرئي:", largestElement);
+          
+          const canvas = await html2canvas(largestElement as HTMLElement, {
+            logging: true,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: null,
+            scale: 2
+          });
+          
+          const imageUrl = canvas.toDataURL('image/png');
+          console.log('تم التقاط عنصر مرئي، طول البيانات:', imageUrl.length);
+          
+          setIsCapturing(false);
+          return imageUrl;
+        }
       } catch (secondError) {
         console.error('فشلت المحاولة البديلة أيضًا:', secondError);
       }
       
+      setIsCapturing(false);
       return null;
     }
   }, [captureAttempts]);
 
   return {
     captureAttempts,
-    captureTradingViewWidget
+    captureTradingViewWidget,
+    isCapturing,
+    captureError
   };
 };

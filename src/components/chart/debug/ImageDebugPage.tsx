@@ -8,30 +8,37 @@ import { Separator } from '@/components/ui/separator';
 import TradingViewWidget from '../TradingViewWidget';
 import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { Home, RefreshCw, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const ImageDebugPage: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [captureTime, setCaptureTime] = useState<string | null>(null);
-  const { captureTradingViewWidget, captureAttempts } = useImageCapture();
+  const { captureTradingViewWidget, captureAttempts, isCapturing, captureError } = useImageCapture();
   
   const handleCaptureImage = async () => {
     try {
       const currentTime = new Date().toLocaleTimeString();
       setCaptureTime(currentTime);
       
+      toast.info("جاري التقاط صورة الويدجيت...", {
+        duration: 2000,
+      });
+      
       // التقاط صورة الويدجيت
       const capturedImage = await captureTradingViewWidget();
-      console.log('تم التقاط صورة الويدجيت بنجاح');
       
       if (capturedImage) {
         setOriginalImage(capturedImage);
         console.log('تم التقاط الصورة بنجاح:', capturedImage.substring(0, 100) + '...');
+        toast.success("تم التقاط الصورة بنجاح");
       } else {
         console.error('فشل التقاط الصورة');
+        toast.error(captureError || "فشل التقاط الصورة");
       }
     } catch (error) {
       console.error('خطأ في التقاط الصورة:', error);
+      toast.error("حدث خطأ أثناء التقاط الصورة");
     }
   };
   
@@ -59,7 +66,7 @@ export const ImageDebugPage: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-8">صفحة فحص وتصحيح الصور</h1>
       
       <div className="flex justify-center mb-8">
-        <Card className="w-full md:w-1/2">
+        <Card className="w-full">
           <CardHeader>
             <CardTitle className="text-center">ويدجيت TradingView</CardTitle>
           </CardHeader>
@@ -73,8 +80,16 @@ export const ImageDebugPage: React.FC = () => {
         <Button 
           onClick={handleCaptureImage} 
           className="bg-blue-600 text-white hover:bg-blue-700"
+          disabled={isCapturing}
         >
-          التقاط صورة للويدجيت
+          {isCapturing ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              جاري التقاط الصورة...
+            </>
+          ) : (
+            "التقاط صورة للويدجيت"
+          )}
         </Button>
       </div>
       
@@ -84,7 +99,14 @@ export const ImageDebugPage: React.FC = () => {
         </p>
       )}
       
-      {originalImage && (
+      {captureError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-600 flex items-center">
+          <AlertCircle className="mr-2 h-5 w-5" />
+          <span>{captureError}</span>
+        </div>
+      )}
+      
+      {originalImage ? (
         <Card className="w-full">
           <CardHeader>
             <CardTitle>الصورة الملتقطة</CardTitle>
@@ -104,6 +126,15 @@ export const ImageDebugPage: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <div className="w-full p-12 bg-gray-100 border border-gray-300 rounded-md text-center">
+          <p className="text-gray-500 mb-4">لم يتم التقاط أي صورة بعد</p>
+          {!isCapturing && (
+            <Button onClick={handleCaptureImage} variant="outline">
+              محاولة التقاط صورة
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
