@@ -50,12 +50,27 @@ export const useImageCapture = (): UseImageCaptureResult => {
                        document.querySelector('iframe') as HTMLElement;
       }
       
-      // إذا لم نتمكن من العثور على أي عنصر، نخرج
+      // إذا لم نتمكن من العثور على أي عنصر، محاولة التقاط الصفحة بأكملها
       if (!targetElement) {
-        console.log("لم يتم العثور على أي عنصر مناسب للالتقاط");
-        setCaptureError("لم يتم العثور على عنصر ويدجيت TradingView");
-        setIsCapturing(false);
-        return null;
+        console.log("لم يتم العثور على أي عنصر مناسب، التقاط الصفحة بأكملها");
+        try {
+          const canvas = await html2canvas(document.documentElement, {
+            logging: true,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            scale: 1
+          });
+          
+          const imageUrl = canvas.toDataURL('image/png');
+          setIsCapturing(false);
+          return imageUrl;
+        } catch (fullPageError) {
+          console.error("فشل التقاط الصفحة بأكملها:", fullPageError);
+          setCaptureError("فشل التقاط الصفحة");
+          setIsCapturing(false);
+          return null;
+        }
       }
       
       console.log("التقاط صورة للعنصر:", targetElement);
@@ -137,40 +152,20 @@ export const useImageCapture = (): UseImageCaptureResult => {
       
       // محاولة أخيرة - التقاط الصورة مباشرة من أي عنصر مرئي
       try {
-        console.log("محاولة أخيرة: التقاط أي عنصر مرئي");
-        const visibleElements = Array.from(document.querySelectorAll('*')).filter(el => {
-          const style = window.getComputedStyle(el as HTMLElement);
-          const rect = (el as HTMLElement).getBoundingClientRect();
-          return style.display !== 'none' && 
-                 style.visibility !== 'hidden' && 
-                 rect.width > 100 && 
-                 rect.height > 100;
+        console.log("محاولة أخيرة: التقاط صورة الصفحة بأكملها");
+        const canvas = await html2canvas(document.documentElement, {
+          logging: true,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          scale: 1
         });
         
-        if (visibleElements.length > 0) {
-          // التقاط أكبر عنصر مرئي
-          const largestElement = visibleElements.reduce((prev, curr) => {
-            const prevRect = (prev as HTMLElement).getBoundingClientRect();
-            const currRect = (curr as HTMLElement).getBoundingClientRect();
-            return (prevRect.width * prevRect.height > currRect.width * currRect.height) ? prev : curr;
-          });
-          
-          console.log("محاولة التقاط العنصر المرئي:", largestElement);
-          
-          const canvas = await html2canvas(largestElement as HTMLElement, {
-            logging: true,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: null,
-            scale: 2
-          });
-          
-          const imageUrl = canvas.toDataURL('image/png');
-          console.log('تم التقاط عنصر مرئي، طول البيانات:', imageUrl.length);
-          
-          setIsCapturing(false);
-          return imageUrl;
-        }
+        const imageUrl = canvas.toDataURL('image/png');
+        console.log('تم التقاط صورة الصفحة، طول البيانات:', imageUrl.length);
+        
+        setIsCapturing(false);
+        return imageUrl;
       } catch (secondError) {
         console.error('فشلت المحاولة البديلة أيضًا:', secondError);
       }
