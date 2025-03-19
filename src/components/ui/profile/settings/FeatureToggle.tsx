@@ -47,7 +47,6 @@ export function FeatureToggle({
       <Switch
         checked={isChecked}
         onCheckedChange={handleToggle}
-        defaultChecked={defaultChecked}
         aria-label={title}
       />
     </div>

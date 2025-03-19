@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface ApiKeySettingsProps {
@@ -16,21 +15,43 @@ export function ApiKeySettings({
   setUserProfile, 
   userProfile 
 }: ApiKeySettingsProps) {
-  const [metalPriceApiKey, setMetalPriceApiKey] = useState(apiKey || '42ed2fe2e7d1d8f688ddeb027219c766');
+  const [metalPriceApiKey, setMetalPriceApiKey] = useState(apiKey || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [updateTimeout, setUpdateTimeout] = useState<number | undefined>(undefined);
 
-  // نستخدم useEffect لمراقبة تغيرات مفتاح API ولكن بشكل أكثر كفاءة
+  // تنظيف المؤقتات عند إلغاء تحميل المكون
   useEffect(() => {
+    return () => {
+      if (updateTimeout) {
+        window.clearTimeout(updateTimeout);
+      }
+    };
+  }, [updateTimeout]);
+
+  // تحديث القيمة عند تغيير المدخلات الخارجية
+  useEffect(() => {
+    setMetalPriceApiKey(apiKey || '');
+  }, [apiKey]);
+
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setMetalPriceApiKey(newValue);
+
+    // إلغاء المؤقت السابق إذا كان موجودًا
+    if (updateTimeout) {
+      window.clearTimeout(updateTimeout);
+    }
+
     // نتحقق أولاً إذا كان المفتاح قد تغير فعلاً وليس فارغًا
-    if (metalPriceApiKey && metalPriceApiKey !== userProfile.metalPriceApiKey && metalPriceApiKey.length > 10) {
-      const saveApiKey = async () => {
+    if (newValue && newValue !== userProfile.metalPriceApiKey && newValue.length > 10) {
+      // إعداد مؤقت جديد للتحديث
+      const timeoutId = window.setTimeout(() => {
         setIsSaving(true);
         try {
           // فقط نقوم بتحديث الملف الشخصي بدون عمليات حفظ مباشرة في قاعدة البيانات
-          // الحفظ الفعلي سيحدث عند الضغط على زر "حفظ التغييرات" في الشاشة الرئيسية
           setUserProfile({
             ...userProfile,
-            metalPriceApiKey
+            metalPriceApiKey: newValue
           });
           
           // نعرض رسالة نجاح بدون حفظ مباشر للقاعدة
@@ -41,13 +62,11 @@ export function ApiKeySettings({
         } finally {
           setIsSaving(false);
         }
-      };
+      }, 1000);
       
-      // ننتظر قليلاً قبل الحفظ لتجنب الحفظ المتكرر
-      const timeoutId = setTimeout(saveApiKey, 1000);
-      return () => clearTimeout(timeoutId);
+      setUpdateTimeout(timeoutId);
     }
-  }, [metalPriceApiKey]);
+  };
   
   return (
     <div className="space-y-2">
@@ -56,7 +75,7 @@ export function ApiKeySettings({
         id="metalPriceApiKey"
         placeholder="أدخل مفتاح Metal Price API"
         value={metalPriceApiKey}
-        onChange={(e) => setMetalPriceApiKey(e.target.value)}
+        onChange={handleApiKeyChange}
         className="font-mono text-sm"
         disabled={isSaving}
       />

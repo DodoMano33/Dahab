@@ -50,8 +50,8 @@ export function ProfileDialog({
     
     setIsLoading(true);
     try {
-      // تحديث تنسيق البيانات المرسلة لقاعدة البيانات
       // نرسل فقط الحقول الموجودة فعلاً في جدول profiles
+      // وليس كل حقول userProfile
       await supabase
         .from('profiles')
         .update({
@@ -97,8 +97,12 @@ export function ProfileDialog({
     }
   };
 
+  const handleCloseDialog = () => {
+    setShowProfileDialog(false);
+  };
+
   return (
-    <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+    <Dialog open={showProfileDialog} onOpenChange={handleCloseDialog}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>البيانات الشخصية والإعدادات</DialogTitle>
@@ -131,7 +135,7 @@ export function ProfileDialog({
         </Tabs>
         
         <DialogFooter className="flex justify-between items-center">
-          <Button variant="ghost" onClick={() => setShowProfileDialog(false)}>
+          <Button variant="ghost" onClick={handleCloseDialog}>
             إلغاء
           </Button>
           <Button type="submit" onClick={updateProfile} disabled={isLoading}>

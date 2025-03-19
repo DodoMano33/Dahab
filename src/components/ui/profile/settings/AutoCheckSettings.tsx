@@ -17,35 +17,33 @@ export function AutoCheckSettings({
   setUserProfile 
 }: AutoCheckSettingsProps) {
   // تتبع حالة المؤقت
-  const [intervalId, setIntervalId] = useState<number | null>(null);
+  const [intervalId, setIntervalId] = useState<number | undefined>(undefined);
 
+  // تنظيف المؤقت عند إلغاء تحميل المكون
   useEffect(() => {
-    // تنظيف المؤقت السابق عند إعادة التحميل
     return () => {
-      if (intervalId !== null) {
-        clearInterval(intervalId);
+      if (intervalId !== undefined) {
+        window.clearInterval(intervalId);
+        setIntervalId(undefined);
       }
     };
-  }, []);
+  }, [intervalId]);
 
+  // إعداد الفحص التلقائي عند تغيير الحالة
   useEffect(() => {
-    const setupAutoCheck = async () => {
+    const setupAutoCheck = () => {
       try {
         // تنظيف المؤقت السابق إذا كان موجودًا
-        if (intervalId !== null) {
-          clearInterval(intervalId);
-          setIntervalId(null);
+        if (intervalId !== undefined) {
+          window.clearInterval(intervalId);
+          setIntervalId(undefined);
         }
 
         if (userProfile.autoCheckEnabled) {
-          console.log("Setting up auto-check with interval:", userProfile.autoCheckInterval);
-          
-          const checkFunction = async () => {
+          // تنفيذ الفحص مرة واحدة عند التفعيل
+          const checkFunction = () => {
             try {
-              // تسجيل محاولة الفحص التلقائي
-              console.log("Auto-check would run here with interval:", userProfile.autoCheckInterval);
-              
-              // إرسال حدث مخصص بدلاً من استدعاء Supabase Function مباشرة
+              // إرسال حدث مخصص بدلاً من استدعاء وظيفة مباشرة
               const event = new CustomEvent('autoCheckRequested', {
                 detail: { 
                   timestamp: new Date().toISOString(),
@@ -58,11 +56,10 @@ export function AutoCheckSettings({
             }
           };
           
-          // تنفيذ الفحص مرة واحدة عند التفعيل
+          // تنفيذ فحص أولي
           checkFunction();
           
-          // إعداد التنفيذ الدوري كل 5 دقائق بدلاً من استخدام قيمة متغيرة
-          // هذا أكثر استقرارًا ويمنع المشاكل المحتملة
+          // إعداد المؤقت مع فترة ثابتة لمنع المشكلات
           const newIntervalId = window.setInterval(checkFunction, 5 * 60 * 1000);
           setIntervalId(newIntervalId);
         }
@@ -72,6 +69,14 @@ export function AutoCheckSettings({
     };
     
     setupAutoCheck();
+    
+    // تنظيف عند إلغاء التحميل
+    return () => {
+      if (intervalId !== undefined) {
+        window.clearInterval(intervalId);
+        setIntervalId(undefined);
+      }
+    };
   }, [userProfile.autoCheckEnabled, userProfile.autoCheckInterval]);
 
   return (
