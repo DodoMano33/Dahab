@@ -44,53 +44,35 @@ export const fetchAnalysesWithCurrentPrice = async (
     }, 20000); // زيادة وقت الانتظار إلى 20 ثانية
     
     try {
-      // استدعاء وظيفة Edge Function مع تحسين الإعدادات
-      const { data, error } = await supabase.functions.invoke(
-        'auto-check-analyses',
-        {
-          body: JSON.stringify(requestBody),
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          method: 'POST'
-        }
-      );
+      // استخدام fetch مباشرة بدلاً من supabase.functions.invoke
+      const url = 'https://nhvkviofvefwbvditgxo.supabase.co/functions/v1/auto-check-analyses';
+      
+      const authSession = await supabase.auth.getSession();
+      const token = authSession.data?.session?.access_token;
+      
+      if (!token) {
+        throw new Error('لم يتم العثور على جلسة المستخدم');
+      }
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
+      });
       
       clearTimeout(timeout);
       
-      if (error) {
-        console.error('خطأ في طلب فحص التحليلات:', error);
-        
-        // إذا كان الخطأ متعلقًا بالمصادقة، حاول تحديث الجلسة وأعد المحاولة
-        if (error.message?.includes('auth') || error.message?.includes('token') || error.message?.includes('jwt')) {
-          const refreshed = await supabase.auth.refreshSession();
-          
-          if (refreshed.error) {
-            throw new Error('فشل في تحديث جلسة المصادقة: ' + refreshed.error.message);
-          }
-          
-          // إعادة المحاولة مع الجلسة المحدثة
-          const { data: retryData, error: retryError } = await supabase.functions.invoke(
-            'auto-check-analyses',
-            {
-              body: JSON.stringify(requestBody),
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              method: 'POST'
-            }
-          );
-          
-          if (retryError) {
-            throw new Error('فشل في المحاولة الثانية: ' + retryError.message);
-          }
-          
-          return retryData;
-        }
-        
-        throw new Error(error.message || 'حدث خطأ أثناء فحص التحليلات');
+      if (!response.ok) {
+        console.error(`خطأ في استجابة الخادم: ${response.status} ${response.statusText}`);
+        throw new Error(`خطأ في استجابة الخادم: ${response.status} ${response.statusText}`);
       }
       
+      const data = await response.json();
       console.log('تم استلام استجابة من auto-check-analyses:', data);
       return data;
     } catch (fetchError) {
@@ -113,7 +95,7 @@ export const fetchAnalysesWithCurrentPrice = async (
         });
         
         // تحسين رسائل الخطأ للمستخدم
-        if (fetchError.message.includes('Failed to send a request')) {
+        if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('Failed to send a request')) {
           throw new Error('تعذر الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت الخاص بك');
         }
         

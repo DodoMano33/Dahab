@@ -11,7 +11,7 @@ export const useNetworkStatus = () => {
   useEffect(() => {
     const updateNetworkStatus = () => {
       if (navigator.onLine) {
-        // إجراء اختبار سريع للاتصال للتأكد من أنه ليس اتصالًا محدودًا
+        // إجراء اختبار سريع للاتصال للتأكد من أنه ليس اتصالاً محدودًا
         fetch('https://www.google.com/favicon.ico', { 
           mode: 'no-cors',
           cache: 'no-store'

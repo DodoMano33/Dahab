@@ -68,7 +68,7 @@ export const useBackTest = (): UseBackTestResult => {
           abortControllerRef.current.abort();
           abortControllerRef.current = null;
         }
-      }, 10000); // تقليل المدة إلى 10 ثوان
+      }, 15000); // زيادة المدة إلى 15 ثانية
       
       try {
         const data = await doFetchRequest();

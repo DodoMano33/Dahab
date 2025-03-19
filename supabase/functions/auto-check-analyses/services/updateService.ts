@@ -2,7 +2,7 @@
 /**
  * Updates the last checked time for all analyses and returns active analyses
  */
-export async function updateLastCheckedTime(supabase: any, currentTime: string, tradingViewPrice: number | null) {
+export async function updateLastCheckedTime(supabase: any, currentTime: string, tradingViewPrice: number | null, userId: string) {
   try {
     console.log('Starting updateLastCheckedTime with price:', tradingViewPrice);
     
@@ -10,6 +10,7 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
     const { data: analyses, error: fetchError, count } = await supabase
       .from('search_history')
       .select('*', { count: 'exact' })
+      .eq('user_id', userId)
       .is('result_timestamp', null);
 
     if (fetchError) {
@@ -53,15 +54,17 @@ export async function updateLastCheckedTime(supabase: any, currentTime: string, 
 /**
  * Gets analysis statistics for reporting
  */
-export async function getAnalysisStats(supabase: any): Promise<{ active: number, completed: number, total: number }> {
+export async function getAnalysisStats(supabase: any, userId: string): Promise<{ active: number, completed: number, total: number }> {
   try {
     const { count: totalCount } = await supabase
       .from('search_history')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
       
     const { count: activeCount } = await supabase
       .from('search_history')
       .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
       .is('result_timestamp', null);
       
     return {

@@ -15,7 +15,7 @@ export const useAnalysisProcessor = () => {
   const [consecutiveErrors, setConsecutiveErrors] = useState(0);
   const retryCountRef = useRef(0);
   const requestTimeoutRef = useRef<number | null>(null);
-  const maxRetries = 3; // زيادة عدد المحاولات إلى 3
+  const maxRetries = 2; // تقليل عدد المحاولات
   const requestInProgressRef = useRef(false); // لمنع الطلبات المتزامنة
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -60,6 +60,11 @@ export const useAnalysisProcessor = () => {
       controllerRef.current = new AbortController();
       
       try {
+        // إذا كان الاتصال محدود أو معدوم، لا نرسل الطلب
+        if (!navigator.onLine) {
+          throw new Error('لا يوجد اتصال بالإنترنت');
+        }
+        
         const data = await fetchAnalysesWithCurrentPrice(price, symbol, controllerRef.current);
         
         console.log('نتيجة فحص التحليلات:', data);
@@ -74,6 +79,8 @@ export const useAnalysisProcessor = () => {
         if (isManualCheck) {
           toast.success('تم فحص التحليلات بنجاح');
         }
+        
+        return data;
       } catch (fetchError) {
         handleFetchError(fetchError, isManualCheck, consecutiveErrors);
         
@@ -89,8 +96,7 @@ export const useAnalysisProcessor = () => {
             console.log('تم إعادة الاتصال بالمصادقة بنجاح، إعادة المحاولة');
             // إعادة المحاولة بعد إعادة الاتصال بالمصادقة
             requestInProgressRef.current = false;
-            checkAnalyses({ price, symbol, isManualCheck });
-            return;
+            return checkAnalyses({ price, symbol, isManualCheck });
           } else {
             // إظهار رسالة الخطأ للمستخدم
             if (isManualCheck) {
@@ -119,6 +125,8 @@ export const useAnalysisProcessor = () => {
         if (isManualCheck) {
           toast.error(`فشل فحص التحليلات: ${fetchError instanceof Error ? fetchError.message : 'خطأ غير معروف'}`);
         }
+        
+        throw fetchError;
       }
     } catch (error) {
       console.error('فشل في فحص التحليلات النشطة:', error);
@@ -132,6 +140,8 @@ export const useAnalysisProcessor = () => {
       if (isManualCheck) {
         toast.error(`فشل فحص التحليلات: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
       }
+      
+      throw error;
     } finally {
       setIsChecking(false);
       requestInProgressRef.current = false;

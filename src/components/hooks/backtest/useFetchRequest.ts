@@ -7,7 +7,7 @@ export const useFetchRequest = (
   setDiagnostics: React.Dispatch<React.SetStateAction<FetchDiagnostics[]>>,
   abortControllerRef: React.MutableRefObject<AbortController | null>
 ) => {
-  const maxRetries = 1; // تقليل عدد المحاولات إلى 1 فقط
+  const maxRetries = 1; // تقليل عدد المحاولات
 
   const doFetchRequest = async (retry = 0): Promise<any> => {
     console.log(`Starting fetch request (retry ${retry}/${maxRetries})`);
@@ -47,7 +47,8 @@ export const useFetchRequest = (
       
       const startTime = performance.now();
       
-      const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
+      // استخدام fetch مباشرة بدلاً من supabase.functions.invoke
+      const response = await fetch(`${supabaseUrl}/functions/v1/auto-check-analyses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,13 +57,11 @@ export const useFetchRequest = (
         },
         body: JSON.stringify({
           requestedAt: new Date().toISOString(),
-          fallbackPrice: null
+          symbol: 'XAUUSD',
+          currentPrice: 3034.4455081862
         }),
         signal: abortControllerRef.current.signal,
-        cache: 'no-store', // منع التخزين المؤقت
-        // تقليل وقت الانتظار
-        // @ts-ignore - خاصية غير قياسية في بعض المتصفحات
-        timeout: 5000
+        cache: 'no-store',
       });
       
       const endTime = performance.now();
@@ -74,7 +73,6 @@ export const useFetchRequest = (
         const responseText = await response.text();
         let errorMessage = `خطأ ${response.status}: ${response.statusText}`;
         
-        // تحسين رسائل الخطأ بناءً على كود الاستجابة
         if (response.status === 401 || response.status === 403) {
           errorMessage = 'خطأ في صلاحيات المستخدم';
         } else if (response.status === 404) {
@@ -99,9 +97,8 @@ export const useFetchRequest = (
       
       const responseText = await response.text();
       
-      let responseData;
       try {
-        responseData = JSON.parse(responseText);
+        const responseData = responseText ? JSON.parse(responseText) : { success: true };
         
         // تحديث التشخيص
         setDiagnostics(prev => prev.map(d => 
@@ -147,8 +144,8 @@ export const useFetchRequest = (
       }
       
       if (retry < maxRetries) {
-        // تقليل عدد المحاولات ووقت الانتظار
-        const delay = 1000; // تأخير ثابت 1 ثانية
+        // تأخير ثابت قصير
+        const delay = 1000;
         
         console.log(`Retrying fetch in ${delay}ms (attempt ${retry + 1}/${maxRetries})`);
         
