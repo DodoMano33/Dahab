@@ -44,6 +44,10 @@ export const enhanceImageForOcr = async (imageUrl: string): Promise<string> => {
     canvas.width = originalImage.width * scale;
     canvas.height = originalImage.height * scale;
     
+    // رسم خلفية بيضاء للتأكد من وضوح النص
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     // تكبير الصورة مع التنعيم
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -53,9 +57,9 @@ export const enhanceImageForOcr = async (imageUrl: string): Promise<string> => {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     
-    // تحسين التباين والحدة - تعديل قيم التباين والسطوع لتحسين التعرف على النص
-    const contrast = 2.0; // زيادة التباين بشكل كبير
-    const brightness = 20; // زيادة السطوع قليلاً
+    // تحسين التباين والحدة - زيادة التباين بشكل كبير للحصول على نص أكثر وضوحًا
+    const contrast = 2.5; // زيادة التباين أكثر
+    const brightness = 30; // زيادة السطوع بشكل أكبر
     
     for (let i = 0; i < data.length; i += 4) {
       // تطبيق التباين والسطوع
@@ -63,48 +67,74 @@ export const enhanceImageForOcr = async (imageUrl: string): Promise<string> => {
       data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * contrast + 128 + brightness));
       data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * contrast + 128 + brightness));
       
-      // تبييض الخلفية بشكل أكبر وتغميق النص بشكل أكبر للحصول على تباين أعلى
+      // تحويل إلى الأبيض والأسود بشكل أكثر حدة للتعرف على الأرقام بشكل أفضل
       const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-      if (luminance > 190) {
-        // إذا كان البكسل فاتحًا، نجعله أبيض تمامًا
+      if (luminance > 170) { // عتبة أقل للألوان الفاتحة
+        // تحويل الألوان الفاتحة إلى أبيض
         data[i] = data[i + 1] = data[i + 2] = 255;
-      } else if (luminance < 100) {
-        // إذا كان البكسل داكنًا، نجعله أسود تمامًا
+      } else if (luminance < 120) { // عتبة أعلى للألوان الداكنة
+        // تحويل الألوان الداكنة إلى أسود
         data[i] = data[i + 1] = data[i + 2] = 0;
       }
     }
     
     ctx.putImageData(imageData, 0, 0);
     
-    // إضافة معالجة إضافية - رسم حدود حول الأرقام
-    try {
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
+    // تطبيق فلتر لتحسين حدة الصورة
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    if (tempCtx) {
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
       
-      if (tempCtx) {
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        
-        // نسخ الصورة المعالجة إلى الكانفاس المؤقت
-        tempCtx.drawImage(canvas, 0, 0);
-        
-        // مسح الكانفاس الأصلي
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // تعبئة الكانفاس باللون الأبيض
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // رسم الصورة المعالجة مرة أخرى مع إضافة تأثير زيادة الحدة
-        ctx.drawImage(tempCanvas, 0, 0);
-      }
-    } catch (enhanceError) {
-      console.error('خطأ في المعالجة الإضافية للصورة:', enhanceError);
+      // نسخ الصورة المحسنة إلى الكانفاس المؤقت
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      // تطبيق فلتر لتعزيز الحدة
+      ctx.globalAlpha = 0.3; // قيمة أقل للمزج الشفاف
+      ctx.drawImage(tempCanvas, -1, -1);
+      ctx.drawImage(tempCanvas, 1, 1);
+      ctx.drawImage(tempCanvas, -1, 1);
+      ctx.drawImage(tempCanvas, 1, -1);
+      ctx.globalAlpha = 1.0;
     }
+    
+    // تكبير الأرقام وزيادة حدتها بمسح منطقة الأرقام المتوقعة
+    // نفترض أن الأرقام موجودة في الوسط أو في منطقة معينة من الصورة
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const zoomRegionSize = Math.min(canvas.width, canvas.height) * 0.5;
+    
+    // استخراج منطقة الأرقام وتكبيرها
+    const zoomRegion = ctx.getImageData(
+      centerX - zoomRegionSize / 2,
+      centerY - zoomRegionSize / 2,
+      zoomRegionSize,
+      zoomRegionSize
+    );
+    
+    // زيادة تباين منطقة الأرقام المستخرجة
+    const zoomData = zoomRegion.data;
+    for (let i = 0; i < zoomData.length; i += 4) {
+      // تحويل منطقة الأرقام إلى أسود وأبيض بشكل حاد جدًا
+      const luminance = 0.299 * zoomData[i] + 0.587 * zoomData[i + 1] + 0.114 * zoomData[i + 2];
+      if (luminance > 160) {
+        zoomData[i] = zoomData[i + 1] = zoomData[i + 2] = 255;
+      } else {
+        zoomData[i] = zoomData[i + 1] = zoomData[i + 2] = 0;
+      }
+    }
+    
+    // إعادة رسم منطقة الأرقام المحسنة
+    ctx.putImageData(zoomRegion, centerX - zoomRegionSize / 2, centerY - zoomRegionSize / 2);
     
     // تحويل الكانفاس إلى صورة base64 بأعلى جودة
     const enhancedImageUrl = canvas.toDataURL('image/png', 1.0);
     console.log('تم تحسين الصورة بنجاح، طول البيانات:', enhancedImageUrl.length);
+    
+    // طباعة الجزء المركزي من الصورة للتحقق من وجود أرقام
+    console.log('تم تحسين منطقة الأرقام المركزية بشكل خاص');
     
     return enhancedImageUrl;
   } catch (error) {
