@@ -7,9 +7,11 @@ export const useFetchRequest = (
   setDiagnostics: React.Dispatch<React.SetStateAction<FetchDiagnostics[]>>,
   abortControllerRef: React.MutableRefObject<AbortController | null>
 ) => {
-  const maxRetries = 3;
+  const maxRetries = 2;
 
   const doFetchRequest = async (retry = 0): Promise<any> => {
+    console.log(`Starting fetch request (retry ${retry}/${maxRetries})`);
+    
     // إلغاء أي طلب سابق معلق
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -31,6 +33,11 @@ export const useFetchRequest = (
       console.log(`Executing fetch request (retry ${retry}/${maxRetries})`);
       
       const { data: authSession } = await supabase.auth.getSession();
+      
+      if (!authSession?.session?.access_token) {
+        throw new Error('لم يتم العثور على جلسة المستخدم');
+      }
+      
       const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
       
       const startTime = performance.now();
@@ -40,15 +47,14 @@ export const useFetchRequest = (
         headers: {
           'Content-Type': 'application/json',
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
-          'Authorization': authSession?.session?.access_token 
-            ? `Bearer ${authSession.session.access_token}` 
-            : ''
+          'Authorization': `Bearer ${authSession.session.access_token}`
         },
         body: JSON.stringify({
           requestedAt: new Date().toISOString(),
           fallbackPrice: null
         }),
-        signal: abortControllerRef.current.signal
+        signal: abortControllerRef.current.signal,
+        cache: 'no-store' // منع التخزين المؤقت
       });
       
       const endTime = performance.now();
@@ -58,8 +64,9 @@ export const useFetchRequest = (
       
       if (!response.ok) {
         const responseText = await response.text();
-        const errorMessage = `Error status: ${response.status} ${response.statusText}, Response: ${responseText}`;
-        console.error(errorMessage);
+        const errorMessage = `خطأ ${response.status}: ${response.statusText}`;
+        
+        console.error('Server error:', errorMessage, responseText);
         
         // تحديث التشخيص
         setDiagnostics(prev => prev.map(d => 
@@ -72,7 +79,6 @@ export const useFetchRequest = (
       }
       
       const responseText = await response.text();
-      console.log('Raw response:', responseText);
       
       let responseData;
       try {
@@ -87,8 +93,9 @@ export const useFetchRequest = (
         
         return responseData;
       } catch (jsonError) {
-        const errorMessage = `JSON parse error: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}, Raw response: ${responseText}`;
-        console.error(errorMessage);
+        const errorMessage = `خطأ في تحليل البيانات: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`;
+        
+        console.error('JSON parse error:', errorMessage, 'Raw response:', responseText);
         
         // تحديث التشخيص
         setDiagnostics(prev => prev.map(d => 
@@ -112,24 +119,22 @@ export const useFetchRequest = (
       // فحص ما إذا كان الخطأ بسبب إلغاء الطلب
       if (error instanceof DOMException && error.name === 'AbortError') {
         console.log('Request was aborted');
-        throw error;
+        throw new Error('تم إلغاء الطلب');
       }
       
       if (retry < maxRetries) {
-        // Exponential backoff for retries
-        const delay = Math.pow(2, retry) * 1000;
+        // تقليل عدد المحاولات ووقت الانتظار
+        const delay = Math.min(1000 * (retry + 1), 3000); // حد أقصى 3 ثوان
+        
         console.log(`Retrying fetch in ${delay}ms (attempt ${retry + 1}/${maxRetries})`);
         
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
           setTimeout(async () => {
             try {
               const result = await doFetchRequest(retry + 1);
               resolve(result);
             } catch (retryError) {
-              // إذا فشلت جميع المحاولات
-              if (retry + 1 >= maxRetries) {
-                throw retryError;
-              }
+              reject(retryError);
             }
           }, delay);
         });

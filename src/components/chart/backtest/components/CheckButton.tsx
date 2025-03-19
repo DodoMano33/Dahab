@@ -9,16 +9,19 @@ type CheckButtonProps = {
 };
 
 export const CheckButton = ({ isLoading, networkStatus, onClick }: CheckButtonProps) => {
+  const handleClick = () => {
+    if (!isLoading && networkStatus !== 'offline') {
+      onClick();
+    }
+  };
+
   return (
     <Button
-      onClick={() => {
-        if (!isLoading && networkStatus !== 'offline') {
-          onClick();
-        }
-      }}
+      onClick={handleClick}
       disabled={isLoading || networkStatus === 'offline'}
-      className={`bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md ${
-        isLoading || networkStatus === 'offline' ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+      variant={isLoading ? "outline" : "default"}
+      className={`px-4 py-2 rounded-md ${
+        isLoading || networkStatus === 'offline' ? 'opacity-70' : ''
       } flex items-center gap-2`}
     >
       {isLoading ? (

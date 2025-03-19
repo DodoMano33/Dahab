@@ -12,6 +12,7 @@ export const useBackTest = (): UseBackTestResult => {
   const [diagnostics, setDiagnostics] = useState<FetchDiagnostics[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const isRequestInProgressRef = useRef(false);
 
   // Use the event listeners
   useBackTestEvents(setLastCheckTime);
@@ -29,7 +30,8 @@ export const useBackTest = (): UseBackTestResult => {
   }, []);
 
   const triggerManualCheck = async () => {
-    if (isLoading) {
+    // منع الضغط المتكرر على الزر أثناء المعالجة
+    if (isLoading || isRequestInProgressRef.current) {
       toast.info("جاري بالفعل فحص التحليلات، يرجى الانتظار");
       return;
     }
@@ -37,6 +39,7 @@ export const useBackTest = (): UseBackTestResult => {
     try {
       console.log("Triggering manual check...");
       setIsLoading(true);
+      isRequestInProgressRef.current = true;
       setRetryCount(0);
       
       // طلب سعر محدث
@@ -45,14 +48,17 @@ export const useBackTest = (): UseBackTestResult => {
       // إطلاق حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
       
-      // تعيين مؤقت أمان لإعادة تعيين حالة التحميل بعد 30 ثانية في حالة حدوث خطأ
+      // تعيين مؤقت أمان لإعادة تعيين حالة التحميل بعد 15 ثانية في حالة حدوث خطأ
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
       }
+      
       timeoutRef.current = window.setTimeout(() => {
+        console.log('Safety timeout triggered, resetting loading state');
         setIsLoading(false);
+        isRequestInProgressRef.current = false;
         timeoutRef.current = null;
-      }, 30000);
+      }, 15000);
       
       try {
         const data = await doFetchRequest();
@@ -84,17 +90,20 @@ export const useBackTest = (): UseBackTestResult => {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           toast.error(`حدث خطأ أثناء فحص التحليلات: ${errorMessage}`);
           
-          // محاولة استخدام الحدث المحلي كخطة بديلة
+          // إرسال حدث الفشل
           window.dispatchEvent(new CustomEvent('analyses-check-failed', { 
             detail: { error: errorMessage }
           }));
         } else {
           console.log('Manual check was aborted');
+          toast.error('تم إلغاء الطلب بسبب انتهاء المهلة');
         }
       }
     } finally {
       // تأكد من إعادة تعيين حالة التحميل
+      console.log('Resetting loading state in finally block');
       setIsLoading(false);
+      isRequestInProgressRef.current = false;
       
       // إلغاء مؤقت الأمان
       if (timeoutRef.current) {
@@ -110,13 +119,15 @@ export const useBackTest = (): UseBackTestResult => {
       console.log('Aborting current request');
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
-      setIsLoading(false);
     }
     
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    
+    setIsLoading(false);
+    isRequestInProgressRef.current = false;
   }, []);
 
   return {

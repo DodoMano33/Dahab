@@ -27,9 +27,10 @@ export const fetchAnalysesWithCurrentPrice = async (
     // إضافة timeout لمنع استمرار الطلب لفترة طويلة
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 15000);
+    }, 10000); // تقليل زمن الانتظار إلى 10 ثوان
     
     try {
+      console.log('Sending fetch request to auto-check-analyses');
       const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
         method: 'POST',
         headers: {
@@ -48,16 +49,17 @@ export const fetchAnalysesWithCurrentPrice = async (
       if (!response.ok) {
         const responseText = await response.text();
         console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
-        throw new Error(`Error status: ${response.status} ${response.statusText}`);
+        throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
       }
       
       const responseText = await response.text();
+      console.log('Received response from auto-check-analyses:', responseText.substring(0, 100) + '...');
       
       try {
         return JSON.parse(responseText);
       } catch (jsonError) {
         console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
-        throw new Error(`Failed to parse JSON response`);
+        throw new Error(`خطأ في تحليل البيانات`);
       }
     } catch (error) {
       clearTimeout(timeout);
@@ -65,8 +67,8 @@ export const fetchAnalysesWithCurrentPrice = async (
     }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log('Request was aborted');
-      throw new Error('Request aborted');
+      console.log('Request was aborted due to timeout');
+      throw new Error('انتهت مهلة الاتصال');
     }
     
     console.error('Error in fetchAnalysesWithCurrentPrice:', error);

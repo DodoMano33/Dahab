@@ -25,15 +25,23 @@ export const BacktestCheckButton = memo(() => {
   // تنظيف أي طلبات عالقة عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
+      console.log('Cleaning up BacktestCheckButton');
       cancelCurrentRequest();
     };
   }, [cancelCurrentRequest]);
 
   const handleTriggerManualCheck = () => {
-    if (isLoading) return;
+    if (isLoading) {
+      console.log('Button is already in loading state, ignoring click');
+      return;
+    }
     
     console.log('Manual check triggered with current price:', currentPrice);
+    
+    // إعادة تعيين الأخطاء السابقة قبل بدء فحص جديد
     resetErrors();
+    
+    // تنفيذ الفحص اليدوي
     triggerManualCheck();
   };
 
