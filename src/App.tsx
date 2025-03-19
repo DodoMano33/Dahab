@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnboardingDialog } from "./components/ui/onboarding/OnboardingDialog";
-import { DebugRoutes } from "./routes/DebugRoutes";
+import ImageDebug from "./pages/ImageDebug";
 import "./App.css";
 
 // إنشاء مثيل QueryClient مع إعدادات محسنة
@@ -65,7 +65,7 @@ function App() {
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/*" element={<Index />} />
-                <DebugRoutes />
+                <Route path="/debug-image" element={<ImageDebug />} />
               </Routes>
               <OnboardingDialog />
             </Suspense>
