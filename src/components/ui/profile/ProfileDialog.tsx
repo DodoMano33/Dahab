@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -45,13 +45,6 @@ export function ProfileDialog({
   const [isLoading, setIsLoading] = useState(false);
   const { setTheme } = useTheme();
   
-  // تنظيف عند إغلاق الحوار
-  useEffect(() => {
-    if (!showProfileDialog) {
-      // رمز التنظيف عند إغلاق الحوار
-    }
-  }, [showProfileDialog]);
-
   const updateProfile = async () => {
     if (!user) return;
     

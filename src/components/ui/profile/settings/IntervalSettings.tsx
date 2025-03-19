@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { useEffect, useState, useCallback, memo, useRef } from "react";
+import { useState, useEffect } from "react";
 
 interface IntervalSettingsProps {
   interval: number;
@@ -16,7 +16,7 @@ interface IntervalSettingsProps {
   id: string;
 }
 
-export const IntervalSettings = memo(function IntervalSettings({ 
+export function IntervalSettings({ 
   interval, 
   onIntervalChange, 
   label, 
@@ -35,56 +35,18 @@ export const IntervalSettings = memo(function IntervalSettings({
     { value: 3600000, label: "60 دقيقة" }
   ];
 
-  // استخدام مرجع لتتبع ما إذا كان المكون مُركّب
-  const isMountedRef = useRef(true);
-  // استخدام مرجع لتتبع القيمة الأصلية للتجنب التحديثات غير الضرورية
-  const initialValueRef = useRef<number>(interval);
+  // استخدام حالة محلية لتخزين القيمة المحددة
+  const [selectedInterval, setSelectedInterval] = useState(String(interval));
 
-  // التأكد من أن القيمة المحددة موجودة في القائمة
-  const ensureValidValue = useCallback((value: number): string => {
-    // تحقق مما إذا كانت القيمة موجودة في القائمة
-    const isValidValue = timeIntervalOptions.some(option => option.value === value);
-    // إذا لم تكن القيمة موجودة، استخدم 5 دقائق كقيمة افتراضية
-    return isValidValue ? String(value) : "300000";
-  }, []);
-
-  // استخدام حالة محلية لتخزين القيمة المحددة مع التأكد من صحتها
-  const [selectedInterval, setSelectedInterval] = useState(() => ensureValidValue(interval));
-
-  // تحديث القيمة المحلية عند تغير القيمة الخارجية فقط إذا كانت قيمة مختلفة عن القيمة الأصلية
+  // تحديث القيمة المحلية عند تغير القيمة الخارجية
   useEffect(() => {
-    if (interval !== initialValueRef.current) {
-      const validValue = ensureValidValue(interval);
-      if (validValue !== selectedInterval) {
-        setSelectedInterval(validValue);
-      }
-      initialValueRef.current = interval;
-    }
-  }, [interval, ensureValidValue, selectedInterval]);
+    setSelectedInterval(String(interval));
+  }, [interval]);
 
-  // تعيين isMountedRef إلى false عند إلغاء تحميل المكون
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  const handleValueChange = useCallback((value: string) => {
-    // عدم تحديث الحالة إذا كانت نفس القيمة
-    if (value === selectedInterval) return;
-    
-    // تحديث الحالة المحلية فقط إذا كان المكون لا يزال مُركّبًا
-    if (isMountedRef.current) {
-      setSelectedInterval(value);
-      
-      // استخدام setTimeout لتجنب تحديثات متعددة سريعة
-      setTimeout(() => {
-        if (isMountedRef.current) {
-          onIntervalChange(Number(value));
-        }
-      }, 0);
-    }
-  }, [selectedInterval, onIntervalChange]);
+  const handleValueChange = (value: string) => {
+    setSelectedInterval(value);
+    onIntervalChange(Number(value));
+  };
 
   return (
     <div className="space-y-2">
@@ -106,4 +68,4 @@ export const IntervalSettings = memo(function IntervalSettings({
       </Select>
     </div>
   );
-});
+}

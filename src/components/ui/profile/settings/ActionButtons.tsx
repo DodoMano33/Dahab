@@ -8,7 +8,6 @@ interface ActionButtonsProps {
 
 export function ActionButtons({ resetOnboarding }: ActionButtonsProps) {
   const [isResetting, setIsResetting] = useState(false);
-  const [isClearing, setIsClearing] = useState(false);
   
   const handleResetOnboarding = async () => {
     setIsResetting(true);
@@ -17,16 +16,6 @@ export function ActionButtons({ resetOnboarding }: ActionButtonsProps) {
     } finally {
       setIsResetting(false);
     }
-  };
-  
-  const handleClearAnalytics = () => {
-    setIsClearing(true);
-    // هنا سنقوم بتنفيذ إجراء توضيحي بدون حذف البيانات فعليًا
-    setTimeout(() => {
-      setIsClearing(false);
-      // نظهر رسالة للمستخدم بأن هذه الميزة سيتم تفعيلها لاحقًا
-      alert("هذه الميزة ستكون متاحة في تحديث قادم");
-    }, 1000);
   };
   
   return (
@@ -43,10 +32,9 @@ export function ActionButtons({ resetOnboarding }: ActionButtonsProps) {
       <Button
         variant="outline"
         className="w-full"
-        onClick={handleClearAnalytics}
-        disabled={isClearing}
+        onClick={() => alert("هذه الميزة ستكون متاحة في تحديث قادم")}
       >
-        {isClearing ? "جاري المسح..." : "مسح سجل التحليلات"}
+        مسح سجل التحليلات
       </Button>
     </div>
   );

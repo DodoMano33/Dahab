@@ -1,32 +1,23 @@
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FeatureToggleProps {
   enabled: boolean;
   onToggle: (checked: boolean) => void;
   title: string;
   description: string;
-  onToggleMessage?: {
-    enable?: string;
-    disable?: string;
-  };
-  defaultChecked?: boolean;
 }
 
 export function FeatureToggle({ 
   enabled, 
   onToggle, 
   title, 
-  description,
-  onToggleMessage,
-  defaultChecked
+  description
 }: FeatureToggleProps) {
-  // استخدام حالة محلية لمنع مشاكل التزامن
   const [isChecked, setIsChecked] = useState(enabled);
   
-  // تحديث الحالة المحلية عندما تتغير القيمة من الخارج
   useEffect(() => {
     setIsChecked(enabled);
   }, [enabled]);
