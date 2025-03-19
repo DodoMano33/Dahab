@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackTestHeader } from "./components/BackTestHeader";
 import { AnalysisStats } from "./components/AnalysisStats";
 import { AnalysisTable } from "./components/AnalysisTable";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { CurrentPriceListener } from "./components/table/CurrentPriceListener";
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 
 interface BackTestResultsDialogProps {
   isOpen: boolean;
@@ -36,16 +36,38 @@ export const BackTestResultsDialog = ({
   } = useBacktestResults();
 
   useEffect(() => {
-    if (isOpen) {
-      // عند فتح النافذة، نقوم بإعادة تعيين العناصر المحددة
-      setSelectedItems(new Set());
+    if (completedAnalyses.length > 0) {
+      console.log("BackTestResultsDialog: Loaded analysis types:", 
+        completedAnalyses.slice(0, 20).map(a => a.analysis_type));
       
-      // طلب تحديث السعر
-      window.dispatchEvent(new Event('request-current-price'));
-      window.dispatchEvent(new Event('request-extracted-price'));
-      window.dispatchEvent(new Event('request-ui-price-update'));
+      console.log("BackTestResultsDialog: Unique analysis types:", 
+        [...new Set(completedAnalyses.map(a => a.analysis_type))]);
+        
+      console.log("BackTestResultsDialog: Analysis types with display names:", 
+        completedAnalyses.slice(0, 20).map(a => ({
+          id: a.id,
+          type: a.analysis_type,
+          display: getStrategyName(a.analysis_type)
+        })));
     }
-  }, [isOpen]);
+    
+    if (stats.length > 0) {
+      console.log("BackTestResultsDialog: Loaded stats types:", 
+        stats.map(s => s.type));
+      
+      console.log("BackTestResultsDialog: Unique stats types:", 
+        [...new Set(stats.map(s => s.type))]);
+      
+      console.log("BackTestResultsDialog: Stats types with display names:", 
+        stats.map(s => ({
+          type: s.type,
+          display: getStrategyName(s.type),
+          displayFromStat: s.display_name,
+          success: s.success,
+          fail: s.fail
+        })));
+    }
+  }, [completedAnalyses, stats]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -99,19 +121,13 @@ export const BackTestResultsDialog = ({
 
   const handleRefresh = async () => {
     console.log("Refreshing backtest results and stats...");
-    
-    // إرسال طلب تحديث السعر
-    window.dispatchEvent(new Event('request-current-price'));
-    window.dispatchEvent(new Event('request-extracted-price'));
-    window.dispatchEvent(new Event('request-ui-price-update'));
-    
     await refreshResults();
     await refreshStats();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] md:max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="max-w-[98vw] md:max-w-7xl h-[90vh] flex flex-col p-0">
         <BackTestHeader
           initialAnalysesCount={completedAnalyses.length}
           onClose={onClose}
@@ -125,7 +141,7 @@ export const BackTestResultsDialog = ({
 
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
-            <div className="p-2 space-y-4">
+            <div className="p-4 space-y-4">
               {!isLoadingStats && (
                 <>
                   <AnalysisStats stats={stats} />
@@ -137,21 +153,14 @@ export const BackTestResultsDialog = ({
                 </>
               )}
               
-              <div className="overflow-visible">
-                <CurrentPriceListener>
-                  {(currentPrice) => (
-                    <AnalysisTable
-                      analyses={completedAnalyses.map(analysis => ({
-                        ...analysis,
-                        current_price: currentPrice || analysis.current_price
-                      }))}
-                      selectedItems={selectedItems}
-                      onSelectAll={handleSelectAll}
-                      onSelect={handleSelect}
-                      totalProfitLoss={totalProfitLoss}
-                    />
-                  )}
-                </CurrentPriceListener>
+              <div className="overflow-x-auto">
+                <AnalysisTable
+                  analyses={completedAnalyses}
+                  selectedItems={selectedItems}
+                  onSelectAll={handleSelectAll}
+                  onSelect={handleSelect}
+                  totalProfitLoss={totalProfitLoss}
+                />
                 
                 {hasMore && (
                   <div className="flex justify-center mt-4">
@@ -159,7 +168,6 @@ export const BackTestResultsDialog = ({
                       onClick={loadMore}
                       disabled={isLoadingResults}
                       variant="outline"
-                      size="sm"
                     >
                       {isLoadingResults ? (
                         <>
@@ -186,3 +194,4 @@ export const BackTestResultsDialog = ({
     </Dialog>
   );
 };
+

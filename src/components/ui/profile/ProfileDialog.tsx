@@ -48,30 +48,23 @@ export function ProfileDialog({
     
     setIsLoading(true);
     try {
-      // Remove invalid fields that don't exist in the database schema
-      const profileData = {
-        display_name: userProfile.displayName,
-        theme: userProfile.theme,
-        notifications_enabled: userProfile.notificationsEnabled,
-        auto_check_enabled: userProfile.autoCheckEnabled,
-        auto_check_interval: userProfile.autoCheckInterval,
-        updated_at: new Date().toISOString()
-      };
-      
-      const { error } = await supabase
+      await supabase
         .from('profiles')
-        .update(profileData)
+        .update({
+          id: user.id,
+          email: user.email,
+          display_name: userProfile.displayName,
+          theme: userProfile.theme,
+          notifications_enabled: userProfile.notificationsEnabled,
+          auto_check_enabled: userProfile.autoCheckEnabled,
+          auto_check_interval: userProfile.autoCheckInterval,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id);
-      
-      if (error) {
-        console.error("Error updating profile:", error);
-        throw error;
-      }
       
       setTheme(userProfile.theme as Theme);
       
       toast.success("تم تحديث البيانات الشخصية بنجاح");
-      setShowProfileDialog(false);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("حدث خطأ أثناء تحديث البيانات");

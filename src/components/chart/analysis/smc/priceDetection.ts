@@ -1,4 +1,3 @@
-
 import { ImageData } from "@/types/analysis";
 
 export const detectPrices = (imageData: ImageData, providedCurrentPrice?: number): number[] => {

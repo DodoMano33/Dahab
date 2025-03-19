@@ -6,7 +6,6 @@ import { AnalysisForm } from "../analysis/AnalysisForm";
 import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
-import { Separator } from "@/components/ui/separator";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -60,10 +59,6 @@ export const AnalysisTabContent = ({
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />
-
-      <div className="py-4">
-        <Separator className="h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
-      </div>
 
       {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm

@@ -1,4 +1,3 @@
-
 import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 interface DirectionIndicatorProps {
@@ -12,8 +11,6 @@ export const DirectionIndicator = ({ direction }: DirectionIndicatorProps) => {
     case "هابط":
       return <ArrowDown className="text-red-500 inline w-6 h-6" />;
     case "محايد":
-      return <Minus className="text-gray-500 inline w-6 h-6" />;
-    default:
       return <Minus className="text-gray-500 inline w-6 h-6" />;
   }
 };

@@ -7,12 +7,15 @@ import { useDiagnosticInfo } from "@/hooks/useDiagnosticInfo";
 import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useAnalysisErrors } from "@/hooks/useAnalysisErrors";
 import { useTimeFormatting } from "@/hooks/useTimeFormatting";
-import { DiagnosticInfo } from "@/components/DiagnosticInfo";
-import { TimeInfo } from "./components/TimeInfo";
+import { ConnectionStatusDisplay } from "./components/ConnectionStatusDisplay";
+import { ErrorDisplay } from "./components/ErrorDisplay";
+import { CheckButton } from "./components/CheckButton";
 import { PriceDisplay } from "./components/PriceDisplay";
+import { RetryIndicator } from "./components/RetryIndicator";
+import { TimeInfo } from "./components/TimeInfo";
 
 export const BacktestCheckButton = memo(() => {
-  const { triggerManualCheck, isLoading, lastCheckTime, retryCount, diagnostics } = useBackTest();
+  const { triggerManualCheck, isLoading, lastCheckTime, retryCount } = useBackTest();
   const networkStatus = useNetworkStatus();
   const diagnosticInfo = useDiagnosticInfo();
   const { currentPrice, priceUpdateCount } = useCurrentPrice();
@@ -26,31 +29,39 @@ export const BacktestCheckButton = memo(() => {
   };
 
   return (
-    <div className={`flex flex-col p-3 rounded-lg border ${hasNetworkError ? 'bg-red-50 border-red-200' : 'bg-muted/30'}`}>
-      <h3 className="text-lg font-medium mb-3">فحص التحليلات</h3>
+    <div className={`flex justify-between items-center p-3 rounded-lg border ${hasNetworkError ? 'bg-red-50 border-red-200' : 'bg-muted/30'}`}>
+      <div className="flex flex-col">
+        <h3 className="text-lg font-medium">فحص التحليلات</h3>
+        <div className="flex items-center gap-1 text-muted-foreground text-sm">
+          <Server size={14} /> 
+          حالة الاتصال: <ConnectionStatusDisplay networkStatus={networkStatus} />
+        </div>
+        
+        <ErrorDisplay 
+          hasNetworkError={hasNetworkError} 
+          errorDetails={errorDetails}
+          diagnosticInfo={diagnosticInfo}
+          networkStatus={networkStatus}
+        />
+        
+        <TimeInfo 
+          formattedTime={formattedTime} 
+          nextAutoCheck={nextAutoCheck}
+          hasNetworkError={hasNetworkError}
+        />
+        
+        <PriceDisplay 
+          currentPrice={currentPrice} 
+          priceUpdateCount={priceUpdateCount} 
+        />
+        
+        <RetryIndicator retryCount={retryCount} />
+      </div>
       
-      <DiagnosticInfo 
-        networkStatus={networkStatus}
-        retryCount={retryCount}
-        onRetry={handleTriggerManualCheck}
-        diagnosticInfo={{
-          ...diagnosticInfo,
-          lastError: errorDetails,
-          currentPrice,
-          priceUpdateCount,
-          diagnostics
-        }}
-      />
-      
-      <TimeInfo 
-        formattedTime={formattedTime} 
-        nextAutoCheck={nextAutoCheck}
-        hasNetworkError={hasNetworkError}
-      />
-      
-      <PriceDisplay 
-        currentPrice={currentPrice} 
-        priceUpdateCount={priceUpdateCount} 
+      <CheckButton 
+        isLoading={isLoading} 
+        networkStatus={networkStatus} 
+        onClick={handleTriggerManualCheck} 
       />
     </div>
   );

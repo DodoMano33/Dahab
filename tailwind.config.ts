@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -57,10 +58,6 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-      },
-      gridTemplateColumns: {
-        '13': 'repeat(13, minmax(0, 1fr))',
-        '14': 'repeat(14, minmax(0, 1fr))',
       },
       keyframes: {
         "accordion-down": {

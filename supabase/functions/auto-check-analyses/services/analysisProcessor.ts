@@ -17,9 +17,6 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
         continue;
       }
       
-      // طباعة المزيد من المعلومات التشخيصية
-      console.log(`Analysis details: id=${analysis.id}, created_at=${analysis.created_at}, result_timestamp=${analysis.result_timestamp}, last_checked_at=${analysis.last_checked_at}`);
-      
       // استخدام السعر من TradingView (الذي أصبح مضمونًا الآن)
       console.log(`Checking analysis ${analysis.id} with price:`, currentPrice);
       
@@ -42,20 +39,6 @@ export async function processAnalyses(supabase: any, analyses: any[], currentPri
             p_current_price: currentPrice
           });
         }
-        
-        // التحقق من التحديث واستخدام علامة وقت محددة للتأكد من صحة البيانات
-        const { data: updatedAnalysis, error: checkError } = await supabase
-          .from('search_history')
-          .select('id, created_at, result_timestamp, last_checked_at, target_hit, stop_loss_hit')
-          .eq('id', analysis.id)
-          .single();
-          
-        if (checkError) {
-          console.error(`Error checking updated analysis ${analysis.id}:`, checkError);
-        } else {
-          console.log(`Analysis after update: created_at=${updatedAnalysis.created_at}, result_timestamp=${updatedAnalysis.result_timestamp}, last_checked_at=${updatedAnalysis.last_checked_at}, target_hit=${updatedAnalysis.target_hit}, stop_loss_hit=${updatedAnalysis.stop_loss_hit}`);
-        }
-        
         console.log(`Successfully processed analysis ${analysis.id}`);
         processedCount++;
       } catch (rpcError) {

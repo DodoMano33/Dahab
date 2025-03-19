@@ -1,14 +1,12 @@
-
 import { Input } from "@/components/ui/input";
 
 interface SymbolInputProps {
   value: string;
   onChange: (value: string) => void;
   defaultValue?: string;
-  disabled?: boolean;
 }
 
-export const SymbolInput = ({ value, onChange, defaultValue, disabled = false }: SymbolInputProps) => {
+export const SymbolInput = ({ value, onChange, defaultValue }: SymbolInputProps) => {
   return (
     <div>
       <label htmlFor="symbol" className="block text-sm font-medium text-gray-700 mb-1">
@@ -16,16 +14,15 @@ export const SymbolInput = ({ value, onChange, defaultValue, disabled = false }:
       </label>
       <Input
         id="symbol"
-        placeholder={defaultValue || "XAUUSD"}
+        placeholder={defaultValue || "مثال: XAUUSD"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full ${disabled ? 'bg-gray-100' : ''}`}
+        className="w-full"
         dir="ltr"
-        disabled={disabled}
       />
-      {disabled && (
+      {defaultValue && !value && (
         <p className="text-sm text-gray-500 mt-1">
-          هذا التطبيق مخصص لتحليل الذهب (XAUUSD) فقط
+          سيتم استخدام الرمز {defaultValue} من الشارت
         </p>
       )}
     </div>

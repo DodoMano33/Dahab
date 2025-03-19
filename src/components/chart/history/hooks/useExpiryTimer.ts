@@ -46,9 +46,9 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
       
       const hours = differenceInHours(expiryDate, now);
       const minutes = differenceInMinutes(expiryDate, now) % 60;
+      const seconds = differenceInSeconds(expiryDate, now) % 60;
       
-      // تنسيق الوقت المتبقي بالشكل ساعات:دقائق
-      setTimeLeft(`${hours}:${minutes < 10 ? '0' : ''}${minutes}`);
+      setTimeLeft(`${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
     };
     
     // تحديث الوقت المتبقي كل ثانية

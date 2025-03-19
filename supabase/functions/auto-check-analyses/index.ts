@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts';
 import { handleOptionsRequest, handleError, parseRequestBody, createSuccessResponse } from './utils/requestHandlers.ts';
 import { processAnalyses } from './services/analysisProcessor.ts';
-import { getEffectivePrice } from './services/priceService.ts';
+import { getLastStoredPrice, getEffectivePrice } from './services/priceService.ts';
 import { updateLastCheckedTime, getAnalysisStats } from './services/updateService.ts';
 
 Deno.serve(async (req) => {
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // معالجة جميع التحليلات النشطة
+    // معالجة جميع التحليلات
     console.log(`Processing ${analyses.length} active analyses`);
     const { processedCount, errors } = await processAnalyses(supabase, analyses, effectivePrice, requestData?.symbol || 'XAUUSD');
 
@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
       currentTime,
       checked: processedCount,
       totalAnalyses: analyses.length,
+      tradingViewPriceUsed: effectivePrice !== null,
       errors: errors.length > 0 ? errors : undefined,
       symbol: requestData?.symbol || 'XAUUSD',
       price: effectivePrice,

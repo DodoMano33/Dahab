@@ -6,11 +6,8 @@ export const fetchAnalysesWithCurrentPrice = async (
   symbol: string,
   controller: AbortController
 ): Promise<any> => {
-  // تثبيت الرمز على XAUUSD
-  const fixedSymbol = "XAUUSD";
-  
   const requestBody: Record<string, any> = { 
-    symbol: fixedSymbol,
+    symbol,
     requestedAt: new Date().toISOString()
   };
   
@@ -21,8 +18,14 @@ export const fetchAnalysesWithCurrentPrice = async (
   const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
   const { data: authSession } = await supabase.auth.getSession();
   
-  // تحسين المعلومات التشخيصية
-  const requestOptions = {
+  console.log('Sending fetch request to:', `${supabaseUrl}/functions/auto-check-analyses`);
+  console.log('With headers:', {
+    'Content-Type': 'application/json',
+    'Authorization': authSession?.session?.access_token ? 'Bearer [hidden]' : 'No token'
+  });
+  console.log('With body:', JSON.stringify(requestBody));
+  
+  const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -33,33 +36,21 @@ export const fetchAnalysesWithCurrentPrice = async (
     },
     body: JSON.stringify(requestBody),
     signal: controller.signal
-  };
-
-  try {
-    console.log(`Sending request to check analyses for XAUUSD with price: ${price}`);
-    const response = await fetch(`${supabaseUrl}/functions/v1/auto-check-analyses`, requestOptions);
-    
-    if (!response.ok) {
-      const responseText = await response.text();
-      console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
-      throw new Error(`Error status: ${response.status} ${response.statusText}, Server response: ${responseText}`);
-    }
-    
+  });
+  
+  if (!response.ok) {
     const responseText = await response.text();
-    console.log('Response received from server:', responseText.substring(0, 200) + '...');
-    
-    try {
-      return JSON.parse(responseText);
-    } catch (jsonError) {
-      console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
-      throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
-    }
-  } catch (error) {
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      console.error('Network error: Failed to fetch. Check internet connection.');
-      throw new Error('فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت الخاص بك.');
-    }
-    console.error('Error in fetchAnalysesWithCurrentPrice:', error);
-    throw error;
+    console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
+    throw new Error(`Error status: ${response.status} ${response.statusText}, Server response: ${responseText}`);
+  }
+  
+  const responseText = await response.text();
+  console.log('Response text:', responseText);
+  
+  try {
+    return JSON.parse(responseText);
+  } catch (jsonError) {
+    console.error('JSON parse error:', jsonError, 'Raw response:', responseText);
+    throw new Error(`Failed to parse JSON response: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
   }
 };

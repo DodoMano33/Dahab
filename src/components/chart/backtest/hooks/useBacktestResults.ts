@@ -2,9 +2,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { parseISO, isValid } from 'date-fns';
+import { getStrategyName } from '@/utils/technicalAnalysis/analysisTypeMap';
 
-const PAGE_SIZE = 500; // تم تغييره من 100 إلى 500
+const PAGE_SIZE = 500; // Changed from 100 to 500
 
 export const useBacktestResults = () => {
   const [results, setResults] = useState<any[]>([]);
@@ -52,80 +52,54 @@ export const useBacktestResults = () => {
 
       console.log(`Fetched ${data?.length} results`);
       
-      // طباعة بعض البيانات للتشخيص
-      if (data && data.length > 0) {
-        const firstResult = data[0];
-        console.log('First result sample:', {
-          id: firstResult.id,
-          created_at: firstResult.created_at,
-          result_timestamp: firstResult.result_timestamp,
-          created_at_type: typeof firstResult.created_at,
-          result_timestamp_type: typeof firstResult.result_timestamp
-        });
-        
-        // التحقق من صحة التواريخ المستلمة
-        if (firstResult.created_at && firstResult.result_timestamp) {
-          let createdDate: Date | null = null;
-          let resultDate: Date | null = null;
-          
-          try {
-            createdDate = typeof firstResult.created_at === 'string' ? 
-              parseISO(firstResult.created_at) : 
-              firstResult.created_at;
-            
-            resultDate = typeof firstResult.result_timestamp === 'string' ? 
-              parseISO(firstResult.result_timestamp) : 
-              firstResult.result_timestamp;
-            
-            console.log('Parsed dates:', {
-              created_date: createdDate,
-              result_date: resultDate,
-              created_valid: isValid(createdDate),
-              result_valid: isValid(resultDate)
-            });
-          } catch (dateError) {
-            console.error('Error parsing dates:', dateError);
-          }
-        }
-      }
-      
-      // معالجة النتائج للتأكد من صحة البيانات
+      // Process results to enhance analysis types
       const processedResults = data?.map(result => {
-        // التأكد من أن نوع التحليل موجود
+        // Make sure analysis_type is properly set
         if (!result.analysis_type) {
           console.warn(`Result with missing analysis_type:`, result.id);
           result.analysis_type = 'normal';
         }
         
-        // التأكد من أن تاريخ النتيجة ليس فارغاً
-        if (!result.result_timestamp) {
-          console.warn(`Result with empty result_timestamp:`, result.id);
-          result.result_timestamp = null;
+        // Make sure profit_loss is correctly formatted
+        if (result.profit_loss !== null && result.profit_loss !== undefined) {
+          // Store the absolute value - we'll format it with the sign later based on is_success
+          result.profit_loss = Math.abs(Number(result.profit_loss));
         }
         
-        // التأكد من أن تاريخ الإنشاء ليس فارغاً
-        if (!result.created_at) {
-          console.warn(`Result with empty created_at:`, result.id);
-          result.created_at = null;
-        }
+        // Log the analysis type for debugging
+        console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${getStrategyName(result.analysis_type)}`);
         
         return result;
       }) || [];
       
-      // If we're on page 0, reset the results, otherwise add to them
+      // Log unique analysis types from this batch
+      if (processedResults.length > 0) {
+        console.log('Unique analysis types in this batch:', 
+          [...new Set(processedResults.map(r => r.analysis_type))]);
+      }
+      
+      // Calculate total profit/loss
+      let total = 0;
+      processedResults.forEach(result => {
+        if (result.profit_loss !== null && result.profit_loss !== undefined) {
+          if (result.is_success) {
+            total += Number(result.profit_loss);
+          } else {
+            total -= Number(result.profit_loss);
+          }
+        }
+      });
+      
+      // If we're on page 0, reset the total, otherwise add to it
       if (pageNumber === 0) {
         setResults(processedResults);
+        setTotalProfitLoss(total);
       } else {
         setResults(prev => [...prev, ...processedResults]);
+        setTotalProfitLoss(prev => prev + total);
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));
-      
-      // احسب إجمالي الربح/الخسارة
-      if (processedResults.length > 0) {
-        const totalPL = processedResults.reduce((sum, item) => sum + (item.profit_loss || 0), 0);
-        setTotalProfitLoss(totalPL);
-      }
     } catch (error) {
       console.error('Error in fetchResults:', error);
       toast.error('حدث خطأ أثناء جلب النتائج');

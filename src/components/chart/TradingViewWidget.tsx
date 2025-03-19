@@ -1,99 +1,111 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useTradingViewPrice } from '@/hooks/useTradingViewPrice';
+import React, { useEffect, useRef } from 'react';
+import { useTradingViewMessages } from '@/hooks/useTradingViewMessages';
+import { useAnalysisChecker } from '@/hooks/useAnalysisChecker';
+import { CurrentPriceDisplay } from './CurrentPriceDisplay';
 
 interface TradingViewWidgetProps {
   symbol?: string;
-  theme?: string;
-  allowSymbolChange?: boolean;
+  onSymbolChange?: (symbol: string) => void;
+  onPriceUpdate?: (price: number) => void;
 }
 
-const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
-  symbol = 'XAUUSD',
-  theme = 'light',
-}) => {
+function TradingViewWidget({ 
+  symbol = "CAPITALCOM:GOLD",
+  onSymbolChange,
+  onPriceUpdate 
+}: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
-  const { setupPriceExtraction } = useTradingViewPrice(container);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const currentPriceRef = useRef<number | null>(null);
+
+  const { currentPrice } = useTradingViewMessages({
+    symbol,
+    onSymbolChange,
+    onPriceUpdate
+  });
+
+  useAnalysisChecker({
+    symbol,
+    currentPriceRef
+  });
 
   useEffect(() => {
-    if (container.current && !isInitialized) {
-      console.log("تهيئة ويدجيت TradingView");
-      
-      // تنظيف الحاوية أولاً
-      container.current.innerHTML = '';
-      
-      // إنشاء حاوية الويدجيت
-      const widgetContainer = document.createElement('div');
-      widgetContainer.className = 'tradingview-widget-container';
-      widgetContainer.style.width = '187.5px';
-      widgetContainer.style.height = '95px';
+    console.log('TradingViewWidget mounted with symbol:', symbol);
+    
+    const script = document.createElement('script');
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+    script.type = 'text/javascript';
+    script.async = true;
 
-      // إنشاء div للويدجيت نفسه
-      const widgetDiv = document.createElement('div');
-      widgetDiv.className = 'tradingview-widget-container__widget';
-      widgetDiv.style.width = '100%';
-      widgetDiv.style.height = '100%';
-      
-      // إضافة div الويدجيت إلى الحاوية
-      widgetContainer.appendChild(widgetDiv);
-      
-      // إنشاء سكريبت لويدجيت TradingView
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.async = true;
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-      
-      // تحديد تكوين الويدجيت - تغيير إلى FX_IDC لتحسين دقة عرض سعر الذهب
-      script.innerHTML = JSON.stringify({
-        symbol: `FX_IDC:${symbol}`,
-        width: "100%",
-        colorTheme: theme,
-        isTransparent: false,
-        locale: "en"
-      });
-      
-      // إضافة السكريبت إلى حاوية الويدجيت
-      widgetContainer.appendChild(script);
-      
-      // إضافة حاوية الويدجيت إلى الحاوية المرجعية
-      container.current.appendChild(widgetContainer);
-      
-      // تعيين الحالة كمهيأة
-      setIsInitialized(true);
-      
-      // زيادة التأخير لإعطاء مزيد من الوقت لتحميل الويدجيت
-      setTimeout(() => {
-        console.log("بدء استخراج السعر من الويدجيت بعد التحميل");
-        setupPriceExtraction();
-      }, 3000);
-    }
-  }, [symbol, theme, setupPriceExtraction, isInitialized]);
-
-  // تنظيف عند إزالة المكون
-  useEffect(() => {
-    return () => {
-      setIsInitialized(false);
+    const config = {
+      autosize: true,
+      symbol: symbol,
+      interval: "1",
+      timezone: "Asia/Jerusalem",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      hide_legend: true,
+      allow_symbol_change: true,
+      save_image: false,
+      calendar: false,
+      hide_volume: true,
+      support_host: "https://www.tradingview.com"
     };
-  }, []);
+
+    script.innerHTML = JSON.stringify(config);
+
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container';
+    widgetContainer.style.height = '100%';
+    widgetContainer.style.width = '100%';
+
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget';
+    widgetDiv.style.height = 'calc(100% - 32px)';
+    widgetDiv.style.width = '100%';
+
+    const copyright = document.createElement('div');
+    copyright.className = 'tradingview-widget-copyright';
+    copyright.innerHTML = '<a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a>';
+
+    widgetContainer.appendChild(widgetDiv);
+    widgetContainer.appendChild(copyright);
+    widgetContainer.appendChild(script);
+
+    if (container.current) {
+      container.current.innerHTML = '';
+      container.current.appendChild(widgetContainer);
+    }
+
+    const attemptInitialPriceRequest = () => {
+      try {
+        window.postMessage({ method: 'getCurrentPrice', symbol }, '*');
+        console.log('Sent getCurrentPrice request to TradingView via window.postMessage');
+      } catch (e) {
+        console.warn('Failed to request initial price from TradingView', e);
+      }
+    };
+    
+    const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
+
+    return () => {
+      clearTimeout(initialPriceTimer);
+      if (container.current) {
+        container.current.innerHTML = '';
+      }
+    };
+  }, [symbol]);
 
   return (
-    <div 
-      ref={container} 
-      className="tradingview-widget-wrapper"
-      style={{ 
-        width: '187.5px',
-        height: '95px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f9f9f9',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        position: 'relative'
-      }}
-    />
+    <div className="relative w-full h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+      <div 
+        ref={container}
+        style={{ height: "100%", width: "100%" }}
+      />
+      <CurrentPriceDisplay price={currentPrice} />
+    </div>
   );
-};
+}
 
 export default TradingViewWidget;

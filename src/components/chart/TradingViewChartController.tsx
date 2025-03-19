@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 
 interface TradingViewChartControllerProps {
@@ -63,18 +62,6 @@ export const TradingViewChartController = ({
         save_image: true,
         studies: ["MAExp@tv-basicstudies"],
         autosize: true,
-        hide_price_scale: true,          // إخفاء مقياس الأسعار
-        hide_left_price_scale: true,     // إخفاء مقياس الأسعار على اليسار تحديدًا
-        scale_padding: 0,                // إزالة أي مساحة للمقياس
-        disabled_features: [
-          "header_symbol_search",
-          "header_compare",
-          "left_toolbar",
-          "show_left_price_scale",       // تعطيل عرض مقياس الأسعار على اليسار
-          "left_price_scale",            // تعطيل مقياس الأسعار اليساري نفسه
-          "scale_left",                  // تعطيل المقياس اليساري
-          "scales_date_format"           // تعطيل تنسيق المقياس
-        ]
       });
 
       widgetRef.current = widget;
