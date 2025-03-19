@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+// استخدام المتغيرات البيئية مباشرة من next.config.js
 const supabaseUrl = 'https://nhvkviofvefwbvditgxo.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U';
 
@@ -9,6 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('بيانات اعتماد Supabase مفقودة');
 }
 
+// تكوين العميل مع إعدادات محسنة للمصادقة
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -28,7 +30,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// الاستماع للتغييرات في حالة المصادقة
+// تسجيل حالة المصادقة في كل تغيير للمساعدة في تشخيص المشكلات
 if (typeof window !== 'undefined') {
   supabase.auth.onAuthStateChange((event, session) => {
     console.log('تغيير حالة المصادقة:', event, session?.user?.email);
@@ -43,3 +45,21 @@ if (typeof window !== 'undefined') {
     }
   });
 }
+
+// وظيفة مساعدة لتحديث رمز المصادقة
+export const refreshSession = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.auth.refreshSession();
+    
+    if (error) {
+      console.error('فشل في تحديث جلسة المصادقة:', error);
+      return false;
+    }
+    
+    console.log('تم تحديث جلسة المصادقة بنجاح');
+    return !!data.session;
+  } catch (err) {
+    console.error('خطأ أثناء تحديث جلسة المصادقة:', err);
+    return false;
+  }
+};
