@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { FetchDiagnostics, UseBackTestResult } from "./backtest/types";
 import { useFetchRequest } from "./backtest/useFetchRequest";
@@ -11,12 +11,22 @@ export const useBackTest = (): UseBackTestResult => {
   const [retryCount, setRetryCount] = useState(0);
   const [diagnostics, setDiagnostics] = useState<FetchDiagnostics[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   // Use the event listeners
   useBackTestEvents(setLastCheckTime);
 
   // Use the fetch request module
   const { doFetchRequest } = useFetchRequest(setDiagnostics, abortControllerRef);
+
+  // Reset loading state after timeout (safety mechanism)
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const triggerManualCheck = async () => {
     if (isLoading) {
@@ -34,6 +44,15 @@ export const useBackTest = (): UseBackTestResult => {
       
       // إطلاق حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
+      
+      // تعيين مؤقت أمان لإعادة تعيين حالة التحميل بعد 30 ثانية في حالة حدوث خطأ
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = window.setTimeout(() => {
+        setIsLoading(false);
+        timeoutRef.current = null;
+      }, 30000);
       
       try {
         const data = await doFetchRequest();
@@ -74,7 +93,14 @@ export const useBackTest = (): UseBackTestResult => {
         }
       }
     } finally {
+      // تأكد من إعادة تعيين حالة التحميل
       setIsLoading(false);
+      
+      // إلغاء مؤقت الأمان
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     }
   };
 
@@ -85,6 +111,11 @@ export const useBackTest = (): UseBackTestResult => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
       setIsLoading(false);
+    }
+    
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   }, []);
 

@@ -28,16 +28,15 @@ export const useTradingViewMessages = ({
       if (!isComponentMountedRef.current) return;
       
       try {
-        // تحقق من وجود سعر مخزن مؤقتًا حديث (أقل من 30 ثانية)
+        // تحقق من وجود سعر مخزن مؤقتًا حديث (أقل من 60 ثانية)
         const now = Date.now();
         const cachedData = priceCache.current[symbol];
-        const isCacheValid = cachedData && (now - cachedData.timestamp < 30000);
+        const isCacheValid = cachedData && (now - cachedData.timestamp < 60000);
         
         if (isCacheValid) {
           console.log(`استخدام السعر المخزن مؤقتًا للرمز ${symbol}:`, cachedData.price);
           setCurrentPrice(cachedData.price);
           onPriceUpdate?.(cachedData.price);
-          setPriceUpdateCount(prev => prev + 1);
           return;
         }
         
@@ -46,7 +45,7 @@ export const useTradingViewMessages = ({
         
         if (price && isComponentMountedRef.current) {
           setPriceUpdateCount(prev => prev + 1);
-          console.log(`★★★ تم تحديث السعر من Metal Price API (${priceUpdateCount + 1}):`, price, 'للرمز:', symbol);
+          console.log(`تم تحديث السعر من Metal Price API:`, price, 'للرمز:', symbol);
           
           setCurrentPrice(price);
           onPriceUpdate?.(price);
@@ -73,15 +72,12 @@ export const useTradingViewMessages = ({
       if (!isComponentMountedRef.current) return;
       
       const now = Date.now();
-      // منع التحديثات المتكررة جدًا (الحد الأدنى 5 ثواني بين التحديثات)
-      if (now - lastUpdateTimeRef.current < 5000) {
-        console.log('تجاهل تحديث السعر لأنه حدث مؤخرًا جدًا');
+      // منع التحديثات المتكررة جدًا (الحد الأدنى 10 ثواني بين التحديثات)
+      if (now - lastUpdateTimeRef.current < 10000) {
         return;
       }
       
       setPriceUpdateCount(prev => prev + 1);
-      console.log(`★★★ تم تحديث السعر من Metal Price API (${priceUpdateCount + 1}):`, price, 'للرمز:', symbol);
-      
       setCurrentPrice(price);
       onPriceUpdate?.(price);
       
@@ -101,42 +97,16 @@ export const useTradingViewMessages = ({
       onError: handlePriceError
     });
     
-    // الاستماع لتحديثات السعر العامة
-    const handleMetalPriceUpdate = (event: CustomEvent) => {
-      if (!isComponentMountedRef.current) return;
-      
-      if (event.detail && event.detail.price) {
-        const now = Date.now();
-        // منع التحديثات المتكررة جدًا
-        if (now - lastUpdateTimeRef.current < 5000) {
-          return;
-        }
-        
-        setPriceUpdateCount(prev => prev + 1);
-        setCurrentPrice(event.detail.price);
-        
-        // تخزين السعر مؤقتًا
-        priceCache.current[symbol] = { price: event.detail.price, timestamp: now };
-        lastUpdateTimeRef.current = now;
-        
-        console.log('تم استلام تحديث السعر عبر حدث metal-price-update:', event.detail.price);
-      }
-    };
-    
-    window.addEventListener('metal-price-update', handleMetalPriceUpdate as EventListener);
-    
-    // تحديث السعر بشكل أقل تكرارًا (كل 60 ثانية بدلاً من 30)
+    // تحديث السعر كل 60 ثانية
     intervalIdRef.current = window.setInterval(() => {
       if (!isComponentMountedRef.current) return;
       
       const now = Date.now();
       // تحقق من الوقت المنقضي منذ آخر تحديث
-      if (now - lastUpdateTimeRef.current < 30000) {
-        console.log('تجاهل تحديث السعر الدوري لأن آخر تحديث كان حديثًا');
+      if (now - lastUpdateTimeRef.current < 60000) {
         return;
       }
       
-      console.log(`محاولة تحديث السعر للرمز ${symbol} من التحديث الدوري`);
       priceUpdater.fetchPrice(symbol)
         .then(price => {
           if (price !== null && isComponentMountedRef.current) {
@@ -146,13 +116,12 @@ export const useTradingViewMessages = ({
         .catch(error => {
           console.error('فشل في تحديث السعر من التحديث الدوري:', error);
         });
-    }, 31000); // زيادة الفاصل الزمني إلى 31 ثانية بدلاً من 30
+    }, 60000);
 
     return () => {
       console.log('تنظيف موارد useTradingViewMessages');
       isComponentMountedRef.current = false;
       
-      window.removeEventListener('metal-price-update', handleMetalPriceUpdate as EventListener);
       priceUpdater.unsubscribe(symbol, handlePriceUpdated);
       
       if (intervalIdRef.current !== null) {
@@ -160,7 +129,7 @@ export const useTradingViewMessages = ({
         intervalIdRef.current = null;
       }
     };
-  }, [symbol, onSymbolChange, onPriceUpdate, priceUpdateCount]);
+  }, [symbol, onSymbolChange, onPriceUpdate]);
 
   return {
     currentPrice,

@@ -1,5 +1,5 @@
 
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { useBackTest } from "@/components/hooks/useBackTest";
 import { Server } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -15,17 +15,26 @@ import { RetryIndicator } from "./components/RetryIndicator";
 import { TimeInfo } from "./components/TimeInfo";
 
 export const BacktestCheckButton = memo(() => {
-  const { triggerManualCheck, isLoading, lastCheckTime, retryCount } = useBackTest();
+  const { triggerManualCheck, isLoading, lastCheckTime, retryCount, cancelCurrentRequest } = useBackTest();
   const networkStatus = useNetworkStatus();
   const diagnosticInfo = useDiagnosticInfo();
   const { currentPrice, priceUpdateCount } = useCurrentPrice();
   const { hasNetworkError, errorDetails, resetErrors } = useAnalysisErrors();
   const { formattedTime, nextAutoCheck } = useTimeFormatting(lastCheckTime);
 
+  // تنظيف أي طلبات عالقة عند إلغاء تحميل المكون
+  useEffect(() => {
+    return () => {
+      cancelCurrentRequest();
+    };
+  }, [cancelCurrentRequest]);
+
   const handleTriggerManualCheck = () => {
+    if (isLoading) return;
+    
     console.log('Manual check triggered with current price:', currentPrice);
-    triggerManualCheck();
     resetErrors();
+    triggerManualCheck();
   };
 
   return (
