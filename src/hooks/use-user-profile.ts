@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTheme } from "@/hooks/use-theme";
-import { ALPHA_VANTAGE_API_KEY } from "@/utils/price/config";
 
 export function useUserProfile(user: any) {
   const [userProfile, setUserProfile] = useState({
@@ -13,8 +12,6 @@ export function useUserProfile(user: any) {
     notificationsEnabled: true,
     autoCheckEnabled: false,
     autoCheckInterval: 30,
-    priceUpdateInterval: 30,
-    apiKey: ALPHA_VANTAGE_API_KEY,
   });
   
   const [profileLoading, setProfileLoading] = useState(true);
@@ -51,22 +48,11 @@ export function useUserProfile(user: any) {
           notificationsEnabled: data.notifications_enabled !== false,
           autoCheckEnabled: data.auto_check_enabled || false,
           autoCheckInterval: data.auto_check_interval || 30,
-          priceUpdateInterval: data.price_update_interval || 30,
-          apiKey: data.alpha_vantage_api_key || ALPHA_VANTAGE_API_KEY,
         });
 
         if (data.theme !== theme) {
           setTheme(data.theme as 'light' | 'dark' | 'system');
         }
-        
-        // تحديث الإعدادات العامة
-        window.dispatchEvent(new CustomEvent('user-settings-updated', {
-          detail: {
-            priceUpdateInterval: data.price_update_interval || 30,
-            autoCheckInterval: data.auto_check_interval || 30,
-            apiKey: data.alpha_vantage_api_key || ALPHA_VANTAGE_API_KEY
-          }
-        }));
       }
     } catch (error) {
       console.error("Error in fetchUserProfile:", error);
@@ -104,22 +90,11 @@ export function useUserProfile(user: any) {
           notifications_enabled: userProfile.notificationsEnabled,
           auto_check_enabled: userProfile.autoCheckEnabled,
           auto_check_interval: userProfile.autoCheckInterval,
-          price_update_interval: userProfile.priceUpdateInterval,
-          alpha_vantage_api_key: userProfile.apiKey,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
       
       setTheme(userProfile.theme);
-      
-      // إرسال حدث لتحديث الإعدادات في جميع أنحاء التطبيق
-      window.dispatchEvent(new CustomEvent('user-settings-updated', {
-        detail: {
-          priceUpdateInterval: userProfile.priceUpdateInterval,
-          autoCheckInterval: userProfile.autoCheckInterval,
-          apiKey: userProfile.apiKey
-        }
-      }));
       
       toast.success("تم تحديث البيانات الشخصية بنجاح");
     } catch (error) {

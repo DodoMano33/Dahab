@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAnalysisCheckerProcess } from './useAnalysisCheckerProcess';
 import { AnalysisCheckerProps, UseAnalysisCheckerResult } from './types';
 
@@ -16,18 +16,7 @@ export const useAnalysisChecker = ({
     clearPendingRequests
   } = useAnalysisCheckerProcess();
 
-  const [autoCheckInterval, setAutoCheckInterval] = useState<number>(30000); // القيمة الافتراضية 30 ثانية
-
   useEffect(() => {
-    // الاستماع لتغييرات إعدادات المستخدم
-    const handleSettingsUpdate = ((event: CustomEvent) => {
-      if (event.detail && event.detail.autoCheckInterval) {
-        setAutoCheckInterval(event.detail.autoCheckInterval * 1000);
-      }
-    }) as EventListener;
-
-    window.addEventListener('user-settings-updated', handleSettingsUpdate);
-
     const handleManualCheck = () => {
       console.log('Manual check requested, current price:', currentPriceRef.current);
       const price = currentPriceRef.current;
@@ -43,7 +32,7 @@ export const useAnalysisChecker = ({
     
     window.addEventListener('manual-check-analyses', handleManualCheck);
 
-    const autoCheckIntervalId = setInterval(() => {
+    const autoCheckInterval = setInterval(() => {
       const price = currentPriceRef.current;
       
       // تخطي الفحص التلقائي إذا كان آخر خطأ حدث منذ أقل من دقيقة واحدة
@@ -59,15 +48,14 @@ export const useAnalysisChecker = ({
         console.warn('Auto check skipped, current price is null');
         checkAnalyses({ price: null, symbol });
       }
-    }, autoCheckInterval);
+    }, 10000);
 
     return () => {
       window.removeEventListener('manual-check-analyses', handleManualCheck);
-      window.removeEventListener('user-settings-updated', handleSettingsUpdate);
-      clearInterval(autoCheckIntervalId);
+      clearInterval(autoCheckInterval);
       clearPendingRequests();
     };
-  }, [symbol, currentPriceRef, lastErrorTime, consecutiveErrors, checkAnalyses, clearPendingRequests, autoCheckInterval]);
+  }, [symbol, currentPriceRef, lastErrorTime, consecutiveErrors, checkAnalyses, clearPendingRequests]);
 
   return {
     isChecking,

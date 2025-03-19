@@ -27,8 +27,6 @@ interface ProfileDialogProps {
     notificationsEnabled: boolean;
     autoCheckEnabled: boolean;
     autoCheckInterval: number;
-    priceUpdateInterval: number;
-    apiKey: string;
   };
   setUserProfile: (profile: any) => void;
   user: any;
@@ -60,22 +58,11 @@ export function ProfileDialog({
           notifications_enabled: userProfile.notificationsEnabled,
           auto_check_enabled: userProfile.autoCheckEnabled,
           auto_check_interval: userProfile.autoCheckInterval,
-          price_update_interval: userProfile.priceUpdateInterval,
-          alpha_vantage_api_key: userProfile.apiKey,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
       
       setTheme(userProfile.theme as Theme);
-      
-      // تحديث الإعدادات العامة عبر حدث مخصص
-      window.dispatchEvent(new CustomEvent('user-settings-updated', {
-        detail: {
-          priceUpdateInterval: userProfile.priceUpdateInterval,
-          autoCheckInterval: userProfile.autoCheckInterval,
-          apiKey: userProfile.apiKey
-        }
-      }));
       
       toast.success("تم تحديث البيانات الشخصية بنجاح");
     } catch (error) {
