@@ -1,2 +1,16 @@
 
 project_id = "nhvkviofvefwbvditgxo"
+
+[update-real-time-prices.http]
+port = 54321
+timeout = 30
+
+[update-real-time-prices]
+verify_jwt = false
+
+[schedule-realtime-prices.http]
+port = 54321
+timeout = 30
+
+[schedule-realtime-prices]
+verify_jwt = false
