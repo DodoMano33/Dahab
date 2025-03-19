@@ -146,7 +146,7 @@ export const useTradingViewMessages = ({
         .catch(error => {
           console.error('فشل في تحديث السعر من التحديث الدوري:', error);
         });
-    }, 60000); // زيادة الفاصل الزمني إلى 60 ثانية بدلاً من 30
+    }, 31000); // زيادة الفاصل الزمني إلى 31 ثانية بدلاً من 30
 
     return () => {
       console.log('تنظيف موارد useTradingViewMessages');
