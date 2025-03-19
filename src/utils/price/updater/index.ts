@@ -38,6 +38,13 @@ export class PriceUpdater {
     this.subscriptions.subscribe(subscription);
     
     // محاولة جلب السعر الأولي
+    this.fetchInitialPrice(subscription);
+  }
+
+  /**
+   * جلب السعر الأولي للمشترك الجديد
+   */
+  private fetchInitialPrice(subscription: PriceSubscription): void {
     this.fetchPrice(subscription.symbol)
       .then(price => {
         if (price !== null) {
@@ -62,11 +69,7 @@ export class PriceUpdater {
   async fetchPrice(symbol: string): Promise<number | null> {
     // التحقق من تجاوز حد معدل الاستخدام
     if (this.rateLimit.isRateLimited()) {
-      // محاولة استخدام السعر المخزن مؤقتًا
-      const cachedPrice = this.cache.get(symbol);
-      if (cachedPrice !== null) return cachedPrice;
-      
-      throw new Error('تم تجاوز حد معدل API');
+      return this.handleRateLimitedFetch(symbol);
     }
     
     // التحقق من الذاكرة المؤقتة أولاً
@@ -77,35 +80,67 @@ export class PriceUpdater {
     
     try {
       // استخدام وظيفة إعادة المحاولة
-      const price = await retry(
-        async () => {
-          const result = await fetchPrice(symbol);
-          return result;
-        },
-        this.retryOptions
-      );
+      const price = await this.fetchPriceWithRetry(symbol);
       
       if (price !== null) {
-        this.cache.set(symbol, price);
-        
-        // إشعار المشتركين بالسعر الجديد
-        this.subscriptions.notifySubscribers(symbol, price);
+        this.handleSuccessfulFetch(symbol, price);
       }
       
       return price;
     } catch (error) {
-      console.error(`خطأ في fetchPrice للرمز ${symbol}:`, error);
-      
-      // التحقق مما إذا كان الخطأ متعلقًا بحد معدل الاستخدام
-      if (error instanceof Error && error.message.includes('rate limit')) {
-        this.rateLimit.setRateLimited(true);
-      }
-      
-      // إشعار المشتركين بالخطأ
-      this.subscriptions.notifyError(symbol, error as Error);
-      
-      throw error;
+      return this.handleFetchError(symbol, error as Error);
     }
+  }
+
+  /**
+   * التعامل مع حالة تجاوز حد معدل الاستخدام
+   */
+  private handleRateLimitedFetch(symbol: string): number | null {
+    // محاولة استخدام السعر المخزن مؤقتًا
+    const cachedPrice = this.cache.get(symbol);
+    if (cachedPrice !== null) return cachedPrice;
+    
+    throw new Error('تم تجاوز حد معدل API');
+  }
+
+  /**
+   * جلب السعر مع إعادة المحاولة
+   */
+  private async fetchPriceWithRetry(symbol: string): Promise<number | null> {
+    return retry(
+      async () => {
+        const result = await fetchPrice(symbol);
+        return result;
+      },
+      this.retryOptions
+    );
+  }
+
+  /**
+   * التعامل مع نجاح جلب السعر
+   */
+  private handleSuccessfulFetch(symbol: string, price: number): void {
+    this.cache.set(symbol, price);
+    
+    // إشعار المشتركين بالسعر الجديد
+    this.subscriptions.notifySubscribers(symbol, price);
+  }
+
+  /**
+   * التعامل مع خطأ جلب السعر
+   */
+  private handleFetchError(symbol: string, error: Error): never {
+    console.error(`خطأ في fetchPrice للرمز ${symbol}:`, error);
+    
+    // التحقق مما إذا كان الخطأ متعلقًا بحد معدل الاستخدام
+    if (error.message.includes('rate limit')) {
+      this.rateLimit.setRateLimited(true);
+    }
+    
+    // إشعار المشتركين بالخطأ
+    this.subscriptions.notifyError(symbol, error);
+    
+    throw error;
   }
 
   /**
