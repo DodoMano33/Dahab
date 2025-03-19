@@ -5,18 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import TradingViewWidget from '../TradingViewWidget';
-import html2canvas from 'html2canvas';
 import { Link } from 'react-router-dom';
-import { Home, RefreshCw, AlertCircle, Camera } from 'lucide-react';
+import { Home, RefreshCw, AlertCircle, Camera, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const ImageDebugPage: React.FC = () => {
   const [screenImage, setScreenImage] = useState<string | null>(null);
   const [captureTime, setCaptureTime] = useState<string | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
-  const { captureTradingViewWidget, captureAttempts, isCapturing, captureError } = useImageCapture();
+  const { 
+    captureTradingViewWidget, 
+    captureFullScreen, 
+    captureAttempts, 
+    isCapturing, 
+    captureError 
+  } = useImageCapture();
   
-  const handleCaptureImage = async () => {
+  // التقاط صورة للويدجيت
+  const handleCaptureWidget = async () => {
     try {
       const currentTime = new Date().toLocaleTimeString();
       setCaptureTime(currentTime);
@@ -30,20 +36,20 @@ export const ImageDebugPage: React.FC = () => {
       
       if (capturedImage) {
         setScreenImage(capturedImage);
-        console.log('تم التقاط الصورة بنجاح:', capturedImage.substring(0, 100) + '...');
-        toast.success("تم التقاط الصورة بنجاح");
+        console.log('تم التقاط صورة الويدجيت بنجاح:', capturedImage.substring(0, 100) + '...');
+        toast.success("تم التقاط صورة الويدجيت بنجاح");
       } else {
-        console.error('فشل التقاط الصورة');
-        toast.error(captureError || "فشل التقاط الصورة");
+        console.error('فشل التقاط صورة الويدجيت');
+        toast.error(captureError || "فشل التقاط صورة الويدجيت");
       }
     } catch (error) {
-      console.error('خطأ في التقاط الصورة:', error);
-      toast.error("حدث خطأ أثناء التقاط الصورة");
+      console.error('خطأ في التقاط صورة الويدجيت:', error);
+      toast.error("حدث خطأ أثناء التقاط صورة الويدجيت");
     }
   };
   
-  // التقاط صورة للصفحة الكاملة
-  const handleCaptureFullPage = async () => {
+  // التقاط صورة للصفحة الكاملة (سكرين شوت)
+  const handleCaptureFullScreen = async () => {
     try {
       if (!pageRef.current) {
         toast.error("لا يمكن العثور على عنصر الصفحة");
@@ -53,37 +59,53 @@ export const ImageDebugPage: React.FC = () => {
       const currentTime = new Date().toLocaleTimeString();
       setCaptureTime(currentTime);
       
-      toast.info("جاري التقاط صورة للصفحة الكاملة...", {
+      toast.info("جاري التقاط صورة للشاشة الكاملة...", {
         duration: 2000,
       });
       
-      // استخدام html2canvas لالتقاط صورة الصفحة
-      const canvas = await html2canvas(document.documentElement, {
-        logging: true,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        scale: 1,
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight
-      });
+      // استخدام الدالة المحسنة لالتقاط صورة الشاشة الكاملة
+      const imageUrl = await captureFullScreen();
       
-      // تحويل Canvas إلى URL صورة
-      const imageUrl = canvas.toDataURL('image/png');
-      setScreenImage(imageUrl);
-      console.log('تم التقاط صورة الصفحة بنجاح:', imageUrl.substring(0, 100) + '...');
-      toast.success("تم التقاط صورة الصفحة بنجاح");
-      
+      if (imageUrl) {
+        setScreenImage(imageUrl);
+        console.log('تم التقاط صورة الشاشة بنجاح:', imageUrl.substring(0, 100) + '...');
+        toast.success("تم التقاط صورة الشاشة بنجاح");
+      } else {
+        console.error('فشل التقاط صورة الشاشة');
+        toast.error(captureError || "فشل التقاط صورة الشاشة");
+      }
     } catch (error) {
-      console.error('خطأ في التقاط صورة الصفحة:', error);
-      toast.error("حدث خطأ أثناء التقاط صورة الصفحة");
+      console.error('خطأ في التقاط صورة الشاشة:', error);
+      toast.error("حدث خطأ أثناء التقاط صورة الشاشة");
+    }
+  };
+  
+  // تنزيل الصورة الملتقطة
+  const handleDownloadImage = () => {
+    if (!screenImage) {
+      toast.error("لا توجد صورة للتنزيل");
+      return;
+    }
+    
+    try {
+      // إنشاء رابط تنزيل
+      const link = document.createElement('a');
+      link.href = screenImage;
+      link.download = `screen-capture-${new Date().toISOString().replace(/:/g, '-')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("تم تنزيل الصورة بنجاح");
+    } catch (error) {
+      console.error('خطأ في تنزيل الصورة:', error);
+      toast.error("حدث خطأ أثناء تنزيل الصورة");
     }
   };
   
   // التقاط الصورة عند تحميل الصفحة
   useEffect(() => {
     const timer = setTimeout(() => {
-      handleCaptureImage();
+      handleCaptureFullScreen();
     }, 2000);
     
     return () => clearTimeout(timer);
@@ -114,9 +136,9 @@ export const ImageDebugPage: React.FC = () => {
         </Card>
       </div>
       
-      <div className="flex justify-center mb-4 gap-4">
+      <div className="flex justify-center mb-4 gap-4 flex-wrap">
         <Button 
-          onClick={handleCaptureImage} 
+          onClick={handleCaptureWidget} 
           className="bg-blue-600 text-white hover:bg-blue-700"
           disabled={isCapturing}
         >
@@ -134,13 +156,23 @@ export const ImageDebugPage: React.FC = () => {
         </Button>
         
         <Button 
-          onClick={handleCaptureFullPage} 
+          onClick={handleCaptureFullScreen} 
           className="bg-green-600 text-white hover:bg-green-700"
           disabled={isCapturing}
         >
           <Camera className="mr-2 h-4 w-4" />
-          التقاط صورة للصفحة الكاملة
+          التقاط صورة للشاشة الكاملة
         </Button>
+        
+        {screenImage && (
+          <Button 
+            onClick={handleDownloadImage} 
+            className="bg-purple-600 text-white hover:bg-purple-700"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            تنزيل الصورة
+          </Button>
+        )}
       </div>
       
       {captureTime && (
@@ -189,8 +221,9 @@ export const ImageDebugPage: React.FC = () => {
         <div className="w-full p-12 bg-gray-100 border border-gray-300 rounded-md text-center">
           <p className="text-gray-500 mb-4">لم يتم التقاط أي صورة بعد</p>
           {!isCapturing && (
-            <Button onClick={handleCaptureImage} variant="outline">
-              محاولة التقاط صورة
+            <Button onClick={handleCaptureFullScreen} variant="outline">
+              <Camera className="mr-2 h-4 w-4" />
+              محاولة التقاط صورة للشاشة
             </Button>
           )}
         </div>
