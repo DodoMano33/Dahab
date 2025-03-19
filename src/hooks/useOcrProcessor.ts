@@ -34,6 +34,9 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       
       // معالجة الصورة باستخدام OCR
       const extractedText = await recognizeTextFromImage(imageUrl);
+      
+      // إضافة تسجيل أكثر تفصيلاً
+      console.log("النص المستخرج (الطول):", extractedText ? extractedText.length : 0);
       console.log("النص المستخرج من الصورة:", extractedText);
       
       // تسجيل النص فقط إذا لم يكن فارغاً
@@ -54,6 +57,7 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
             })
           );
           
+          console.log("تم إرسال حدث تحديث سعر:", price);
           return price;
         } else {
           console.log("لم يتم العثور على سعر صالح في النص المستخرج");
