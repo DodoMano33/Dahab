@@ -22,8 +22,12 @@ export function FeatureToggle({
   onToggleMessage,
   defaultChecked
 }: FeatureToggleProps) {
+  const handleToggle = (checked: boolean) => {
+    onToggle(checked);
+  };
+  
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between space-y-0">
       <div className="space-y-0.5">
         <Label>{title}</Label>
         <p className="text-sm text-muted-foreground">
@@ -32,8 +36,9 @@ export function FeatureToggle({
       </div>
       <Switch
         checked={enabled}
-        onCheckedChange={(checked) => onToggle(checked)}
+        onCheckedChange={handleToggle}
         defaultChecked={defaultChecked}
+        aria-label={title}
       />
     </div>
   );

@@ -31,7 +31,7 @@ export function SettingsTab({
       />
       
       <IntervalSettings
-        interval={userProfile.priceUpdateInterval || 300000}
+        interval={userProfile.priceUpdateInterval || 30000}
         onIntervalChange={(interval) => 
           setUserProfile({ ...userProfile, priceUpdateInterval: interval })
         }

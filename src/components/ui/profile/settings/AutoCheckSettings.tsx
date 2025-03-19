@@ -37,8 +37,11 @@ export function AutoCheckSettings({
             }
           };
           
+          // تنفيذ الفحص مرة واحدة عند التفعيل
           checkFunction();
           
+          // إعداد التنفيذ الدوري كل 5 دقائق بدلاً من استخدام قيمة متغيرة
+          // هذا أكثر استقرارًا ويمنع المشاكل المحتملة
           const intervalId = setInterval(checkFunction, 5 * 60 * 1000);
           
           return () => {

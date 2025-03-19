@@ -51,6 +51,7 @@ export function ProfileDialog({
     setIsLoading(true);
     try {
       // تحديث تنسيق البيانات المرسلة لقاعدة البيانات
+      // نرسل فقط الحقول الموجودة فعلاً في جدول profiles
       await supabase
         .from('profiles')
         .update({
@@ -59,7 +60,6 @@ export function ProfileDialog({
           notifications_enabled: userProfile.notificationsEnabled,
           metal_price_api_key: userProfile.metalPriceApiKey,
           price_update_interval: userProfile.priceUpdateInterval,
-          // إزالة الحقول غير الموجودة في الجدول
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);

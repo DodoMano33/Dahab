@@ -44,18 +44,19 @@ export function useUserProfile(user: any) {
 
       if (data) {
         // تحديث تنسيق البيانات المستلمة من قاعدة البيانات
+        // استخدام القيم الافتراضية للحقول غير الموجودة في الجدول
         setUserProfile({
           displayName: data.display_name || "",
           email: data.email || user?.email || "",
           theme: data.theme || "system",
           notificationsEnabled: data.notifications_enabled !== false,
-          autoCheckEnabled: true, // تعيين القيمة الافتراضية
-          autoCheckInterval: 300000, // تعيين القيمة الافتراضية
+          autoCheckEnabled: true, // القيمة الافتراضية
+          autoCheckInterval: 300000, // القيمة الافتراضية
           priceUpdateInterval: data.price_update_interval || 30000,
           metalPriceApiKey: data.metal_price_api_key || "42ed2fe2e7d1d8f688ddeb027219c766",
         });
 
-        if (data.theme !== theme) {
+        if (data.theme && data.theme !== theme) {
           setTheme(data.theme as 'light' | 'dark' | 'system');
         }
       }
@@ -86,6 +87,7 @@ export function useUserProfile(user: any) {
     
     try {
       // تحديث تنسيق البيانات المرسلة لقاعدة البيانات
+      // أرسل فقط الحقول الموجودة فعلاً في جدول profiles
       await supabase
         .from('profiles')
         .update({

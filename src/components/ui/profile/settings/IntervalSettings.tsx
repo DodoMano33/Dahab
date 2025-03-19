@@ -21,6 +21,7 @@ export function IntervalSettings({
   label, 
   id 
 }: IntervalSettingsProps) {
+  // تحديد القيم بشكل أكثر مناسبة للاستخدام
   const timeIntervalOptions = [
     { value: 10000, label: "10 ثواني" },
     { value: 20000, label: "20 ثانية" },
@@ -33,11 +34,19 @@ export function IntervalSettings({
     { value: 3600000, label: "60 دقيقة" }
   ];
 
+  // التأكد من أن القيمة المحددة موجودة في القائمة
+  const ensureValidValue = () => {
+    // تحقق مما إذا كانت القيمة موجودة في القائمة
+    const isValidValue = timeIntervalOptions.some(option => option.value === interval);
+    // إذا لم تكن القيمة موجودة، استخدم 5 دقائق كقيمة افتراضية
+    return isValidValue ? String(interval) : "300000";
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       <Select
-        value={String(interval || 300000)}
+        value={ensureValidValue()}
         onValueChange={(value) => onIntervalChange(Number(value))}
       >
         <SelectTrigger id={id}>

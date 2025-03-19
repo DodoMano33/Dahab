@@ -19,38 +19,34 @@ export function ApiKeySettings({
   const [metalPriceApiKey, setMetalPriceApiKey] = useState(apiKey || '42ed2fe2e7d1d8f688ddeb027219c766');
   const [isSaving, setIsSaving] = useState(false);
 
+  // نستخدم useEffect لمراقبة تغيرات مفتاح API ولكن بشكل أكثر كفاءة
   useEffect(() => {
-    const updateApiKey = async () => {
-      if (metalPriceApiKey && metalPriceApiKey !== userProfile.metalPriceApiKey) {
+    // نتحقق أولاً إذا كان المفتاح قد تغير فعلاً وليس فارغًا
+    if (metalPriceApiKey && metalPriceApiKey !== userProfile.metalPriceApiKey && metalPriceApiKey.length > 10) {
+      const saveApiKey = async () => {
         setIsSaving(true);
         try {
-          const { data: userData } = await supabase.auth.getUser();
-          if (userData?.user) {
-            await supabase
-              .from('profiles')
-              .update({
-                metal_price_api_key: metalPriceApiKey,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', userData.user.id);
-            
-            setUserProfile({
-              ...userProfile,
-              metalPriceApiKey
-            });
-            
-            toast.success("تم تحديث مفتاح API بنجاح");
-          }
+          // فقط نقوم بتحديث الملف الشخصي بدون عمليات حفظ مباشرة في قاعدة البيانات
+          // الحفظ الفعلي سيحدث عند الضغط على زر "حفظ التغييرات" في الشاشة الرئيسية
+          setUserProfile({
+            ...userProfile,
+            metalPriceApiKey
+          });
+          
+          // نعرض رسالة نجاح بدون حفظ مباشر للقاعدة
+          toast.success("تم تحديث مفتاح API. اضغط على حفظ التغييرات لتأكيد التحديث");
         } catch (error) {
           console.error("Error updating API key:", error);
           toast.error("حدث خطأ أثناء تحديث مفتاح API");
         } finally {
           setIsSaving(false);
         }
-      }
-    };
-    
-    updateApiKey();
+      };
+      
+      // ننتظر قليلاً قبل الحفظ لتجنب الحفظ المتكرر
+      const timeoutId = setTimeout(saveApiKey, 1000);
+      return () => clearTimeout(timeoutId);
+    }
   }, [metalPriceApiKey]);
   
   return (
