@@ -6,22 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import TradingViewWidget from '../TradingViewWidget';
 import { Link } from 'react-router-dom';
-import { Home, RefreshCw, AlertCircle, Camera, Download } from 'lucide-react';
+import { Home, RefreshCw, AlertCircle, Camera, Download, Image } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const ImageDebugPage: React.FC = () => {
   const [screenImage, setScreenImage] = useState<string | null>(null);
   const [captureTime, setCaptureTime] = useState<string | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  
   const { 
     captureTradingViewWidget, 
     captureFullScreen, 
+    captureScreenshot,
     captureAttempts, 
     isCapturing, 
     captureError 
   } = useImageCapture();
   
-  // التقاط صورة للويدجيت
+  // التقاط صورة للويدجيت بالطريقة الأصلية
   const handleCaptureWidget = async () => {
     try {
       const currentTime = new Date().toLocaleTimeString();
@@ -80,6 +83,36 @@ export const ImageDebugPage: React.FC = () => {
     }
   };
   
+  // التقاط صورة كسكرين شوت باستخدام الطريقة الجديدة
+  const handleCaptureScreenshot = async () => {
+    try {
+      const currentTime = new Date().toLocaleTimeString();
+      setCaptureTime(currentTime);
+      
+      toast.info("جاري التقاط صورة كسكرين شوت...", {
+        duration: 2000,
+      });
+      
+      // معرف حاوية الويدجيت - إذا كانت هناك حاوية محددة بمعرف
+      const containerId = widgetContainerRef.current?.id || 'tradingview-widget-container';
+      
+      // استخدام الطريقة الجديدة لالتقاط الصورة
+      const imageUrl = await captureScreenshot(containerId);
+      
+      if (imageUrl) {
+        setScreenImage(imageUrl);
+        console.log('تم التقاط صورة كسكرين شوت بنجاح:', imageUrl.substring(0, 100) + '...');
+        toast.success("تم التقاط صورة كسكرين شوت بنجاح");
+      } else {
+        console.error('فشل التقاط صورة كسكرين شوت');
+        toast.error(captureError || "فشل التقاط صورة كسكرين شوت");
+      }
+    } catch (error) {
+      console.error('خطأ في التقاط صورة كسكرين شوت:', error);
+      toast.error("حدث خطأ أثناء التقاط صورة كسكرين شوت");
+    }
+  };
+  
   // تنزيل الصورة الملتقطة
   const handleDownloadImage = () => {
     if (!screenImage) {
@@ -105,8 +138,8 @@ export const ImageDebugPage: React.FC = () => {
   // التقاط الصورة عند تحميل الصفحة
   useEffect(() => {
     const timer = setTimeout(() => {
-      handleCaptureFullScreen();
-    }, 2000);
+      handleCaptureScreenshot(); // استخدام الطريقة الجديدة عند تحميل الصفحة
+    }, 3000); // زيادة الوقت للتأكد من تحميل الويدجيت بالكامل
     
     return () => clearTimeout(timer);
   }, []);
@@ -131,7 +164,9 @@ export const ImageDebugPage: React.FC = () => {
             <CardTitle className="text-center">ويدجيت TradingView</CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <TradingViewWidget />
+            <div id="tradingview-widget-container" ref={widgetContainerRef}>
+              <TradingViewWidget />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -164,10 +199,19 @@ export const ImageDebugPage: React.FC = () => {
           التقاط صورة للشاشة الكاملة
         </Button>
         
+        <Button 
+          onClick={handleCaptureScreenshot} 
+          className="bg-purple-600 text-white hover:bg-purple-700"
+          disabled={isCapturing}
+        >
+          <Image className="mr-2 h-4 w-4" />
+          التقاط سكرين شوت (الطريقة الجديدة)
+        </Button>
+        
         {screenImage && (
           <Button 
             onClick={handleDownloadImage} 
-            className="bg-purple-600 text-white hover:bg-purple-700"
+            className="bg-indigo-600 text-white hover:bg-indigo-700"
           >
             <Download className="mr-2 h-4 w-4" />
             تنزيل الصورة
@@ -221,7 +265,7 @@ export const ImageDebugPage: React.FC = () => {
         <div className="w-full p-12 bg-gray-100 border border-gray-300 rounded-md text-center">
           <p className="text-gray-500 mb-4">لم يتم التقاط أي صورة بعد</p>
           {!isCapturing && (
-            <Button onClick={handleCaptureFullScreen} variant="outline">
+            <Button onClick={handleCaptureScreenshot} variant="outline">
               <Camera className="mr-2 h-4 w-4" />
               محاولة التقاط صورة للشاشة
             </Button>
