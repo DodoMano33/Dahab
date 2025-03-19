@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase';
 import { getMetalPriceApiKey } from './helpers';
 import { checkRateLimit, setRateLimited } from './rateLimit';
@@ -30,7 +29,7 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
       return null;
     }
 
-    const apiKey = await getMetalPriceApiKey();
+    const apiKey = getMetalPriceApiKey();
     if (!apiKey) {
       console.error('مفتاح API مفقود.');
       return null;

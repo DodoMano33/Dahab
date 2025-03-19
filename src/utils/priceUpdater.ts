@@ -1,5 +1,6 @@
 
 import { fetchPrice } from './price/api';
+import { supabase } from '@/lib/supabase';
 
 interface PriceSubscription {
   symbol: string;
@@ -46,6 +47,42 @@ class PriceUpdater {
       } else if (this.rateLimited) {
         // إعادة ضبط حالة حد معدل الاستخدام بعد انقضاء المدة
         this.rateLimited = false;
+      }
+
+      // محاولة جلب السعر من قاعدة البيانات أولاً
+      try {
+        const { data, error } = await supabase
+          .from('real_time_prices')
+          .select('price, updated_at')
+          .eq('symbol', symbol)
+          .single();
+          
+        if (data && !error) {
+          const { price, updated_at } = data;
+          
+          // تحقق من أن السعر حديث (أقل من 10 دقائق)
+          const timestamp = new Date(updated_at).getTime();
+          const now = Date.now();
+          const tenMinutes = 10 * 60 * 1000;
+          
+          if (now - timestamp <= tenMinutes) {
+            console.log(`تم العثور على سعر مخزن حديث في قاعدة البيانات للرمز ${symbol}: ${price}`);
+            // تخزين السعر مؤقتًا
+            this.lastPrices.set(symbol, { price, timestamp: Date.now() });
+            
+            // إرسال حدث تحديث السعر
+            window.dispatchEvent(new CustomEvent('metal-price-update', {
+              detail: { price, symbol }
+            }));
+            
+            return price;
+          } else {
+            console.log(`السعر المخزن للرمز ${symbol} قديم (${new Date(updated_at).toLocaleTimeString()})`);
+          }
+        }
+      } catch (dbError) {
+        console.error(`خطأ في جلب السعر من قاعدة البيانات للرمز ${symbol}:`, dbError);
+        // تجاهل هذا الخطأ والمتابعة لجلب السعر من API
       }
 
       // محاولة جلب السعر من Metal Price API باستخدام الوظيفة المحسنة

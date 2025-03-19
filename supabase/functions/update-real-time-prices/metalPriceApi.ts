@@ -22,7 +22,12 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
     
     console.log(`جاري الاتصال بـ Metal Price API: ${url.replace(apiKey, 'API_KEY_HIDDEN')}`);
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Metal-Price-API-Client/1.0'
+      }
+    });
     
     if (!response.ok) {
       const errorText = await response.text();
