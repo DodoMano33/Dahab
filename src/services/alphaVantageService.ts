@@ -2,7 +2,7 @@
 /**
  * خدمة للتفاعل مع Alpha Vantage API للحصول على أسعار الذهب
  */
-const API_KEY = '9Q0LHPLPMFGOFSFV';
+let API_KEY = '9Q0LHPLPMFGOFSFV';
 const BASE_URL = 'https://www.alphavantage.co/query';
 
 export interface GoldPriceResponse {
