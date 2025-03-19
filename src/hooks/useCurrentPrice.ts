@@ -13,8 +13,8 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
 
   const updatePrice = useCallback((price: number) => {
     if (!isNaN(price) && price > 0) {
-      // تحديث السعر فقط إذا كان في النطاق المتوقع للذهب (2000-4000)
-      if (price > 2000 && price < 4000) {
+      // تحديث السعر فقط إذا كان في النطاق المتوقع للذهب (1500-4000)
+      if (price > 1500 && price < 4000) {
         console.log(`useCurrentPrice: تحديث السعر إلى ${price}`);
         
         // تحديث السعر فقط إذا تغير، أو لم يكن هناك سعر سابق
@@ -80,13 +80,27 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       }
     };
 
+    // مستمع لسعر Alpha Vantage
+    const handleAlphaVantageUpdate = (event: CustomEvent<{ price: number }>) => {
+      if (event.detail && event.detail.price) {
+        // منح الأولوية لسعر Alpha Vantage
+        updatePrice(event.detail.price);
+        
+        // تخزين المصدر في localStorage
+        localStorage.setItem('lastPriceSource', 'alphaVantage');
+      }
+    };
+
     // مستمع لطلب تحديث السعر
     const handleRequestPrice = () => {
       if (currentPrice !== null) {
         console.log("useCurrentPrice: تم استلام طلب تحديث السعر، إرسال:", currentPrice);
         window.dispatchEvent(
           new CustomEvent('current-price-response', {
-            detail: { price: currentPrice }
+            detail: { 
+              price: currentPrice,
+              source: localStorage.getItem('lastPriceSource') || 'unknown'
+            }
           })
         );
       }
@@ -112,11 +126,15 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
       if (event.detail && event.detail.price && event.detail.source !== 'useCurrentPrice') {
         console.log(`useCurrentPrice: تم استلام تحديث سعر عام من ${event.detail.source}:`, event.detail.price);
         updatePrice(event.detail.price);
+        
+        // تخزين المصدر في localStorage
+        localStorage.setItem('lastPriceSource', event.detail.source);
       }
     };
 
     // إضافة المستمعين
     window.addEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+    window.addEventListener('alpha-vantage-price-update', handleAlphaVantageUpdate as EventListener);
     window.addEventListener('request-current-price', handleRequestPrice);
     window.addEventListener('image-price-update', handleImagePriceUpdate as EventListener);
     window.addEventListener('ui-price-update', handleUiPriceUpdate as EventListener);
@@ -133,6 +151,7 @@ export const useCurrentPrice = (): UseCurrentPriceResult => {
     // تنظيف المستمعين
     return () => {
       window.removeEventListener('tradingview-price-update', handleTradingViewPriceUpdate as EventListener);
+      window.removeEventListener('alpha-vantage-price-update', handleAlphaVantageUpdate as EventListener);
       window.removeEventListener('request-current-price', handleRequestPrice);
       window.removeEventListener('image-price-update', handleImagePriceUpdate as EventListener);
       window.removeEventListener('ui-price-update', handleUiPriceUpdate as EventListener);
