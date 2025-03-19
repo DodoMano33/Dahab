@@ -38,7 +38,7 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       setRecognizedText(extractedText);
       
       // البحث عن أنماط خاصة بسعر الذهب
-      const goldPriceRegex = /\b([23]([\d,]{3}|[\d]{3})\.[\d]{1,2})\b/g;
+      const goldPriceRegex = /\b([1-9]([\d,]{3}|[\d]{3})\.[\d]{1,2})\b/g;
       const matches = extractedText.match(goldPriceRegex);
       
       if (matches && matches.length > 0) {
@@ -47,7 +47,7 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
         const priceText = matches[0].replace(/,/g, '');
         const price = parseFloat(priceText);
         
-        if (!isNaN(price) && price > 2000 && price < 4000) {
+        if (!isNaN(price) && price > 1000 && price < 9000) {
           console.log("تم استخراج سعر الذهب من النص:", price);
           setExtractedPrice(price);
           
@@ -68,7 +68,7 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       setExtractedPrice(price);
       
       // إذا تم استخراج سعر صالح، نقوم بإصدار حدث
-      if (price !== null && price > 2000 && price < 4000) {
+      if (price !== null && price > 1000 && price < 9000) {
         window.dispatchEvent(
           new CustomEvent('tradingview-price-update', {
             detail: { price }

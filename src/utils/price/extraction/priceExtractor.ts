@@ -14,22 +14,22 @@ export const extractPriceFromText = (text: string): number | null => {
   console.log("النص بعد التنظيف:", cleanedText);
   
   // محاولة 1: البحث عن نمط سعر الذهب النموذجي (مثل 3065.48)
-  const goldPattern = /\b([23]\d{3}\.?\d{0,2})\b/;
+  const goldPattern = /\b([1-9]\d{3}\.?\d{0,2})\b/;
   const goldMatch = text.match(goldPattern);
   
   if (goldMatch && goldMatch[1]) {
     const price = parseFloat(goldMatch[1]);
     console.log("تم استخراج سعر الذهب من النمط الأساسي:", price);
-    if (!isNaN(price) && price > 1000 && price < 5000) {
+    if (!isNaN(price) && price > 1000 && price < 9000) {
       return price;
     }
   }
   
   // محاولة 2: البحث عن أنماط متعددة لسعر الذهب
   const patterns = [
-    /\b([23]),?(\d{3})\.(\d{1,2})\b/, // نمط مع فاصلة مثل 3,065.48
-    /\b([23])(\d{3})\.(\d{1,2})\b/,   // نمط بدون فاصلة مثل 3065.48
-    /\b([23])(\d{2,3})\.(\d{1,2})\b/, // نمط مرن للأرقام
+    /\b([1-9]),?(\d{3})\.(\d{1,2})\b/, // نمط مع فاصلة مثل 3,065.48
+    /\b([1-9])(\d{3})\.(\d{1,2})\b/,   // نمط بدون فاصلة مثل 3065.48
+    /\b([1-9])(\d{2,3})\.(\d{1,2})\b/, // نمط مرن للأرقام
     /(\d{1,4})[.,](\d{1,2})/,         // نمط مرن أكثر للأرقام
   ];
   
@@ -53,7 +53,7 @@ export const extractPriceFromText = (text: string): number | null => {
       }
       
       console.log("تم استخراج سعر محتمل من النمط الثانوي:", price);
-      if (!isNaN(price) && price > 1000 && price < 5000) {
+      if (!isNaN(price) && price > 1000 && price < 9000) {
         return price;
       }
     }
@@ -73,7 +73,7 @@ export const extractPriceFromText = (text: string): number | null => {
       
       if (!isNaN(price)) {
         // التحقق من نطاق سعر الذهب
-        if (price > 1000 && price < 5000) {
+        if (price > 1000 && price < 9000) {
           console.log("تم العثور على سعر ذهب محتمل:", price);
           return price;
         }
@@ -96,7 +96,7 @@ export const extractPriceFromText = (text: string): number | null => {
     for (const num of allNumbers) {
       const price = parseFloat(num);
       if (!isNaN(price)) {
-        if (price > 1000 && price < 5000) {
+        if (price > 1000 && price < 9000) {
           console.log("سعر محتمل من الأرقام المستخرجة:", price);
           return price;
         }
@@ -109,7 +109,7 @@ export const extractPriceFromText = (text: string): number | null => {
       if (!isNaN(price) && price > 100 && price < 999) {
         // قد يكون هذا الرقم في الواقع 2000+
         const adjustedPrice = price * 10;
-        if (adjustedPrice > 1000 && adjustedPrice < 5000) {
+        if (adjustedPrice > 1000 && adjustedPrice < 9000) {
           console.log("تعديل الرقم الكبير من:", price, "إلى:", adjustedPrice);
           return adjustedPrice;
         }
