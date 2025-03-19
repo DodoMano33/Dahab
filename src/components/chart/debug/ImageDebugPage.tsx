@@ -126,7 +126,10 @@ export const ImageDebugPage: React.FC = () => {
               جاري التقاط الصورة...
             </>
           ) : (
-            "التقاط صورة للويدجيت"
+            <>
+              <Camera className="mr-2 h-4 w-4" />
+              التقاط صورة للويدجيت
+            </>
           )}
         </Button>
         
@@ -159,17 +162,26 @@ export const ImageDebugPage: React.FC = () => {
             <CardTitle>الصورة الملتقطة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border border-gray-300 rounded-md p-2 overflow-auto">
+            <div className="border border-gray-300 rounded-md p-2 overflow-hidden">
               <img 
                 src={screenImage} 
                 alt="الصورة الملتقطة" 
-                className="w-full h-auto"
+                className="w-full h-auto object-contain"
+                onError={(e) => {
+                  console.error('خطأ في تحميل الصورة:', e);
+                  e.currentTarget.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                  e.currentTarget.style.height = '200px';
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onLoad={() => {
+                  console.log('تم تحميل الصورة بنجاح');
+                }}
               />
             </div>
             <div className="mt-4">
               <h4 className="font-medium mb-2">معلومات الصورة:</h4>
-              <p className="text-sm text-gray-600">طول البيانات: {screenImage.length} حرف</p>
-              <p className="text-sm text-gray-600 mt-1">نوع الصورة: {screenImage.substring(0, 30)}...</p>
+              <p className="text-sm text-gray-600 break-all">طول البيانات: {screenImage.length} حرف</p>
+              <p className="text-sm text-gray-600 mt-1 break-all">نوع الصورة: {screenImage.substring(0, 30)}...</p>
             </div>
           </CardContent>
         </Card>

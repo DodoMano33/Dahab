@@ -54,6 +54,9 @@ export const useImageCapture = (): UseImageCaptureResult => {
       if (!targetElement) {
         console.log("لم يتم العثور على أي عنصر مناسب، التقاط الصفحة بأكملها");
         try {
+          // انتظار لحظة قبل التقاط الصورة للتأكد من تحميل جميع العناصر
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           const canvas = await html2canvas(document.documentElement, {
             logging: true,
             useCORS: true,
@@ -63,6 +66,7 @@ export const useImageCapture = (): UseImageCaptureResult => {
           });
           
           const imageUrl = canvas.toDataURL('image/png');
+          console.log("تم إنشاء صورة للصفحة بأكملها، طول البيانات:", imageUrl.length);
           setIsCapturing(false);
           return imageUrl;
         } catch (fullPageError) {
@@ -81,55 +85,55 @@ export const useImageCapture = (): UseImageCaptureResult => {
           const iframe = targetElement as HTMLIFrameElement;
           console.log("محاولة التقاط محتوى الإطار الداخلي:", iframe.src);
           
-          // عنصر الكانفاس للتصوير
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
+          // انتظار لتحميل الإطار بالكامل
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // ضبط أبعاد الكانفاس
-          canvas.width = iframe.offsetWidth * 2;  // مضاعفة للحصول على دقة أفضل
-          canvas.height = iframe.offsetHeight * 2;
+          // محاولة التقاط العنصر الأصلي الذي يحتوي على الإطار
+          const parentElement = iframe.parentElement || document.body;
           
-          // تعبئة الخلفية
-          if (ctx) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // إنشاء صورة وتعيين المصدر للإطار
-            const img = new Image();
-            
-            // الانتظار لتحميل الإطار بالكامل
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            
-            // محاولة الحصول على لقطة شاشة باستخدام html2canvas
-            const iframeCanvas = await html2canvas(iframe, {
-              useCORS: true,
-              allowTaint: true,
-              scale: 2,
-              logging: true,
-            });
-            
-            // رسم محتوى الإطار على الكانفاس
-            ctx.drawImage(iframeCanvas, 0, 0, canvas.width, canvas.height);
-            
-            // تحويل الكانفاس إلى URL صورة
-            const imageUrl = canvas.toDataURL('image/png');
-            console.log('تم إنشاء صورة الإطار الداخلي بنجاح، طول البيانات:', imageUrl.length);
-            
-            setIsCapturing(false);
-            return imageUrl;
-          }
+          const canvas = await html2canvas(parentElement, {
+            useCORS: true,
+            allowTaint: true,
+            scale: 2,
+            logging: true,
+            backgroundColor: '#ffffff',
+            ignoreElements: (element) => {
+              // تجاهل العناصر غير المرئية
+              const style = window.getComputedStyle(element);
+              return style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0';
+            }
+          });
+          
+          const imageUrl = canvas.toDataURL('image/png');
+          console.log('تم إنشاء صورة من العنصر الأصلي، طول البيانات:', imageUrl.length);
+          
+          setIsCapturing(false);
+          return imageUrl;
         } catch (iframeError) {
           console.error("خطأ في التقاط الإطار الداخلي:", iframeError);
+          // نستمر في المحاولة بالطريقة العادية
         }
       }
+      
+      // إنتظار لحظة قبل التقاط الصورة
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // استخدام html2canvas لالتقاط الصورة
       const canvas = await html2canvas(targetElement, {
         logging: true,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: null,
-        scale: 2
+        backgroundColor: '#ffffff',
+        scale: 2,
+        onclone: (documentClone, element) => {
+          // التأكد من أن العنصر مرئي في النسخة المستنسخة
+          const clonedElement = documentClone.querySelector(targetElement.tagName) as HTMLElement;
+          if (clonedElement) {
+            clonedElement.style.display = 'block';
+            clonedElement.style.visibility = 'visible';
+            clonedElement.style.opacity = '1';
+          }
+        }
       });
       
       // تحويل Canvas إلى URL صورة
@@ -153,6 +157,10 @@ export const useImageCapture = (): UseImageCaptureResult => {
       // محاولة أخيرة - التقاط الصورة مباشرة من أي عنصر مرئي
       try {
         console.log("محاولة أخيرة: التقاط صورة الصفحة بأكملها");
+        
+        // انتظار لحظة قبل التقاط الصورة
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const canvas = await html2canvas(document.documentElement, {
           logging: true,
           useCORS: true,
@@ -168,6 +176,7 @@ export const useImageCapture = (): UseImageCaptureResult => {
         return imageUrl;
       } catch (secondError) {
         console.error('فشلت المحاولة البديلة أيضًا:', secondError);
+        setCaptureError("فشل جميع محاولات التقاط الصورة");
       }
       
       setIsCapturing(false);
