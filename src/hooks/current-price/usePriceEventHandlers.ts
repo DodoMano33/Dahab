@@ -8,7 +8,7 @@ export const usePriceEventHandlers = () => {
 
   const handlePriceUpdate = useCallback((event: PriceUpdateEvent) => {
     if (event.detail && event.detail.price) {
-      console.log('useCurrentPrice: Price updated to', event.detail.price);
+      console.log('useCurrentPrice: تم تحديث السعر إلى', event.detail.price);
       setCurrentPrice(event.detail.price);
       setPriceUpdateCount(prev => prev + 1);
     }
@@ -16,13 +16,14 @@ export const usePriceEventHandlers = () => {
 
   const handleCurrentPriceResponse = useCallback((event: CurrentPriceResponseEvent) => {
     if (event.detail && event.detail.price) {
-      console.log('useCurrentPrice: Received current price', event.detail.price);
+      console.log('useCurrentPrice: تم استلام السعر الحالي', event.detail.price);
       setCurrentPrice(event.detail.price);
       setPriceUpdateCount(prev => prev + 1);
     }
   }, []);
 
   const requestCurrentPrice = useCallback(() => {
+    console.log('useCurrentPrice: طلب السعر الحالي');
     window.dispatchEvent(new Event('request-current-price'));
   }, []);
 
@@ -31,6 +32,7 @@ export const usePriceEventHandlers = () => {
     priceUpdateCount,
     handlePriceUpdate,
     handleCurrentPriceResponse,
-    requestCurrentPrice
+    requestCurrentPrice,
+    setCurrentPrice
   };
 };

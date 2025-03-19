@@ -1,6 +1,7 @@
 
 import axios from "axios";
 import { ALPHA_VANTAGE_API_KEY } from './price/config';
+import { fetchCryptoPrice, fetchForexPrice, fetchGoldPrice } from './price/api';
 
 interface PriceSubscription {
   symbol: string;
@@ -37,12 +38,36 @@ class PriceUpdater {
         return cached.price;
       }
 
-      // إذا لم يتم توفير سعر ولم يكن هناك سعر مخزن حديث، أرجع صفر
-      console.log(`لم يتم توفير سعر للرمز ${symbol}، إرجاع صفر`);
-      return 0;
+      // محاولة جلب السعر من Alpha Vantage
+      let price = null;
+      
+      // معالجة خاصة للذهب
+      if (symbol.toUpperCase() === 'XAUUSD' || symbol.toUpperCase() === 'GOLD') {
+        price = await fetchGoldPrice();
+      } 
+      // محاولة جلب سعر العملات المشفرة
+      else if (['BTC', 'ETH', 'BTCUSDT'].includes(symbol.toUpperCase())) {
+        price = await fetchCryptoPrice(symbol.toUpperCase());
+      } 
+      // محاولة جلب سعر الفوركس
+      else {
+        price = await fetchForexPrice(symbol.toUpperCase());
+      }
+
+      if (price !== null) {
+        console.log(`تم جلب السعر للرمز ${symbol}: ${price}`);
+        this.lastPrices.set(symbol, { price, timestamp: Date.now() });
+        return price;
+      }
+
+      // إذا لم يتم العثور على سعر، أرجع آخر سعر معروف أو صفر
+      const lastKnownPrice = cached?.price || 0;
+      console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر معروف: ${lastKnownPrice}`);
+      return lastKnownPrice;
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      throw error;
+      const lastKnownPrice = this.lastPrices.get(symbol)?.price || 0;
+      return lastKnownPrice;
     }
   }
 
@@ -55,7 +80,7 @@ class PriceUpdater {
     }
     this.subscriptions.get(symbol)?.push(subscription);
 
-    // جلب السعر الأولي باستخدام السعر المقدم
+    // جلب السعر الأولي
     this.fetchPrice(symbol, providedPrice)
       .then(price => {
         console.log(`تم جلب السعر الأولي للرمز ${symbol}: ${price}`);
@@ -65,6 +90,9 @@ class PriceUpdater {
         console.error(`خطأ في جلب السعر الأولي للرمز ${symbol}:`, error);
         subscription.onError(error);
       });
+      
+    // بدء التحديث الدوري إذا لم يكن قد بدأ بالفعل
+    this.startPolling();
   }
 
   unsubscribe(symbol: string, onUpdate: (price: number) => void) {
@@ -79,9 +107,44 @@ class PriceUpdater {
       }
       if (subs.length === 0) {
         this.subscriptions.delete(symbol);
-        this.lastPrices.delete(symbol);
         console.log(`تم حذف جميع الاشتراكات للرمز ${symbol}`);
       }
+    }
+    
+    // إيقاف التحديث الدوري إذا لم تعد هناك اشتراكات
+    if (this.subscriptions.size === 0) {
+      this.stopPolling();
+    }
+  }
+  
+  private startPolling() {
+    if (this.polling) return;
+    
+    console.log("بدء التحديث الدوري للأسعار");
+    this.polling = true;
+    
+    this.intervalId = setInterval(async () => {
+      for (const [symbol, subs] of this.subscriptions.entries()) {
+        try {
+          const price = await this.fetchPrice(symbol);
+          subs.forEach(sub => sub.onUpdate(price));
+        } catch (error) {
+          console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
+          subs.forEach(sub => sub.onError(error as Error));
+        }
+      }
+    }, this.pollingInterval);
+  }
+  
+  private stopPolling() {
+    if (!this.polling) return;
+    
+    console.log("إيقاف التحديث الدوري للأسعار");
+    this.polling = false;
+    
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
     }
   }
 }
