@@ -14,7 +14,6 @@ export const ImageDebugPage: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   const [captureTime, setCaptureTime] = useState<string | null>(null);
-  const [captureType, setCaptureType] = useState<'widget' | 'fullpage'>('widget');
   const { captureTradingViewWidget, captureAttempts } = useImageCapture();
   
   const handleCaptureImage = async () => {
@@ -22,25 +21,9 @@ export const ImageDebugPage: React.FC = () => {
       const currentTime = new Date().toLocaleTimeString();
       setCaptureTime(currentTime);
       
-      let capturedImage;
-      
-      if (captureType === 'widget') {
-        // التقاط الصورة من الويدجيت
-        capturedImage = await captureTradingViewWidget();
-        console.log('تم التقاط صورة الويدجيت بنجاح');
-      } else {
-        // التقاط صورة لكامل الصفحة
-        console.log('جاري التقاط صورة كاملة للصفحة...');
-        const canvas = await html2canvas(document.body, {
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null,
-          scale: 2
-        });
-        capturedImage = canvas.toDataURL('image/png');
-        console.log('تم التقاط صورة كاملة للصفحة بنجاح');
-      }
+      // التقاط صورة الويدجيت
+      const capturedImage = await captureTradingViewWidget();
+      console.log('تم التقاط صورة الويدجيت بنجاح');
       
       if (capturedImage) {
         setOriginalImage(capturedImage);
@@ -92,27 +75,18 @@ export const ImageDebugPage: React.FC = () => {
         </Card>
       </div>
       
-      <div className="flex justify-center mb-4 gap-4">
-        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-          <Button 
-            onClick={() => { setCaptureType('widget'); handleCaptureImage(); }} 
-            className={`bg-blue-600 text-white hover:bg-blue-700 ${captureType === 'widget' ? 'ring-2 ring-blue-300' : ''}`}
-          >
-            التقاط صورة للويدجيت
-          </Button>
-          
-          <Button 
-            onClick={() => { setCaptureType('fullpage'); handleCaptureImage(); }} 
-            className={`bg-green-600 text-white hover:bg-green-700 ${captureType === 'fullpage' ? 'ring-2 ring-green-300' : ''}`}
-          >
-            التقاط صورة للصفحة كاملة
-          </Button>
-        </div>
+      <div className="flex justify-center mb-4">
+        <Button 
+          onClick={handleCaptureImage} 
+          className="bg-blue-600 text-white hover:bg-blue-700"
+        >
+          التقاط صورة للويدجيت
+        </Button>
       </div>
       
       {captureTime && (
         <p className="text-center mb-6 text-gray-600">
-          آخر التقاط: {captureTime} | محاولة رقم: {captureAttempts} | نوع الالتقاط: {captureType === 'widget' ? 'الويدجيت فقط' : 'الصفحة كاملة'}
+          آخر التقاط: {captureTime} | محاولة رقم: {captureAttempts}
         </p>
       )}
       
