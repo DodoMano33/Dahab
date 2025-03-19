@@ -27,6 +27,8 @@ export const ErrorDisplay = ({
     if (errorDetails) {
       if (errorDetails.includes('Failed to fetch') || errorDetails.includes('تعذر الوصول')) {
         return 'تعذر الوصول للخادم - تحقق من اتصالك بالإنترنت';
+      } else if (errorDetails.includes('Edge Function')) {
+        return 'تعذر الاتصال بخدمة فحص التحليلات - حاول مرة أخرى لاحقًا';
       }
       return errorDetails;
     }
@@ -41,12 +43,24 @@ export const ErrorDisplay = ({
     return <AlertCircle size={14} />;
   };
   
+  const handleRetry = () => {
+    // إطلاق حدث لإعادة المحاولة يدويًا
+    window.dispatchEvent(new CustomEvent('manual-check-analyses'));
+    toast.info('جارٍ إعادة المحاولة...');
+  };
+  
   return (
     <>
       {(hasNetworkError || networkStatus !== 'online') && (
         <div className="flex items-center text-red-500 text-xs mt-1 gap-1">
           {getErrorIcon()}
           <span>حدث خطأ في الاتصال: {getErrorMessage()}</span>
+          <button 
+            onClick={handleRetry}
+            className="text-blue-500 hover:underline text-xs ml-2"
+          >
+            إعادة المحاولة
+          </button>
         </div>
       )}
       

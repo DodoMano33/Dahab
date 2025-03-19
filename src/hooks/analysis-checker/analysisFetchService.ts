@@ -41,11 +41,10 @@ export const fetchAnalysesWithCurrentPrice = async (
     // إضافة إشارة إلغاء من AbortController
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 15000); // زيادة وقت الانتظار إلى 15 ثانية
+    }, 20000); // زيادة وقت الانتظار إلى 20 ثانية
     
     try {
       // استدعاء وظيفة Edge Function مع تحسين الإعدادات
-      // تم إزالة خاصية abortSignal التي لا تدعمها واجهة FunctionInvokeOptions
       const { data, error } = await supabase.functions.invoke(
         'auto-check-analyses',
         {
@@ -112,6 +111,11 @@ export const fetchAnalysesWithCurrentPrice = async (
           isAuthError: fetchError.message.includes('auth') || fetchError.message.includes('token'),
           isOnline: navigator.onLine
         });
+        
+        // تحسين رسائل الخطأ للمستخدم
+        if (fetchError.message.includes('Failed to send a request')) {
+          throw new Error('تعذر الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت الخاص بك');
+        }
         
         throw fetchError;
       }

@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 type NetworkStatusType = 'online' | 'offline' | 'limited';
 
 export const useNetworkStatus = () => {
-  const [networkStatus, setNetworkStatus] = useState<NetworkStatusType>('online');
+  const [networkStatus, setNetworkStatus] = useState<NetworkStatusType>(
+    navigator.onLine ? 'online' : 'offline'
+  );
 
   useEffect(() => {
     const updateNetworkStatus = () => {
