@@ -3,10 +3,10 @@ import { getSymbolType } from "./helpers";
 import { 
   fetchCryptoPrice, 
   fetchForexPrice, 
-  fetchPreciousMetalPrice, 
+  fetchPreciousMetalPrice,
+  fetchPriceFromMetalPriceApi,
   getCachedPrice, 
-  setCachedPrice,
-  fetchPriceFromMetalPriceApi
+  setCachedPrice
 } from "./fetchers";
 import { checkRateLimit, setRateLimited } from "./rateLimit";
 
