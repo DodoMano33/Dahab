@@ -6,11 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import TradingViewWidget from '../TradingViewWidget';
+import html2canvas from 'html2canvas';
 
 export const ImageDebugPage: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   const [captureTime, setCaptureTime] = useState<string | null>(null);
+  const [captureType, setCaptureType] = useState<'widget' | 'fullpage'>('widget');
   const { captureTradingViewWidget, captureAttempts } = useImageCapture();
   
   const handleCaptureImage = async () => {
@@ -18,8 +20,26 @@ export const ImageDebugPage: React.FC = () => {
       const currentTime = new Date().toLocaleTimeString();
       setCaptureTime(currentTime);
       
-      // التقاط الصورة
-      const capturedImage = await captureTradingViewWidget();
+      let capturedImage;
+      
+      if (captureType === 'widget') {
+        // التقاط الصورة من الويدجيت
+        capturedImage = await captureTradingViewWidget();
+        console.log('تم التقاط صورة الويدجيت بنجاح');
+      } else {
+        // التقاط صورة لكامل الصفحة
+        console.log('جاري التقاط صورة كاملة للصفحة...');
+        const canvas = await html2canvas(document.body, {
+          logging: true,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          scale: 2
+        });
+        capturedImage = canvas.toDataURL('image/png');
+        console.log('تم التقاط صورة كاملة للصفحة بنجاح');
+      }
+      
       if (capturedImage) {
         setOriginalImage(capturedImage);
         console.log('تم التقاط الصورة بنجاح:', capturedImage.substring(0, 100) + '...');
@@ -60,15 +80,27 @@ export const ImageDebugPage: React.FC = () => {
         </Card>
       </div>
       
-      <div className="flex justify-center mb-4">
-        <Button onClick={handleCaptureImage} className="bg-blue-600 text-white hover:bg-blue-700">
-          التقاط صورة جديدة
-        </Button>
+      <div className="flex justify-center mb-4 gap-4">
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Button 
+            onClick={() => { setCaptureType('widget'); handleCaptureImage(); }} 
+            className={`bg-blue-600 text-white hover:bg-blue-700 ${captureType === 'widget' ? 'ring-2 ring-blue-300' : ''}`}
+          >
+            التقاط صورة للويدجيت
+          </Button>
+          
+          <Button 
+            onClick={() => { setCaptureType('fullpage'); handleCaptureImage(); }} 
+            className={`bg-green-600 text-white hover:bg-green-700 ${captureType === 'fullpage' ? 'ring-2 ring-green-300' : ''}`}
+          >
+            التقاط صورة للصفحة كاملة
+          </Button>
+        </div>
       </div>
       
       {captureTime && (
         <p className="text-center mb-6 text-gray-600">
-          آخر التقاط: {captureTime} | محاولة رقم: {captureAttempts}
+          آخر التقاط: {captureTime} | محاولة رقم: {captureAttempts} | نوع الالتقاط: {captureType === 'widget' ? 'الويدجيت فقط' : 'الصفحة كاملة'}
         </p>
       )}
       
@@ -79,7 +111,7 @@ export const ImageDebugPage: React.FC = () => {
               <CardTitle>الصورة الأصلية</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="border border-gray-300 rounded-md p-2">
+              <div className="border border-gray-300 rounded-md p-2 overflow-auto max-h-[500px]">
                 <img 
                   src={originalImage} 
                   alt="صورة ويدجيت TradingView الأصلية" 
@@ -101,7 +133,7 @@ export const ImageDebugPage: React.FC = () => {
               <CardTitle>الصورة بعد التحسين</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="border border-gray-300 rounded-md p-2">
+              <div className="border border-gray-300 rounded-md p-2 overflow-auto max-h-[500px]">
                 <img 
                   src={enhancedImage} 
                   alt="صورة ويدجيت TradingView بعد التحسين" 
