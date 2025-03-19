@@ -45,6 +45,7 @@ export const fetchAnalysesWithCurrentPrice = async (
     
     try {
       // استدعاء وظيفة Edge Function مع تحسين الإعدادات
+      // تم إزالة خاصية abortSignal التي لا تدعمها واجهة FunctionInvokeOptions
       const { data, error } = await supabase.functions.invoke(
         'auto-check-analyses',
         {
@@ -52,8 +53,7 @@ export const fetchAnalysesWithCurrentPrice = async (
           headers: {
             'Content-Type': 'application/json'
           },
-          method: 'POST',
-          abortSignal: controller.signal
+          method: 'POST'
         }
       );
       
