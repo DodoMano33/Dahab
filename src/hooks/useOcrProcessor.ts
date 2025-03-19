@@ -35,23 +35,34 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       // معالجة الصورة باستخدام OCR
       const extractedText = await recognizeTextFromImage(imageUrl);
       console.log("النص المستخرج من الصورة:", extractedText);
-      setRecognizedText(extractedText);
       
-      // استخراج السعر من النص المستخرج
-      const price = extractPriceFromText(extractedText);
-      console.log("السعر المستخرج من النص:", price);
-      setExtractedPrice(price);
-      
-      // إذا تم استخراج سعر صالح، نقوم بإصدار حدث
-      if (price !== null) {
-        window.dispatchEvent(
-          new CustomEvent('tradingview-price-update', {
-            detail: { price }
-          })
-        );
+      // تسجيل النص فقط إذا لم يكن فارغاً
+      if (extractedText && extractedText.trim().length > 0) {
+        setRecognizedText(extractedText);
+        
+        // استخراج السعر من النص المستخرج
+        const price = extractPriceFromText(extractedText);
+        console.log("السعر المستخرج من النص:", price);
+        
+        if (price !== null) {
+          setExtractedPrice(price);
+          
+          // إذا تم استخراج سعر صالح، نقوم بإصدار حدث
+          window.dispatchEvent(
+            new CustomEvent('tradingview-price-update', {
+              detail: { price }
+            })
+          );
+          
+          return price;
+        } else {
+          console.log("لم يتم العثور على سعر صالح في النص المستخرج");
+        }
+      } else {
+        console.log("النص المستخرج فارغ، لا يمكن استخراج سعر");
       }
       
-      return price;
+      return null;
     } catch (error) {
       console.error('خطأ في معالجة الصورة باستخدام OCR:', error);
       return null;
