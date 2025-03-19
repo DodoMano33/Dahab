@@ -34,39 +34,49 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       
       // معالجة الصورة باستخدام OCR
       const extractedText = await recognizeTextFromImage(imageUrl);
-      
-      // إضافة تسجيل أكثر تفصيلاً
-      console.log("النص المستخرج (الطول):", extractedText ? extractedText.length : 0);
       console.log("النص المستخرج من الصورة:", extractedText);
+      setRecognizedText(extractedText);
       
-      // تسجيل النص فقط إذا لم يكن فارغاً
-      if (extractedText && extractedText.trim().length > 0) {
-        setRecognizedText(extractedText);
+      // البحث عن أنماط خاصة بسعر الذهب
+      const goldPriceRegex = /\b([23]([\d,]{3}|[\d]{3})\.[\d]{1,2})\b/g;
+      const matches = extractedText.match(goldPriceRegex);
+      
+      if (matches && matches.length > 0) {
+        console.log("تم العثور على أنماط سعر الذهب:", matches);
+        // نستخدم أول تطابق
+        const priceText = matches[0].replace(/,/g, '');
+        const price = parseFloat(priceText);
         
-        // استخراج السعر من النص المستخرج
-        const price = extractPriceFromText(extractedText);
-        console.log("السعر المستخرج من النص:", price);
-        
-        if (price !== null) {
+        if (!isNaN(price) && price > 2000 && price < 4000) {
+          console.log("تم استخراج سعر الذهب من النص:", price);
           setExtractedPrice(price);
           
-          // إذا تم استخراج سعر صالح، نقوم بإصدار حدث
+          // إصدار حدث لتحديث السعر في كل مكان
           window.dispatchEvent(
             new CustomEvent('tradingview-price-update', {
               detail: { price }
             })
           );
           
-          console.log("تم إرسال حدث تحديث سعر:", price);
           return price;
-        } else {
-          console.log("لم يتم العثور على سعر صالح في النص المستخرج");
         }
-      } else {
-        console.log("النص المستخرج فارغ، لا يمكن استخراج سعر");
       }
       
-      return null;
+      // استخراج السعر من النص إذا لم يتم العثور على تطابق مباشر
+      const price = extractPriceFromText(extractedText);
+      console.log("محاولة استخراج السعر عبر الدالة العامة:", price);
+      setExtractedPrice(price);
+      
+      // إذا تم استخراج سعر صالح، نقوم بإصدار حدث
+      if (price !== null && price > 2000 && price < 4000) {
+        window.dispatchEvent(
+          new CustomEvent('tradingview-price-update', {
+            detail: { price }
+          })
+        );
+      }
+      
+      return price;
     } catch (error) {
       console.error('خطأ في معالجة الصورة باستخدام OCR:', error);
       return null;

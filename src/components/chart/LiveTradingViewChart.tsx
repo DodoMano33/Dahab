@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import TradingViewWidget from './TradingViewWidget';
 import { Card, CardContent } from '@/components/ui/card';
 import html2canvas from 'html2canvas';
-import { DebugButton } from './debug/DebugButton';
 
 interface LiveTradingViewChartProps {
   symbol?: string;
@@ -132,10 +131,7 @@ export const LiveTradingViewChart: React.FC<LiveTradingViewChartProps> = ({
   return (
     <Card className="w-full mb-6">
       <CardContent className="p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-medium text-center">سعر الذهب الحالي</h3>
-          <DebugButton />
-        </div>
+        <h3 className="text-lg font-medium mb-2 text-center">سعر الذهب الحالي</h3>
         <div className="pb-1">
           <TradingViewWidget symbol={symbol} />
         </div>
