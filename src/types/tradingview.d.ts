@@ -1,4 +1,3 @@
-
 interface TradingViewWidget {
   widget: (config: {
     container_id: string;
@@ -22,7 +21,6 @@ interface TradingViewWidget {
   chart: () => {
     symbolExt: () => { last?: number };
     crossHairPrice: () => number;
-    takeScreenshot: () => Promise<string>;
     onSymbolChanged: () => {
       subscribe: (callback: null, handler: (symbolInfo: { name: string }) => void) => void;
     };

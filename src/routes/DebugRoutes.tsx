@@ -5,7 +5,9 @@ import ImageDebug from '@/pages/ImageDebug';
 
 export const DebugRoutes = () => {
   return (
-    <Route path="/debug-image" element={<ImageDebug />} />
+    <>
+      <Route path="/debug-image" element={<ImageDebug />} />
+    </>
   );
 };
 

@@ -15,38 +15,6 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
   const container = useRef<HTMLDivElement>(null);
   const { setupPriceExtraction } = useTradingViewPrice(container);
   const [isInitialized, setIsInitialized] = useState(false);
-  const widgetRef = useRef<any>(null);
-
-  // دالة لالتقاط لقطة شاشة من الويدجيت
-  const takeScreenshot = () => {
-    if (widgetRef.current && widgetRef.current.chart && typeof widgetRef.current.chart().takeScreenshot === 'function') {
-      console.log("جاري التقاط لقطة شاشة من ويدجيت TradingView...");
-      
-      widgetRef.current.chart().takeScreenshot().then((dataUrl: string) => {
-        console.log("تم التقاط الشاشة بنجاح!");
-        
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = `tradingview-${symbol}-${new Date().toISOString().split('T')[0]}.png`;
-        link.click();
-      }).catch((error: any) => {
-        console.error("فشل في التقاط لقطة الشاشة:", error);
-      });
-    } else {
-      console.error("الويدجيت غير متاح أو لا يدعم وظيفة التقاط الشاشة");
-    }
-  };
-
-  // المساعدة في الوصول إلى الويدجيت من خارج المكون
-  useEffect(() => {
-    // تعريف وظيفة عامة للوصول إلى الويدجيت
-    (window as any).takeWidgetScreenshot = takeScreenshot;
-    
-    // تنظيف عند إزالة المكون
-    return () => {
-      delete (window as any).takeWidgetScreenshot;
-    };
-  }, []);
 
   useEffect(() => {
     if (container.current && !isInitialized) {
@@ -90,28 +58,6 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = ({
       
       // إضافة حاوية الويدجيت إلى الحاوية المرجعية
       container.current.appendChild(widgetContainer);
-      
-      // محاولة الحصول على مرجع الويدجيت
-      try {
-        const checkWidgetInterval = setInterval(() => {
-          if (window.TradingView && document.querySelector('.tradingview-widget-container')) {
-            clearInterval(checkWidgetInterval);
-            // تخزين مرجع الويدجيت إذا كان متاحًا
-            const tvWidgets = document.querySelectorAll('.tradingview-widget-container');
-            if (tvWidgets.length > 0) {
-              widgetRef.current = (window as any).TradingView?.widget;
-              console.log("تم العثور على ويدجيت TradingView", widgetRef.current);
-            }
-          }
-        }, 500);
-        
-        // تنظيف الفاصل الزمني بعد 10 ثوانٍ للتأكد من عدم استمراره إلى ما لا نهاية
-        setTimeout(() => {
-          clearInterval(checkWidgetInterval);
-        }, 10000);
-      } catch (e) {
-        console.error("خطأ في الوصول إلى ويدجيت TradingView:", e);
-      }
       
       // تعيين الحالة كمهيأة
       setIsInitialized(true);
