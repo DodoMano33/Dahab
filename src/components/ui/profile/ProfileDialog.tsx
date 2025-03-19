@@ -50,18 +50,16 @@ export function ProfileDialog({
     
     setIsLoading(true);
     try {
+      // تحديث تنسيق البيانات المرسلة لقاعدة البيانات
       await supabase
         .from('profiles')
         .update({
-          id: user.id,
-          email: user.email,
           display_name: userProfile.displayName,
           theme: userProfile.theme,
           notifications_enabled: userProfile.notificationsEnabled,
-          auto_check_enabled: userProfile.autoCheckEnabled,
-          auto_check_interval: userProfile.autoCheckInterval,
-          price_update_interval: userProfile.priceUpdateInterval,
           metal_price_api_key: userProfile.metalPriceApiKey,
+          price_update_interval: userProfile.priceUpdateInterval,
+          // إزالة الحقول غير الموجودة في الجدول
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -69,6 +67,7 @@ export function ProfileDialog({
       setTheme(userProfile.theme as Theme);
       
       toast.success("تم تحديث البيانات الشخصية بنجاح");
+      setShowProfileDialog(false);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("حدث خطأ أثناء تحديث البيانات");

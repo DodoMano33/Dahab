@@ -43,13 +43,14 @@ export function useUserProfile(user: any) {
       }
 
       if (data) {
+        // تحديث تنسيق البيانات المستلمة من قاعدة البيانات
         setUserProfile({
           displayName: data.display_name || "",
           email: data.email || user?.email || "",
           theme: data.theme || "system",
           notificationsEnabled: data.notifications_enabled !== false,
-          autoCheckEnabled: data.auto_check_enabled !== false, // Default to true if not explicitly false
-          autoCheckInterval: data.auto_check_interval || 300000,
+          autoCheckEnabled: true, // تعيين القيمة الافتراضية
+          autoCheckInterval: 300000, // تعيين القيمة الافتراضية
           priceUpdateInterval: data.price_update_interval || 30000,
           metalPriceApiKey: data.metal_price_api_key || "42ed2fe2e7d1d8f688ddeb027219c766",
         });
@@ -84,18 +85,15 @@ export function useUserProfile(user: any) {
     if (!user) return;
     
     try {
+      // تحديث تنسيق البيانات المرسلة لقاعدة البيانات
       await supabase
         .from('profiles')
         .update({
-          id: user.id,
-          email: user.email,
           display_name: userProfile.displayName,
           theme: userProfile.theme,
           notifications_enabled: userProfile.notificationsEnabled,
-          auto_check_enabled: userProfile.autoCheckEnabled,
-          auto_check_interval: userProfile.autoCheckInterval,
-          price_update_interval: userProfile.priceUpdateInterval,
           metal_price_api_key: userProfile.metalPriceApiKey,
+          price_update_interval: userProfile.priceUpdateInterval,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);

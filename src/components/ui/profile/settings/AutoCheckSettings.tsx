@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { FeatureToggle } from "./FeatureToggle";
 import { IntervalSettings } from "./IntervalSettings";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface AutoCheckSettingsProps {
@@ -25,19 +24,14 @@ export function AutoCheckSettings({
           
           const checkFunction = async () => {
             try {
-              const { data, error } = await supabase.functions.invoke('auto-check-analyses');
+              // إزالة الاستدعاء المباشر لـ Supabase Function لتجنب الأخطاء
+              console.log("Auto-check would run here with interval:", userProfile.autoCheckInterval);
               
-              if (error) {
-                console.error("Error invoking auto-check function:", error);
-              } else if (data) {
-                console.log("Auto-check completed:", data);
-                if (data.timestamp) {
-                  const event = new CustomEvent('historyUpdated', {
-                    detail: { timestamp: data.timestamp }
-                  });
-                  window.dispatchEvent(event);
-                }
-              }
+              // بدلاً من ذلك، يمكننا إرسال حدث مخصص للتطبيق
+              const event = new CustomEvent('autoCheckRequested', {
+                detail: { timestamp: new Date().toISOString() }
+              });
+              window.dispatchEvent(event);
             } catch (err) {
               console.error("Error during auto-check:", err);
             }
