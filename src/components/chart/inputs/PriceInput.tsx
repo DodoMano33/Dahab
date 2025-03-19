@@ -16,7 +16,7 @@ export const PriceInput = ({
   defaultValue,
   tradingViewPrice
 }: PriceInputProps) => {
-  const [useAutoPrice, setUseAutoPrice] = useState(false);
+  const [useAutoPrice, setUseAutoPrice] = useState(true);
   
   // استخدام السعر من Metal Price API تلقائيًا
   useEffect(() => {
