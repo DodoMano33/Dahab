@@ -1,5 +1,5 @@
 
-import { fetchCryptoPrice, fetchForexPrice, fetchGoldPrice } from './price/api';
+import { fetchPrice } from './price/api';
 
 interface PriceSubscription {
   symbol: string;
@@ -10,7 +10,7 @@ interface PriceSubscription {
 class PriceUpdater {
   private subscriptions: Map<string, PriceSubscription[]> = new Map();
   private polling: boolean = false;
-  private pollingInterval: number = 300000; // 5 دقائق بدلاً من 5 ثوان
+  private pollingInterval: number = 300000; // 5 دقائق
   private intervalId?: NodeJS.Timeout;
   private lastPrices: Map<string, { price: number; timestamp: number }> = new Map();
   private rateLimited: boolean = false;
@@ -48,21 +48,8 @@ class PriceUpdater {
         this.rateLimited = false;
       }
 
-      // محاولة جلب السعر من Metal Price API
-      let price = null;
-      
-      // معالجة خاصة للذهب
-      if (symbol.toUpperCase() === 'XAUUSD' || symbol.toUpperCase() === 'GOLD' || symbol.toUpperCase() === 'XAU') {
-        price = await fetchGoldPrice();
-      } 
-      // محاولة جلب سعر العملات المشفرة
-      else if (['BTC', 'ETH', 'BTCUSDT'].includes(symbol.toUpperCase())) {
-        price = await fetchCryptoPrice(symbol.toUpperCase());
-      } 
-      // محاولة جلب سعر الفوركس
-      else {
-        price = await fetchForexPrice(symbol.toUpperCase());
-      }
+      // محاولة جلب السعر من Metal Price API باستخدام الوظيفة المحسنة
+      const price = await fetchPrice(symbol);
 
       if (price !== null) {
         console.log(`تم جلب السعر من Metal Price API للرمز ${symbol}: ${price}`);
