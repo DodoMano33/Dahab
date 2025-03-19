@@ -7,7 +7,6 @@ interface UseOcrProcessorResult {
   recognizedText: string;
   extractedPrice: number | null;
   isProcessingOCR: boolean;
-  enhancedImage: string | null;
   processImageWithOCR: (imageUrl: string) => Promise<number | null>;
 }
 
@@ -15,7 +14,6 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
   const [recognizedText, setRecognizedText] = useState<string>('');
   const [extractedPrice, setExtractedPrice] = useState<number | null>(null);
   const [isProcessingOCR, setIsProcessingOCR] = useState<boolean>(false);
-  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
 
   const processImageWithOCR = useCallback(async (imageUrl: string): Promise<number | null> => {
     if (!imageUrl || imageUrl.length < 100) {
@@ -33,14 +31,6 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
       
       // استخراج النص من الصورة
       console.log("بدء استخراج النص من الصورة...");
-      
-      // استماع لحدث تحسين الصورة
-      window.addEventListener('image-enhanced', ((event: CustomEvent) => {
-        if (event.detail && event.detail.enhancedImageUrl) {
-          console.log("تم استلام الصورة المحسنة");
-          setEnhancedImage(event.detail.enhancedImageUrl);
-        }
-      }) as EventListener, { once: true });
       
       // معالجة الصورة باستخدام OCR
       const extractedText = await recognizeTextFromImage(imageUrl);
@@ -99,7 +89,6 @@ export const useOcrProcessor = (): UseOcrProcessorResult => {
     recognizedText,
     extractedPrice,
     isProcessingOCR,
-    enhancedImage,
     processImageWithOCR
   };
 };

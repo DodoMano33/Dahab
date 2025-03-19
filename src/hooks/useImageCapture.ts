@@ -3,13 +3,11 @@ import { useState, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 
 interface UseImageCaptureResult {
-  capturedImage: string | null;
   captureAttempts: number;
   captureTradingViewWidget: () => Promise<string | null>;
 }
 
 export const useImageCapture = (): UseImageCaptureResult => {
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [captureAttempts, setCaptureAttempts] = useState<number>(0);
 
   const captureTradingViewWidget = useCallback(async (): Promise<string | null> => {
@@ -104,8 +102,7 @@ export const useImageCapture = (): UseImageCaptureResult => {
       const imageUrl = canvas.toDataURL('image/png');
       console.log('تم إنشاء الصورة بنجاح، طول البيانات:', imageUrl.length);
       
-      // حفظ الصورة وإرسال حدث للإعلام بالالتقاط
-      setCapturedImage(imageUrl);
+      // إرسال حدث للإعلام بالالتقاط
       window.dispatchEvent(
         new CustomEvent('widget-image-captured', {
           detail: { imageUrl }
@@ -145,7 +142,6 @@ export const useImageCapture = (): UseImageCaptureResult => {
         
         const imageUrl = canvas.toDataURL('image/png');
         console.log('تم التقاط قسم من الصفحة، طول البيانات:', imageUrl.length);
-        setCapturedImage(imageUrl);
         
         window.dispatchEvent(
           new CustomEvent('widget-image-captured', {
@@ -163,7 +159,6 @@ export const useImageCapture = (): UseImageCaptureResult => {
   }, [captureAttempts]);
 
   return {
-    capturedImage,
     captureAttempts,
     captureTradingViewWidget
   };

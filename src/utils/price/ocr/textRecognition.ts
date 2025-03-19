@@ -21,13 +21,6 @@ export const recognizeTextFromImage = async (imageUrl: string): Promise<string> 
     const enhancedImageUrl = await enhanceImageForOcr(imageUrl);
     console.log('تم تحسين الصورة بنجاح');
     
-    // إرسال حدث يحتوي على الصورة المحسنة
-    window.dispatchEvent(
-      new CustomEvent('image-enhanced', {
-        detail: { enhancedImageUrl }
-      })
-    );
-    
     // إعدادات متقدمة للتعرف على النص
     const result = await Tesseract.recognize(
       enhancedImageUrl,
