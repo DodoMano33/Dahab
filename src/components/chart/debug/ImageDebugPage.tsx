@@ -12,7 +12,6 @@ import { Home } from 'lucide-react';
 
 export const ImageDebugPage: React.FC = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   const [captureTime, setCaptureTime] = useState<string | null>(null);
   const { captureTradingViewWidget, captureAttempts } = useImageCapture();
   
@@ -28,11 +27,6 @@ export const ImageDebugPage: React.FC = () => {
       if (capturedImage) {
         setOriginalImage(capturedImage);
         console.log('تم التقاط الصورة بنجاح:', capturedImage.substring(0, 100) + '...');
-        
-        // تحسين الصورة
-        const enhanced = await enhanceImageForOcr(capturedImage);
-        setEnhancedImage(enhanced);
-        console.log('تم تحسين الصورة بنجاح');
       } else {
         console.error('فشل التقاط الصورة');
       }
@@ -51,7 +45,7 @@ export const ImageDebugPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="container mx-auto my-8 p-4 max-w-4xl">
+    <div className="container mx-auto my-8 p-4 max-w-5xl">
       {/* زر الرجوع إلى الصفحة الرئيسية */}
       <div className="mb-6">
         <Link to="/">
@@ -90,51 +84,27 @@ export const ImageDebugPage: React.FC = () => {
         </p>
       )}
       
-      <div className="grid md:grid-cols-2 gap-8">
-        {originalImage && (
-          <Card>
-            <CardHeader>
-              <CardTitle>الصورة الأصلية</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border border-gray-300 rounded-md p-2 overflow-auto max-h-[500px]">
-                <img 
-                  src={originalImage} 
-                  alt="صورة ويدجيت TradingView الأصلية" 
-                  className="w-full h-auto"
-                />
-              </div>
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">معلومات الصورة الأصلية:</h4>
-                <p className="text-sm text-gray-600">طول البيانات: {originalImage.length} حرف</p>
-                <p className="text-sm text-gray-600 mt-1">نوع الصورة: {originalImage.substring(0, 30)}...</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        
-        {enhancedImage && (
-          <Card>
-            <CardHeader>
-              <CardTitle>الصورة بعد التحسين</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border border-gray-300 rounded-md p-2 overflow-auto max-h-[500px]">
-                <img 
-                  src={enhancedImage} 
-                  alt="صورة ويدجيت TradingView بعد التحسين" 
-                  className="w-full h-auto"
-                />
-              </div>
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">معلومات الصورة المحسنة:</h4>
-                <p className="text-sm text-gray-600">طول البيانات: {enhancedImage.length} حرف</p>
-                <p className="text-sm text-gray-600 mt-1">نوع الصورة: {enhancedImage.substring(0, 30)}...</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {originalImage && (
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>الصورة الملتقطة</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border border-gray-300 rounded-md p-2 overflow-auto">
+              <img 
+                src={originalImage} 
+                alt="صورة ويدجيت TradingView" 
+                className="w-full h-auto"
+              />
+            </div>
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">معلومات الصورة:</h4>
+              <p className="text-sm text-gray-600">طول البيانات: {originalImage.length} حرف</p>
+              <p className="text-sm text-gray-600 mt-1">نوع الصورة: {originalImage.substring(0, 30)}...</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
