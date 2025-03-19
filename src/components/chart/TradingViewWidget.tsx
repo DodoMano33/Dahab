@@ -24,6 +24,14 @@ function TradingViewWidget({
     onPriceUpdate
   });
 
+  // Update the currentPriceRef when currentPrice changes
+  useEffect(() => {
+    if (currentPrice !== null && !isNaN(currentPrice)) {
+      currentPriceRef.current = currentPrice;
+      console.log('Updated currentPriceRef to:', currentPrice);
+    }
+  }, [currentPrice]);
+
   useAnalysisChecker({
     symbol,
     currentPriceRef
@@ -87,10 +95,15 @@ function TradingViewWidget({
       }
     };
     
+    // Try to get initial price after chart loads
     const initialPriceTimer = setTimeout(attemptInitialPriceRequest, 3000);
+    
+    // Set up regular price updates
+    const priceUpdateTimer = setInterval(attemptInitialPriceRequest, 5000);
 
     return () => {
       clearTimeout(initialPriceTimer);
+      clearInterval(priceUpdateTimer);
       if (container.current) {
         container.current.innerHTML = '';
       }

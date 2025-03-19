@@ -20,6 +20,13 @@ export const useAnalysisChecker = ({
   const autoCheckIntervalRef = useRef<number | undefined>(undefined);
   
   useEffect(() => {
+    // تنظيف المؤقت السابق قبل إعداد مؤقت جديد
+    if (autoCheckIntervalRef.current !== undefined) {
+      console.log('Cleaning up previous auto-check interval');
+      window.clearInterval(autoCheckIntervalRef.current);
+      autoCheckIntervalRef.current = undefined;
+    }
+    
     const handleManualCheck = () => {
       console.log('Manual check requested, current price:', currentPriceRef.current);
       const price = currentPriceRef.current;
@@ -39,16 +46,18 @@ export const useAnalysisChecker = ({
       handleManualCheck();
     });
 
-    // إعداد مؤقت الفحص التلقائي
-    if (autoCheckIntervalRef.current) {
-      window.clearInterval(autoCheckIntervalRef.current);
-    }
-    
+    // إعداد مؤقت الفحص التلقائي بفاصل زمني أطول لمنع الضغط على الخادم
     autoCheckIntervalRef.current = window.setInterval(() => {
+      // فحص إذا كان التطبيق في حالة عدم نشاط
+      if (document.hidden) {
+        console.log('App is in background, skipping auto check');
+        return;
+      }
+      
       const price = currentPriceRef.current;
       
-      // تخطي الفحص التلقائي إذا كان آخر خطأ حدث منذ أقل من دقيقة واحدة
-      if (lastErrorTime && (new Date().getTime() - lastErrorTime.getTime() < 60000)) {
+      // تخطي الفحص التلقائي إذا كان آخر خطأ حدث منذ أقل من دقيقتين (زيادة الفاصل الزمني)
+      if (lastErrorTime && (new Date().getTime() - lastErrorTime.getTime() < 120000)) {
         console.log('Skipping auto check due to recent error');
         return;
       }
@@ -60,13 +69,14 @@ export const useAnalysisChecker = ({
         console.warn('Auto check skipped, current price is null');
         checkAnalyses({ price: null, symbol });
       }
-    }, 10000);
+    }, 30000); // زيادة الفاصل الزمني إلى 30 ثانية لتقليل عدد الطلبات
 
     return () => {
+      console.log('Cleaning up useAnalysisChecker effect');
       window.removeEventListener('manual-check-analyses', handleManualCheck);
       window.removeEventListener('autoCheckRequested', handleManualCheck);
       
-      if (autoCheckIntervalRef.current) {
+      if (autoCheckIntervalRef.current !== undefined) {
         window.clearInterval(autoCheckIntervalRef.current);
         autoCheckIntervalRef.current = undefined;
       }

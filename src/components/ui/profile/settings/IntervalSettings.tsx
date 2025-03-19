@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 
 interface IntervalSettingsProps {
   interval: number;
@@ -16,7 +16,7 @@ interface IntervalSettingsProps {
   id: string;
 }
 
-export function IntervalSettings({ 
+export const IntervalSettings = memo(function IntervalSettings({ 
   interval, 
   onIntervalChange, 
   label, 
@@ -36,26 +36,31 @@ export function IntervalSettings({
   ];
 
   // التأكد من أن القيمة المحددة موجودة في القائمة
-  const ensureValidValue = (value: number): string => {
+  const ensureValidValue = useCallback((value: number): string => {
     // تحقق مما إذا كانت القيمة موجودة في القائمة
     const isValidValue = timeIntervalOptions.some(option => option.value === value);
     // إذا لم تكن القيمة موجودة، استخدم 5 دقائق كقيمة افتراضية
     return isValidValue ? String(value) : "300000";
-  };
+  }, []);
 
   // استخدام حالة محلية لتخزين القيمة المحددة مع التأكد من صحتها
-  const [selectedInterval, setSelectedInterval] = useState(ensureValidValue(interval));
+  const [selectedInterval, setSelectedInterval] = useState(() => ensureValidValue(interval));
 
   // تحديث القيمة المحلية عند تغير القيمة الخارجية
   useEffect(() => {
     const validValue = ensureValidValue(interval);
-    setSelectedInterval(validValue);
-  }, [interval]);
+    if (validValue !== selectedInterval) {
+      setSelectedInterval(validValue);
+    }
+  }, [interval, ensureValidValue, selectedInterval]);
 
-  const handleValueChange = (value: string) => {
+  const handleValueChange = useCallback((value: string) => {
+    // عدم تحديث الحالة إذا كانت نفس القيمة
+    if (value === selectedInterval) return;
+    
     setSelectedInterval(value);
     onIntervalChange(Number(value));
-  };
+  }, [selectedInterval, onIntervalChange]);
 
   return (
     <div className="space-y-2">
@@ -77,4 +82,4 @@ export function IntervalSettings({
       </Select>
     </div>
   );
-}
+});

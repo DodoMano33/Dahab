@@ -18,11 +18,12 @@ export function ApiKeySettings({
   const [metalPriceApiKey, setMetalPriceApiKey] = useState(apiKey || '');
   const [isSaving, setIsSaving] = useState(false);
   const updateTimeoutRef = useRef<number | undefined>(undefined);
+  const initialValueRef = useRef(apiKey || '');
 
   // تنظيف المؤقتات عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
-      if (updateTimeoutRef.current) {
+      if (updateTimeoutRef.current !== undefined) {
         window.clearTimeout(updateTimeoutRef.current);
         updateTimeoutRef.current = undefined;
       }
@@ -31,7 +32,11 @@ export function ApiKeySettings({
 
   // تحديث القيمة عند تغيير المدخلات الخارجية
   useEffect(() => {
-    setMetalPriceApiKey(apiKey || '');
+    // تحديث القيمة فقط إذا كانت مختلفة عن القيمة الحالية
+    if (apiKey !== metalPriceApiKey && apiKey !== undefined) {
+      setMetalPriceApiKey(apiKey || '');
+      initialValueRef.current = apiKey || '';
+    }
   }, [apiKey]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,14 +44,14 @@ export function ApiKeySettings({
     setMetalPriceApiKey(newValue);
 
     // إلغاء المؤقت السابق إذا كان موجودًا
-    if (updateTimeoutRef.current) {
+    if (updateTimeoutRef.current !== undefined) {
       window.clearTimeout(updateTimeoutRef.current);
       updateTimeoutRef.current = undefined;
     }
 
     // نتحقق أولاً إذا كان المفتاح قد تغير فعلاً وليس فارغًا
     if (newValue && newValue !== userProfile.metalPriceApiKey && newValue.length > 10) {
-      // إعداد مؤقت جديد للتحديث
+      // إعداد مؤقت جديد للتحديث بتأخير أطول
       updateTimeoutRef.current = window.setTimeout(() => {
         setIsSaving(true);
         try {
@@ -64,7 +69,7 @@ export function ApiKeySettings({
         } finally {
           setIsSaving(false);
         }
-      }, 1000);
+      }, 2000); // تأخير أطول لتقليل عدد التحديثات
     }
   };
   

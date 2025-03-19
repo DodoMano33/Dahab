@@ -18,31 +18,54 @@ export function AutoCheckSettings({
 }: AutoCheckSettingsProps) {
   // استخدام مرجع لتخزين معرف المؤقت
   const intervalIdRef = useRef<number | undefined>(undefined);
+  const initialCheckTimeoutRef = useRef<number | undefined>(undefined);
+  const [isActive, setIsActive] = useState(userProfile.autoCheckEnabled);
 
   // تنظيف المؤقت عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
+      console.log('Cleaning up AutoCheckSettings timers');
+      
       if (intervalIdRef.current !== undefined) {
         window.clearInterval(intervalIdRef.current);
         intervalIdRef.current = undefined;
+      }
+      
+      if (initialCheckTimeoutRef.current !== undefined) {
+        window.clearTimeout(initialCheckTimeoutRef.current);
+        initialCheckTimeoutRef.current = undefined;
       }
     };
   }, []);
 
   // إعداد الفحص التلقائي عند تغيير الحالة
   useEffect(() => {
+    // تحديث الحالة المحلية عند تغيير الحالة الخارجية
+    setIsActive(userProfile.autoCheckEnabled);
+    
     const setupAutoCheck = () => {
       // تنظيف المؤقت السابق إذا كان موجودًا
       if (intervalIdRef.current !== undefined) {
         window.clearInterval(intervalIdRef.current);
         intervalIdRef.current = undefined;
       }
+      
+      if (initialCheckTimeoutRef.current !== undefined) {
+        window.clearTimeout(initialCheckTimeoutRef.current);
+        initialCheckTimeoutRef.current = undefined;
+      }
 
       if (userProfile.autoCheckEnabled) {
         try {
-          // تنفيذ الفحص مرة واحدة عند التفعيل
+          // تنفيذ الفحص مرة واحدة عند التفعيل بعد تأخير قصير
           const checkFunction = () => {
             try {
+              // فحص إذا كان المكون لا يزال موجودًا في DOM
+              if (document.hidden) {
+                console.log('App is in background, skipping check');
+                return;
+              }
+              
               // إرسال حدث مخصص بدلاً من استدعاء وظيفة مباشرة
               const event = new CustomEvent('autoCheckRequested', {
                 detail: { 
@@ -56,19 +79,15 @@ export function AutoCheckSettings({
             }
           };
           
-          // تنفيذ فحص أولي بعد فترة قصيرة
-          const initialCheckTimeout = window.setTimeout(() => {
+          // تنفيذ فحص أولي بعد فترة أطول (3 ثواني) لضمان استقرار التطبيق
+          initialCheckTimeoutRef.current = window.setTimeout(() => {
+            console.log('Executing initial check after settings change');
             checkFunction();
-          }, 1000);
+          }, 3000);
           
-          // إعداد المؤقت مع فترة ثابتة لمنع المشكلات
-          const checkInterval = 5 * 60 * 1000; // 5 دقائق
+          // إعداد المؤقت مع فترة أطول لتقليل الضغط على الخادم
+          const checkInterval = 300000; // 5 دقائق
           intervalIdRef.current = window.setInterval(checkFunction, checkInterval);
-          
-          // تنظيف المؤقت الأولي عند إلغاء التحميل
-          return () => {
-            window.clearTimeout(initialCheckTimeout);
-          };
         } catch (error) {
           console.error("Error setting up auto-check:", error);
         }
@@ -76,26 +95,42 @@ export function AutoCheckSettings({
     };
     
     setupAutoCheck();
+    
+    // تنظيف المؤقتات عند تغيير الإعدادات
+    return () => {
+      if (intervalIdRef.current !== undefined) {
+        window.clearInterval(intervalIdRef.current);
+        intervalIdRef.current = undefined;
+      }
+      
+      if (initialCheckTimeoutRef.current !== undefined) {
+        window.clearTimeout(initialCheckTimeoutRef.current);
+        initialCheckTimeoutRef.current = undefined;
+      }
+    };
   }, [userProfile.autoCheckEnabled, userProfile.autoCheckInterval]);
+
+  const handleToggle = (checked: boolean) => {
+    setIsActive(checked);
+    setUserProfile({ ...userProfile, autoCheckEnabled: checked });
+    if (checked) {
+      toast.success("تم تفعيل الفحص التلقائي");
+    } else {
+      toast.info("تم إيقاف الفحص التلقائي");
+    }
+  };
 
   return (
     <>
       <FeatureToggle
-        enabled={userProfile.autoCheckEnabled}
-        onToggle={(checked) => {
-          setUserProfile({ ...userProfile, autoCheckEnabled: checked });
-          if (checked) {
-            toast.success("تم تفعيل الفحص التلقائي");
-          } else {
-            toast.info("تم إيقاف الفحص التلقائي");
-          }
-        }}
+        enabled={isActive}
+        onToggle={handleToggle}
         title="الفحص التلقائي"
         description="فحص تلقائي للتحليلات ومقارنتها بالأسعار الحالية"
         defaultChecked={true}
       />
       
-      {userProfile.autoCheckEnabled && (
+      {isActive && (
         <IntervalSettings
           interval={userProfile.autoCheckInterval || 300000}
           onIntervalChange={(interval) => 
