@@ -1,5 +1,6 @@
 
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export const fetchAnalysesWithCurrentPrice = async (
   price: number | null,
@@ -21,16 +22,24 @@ export const fetchAnalysesWithCurrentPrice = async (
     
     if (!authSession?.session?.access_token) {
       console.error('No auth session available');
+      toast.error('يجب تسجيل الدخول أولاً');
       throw new Error('User authentication required');
     }
     
     // إضافة timeout لمنع استمرار الطلب لفترة طويلة
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 10000); // تقليل زمن الانتظار إلى 10 ثوان
+    }, 8000); // تقليل زمن الانتظار إلى 8 ثوان
     
     try {
       console.log('Sending fetch request to auto-check-analyses');
+      
+      // التحقق من اتصال الإنترنت قبل إرسال الطلب
+      if (!navigator.onLine) {
+        clearTimeout(timeout);
+        throw new Error('لا يوجد اتصال بالإنترنت');
+      }
+      
       const response = await fetch(`${supabaseUrl}/functions/auto-check-analyses`, {
         method: 'POST',
         headers: {
@@ -41,7 +50,10 @@ export const fetchAnalysesWithCurrentPrice = async (
         body: JSON.stringify(requestBody),
         signal: controller.signal,
         cache: 'no-store',
-        credentials: 'omit'
+        credentials: 'omit',
+        // إضافة timeout إضافي على مستوى الطلب
+        // @ts-ignore - خاصية غير قياسية في بعض المتصفحات الحديثة
+        timeout: 7000
       });
       
       clearTimeout(timeout);
@@ -49,7 +61,19 @@ export const fetchAnalysesWithCurrentPrice = async (
       if (!response.ok) {
         const responseText = await response.text();
         console.error(`Error status: ${response.status} ${response.statusText}, Body: ${responseText}`);
-        throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
+        
+        // رسائل أكثر تحديداً للأخطاء الشائعة
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(`خطأ في التحقق من المستخدم: ${response.status}`);
+        } else if (response.status === 404) {
+          throw new Error(`الخدمة غير متوفرة حالياً: ${response.status}`);
+        } else if (response.status === 429) {
+          throw new Error(`تم تجاوز الحد الأقصى للطلبات: ${response.status}`);
+        } else if (response.status >= 500) {
+          throw new Error(`خطأ في الخادم: ${response.status}`);
+        } else {
+          throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
+        }
       }
       
       const responseText = await response.text();
@@ -69,6 +93,12 @@ export const fetchAnalysesWithCurrentPrice = async (
     if (error instanceof DOMException && error.name === 'AbortError') {
       console.log('Request was aborted due to timeout');
       throw new Error('انتهت مهلة الاتصال');
+    }
+    
+    // تحسين رسائل الخطأ لسهولة الفهم
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      console.error('Network error - Failed to fetch:', error);
+      throw new Error('خطأ في الاتصال: تعذر الوصول للخادم');
     }
     
     console.error('Error in fetchAnalysesWithCurrentPrice:', error);

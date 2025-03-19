@@ -7,7 +7,7 @@ export const useFetchRequest = (
   setDiagnostics: React.Dispatch<React.SetStateAction<FetchDiagnostics[]>>,
   abortControllerRef: React.MutableRefObject<AbortController | null>
 ) => {
-  const maxRetries = 2;
+  const maxRetries = 1; // تقليل عدد المحاولات إلى 1 فقط
 
   const doFetchRequest = async (retry = 0): Promise<any> => {
     console.log(`Starting fetch request (retry ${retry}/${maxRetries})`);
@@ -30,6 +30,11 @@ export const useFetchRequest = (
     setDiagnostics(prev => [...prev.slice(Math.max(0, prev.length - 9)), diagnosticEntry]);
     
     try {
+      // التحقق من اتصال الإنترنت قبل إرسال الطلب
+      if (!navigator.onLine) {
+        throw new Error('لا يوجد اتصال بالإنترنت');
+      }
+      
       console.log(`Executing fetch request (retry ${retry}/${maxRetries})`);
       
       const { data: authSession } = await supabase.auth.getSession();
@@ -54,7 +59,10 @@ export const useFetchRequest = (
           fallbackPrice: null
         }),
         signal: abortControllerRef.current.signal,
-        cache: 'no-store' // منع التخزين المؤقت
+        cache: 'no-store', // منع التخزين المؤقت
+        // تقليل وقت الانتظار
+        // @ts-ignore - خاصية غير قياسية في بعض المتصفحات
+        timeout: 5000
       });
       
       const endTime = performance.now();
@@ -64,7 +72,18 @@ export const useFetchRequest = (
       
       if (!response.ok) {
         const responseText = await response.text();
-        const errorMessage = `خطأ ${response.status}: ${response.statusText}`;
+        let errorMessage = `خطأ ${response.status}: ${response.statusText}`;
+        
+        // تحسين رسائل الخطأ بناءً على كود الاستجابة
+        if (response.status === 401 || response.status === 403) {
+          errorMessage = 'خطأ في صلاحيات المستخدم';
+        } else if (response.status === 404) {
+          errorMessage = 'الخدمة غير متوفرة حالياً';
+        } else if (response.status === 429) {
+          errorMessage = 'تم تجاوز الحد الأقصى للطلبات';
+        } else if (response.status >= 500) {
+          errorMessage = 'خطأ في الخادم، يرجى المحاولة لاحقاً';
+        }
         
         console.error('Server error:', errorMessage, responseText);
         
@@ -122,9 +141,14 @@ export const useFetchRequest = (
         throw new Error('تم إلغاء الطلب');
       }
       
+      // تحسين رسائل الخطأ للمستخدم
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('تعذر الاتصال بالخادم - تحقق من اتصالك بالإنترنت');
+      }
+      
       if (retry < maxRetries) {
         // تقليل عدد المحاولات ووقت الانتظار
-        const delay = Math.min(1000 * (retry + 1), 3000); // حد أقصى 3 ثوان
+        const delay = 1000; // تأخير ثابت 1 ثانية
         
         console.log(`Retrying fetch in ${delay}ms (attempt ${retry + 1}/${maxRetries})`);
         

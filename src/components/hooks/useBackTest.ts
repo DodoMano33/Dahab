@@ -26,6 +26,10 @@ export const useBackTest = (): UseBackTestResult => {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
       }
+      
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, []);
 
@@ -48,7 +52,7 @@ export const useBackTest = (): UseBackTestResult => {
       // إطلاق حدث الفحص اليدوي
       window.dispatchEvent(new Event('manual-check-analyses'));
       
-      // تعيين مؤقت أمان لإعادة تعيين حالة التحميل بعد 15 ثانية في حالة حدوث خطأ
+      // تعيين مؤقت أمان لإعادة تعيين حالة التحميل بعد 10 ثوان في حالة حدوث خطأ
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
       }
@@ -58,7 +62,13 @@ export const useBackTest = (): UseBackTestResult => {
         setIsLoading(false);
         isRequestInProgressRef.current = false;
         timeoutRef.current = null;
-      }, 15000);
+        
+        // إذا كان هناك طلب عالق، قم بإلغائه
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+          abortControllerRef.current = null;
+        }
+      }, 10000); // تقليل المدة إلى 10 ثوان
       
       try {
         const data = await doFetchRequest();
