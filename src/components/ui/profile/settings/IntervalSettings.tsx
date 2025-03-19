@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useEffect, useState } from "react";
 
 interface IntervalSettingsProps {
   interval: number;
@@ -34,20 +35,34 @@ export function IntervalSettings({
     { value: 3600000, label: "60 دقيقة" }
   ];
 
+  // استخدام حالة محلية لتخزين القيمة المحددة
+  const [selectedInterval, setSelectedInterval] = useState(String(interval));
+
+  // تحديث القيمة المحلية عند تغير القيمة الخارجية
+  useEffect(() => {
+    const validValue = ensureValidValue(interval);
+    setSelectedInterval(validValue);
+  }, [interval]);
+
   // التأكد من أن القيمة المحددة موجودة في القائمة
-  const ensureValidValue = () => {
+  const ensureValidValue = (value: number) => {
     // تحقق مما إذا كانت القيمة موجودة في القائمة
-    const isValidValue = timeIntervalOptions.some(option => option.value === interval);
+    const isValidValue = timeIntervalOptions.some(option => option.value === value);
     // إذا لم تكن القيمة موجودة، استخدم 5 دقائق كقيمة افتراضية
-    return isValidValue ? String(interval) : "300000";
+    return isValidValue ? String(value) : "300000";
+  };
+
+  const handleValueChange = (value: string) => {
+    setSelectedInterval(value);
+    onIntervalChange(Number(value));
   };
 
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       <Select
-        value={ensureValidValue()}
-        onValueChange={(value) => onIntervalChange(Number(value))}
+        value={selectedInterval}
+        onValueChange={handleValueChange}
       >
         <SelectTrigger id={id}>
           <SelectValue placeholder={`اختر ${label}`} />

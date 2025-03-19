@@ -1,6 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useEffect, useState } from "react";
 
 interface FeatureToggleProps {
   enabled: boolean;
@@ -22,7 +23,16 @@ export function FeatureToggle({
   onToggleMessage,
   defaultChecked
 }: FeatureToggleProps) {
+  // استخدام حالة محلية لمنع مشاكل التزامن
+  const [isChecked, setIsChecked] = useState(enabled);
+  
+  // تحديث الحالة المحلية عندما تتغير القيمة من الخارج
+  useEffect(() => {
+    setIsChecked(enabled);
+  }, [enabled]);
+  
   const handleToggle = (checked: boolean) => {
+    setIsChecked(checked);
     onToggle(checked);
   };
   
@@ -35,7 +45,7 @@ export function FeatureToggle({
         </p>
       </div>
       <Switch
-        checked={enabled}
+        checked={isChecked}
         onCheckedChange={handleToggle}
         defaultChecked={defaultChecked}
         aria-label={title}

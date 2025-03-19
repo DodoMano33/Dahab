@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FeatureToggle } from "./FeatureToggle";
 import { IntervalSettings } from "./IntervalSettings";
 import { toast } from "sonner";
@@ -16,20 +16,41 @@ export function AutoCheckSettings({
   userProfile, 
   setUserProfile 
 }: AutoCheckSettingsProps) {
+  // تتبع حالة المؤقت
+  const [intervalId, setIntervalId] = useState<number | null>(null);
+
+  useEffect(() => {
+    // تنظيف المؤقت السابق عند إعادة التحميل
+    return () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const setupAutoCheck = async () => {
       try {
+        // تنظيف المؤقت السابق إذا كان موجودًا
+        if (intervalId !== null) {
+          clearInterval(intervalId);
+          setIntervalId(null);
+        }
+
         if (userProfile.autoCheckEnabled) {
           console.log("Setting up auto-check with interval:", userProfile.autoCheckInterval);
           
           const checkFunction = async () => {
             try {
-              // إزالة الاستدعاء المباشر لـ Supabase Function لتجنب الأخطاء
+              // تسجيل محاولة الفحص التلقائي
               console.log("Auto-check would run here with interval:", userProfile.autoCheckInterval);
               
-              // بدلاً من ذلك، يمكننا إرسال حدث مخصص للتطبيق
+              // إرسال حدث مخصص بدلاً من استدعاء Supabase Function مباشرة
               const event = new CustomEvent('autoCheckRequested', {
-                detail: { timestamp: new Date().toISOString() }
+                detail: { 
+                  timestamp: new Date().toISOString(),
+                  interval: userProfile.autoCheckInterval
+                }
               });
               window.dispatchEvent(event);
             } catch (err) {
@@ -42,11 +63,8 @@ export function AutoCheckSettings({
           
           // إعداد التنفيذ الدوري كل 5 دقائق بدلاً من استخدام قيمة متغيرة
           // هذا أكثر استقرارًا ويمنع المشاكل المحتملة
-          const intervalId = setInterval(checkFunction, 5 * 60 * 1000);
-          
-          return () => {
-            clearInterval(intervalId);
-          };
+          const newIntervalId = window.setInterval(checkFunction, 5 * 60 * 1000);
+          setIntervalId(newIntervalId);
         }
       } catch (error) {
         console.error("Error setting up auto-check:", error);
@@ -75,7 +93,7 @@ export function AutoCheckSettings({
       
       {userProfile.autoCheckEnabled && (
         <IntervalSettings
-          interval={userProfile.autoCheckInterval}
+          interval={userProfile.autoCheckInterval || 300000}
           onIntervalChange={(interval) => 
             setUserProfile({ ...userProfile, autoCheckInterval: interval })
           }
