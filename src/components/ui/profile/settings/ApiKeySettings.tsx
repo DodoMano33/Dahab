@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -17,16 +17,17 @@ export function ApiKeySettings({
 }: ApiKeySettingsProps) {
   const [metalPriceApiKey, setMetalPriceApiKey] = useState(apiKey || '');
   const [isSaving, setIsSaving] = useState(false);
-  const [updateTimeout, setUpdateTimeout] = useState<number | undefined>(undefined);
+  const updateTimeoutRef = useRef<number | undefined>(undefined);
 
   // تنظيف المؤقتات عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
-      if (updateTimeout) {
-        window.clearTimeout(updateTimeout);
+      if (updateTimeoutRef.current) {
+        window.clearTimeout(updateTimeoutRef.current);
+        updateTimeoutRef.current = undefined;
       }
     };
-  }, [updateTimeout]);
+  }, []);
 
   // تحديث القيمة عند تغيير المدخلات الخارجية
   useEffect(() => {
@@ -38,14 +39,15 @@ export function ApiKeySettings({
     setMetalPriceApiKey(newValue);
 
     // إلغاء المؤقت السابق إذا كان موجودًا
-    if (updateTimeout) {
-      window.clearTimeout(updateTimeout);
+    if (updateTimeoutRef.current) {
+      window.clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = undefined;
     }
 
     // نتحقق أولاً إذا كان المفتاح قد تغير فعلاً وليس فارغًا
     if (newValue && newValue !== userProfile.metalPriceApiKey && newValue.length > 10) {
       // إعداد مؤقت جديد للتحديث
-      const timeoutId = window.setTimeout(() => {
+      updateTimeoutRef.current = window.setTimeout(() => {
         setIsSaving(true);
         try {
           // فقط نقوم بتحديث الملف الشخصي بدون عمليات حفظ مباشرة في قاعدة البيانات
@@ -63,8 +65,6 @@ export function ApiKeySettings({
           setIsSaving(false);
         }
       }, 1000);
-      
-      setUpdateTimeout(timeoutId);
     }
   };
   

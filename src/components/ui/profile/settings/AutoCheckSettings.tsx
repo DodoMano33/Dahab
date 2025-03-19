@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FeatureToggle } from "./FeatureToggle";
 import { IntervalSettings } from "./IntervalSettings";
 import { toast } from "sonner";
@@ -16,30 +16,30 @@ export function AutoCheckSettings({
   userProfile, 
   setUserProfile 
 }: AutoCheckSettingsProps) {
-  // تتبع حالة المؤقت
-  const [intervalId, setIntervalId] = useState<number | undefined>(undefined);
+  // استخدام مرجع لتخزين معرف المؤقت
+  const intervalIdRef = useRef<number | undefined>(undefined);
 
   // تنظيف المؤقت عند إلغاء تحميل المكون
   useEffect(() => {
     return () => {
-      if (intervalId !== undefined) {
-        window.clearInterval(intervalId);
-        setIntervalId(undefined);
+      if (intervalIdRef.current !== undefined) {
+        window.clearInterval(intervalIdRef.current);
+        intervalIdRef.current = undefined;
       }
     };
-  }, [intervalId]);
+  }, []);
 
   // إعداد الفحص التلقائي عند تغيير الحالة
   useEffect(() => {
     const setupAutoCheck = () => {
-      try {
-        // تنظيف المؤقت السابق إذا كان موجودًا
-        if (intervalId !== undefined) {
-          window.clearInterval(intervalId);
-          setIntervalId(undefined);
-        }
+      // تنظيف المؤقت السابق إذا كان موجودًا
+      if (intervalIdRef.current !== undefined) {
+        window.clearInterval(intervalIdRef.current);
+        intervalIdRef.current = undefined;
+      }
 
-        if (userProfile.autoCheckEnabled) {
+      if (userProfile.autoCheckEnabled) {
+        try {
           // تنفيذ الفحص مرة واحدة عند التفعيل
           const checkFunction = () => {
             try {
@@ -56,27 +56,26 @@ export function AutoCheckSettings({
             }
           };
           
-          // تنفيذ فحص أولي
-          checkFunction();
+          // تنفيذ فحص أولي بعد فترة قصيرة
+          const initialCheckTimeout = window.setTimeout(() => {
+            checkFunction();
+          }, 1000);
           
           // إعداد المؤقت مع فترة ثابتة لمنع المشكلات
-          const newIntervalId = window.setInterval(checkFunction, 5 * 60 * 1000);
-          setIntervalId(newIntervalId);
+          const checkInterval = 5 * 60 * 1000; // 5 دقائق
+          intervalIdRef.current = window.setInterval(checkFunction, checkInterval);
+          
+          // تنظيف المؤقت الأولي عند إلغاء التحميل
+          return () => {
+            window.clearTimeout(initialCheckTimeout);
+          };
+        } catch (error) {
+          console.error("Error setting up auto-check:", error);
         }
-      } catch (error) {
-        console.error("Error setting up auto-check:", error);
       }
     };
     
     setupAutoCheck();
-    
-    // تنظيف عند إلغاء التحميل
-    return () => {
-      if (intervalId !== undefined) {
-        window.clearInterval(intervalId);
-        setIntervalId(undefined);
-      }
-    };
   }, [userProfile.autoCheckEnabled, userProfile.autoCheckInterval]);
 
   return (

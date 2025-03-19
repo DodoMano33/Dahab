@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +44,13 @@ export function ProfileDialog({
   const [activeTab, setActiveTab] = useState("profile");
   const [isLoading, setIsLoading] = useState(false);
   const { setTheme } = useTheme();
+  
+  // تنظيف عند إغلاق الحوار
+  useEffect(() => {
+    if (!showProfileDialog) {
+      // رمز التنظيف عند إغلاق الحوار
+    }
+  }, [showProfileDialog]);
 
   const updateProfile = async () => {
     if (!user) return;
@@ -51,17 +58,18 @@ export function ProfileDialog({
     setIsLoading(true);
     try {
       // نرسل فقط الحقول الموجودة فعلاً في جدول profiles
-      // وليس كل حقول userProfile
+      const profileData = {
+        display_name: userProfile.displayName,
+        theme: userProfile.theme,
+        notifications_enabled: userProfile.notificationsEnabled,
+        metal_price_api_key: userProfile.metalPriceApiKey,
+        price_update_interval: userProfile.priceUpdateInterval,
+        updated_at: new Date().toISOString()
+      };
+      
       await supabase
         .from('profiles')
-        .update({
-          display_name: userProfile.displayName,
-          theme: userProfile.theme,
-          notifications_enabled: userProfile.notificationsEnabled,
-          metal_price_api_key: userProfile.metalPriceApiKey,
-          price_update_interval: userProfile.priceUpdateInterval,
-          updated_at: new Date().toISOString()
-        })
+        .update(profileData)
         .eq('id', user.id);
       
       setTheme(userProfile.theme as Theme);

@@ -35,22 +35,22 @@ export function IntervalSettings({
     { value: 3600000, label: "60 دقيقة" }
   ];
 
-  // استخدام حالة محلية لتخزين القيمة المحددة
-  const [selectedInterval, setSelectedInterval] = useState(String(interval));
+  // التأكد من أن القيمة المحددة موجودة في القائمة
+  const ensureValidValue = (value: number): string => {
+    // تحقق مما إذا كانت القيمة موجودة في القائمة
+    const isValidValue = timeIntervalOptions.some(option => option.value === value);
+    // إذا لم تكن القيمة موجودة، استخدم 5 دقائق كقيمة افتراضية
+    return isValidValue ? String(value) : "300000";
+  };
+
+  // استخدام حالة محلية لتخزين القيمة المحددة مع التأكد من صحتها
+  const [selectedInterval, setSelectedInterval] = useState(ensureValidValue(interval));
 
   // تحديث القيمة المحلية عند تغير القيمة الخارجية
   useEffect(() => {
     const validValue = ensureValidValue(interval);
     setSelectedInterval(validValue);
   }, [interval]);
-
-  // التأكد من أن القيمة المحددة موجودة في القائمة
-  const ensureValidValue = (value: number) => {
-    // تحقق مما إذا كانت القيمة موجودة في القائمة
-    const isValidValue = timeIntervalOptions.some(option => option.value === value);
-    // إذا لم تكن القيمة موجودة، استخدم 5 دقائق كقيمة افتراضية
-    return isValidValue ? String(value) : "300000";
-  };
 
   const handleValueChange = (value: string) => {
     setSelectedInterval(value);

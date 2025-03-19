@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAnalysisCheckerProcess } from './useAnalysisCheckerProcess';
 import { AnalysisCheckerProps, UseAnalysisCheckerResult } from './types';
 
@@ -15,7 +15,10 @@ export const useAnalysisChecker = ({
     checkAnalyses,
     clearPendingRequests
   } = useAnalysisCheckerProcess();
-
+  
+  // استخدام مرجع لتخزين معرف المؤقت
+  const autoCheckIntervalRef = useRef<number | undefined>(undefined);
+  
   useEffect(() => {
     const handleManualCheck = () => {
       console.log('Manual check requested, current price:', currentPriceRef.current);
@@ -30,9 +33,18 @@ export const useAnalysisChecker = ({
       }
     };
     
+    // إعداد الاستماع للأحداث المخصصة
     window.addEventListener('manual-check-analyses', handleManualCheck);
+    window.addEventListener('autoCheckRequested', () => {
+      handleManualCheck();
+    });
 
-    const autoCheckInterval = setInterval(() => {
+    // إعداد مؤقت الفحص التلقائي
+    if (autoCheckIntervalRef.current) {
+      window.clearInterval(autoCheckIntervalRef.current);
+    }
+    
+    autoCheckIntervalRef.current = window.setInterval(() => {
       const price = currentPriceRef.current;
       
       // تخطي الفحص التلقائي إذا كان آخر خطأ حدث منذ أقل من دقيقة واحدة
@@ -52,7 +64,13 @@ export const useAnalysisChecker = ({
 
     return () => {
       window.removeEventListener('manual-check-analyses', handleManualCheck);
-      clearInterval(autoCheckInterval);
+      window.removeEventListener('autoCheckRequested', handleManualCheck);
+      
+      if (autoCheckIntervalRef.current) {
+        window.clearInterval(autoCheckIntervalRef.current);
+        autoCheckIntervalRef.current = undefined;
+      }
+      
       clearPendingRequests();
     };
   }, [symbol, currentPriceRef, lastErrorTime, consecutiveErrors, checkAnalyses, clearPendingRequests]);
