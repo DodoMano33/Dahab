@@ -1,7 +1,6 @@
 import { PriceResponse } from "./types";
 import { getMetalPriceApiKey, mapSymbolToMetalPriceSymbol } from "./helpers";
 import { checkRateLimit, handleApiResponse, setRateLimited } from "./rateLimit";
-import { getCachedPrice, setCachedPrice } from "./cache";
 
 // Base URL for Metal Price API
 const METAL_PRICE_API_URL = 'https://api.metalpriceapi.com/v1';
@@ -24,20 +23,6 @@ export const fetchPriceFromMetalPriceApi = async (
         success: false,
         price: null,
         error: `تم تجاوز حد معدل API للرمز ${base}/${target}`
-      };
-    }
-
-    // Build cache key
-    const cacheKey = `${base}_${target}`;
-    
-    // Check cache first
-    const cachedPrice = getCachedPrice(cacheKey);
-    if (cachedPrice !== null) {
-      console.log(`استخدام السعر المخزن مؤقتًا للرمز ${base}/${target}: ${cachedPrice}`);
-      return { 
-        success: true, 
-        price: cachedPrice,
-        timestamp: Date.now()
       };
     }
 
@@ -118,9 +103,6 @@ export const fetchPriceFromMetalPriceApi = async (
     // In Metal Price API, when using USD as base we need to invert the ratio
     const finalRate = 1 / rate;
     console.log(`تم جلب السعر بنجاح للرمز ${base}/${target}: ${finalRate}`);
-    
-    // Cache the price
-    setCachedPrice(cacheKey, finalRate);
     
     return { 
       success: true, 

@@ -1,7 +1,6 @@
 
 // تصدير الفئات والدوال
 export * from './types';
-export * from './cache';
 export * from './rateLimit';
 export * from './retry';
 export * from './subscriptions';

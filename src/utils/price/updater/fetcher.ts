@@ -1,6 +1,5 @@
 
 import { fetchPrice } from '../api';
-import { PriceCache } from './cache';
 import { RateLimitManager } from './rateLimit';
 import { retry } from './retry';
 import { RetryOptions } from './types';
@@ -9,7 +8,6 @@ export class PriceFetcher {
   private retryOptions: RetryOptions;
   
   constructor(
-    private cache: PriceCache,
     private rateLimit: RateLimitManager,
     retryOptions: RetryOptions = { maxAttempts: 3, initialDelay: 1000 }
   ) {
@@ -30,18 +28,13 @@ export class PriceFetcher {
       // إذا تم توفير سعر، استخدمه مباشرة
       if (providedPrice !== undefined) {
         console.log(`استخدام السعر المقدم للرمز ${symbol}: ${providedPrice}`);
-        this.cache.set(symbol, providedPrice);
         return providedPrice;
       }
-
-      // التحقق من الذاكرة المؤقتة أولاً
-      const cachedPrice = this.cache.get(symbol);
-      if (cachedPrice !== null) return cachedPrice;
 
       // التحقق من حالة حد معدل الاستخدام
       if (this.rateLimit.isRateLimited()) {
         console.log(`تم تجاوز حد معدل API للرمز ${symbol}`);
-        return this.handleRateLimitedFetch(symbol);
+        return null;
       }
 
       // محاولة جلب السعر من API باستخدام وظيفة إعادة المحاولة
@@ -49,7 +42,6 @@ export class PriceFetcher {
 
       if (price !== null) {
         console.log(`تم جلب السعر من Metal Price API للرمز ${symbol}: ${price}`);
-        this.cache.set(symbol, price);
         
         // إرسال حدث تحديث السعر
         window.dispatchEvent(new CustomEvent('metal-price-update', {
@@ -58,24 +50,11 @@ export class PriceFetcher {
         
         return price;
       }
-
-      // إذا لم يتم العثور على سعر، استخدم آخر سعر معروف أو null
-      if (cachedPrice) {
-        console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر مخزن: ${cachedPrice}`);
-        return cachedPrice;
-      }
       
       console.log(`لم يتم العثور على سعر للرمز ${symbol}`);
       return null;
     } catch (error) {
       console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
-      
-      // في حالة الخطأ، نستخدم آخر سعر معروف أو null
-      const cachedPrice = this.cache.get(symbol);
-      if (cachedPrice !== null) {
-        return cachedPrice;
-      }
-      
       return null;
     }
   }
@@ -91,14 +70,6 @@ export class PriceFetcher {
       },
       this.retryOptions
     );
-  }
-
-  /**
-   * التعامل مع حالة تجاوز حد معدل الاستخدام
-   */
-  private handleRateLimitedFetch(symbol: string): number | null {
-    // محاولة استخدام السعر المخزن مؤقتًا
-    return this.cache.get(symbol);
   }
   
   /**

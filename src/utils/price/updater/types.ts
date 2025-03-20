@@ -1,5 +1,5 @@
 
-import { PriceSubscription, CachedPrice } from '../types';
+import { PriceSubscription } from '../types';
 
 export interface RetryOptions {
   maxAttempts: number;
@@ -8,7 +8,6 @@ export interface RetryOptions {
 
 export interface PriceUpdaterConfig {
   rateLimitResetTime: number;
-  cacheLifetime: number;
   pollingInterval: number;
 }
 

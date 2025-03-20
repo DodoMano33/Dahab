@@ -1,6 +1,5 @@
 
 import { PriceSubscription } from '../types';
-import { PriceCache } from './cache';
 import { PriceFetcher } from './fetcher';
 import { PollingService } from './polling';
 import { RateLimitManager } from './rateLimit';
@@ -11,7 +10,6 @@ import { PriceUpdaterConfig, RetryOptions } from './types';
  * محدث الأسعار - الفئة الرئيسية لإدارة تحديثات الأسعار والاشتراكات
  */
 export class PriceUpdater {
-  private cache: PriceCache;
   private rateLimit: RateLimitManager;
   private subscriptions: SubscriptionService;
   private fetcher: PriceFetcher;
@@ -20,16 +18,13 @@ export class PriceUpdater {
   constructor(config: Partial<PriceUpdaterConfig> = {}) {
     const {
       rateLimitResetTime = 24 * 60 * 60 * 1000, // 24 ساعة
-      cacheLifetime = 60 * 1000, // 1 دقيقة
       pollingInterval = 300000 // 5 دقائق
     } = config;
     
-    this.cache = new PriceCache(cacheLifetime);
     this.rateLimit = new RateLimitManager(rateLimitResetTime);
     this.subscriptions = new SubscriptionService();
     
     this.fetcher = new PriceFetcher(
-      this.cache,
       this.rateLimit,
       {
         maxAttempts: 3,
@@ -119,16 +114,5 @@ export class PriceUpdater {
    */
   setRetryOptions(options: Partial<RetryOptions>): void {
     this.fetcher.setRetryOptions(options);
-  }
-
-  /**
-   * مسح الذاكرة المؤقتة للرمز المحدد
-   */
-  invalidateCache(symbol?: string): void {
-    if (symbol) {
-      this.cache.invalidate(symbol);
-    } else {
-      this.cache.clear();
-    }
   }
 }
