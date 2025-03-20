@@ -17,9 +17,11 @@ export const useBestEntryPoint = (analysis: AnalysisData, id: string): EntryPoin
     
     // التحقق من وجود الحقل القديم entryPoint (للتوافق مع البيانات القديمة)
     if ('entryPoint' in analysis && analysis.entryPoint !== undefined) {
-      const price = typeof analysis.entryPoint === 'string' 
-        ? parseFloat(analysis.entryPoint) 
-        : analysis.entryPoint;
+      // استخدام type assertion لتحويل النوع إلى number أو string
+      const entryPointValue = analysis.entryPoint as (number | string);
+      const price = typeof entryPointValue === 'string' 
+        ? parseFloat(entryPointValue) 
+        : entryPointValue;
         
       console.log(`Using legacy entryPoint value for ${id}:`, price);
       
