@@ -14,3 +14,17 @@ timeout = 30
 
 [schedule-realtime-prices]
 verify_jwt = false
+
+[clean-old-data.http]
+port = 54321
+timeout = 60
+
+[clean-old-data]
+verify_jwt = false
+
+[schedule-data-cleanup.http]
+port = 54321
+timeout = 30
+
+[schedule-data-cleanup]
+verify_jwt = false

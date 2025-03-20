@@ -18,10 +18,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
       'x-application-name': 'chart-analyzer',
     }
   },
-  // تقليل عدد الأحداث في الوقت الحقيقي
+  // تقليل عدد الأحداث في الوقت الحقيقي بشكل كبير
   realtime: {
     params: {
-      eventsPerSecond: 5 // تخفيض من 10 إلى 5
+      eventsPerSecond: 2 // تخفيض من 5 إلى 2
     }
   },
   // تمكين التخزين المؤقت للاستعلامات
