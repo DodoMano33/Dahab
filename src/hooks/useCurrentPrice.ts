@@ -10,7 +10,24 @@ export const useCurrentPrice = () => {
 
   const fetchLatestPrice = useCallback(async () => {
     try {
-      // محاولة جلب أحدث سعر من قاعدة البيانات
+      console.log('جاري جلب أحدث سعر للرمز:', symbol);
+      
+      // أولاً، نحاول تحديث السعر من خلال وظيفة Edge
+      try {
+        const { data, error } = await supabase.functions.invoke('update-real-time-prices', {
+          body: { symbols: [symbol] }
+        });
+        
+        if (error) {
+          console.warn('لم نتمكن من تحديث السعر من خلال وظيفة Edge:', error);
+        } else {
+          console.log('تم تحديث السعر بنجاح من خلال وظيفة Edge:', data);
+        }
+      } catch (updateError) {
+        console.warn('خطأ في استدعاء وظيفة تحديث السعر:', updateError);
+      }
+      
+      // ثم نجلب أحدث سعر من قاعدة البيانات
       const { data, error } = await supabase
         .from('real_time_prices')
         .select('price, updated_at')
@@ -28,7 +45,7 @@ export const useCurrentPrice = () => {
         setLastUpdateTime(updated_at);
         setPriceUpdateCount(prev => prev + 1);
         
-        console.log(`تم تحديث السعر من قاعدة البيانات: ${price}`);
+        console.log(`تم تحديث السعر للرمز ${symbol}: ${price}`);
         
         // إطلاق حدث تحديث السعر
         window.dispatchEvent(new CustomEvent('metal-price-update', { 
@@ -54,9 +71,10 @@ export const useCurrentPrice = () => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
         const newPrice = event.detail.price;
+        const eventSymbol = event.detail.symbol || symbol;
         
-        if (newPrice !== currentPrice) {
-          console.log(`تم استلام تحديث السعر من حدث خارجي: ${newPrice}`);
+        if (eventSymbol === symbol && newPrice !== currentPrice) {
+          console.log(`تم استلام تحديث السعر من حدث خارجي: ${newPrice} للرمز ${eventSymbol}`);
           setCurrentPrice(newPrice);
           setLastUpdateTime(new Date().toISOString());
           setPriceUpdateCount(prev => prev + 1);
@@ -76,6 +94,7 @@ export const useCurrentPrice = () => {
     currentPrice, 
     priceUpdateCount, 
     lastUpdateTime,
-    setSymbol
+    setSymbol,
+    fetchLatestPrice
   };
 };

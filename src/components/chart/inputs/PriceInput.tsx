@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface PriceInputProps {
   value: string;
@@ -30,19 +31,52 @@ export const PriceInput = ({
     setErrorMessage(null);
     
     try {
-      // تم حذف وظيفة جلب السعر - يجب استبدالها بمصدر السعر الجديد
-      toast.warning("تم حذف مصدر السعر السابق، يجب تنفيذ المصدر الجديد");
-      setErrorMessage("تم حذف مصدر السعر السابق، يرجى إدخال السعر يدويًا حتى يتم تنفيذ المصدر الجديد");
+      // استدعاء Edge Function لجلب السعر من Metal Price API
+      const { data, error } = await supabase.functions.invoke('update-real-time-prices', {
+        body: { symbols: ['XAUUSD'] }
+      });
+
+      if (error) {
+        console.error("خطأ في استدعاء وظيفة تحديث السعر:", error);
+        throw new Error("فشل في تحديث السعر");
+      }
+
+      // استرجاع السعر المحدث من قاعدة البيانات
+      const { data: priceData, error: priceError } = await supabase
+        .from('real_time_prices')
+        .select('price, updated_at')
+        .eq('symbol', 'XAUUSD')
+        .single();
+
+      if (priceError) {
+        console.error("خطأ في جلب السعر من قاعدة البيانات:", priceError);
+        throw new Error("لم نتمكن من استرجاع السعر المحدث");
+      }
+
+      if (priceData && priceData.price) {
+        const price = priceData.price.toString();
+        onChange(price);
+        
+        // إرسال حدث لتحديث السعر في جميع أنحاء التطبيق
+        window.dispatchEvent(new CustomEvent('metal-price-update', { 
+          detail: { price: priceData.price, symbol: 'XAUUSD' } 
+        }));
+        
+        const updateTime = new Date(priceData.updated_at).toLocaleTimeString();
+        toast.success(`تم تحديث السعر: ${priceData.price} (${updateTime})`);
+      } else {
+        throw new Error("لا يوجد سعر متاح");
+      }
     } catch (error) {
       console.error("خطأ في جلب السعر:", error);
-      setErrorMessage("تم حذف مصدر السعر السابق، يرجى إدخال السعر يدويًا");
-      toast.error("مصدر السعر غير متوفر حاليًا");
+      setErrorMessage("لم نتمكن من جلب السعر الحالي. يرجى المحاولة مرة أخرى أو إدخال السعر يدويًا");
+      toast.error("فشل في تحديث السعر");
     } finally {
       setIsLoading(false);
     }
   };
   
-  // استخدام السعر تلقائيًا
+  // استخدام السعر تلقائيًا عند التحميل
   useEffect(() => {
     if (useAutoPrice) {
       updatePrice();
@@ -112,7 +146,7 @@ export const PriceInput = ({
       
       {useAutoPrice && isLoading && (
         <p className="text-sm text-yellow-500 mt-1">
-          جارِ محاولة جلب السعر...
+          جارِ جلب السعر من Metal Price API...
         </p>
       )}
       
@@ -131,6 +165,12 @@ export const PriceInput = ({
       {!useAutoPrice && value && (
         <p className="text-sm text-green-500 mt-1">
           السعر المدخل يدوياً: {displayPrice}
+        </p>
+      )}
+      
+      {useAutoPrice && value && !isLoading && !errorMessage && (
+        <p className="text-sm text-blue-500 mt-1">
+          السعر الحالي (Metal Price API): {displayPrice}
         </p>
       )}
     </div>

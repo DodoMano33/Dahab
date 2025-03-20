@@ -7,6 +7,6 @@ interface CurrentPriceCellProps {
 
 export const CurrentPriceCell = ({ price }: CurrentPriceCellProps) => (
   <TableCell className="w-16 p-2 text-center">
-    {price}
+    {price ? price.toFixed(2) : "-"}
   </TableCell>
 );
