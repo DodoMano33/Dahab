@@ -8,7 +8,6 @@ import { AnalysisStatsChart } from "./AnalysisStatsChart";
 import { SuccessRateChart } from "./SuccessRateChart";
 import { TimeframePerfChart } from "./TimeframePerfChart";
 import { supabase } from "@/lib/supabase";
-import { AnalysisStats } from "./types";
 
 interface DetailedStatsTabsProps {
   stats: any[];
@@ -27,27 +26,6 @@ export function DetailedStatsTabs({ stats, isLoading, setStats, setIsLoading }: 
       setIsLoading(false);
     });
   };
-
-  // Calculate statistics for SuccessRateChart
-  const totalSuccess = stats.reduce((acc, curr) => acc + (curr.success || 0), 0);
-  const totalFail = stats.reduce((acc, curr) => acc + (curr.fail || 0), 0);
-  const totalTests = totalSuccess + totalFail;
-  const successRate = totalTests > 0 ? Math.round((totalSuccess / totalTests) * 100) : 0;
-
-  // Prepare data for AnalysisStatsChart
-  const analysisData = stats.map(stat => ({
-    name: stat.display_name || stat.type,
-    success: stat.success || 0,
-    fail: stat.fail || 0,
-    total: (stat.success || 0) + (stat.fail || 0),
-    rate: (stat.success || 0) + (stat.fail || 0) > 0 
-      ? Math.round((stat.success || 0) / ((stat.success || 0) + (stat.fail || 0)) * 100) 
-      : 0
-  }));
-
-  // For the timeframes chart, we'll use the same data for now
-  // In a real scenario, this would be replaced with actual timeframe data
-  const timeframeData = analysisData;
 
   return (
     <Card>
@@ -76,25 +54,15 @@ export function DetailedStatsTabs({ stats, isLoading, setStats, setIsLoading }: 
           </TabsList>
           
           <TabsContent value="overview" className="space-y-4">
-            <SuccessRateChart 
-              successRate={successRate} 
-              totalTests={totalTests} 
-              isLoading={isLoading} 
-            />
+            <SuccessRateChart stats={stats} />
           </TabsContent>
           
           <TabsContent value="types">
-            <AnalysisStatsChart 
-              data={analysisData} 
-              isLoading={isLoading} 
-            />
+            <AnalysisStatsChart stats={stats} />
           </TabsContent>
           
           <TabsContent value="timeframes">
-            <TimeframePerfChart 
-              data={timeframeData} 
-              isLoading={isLoading} 
-            />
+            <TimeframePerfChart stats={stats} />
           </TabsContent>
         </Tabs>
       </CardContent>

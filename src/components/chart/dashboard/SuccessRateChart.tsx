@@ -1,59 +1,66 @@
 
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SuccessRateChartProps } from './types';
+import { ResponsiveContainer, PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const SuccessRateChart = ({ successRate, totalTests, isLoading }: SuccessRateChartProps) => {
-  if (isLoading) {
-    return (
-      <div className="w-full h-72 flex items-center justify-center">
-        <Skeleton className="h-48 w-48 rounded-full" />
-      </div>
-    );
-  }
+interface AnalysisStats {
+  type: string;
+  success: number;
+  fail: number;
+}
+
+export const SuccessRateChart = ({ stats }: { stats: AnalysisStats[] }) => {
+  const totalSuccess = stats.reduce((acc, stat) => acc + stat.success, 0);
+  const totalFail = stats.reduce((acc, stat) => acc + stat.fail, 0);
+  
+  const data = [
+    { name: 'ناجح', value: totalSuccess, color: '#10b981' },
+    { name: 'فاشل', value: totalFail, color: '#ef4444' },
+  ];
+  
+  const successRate = totalSuccess + totalFail > 0 
+    ? Math.round((totalSuccess / (totalSuccess + totalFail)) * 100) 
+    : 0;
 
   return (
-    <Card className="border-0 shadow-none">
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-          <div className="w-48 h-48">
-            <CircularProgressbar
-              value={successRate}
-              text={`${successRate}%`}
-              styles={buildStyles({
-                textSize: '16px',
-                pathColor: successRate > 70 ? '#10b981' : successRate > 50 ? '#f59e0b' : '#ef4444',
-                textColor: '#64748b',
-                trailColor: '#e2e8f0',
-              })}
-            />
+    <Card>
+      <CardHeader>
+        <CardTitle>معدل النجاح الإجمالي</CardTitle>
+        <CardDescription>
+          نسبة التحليلات الناجحة من إجمالي التحليلات
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center">
+        <div className="h-[200px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value) => [`${value}`, 'عدد التحليلات']}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        
+        <div className="text-center mt-4">
+          <div className="text-3xl font-bold">
+            {successRate}%
           </div>
-
-          <div className="text-center md:text-right">
-            <h3 className="text-2xl font-bold mb-2">معدل النجاح الإجمالي</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {totalTests > 0 
-                ? `بناءً على ${totalTests} تحليل تم اختبارها تاريخياً`
-                : 'لا توجد بيانات كافية بعد'}
-            </p>
-            
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="bg-green-50 p-3 rounded-lg">
-                <p className="text-green-600 text-sm font-medium">ناجحة</p>
-                <p className="text-2xl font-bold text-green-700">
-                  {Math.round(totalTests * successRate / 100)}
-                </p>
-              </div>
-              
-              <div className="bg-red-50 p-3 rounded-lg">
-                <p className="text-red-600 text-sm font-medium">فاشلة</p>
-                <p className="text-2xl font-bold text-red-700">
-                  {totalTests - Math.round(totalTests * successRate / 100)}
-                </p>
-              </div>
-            </div>
+          <div className="text-sm text-muted-foreground">
+            معدل النجاح الإجمالي
           </div>
         </div>
       </CardContent>
