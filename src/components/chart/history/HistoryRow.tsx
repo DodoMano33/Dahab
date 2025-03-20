@@ -1,7 +1,6 @@
 
 import { TableRow } from "@/components/ui/table";
 import { AnalysisData } from "@/types/analysis";
-import { useState, useEffect } from "react";
 import { CheckboxCell } from "./cells/CheckboxCell";
 import { MarketStatusCell } from "./cells/MarketStatusCell";
 import { LastCheckedCell } from "./cells/LastCheckedCell";
@@ -15,7 +14,7 @@ import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { DateCell } from "./cells/DateCell";
 import { SymbolCell } from "./cells/SymbolCell";
-import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
+import { useHistoryRowData } from "./HistoryRowData";
 
 interface HistoryRowProps {
   id: string;
@@ -46,143 +45,15 @@ export const HistoryRow = ({
   last_checked_price,
   last_checked_at,
 }: HistoryRowProps) => {
-  // استخدام وظيفة getStrategyName لعرض نوع التحليل بشكل صحيح
-  const displayAnalysisType = analysis.pattern === "فيبوناتشي ريتريسمينت وإكستينشين" 
-    ? "فيبوناتشي" 
-    : analysis.pattern === "تحليل فيبوناتشي متقدم" 
-      ? "تحليل فيبوناتشي متقدم" 
-      : getStrategyName(analysisType);
-  
-  // تشخيص وقت آخر فحص
-  console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
-  
-  // تشخيص بيانات الأهداف
-  console.log(`Targets for analysis ${id}:`, analysis.targets);
-  
-  // معالجة بيانات أفضل نقطة دخول
-  const getBestEntryPoint = () => {
-    // طباعة تشخيصية للمعلومات الكاملة
-    console.log(`Full analysis data for ${id}:`, analysis);
-    console.log(`Best entry point data for ${id}:`, analysis.bestEntryPoint);
-    
-    // التحقق من وجود كائن أفضل نقطة دخول
-    if (!analysis.bestEntryPoint) {
-      console.log(`No bestEntryPoint object for analysis ${id}`);
-      
-      // لا نستخدم entryPoint لأنها غير موجودة في نوع البيانات AnalysisData
-      return { price: undefined, reason: undefined };
-    }
-    
-    // التحقق من وجود السعر والسبب
-    let price = undefined;
-    let reason = undefined;
-    
-    // إذا كان الكائن موجود، افحص إذا كان السعر والسبب موجودين
-    if (typeof analysis.bestEntryPoint === 'object') {
-      // التحقق من السعر وتحويله إلى رقم إذا كان موجود
-      if ('price' in analysis.bestEntryPoint && analysis.bestEntryPoint.price !== undefined) {
-        const priceValue = analysis.bestEntryPoint.price;
-        price = typeof priceValue === 'string' ? parseFloat(priceValue) : priceValue;
-        
-        // التحقق من صحة الرقم
-        if (isNaN(Number(price))) {
-          console.log(`Invalid price value for ${id}:`, price);
-          price = undefined;
-        } else {
-          console.log(`Valid price found for ${id}:`, price);
-        }
-      }
-      
-      // التحقق من وجود السبب
-      if ('reason' in analysis.bestEntryPoint) {
-        reason = analysis.bestEntryPoint.reason;
-        console.log(`Reason for best entry point ${id}:`, reason);
-      }
-    } else if (typeof analysis.bestEntryPoint === 'number') {
-      // إذا كان السعر رقم مباشر
-      price = analysis.bestEntryPoint;
-      reason = "نقطة دخول محسوبة من التحليل";
-      console.log(`Direct numeric price for ${id}:`, price);
-    }
-    
-    // إذا كان السعر غير محدد ولكن تم تحديد الاتجاه والسعر الحالي، نقوم بإنشاء سعر
-    if ((price === undefined || isNaN(Number(price))) && analysis.direction && analysis.currentPrice) {
-      console.log(`Creating price based on direction and current price`);
-      
-      if (analysis.direction === "صاعد") {
-        price = Number((analysis.currentPrice * 0.995).toFixed(4));
-      } else {
-        price = Number((analysis.currentPrice * 1.005).toFixed(4));
-      }
-      
-      if (!reason) {
-        reason = "نقطة دخول تلقائية بناء على الاتجاه";
-      }
-    }
-    
-    console.log(`Final best entry point for analysis ${id}:`, { price, reason });
-    
-    return { price, reason };
-  };
-  
-  const bestEntryPoint = getBestEntryPoint();
-  
-  // التحقق من صحة بيانات الأهداف وإصلاحها إذا لزم الأمر
-  const fixedTargets = (() => {
-    if (!analysis.targets) {
-      console.log(`No targets found for analysis ${id}, creating default empty array`);
-      return [];
-    }
-    
-    if (!Array.isArray(analysis.targets)) {
-      console.log(`Targets is not an array for analysis ${id}, converting to array`);
-      return [];
-    }
-    
-    console.log(`Found ${analysis.targets.length} targets for analysis ${id}`);
-    
-    return analysis.targets.map(target => {
-      if (typeof target === 'number') {
-        // تحويل الرقم إلى كائن هدف
-        return {
-          price: target,
-          expectedTime: new Date(date.getTime() + 24 * 60 * 60 * 1000) // افتراضيًا بعد 24 ساعة
-        };
-      }
-      
-      if (!target || typeof target !== 'object') {
-        return null;
-      }
-      
-      // التأكد من وجود سعر
-      if (target.price === undefined || target.price === null) {
-        return null;
-      }
-      
-      // التأكد من وجود تاريخ متوقع
-      if (!target.expectedTime) {
-        return {
-          ...target,
-          expectedTime: new Date(date.getTime() + 24 * 60 * 60 * 1000)
-        };
-      }
-      
-      return target;
-    }).filter(Boolean);
-  })();
-
-  // الاستماع للتحديثات في الوقت الحقيقي
-  useEffect(() => {
-    const handleHistoryUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      console.log(`[${id}] HistoryRow detected update event:`, customEvent.detail?.timestamp || "No timestamp");
-    };
-    
-    window.addEventListener('historyUpdated', handleHistoryUpdate);
-    return () => {
-      window.removeEventListener('historyUpdated', handleHistoryUpdate);
-    };
-  }, [id]);
+  // استخدام مكون معالجة البيانات
+  const { displayAnalysisType, bestEntryPoint, fixedTargets } = useHistoryRowData({
+    id,
+    date,
+    analysis,
+    analysisType,
+    last_checked_price,
+    last_checked_at,
+  });
 
   return (
     <TableRow className="text-xs">
