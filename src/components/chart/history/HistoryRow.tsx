@@ -59,6 +59,9 @@ export const HistoryRow = ({
   // تشخيص بيانات الأهداف
   console.log(`Targets for analysis ${id}:`, analysis.targets);
   
+  // تشخيص بيانات أفضل نقطة دخول
+  console.log(`Best entry point for analysis ${id}:`, analysis.bestEntryPoint);
+  
   // التحقق من صحة نوع بيانات الأهداف وإصلاحها إذا لزم الأمر
   const fixedTargets = (() => {
     if (!analysis.targets) {
@@ -103,7 +106,28 @@ export const HistoryRow = ({
     }).filter(Boolean);
   })();
   
+  // التحقق من صحة بيانات أفضل نقطة دخول وإصلاحها إذا لزم الأمر
+  const bestEntryPoint = (() => {
+    if (!analysis.bestEntryPoint) {
+      console.log(`No best entry point found for analysis ${id}`);
+      return { price: undefined, reason: undefined };
+    }
+    
+    // تحقق من أن السعر موجود
+    const price = analysis.bestEntryPoint.price;
+    const reason = analysis.bestEntryPoint.reason;
+    
+    if (price === undefined || price === null || isNaN(price)) {
+      console.log(`Invalid best entry point price for analysis ${id}`);
+      return { price: undefined, reason };
+    }
+    
+    console.log(`Valid best entry point found for analysis ${id}: ${price}`);
+    return { price, reason };
+  })();
+  
   console.log(`Fixed targets for analysis ${id}:`, fixedTargets);
+  console.log(`Fixed best entry point for analysis ${id}:`, bestEntryPoint);
 
   // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {
@@ -133,8 +157,8 @@ export const HistoryRow = ({
         durationHours={analysis_duration_hours}
       />
       <BestEntryPointCell 
-        price={analysis.bestEntryPoint?.price}
-        reason={analysis.bestEntryPoint?.reason}
+        price={bestEntryPoint.price}
+        reason={bestEntryPoint.reason}
       />
       <TargetsListCell 
         targets={fixedTargets} 

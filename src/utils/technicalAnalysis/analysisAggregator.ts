@@ -2,128 +2,140 @@
 import { AnalysisData } from "@/types/analysis";
 
 /**
- * Calculate combined direction from multiple analysis results
+ * Calculate a weighted average value from multiple analyses
  */
-export const calculateCombinedDirection = (results: AnalysisData[]): "صاعد" | "هابط" | "محايد" => {
-  if (!results.length) return "محايد";
+export const calculateWeightedValues = (analyses: AnalysisData[]) => {
+  console.log("Calculating weighted values from", analyses.length, "analyses");
   
-  const directions = results.map(r => r.direction);
-  const upCount = directions.filter(d => d === "صاعد").length;
-  const downCount = directions.filter(d => d === "هابط").length;
+  // تجميع القيم من جميع التحليلات
+  let totalSupport = 0;
+  let totalResistance = 0;
+  let totalStopLoss = 0;
+  let totalEntryPrice = 0;
+  let entryPointCount = 0;
   
-  if (upCount > downCount) return "صاعد";
-  if (downCount > upCount) return "هابط";
-  return "محايد";
+  // معالجة قيم من جميع التحليلات
+  for (const analysis of analyses) {
+    totalSupport += analysis.support || 0;
+    totalResistance += analysis.resistance || 0;
+    totalStopLoss += analysis.stopLoss || 0;
+    
+    // جمع نقاط الدخول إذا كانت موجودة
+    if (analysis.bestEntryPoint && analysis.bestEntryPoint.price) {
+      console.log(`Analysis includes entry point: ${analysis.bestEntryPoint.price}`);
+      totalEntryPrice += analysis.bestEntryPoint.price;
+      entryPointCount++;
+    } else {
+      console.log("Analysis does not include a valid entry point");
+    }
+  }
+  
+  // حساب القيم المتوسطة
+  const count = analyses.length;
+  const support = Number((totalSupport / count).toFixed(4));
+  const resistance = Number((totalResistance / count).toFixed(4));
+  const stopLoss = Number((totalStopLoss / count).toFixed(4));
+  
+  // حساب سعر الدخول المثالي
+  let entryPrice: number;
+  
+  if (entryPointCount > 0) {
+    // إذا كان هناك نقاط دخول صالحة، استخدم متوسطها
+    entryPrice = Number((totalEntryPrice / entryPointCount).toFixed(4));
+    console.log(`Calculated best entry price from ${entryPointCount} points: ${entryPrice}`);
+  } else {
+    // إذا لم توجد نقاط دخول، استخدم السعر الحالي
+    const currentPrice = analyses[0]?.currentPrice || 0;
+    const direction = analyses[0]?.direction || "صاعد";
+    
+    // تعيين سعر الدخول بناءً على الاتجاه
+    entryPrice = direction === "صاعد"
+      ? Number((currentPrice * 0.995).toFixed(4)) // أقل من السعر الحالي بنسبة 0.5% للاتجاه الصاعد
+      : Number((currentPrice * 1.005).toFixed(4)); // أعلى من السعر الحالي بنسبة 0.5% للاتجاه الهابط
+    
+    console.log(`No valid entry points found, using calculated price: ${entryPrice}`);
+  }
+
+  return {
+    support,
+    resistance,
+    stopLoss,
+    entryPrice
+  };
 };
 
 /**
- * Combine and sort targets from multiple analyses
+ * Combine targets from multiple analyses and sort them
  */
-export const combineAndSortTargets = (results: AnalysisData[]): { price: number; expectedTime: Date; }[] => {
-  // جمع جميع الأهداف من جميع التحليلات
-  const allTargets = results.flatMap(r => {
-    // التحقق من وجود الأهداف ومعالجة الحالة إذا كانت غير موجودة
-    if (!r.targets || !Array.isArray(r.targets) || r.targets.length === 0) {
-      console.log(`No targets found for analysis: ${r.pattern}`, r);
+export const combineAndSortTargets = (analyses: AnalysisData[]) => {
+  console.log("Combining targets from", analyses.length, "analyses");
+  
+  // جمع الأهداف من جميع التحليلات
+  const allTargets = analyses.flatMap(analysis => {
+    if (!analysis.targets || !Array.isArray(analysis.targets)) {
+      console.log("Analysis has no valid targets", analysis.pattern);
       return [];
     }
     
-    console.log(`Found ${r.targets.length} targets for analysis: ${r.pattern}`);
-    
-    // تحويل الأهداف إلى الصيغة المطلوبة
-    return r.targets.map(target => {
+    return analysis.targets.map(target => {
+      // تحويل الأهداف الرقمية البسيطة إلى كائنات
       if (typeof target === 'number') {
-        // إذا كان الهدف رقمًا فقط (النمط القديم)
-        return {
-          price: target,
-          expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // افتراضيًا بعد 24 ساعة
-        };
-      } else if (target && typeof target === 'object') {
-        // إذا كان الهدف كائنًا (النمط الجديد)
-        const price = typeof target.price === 'number' ? target.price : parseFloat(String(target.price));
-        
-        let expectedTime = target.expectedTime;
-        // التحقق من صحة التاريخ وإنشاء تاريخ جديد إذا لزم الأمر
-        if (!expectedTime || !(expectedTime instanceof Date)) {
-          expectedTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
-        }
-        
-        return {
-          price,
-          expectedTime
-        };
+        return { price: target };
       }
-      // إرجاع قيمة افتراضية إذا كان الهدف في هيكل غير متوقع
+      
+      // إرجاع الهدف كما هو إذا كان كائنًا
+      if (target && typeof target === 'object' && 'price' in target) {
+        return target;
+      }
+      
       return null;
-    }).filter(Boolean); // حذف القيم الفارغة
+    }).filter(Boolean);
   });
   
-  console.log("All targets before grouping:", allTargets);
+  console.log("All combined targets:", allTargets.length);
   
-  if (!allTargets.length) {
-    console.log("No valid targets found in any analysis");
-    return [];
-  }
-
-  // تجميع الأهداف المتشابهة
-  const groupedTargets = allTargets.reduce((groups: any[], target) => {
-    const existingGroup = groups.find(g => 
-      Math.abs(g.price - target.price) / target.price < 0.01
-    );
+  // حساب متوسط القيم المتكررة (تجميع الأهداف المتقاربة)
+  const uniqueTargets = [];
+  const processedPrices = new Set();
+  
+  for (const target of allTargets) {
+    if (!target) continue;
     
-    if (existingGroup) {
-      existingGroup.prices.push(target.price);
-      existingGroup.times.push(target.expectedTime);
-    } else {
-      groups.push({
-        prices: [target.price],
-        times: [target.expectedTime]
-      });
-    }
-    return groups;
-  }, []);
-
-  // تحويل المجموعات إلى أهداف نهائية وترتيبها
-  const finalTargets = groupedTargets
-    .map(group => ({
-      price: Number((group.prices.reduce((a: number, b: number) => a + b, 0) / group.prices.length).toFixed(2)),
-      expectedTime: new Date(Math.max(...group.times.map((t: Date) => t.getTime())))
-    }))
-    .sort((a, b) => Math.abs(a.price) - Math.abs(b.price));
+    // تجاهل الأهداف التي تم معالجتها بالفعل
+    const roundedPrice = Math.round(target.price * 100) / 100;
+    if (processedPrices.has(roundedPrice)) continue;
+    
+    processedPrices.add(roundedPrice);
+    uniqueTargets.push(target);
+  }
   
-  console.log("Final grouped and sorted targets:", finalTargets);
+  // ترتيب الأهداف حسب السعر
+  const direction = analyses[0]?.direction || "صاعد";
+  const sortedTargets = uniqueTargets.sort((a, b) => {
+    return direction === "صاعد" ? a.price - b.price : b.price - a.price;
+  });
   
-  return finalTargets;
+  console.log("Sorted unique targets:", sortedTargets.length);
+  return sortedTargets;
 };
 
 /**
- * Calculate weighted averages for important values
+ * Calculate the most common direction from all analyses
  */
-export const calculateWeightedValues = (results: AnalysisData[]): {
-  support: number;
-  resistance: number;
-  stopLoss: number;
-  entryPrice: number;
-} => {
-  if (!results.length) {
-    return { support: 0, resistance: 0, stopLoss: 0, entryPrice: 0 };
+export const calculateCombinedDirection = (analyses: AnalysisData[]): "صاعد" | "هابط" => {
+  console.log("Calculating combined direction from", analyses.length, "analyses");
+  
+  let upCount = 0;
+  let downCount = 0;
+  
+  for (const analysis of analyses) {
+    if (analysis.direction === "صاعد") {
+      upCount++;
+    } else if (analysis.direction === "هابط") {
+      downCount++;
+    }
   }
   
-  const weightedValues = results.reduce((acc, result, index) => {
-    const weight = (results.length - index) / results.length;
-    return {
-      support: acc.support + (result.support * weight),
-      resistance: acc.resistance + (result.resistance * weight),
-      stopLoss: acc.stopLoss + (result.stopLoss * weight),
-      entryPrice: acc.entryPrice + ((result.bestEntryPoint?.price || result.currentPrice) * weight),
-      totalWeight: acc.totalWeight + weight
-    };
-  }, { support: 0, resistance: 0, stopLoss: 0, entryPrice: 0, totalWeight: 0 });
-
-  return {
-    support: Number((weightedValues.support / weightedValues.totalWeight).toFixed(2)),
-    resistance: Number((weightedValues.resistance / weightedValues.totalWeight).toFixed(2)),
-    stopLoss: Number((weightedValues.stopLoss / weightedValues.totalWeight).toFixed(2)),
-    entryPrice: Number((weightedValues.entryPrice / weightedValues.totalWeight).toFixed(2))
-  };
+  console.log(`Direction counts: Up=${upCount}, Down=${downCount}`);
+  return upCount >= downCount ? "صاعد" : "هابط";
 };

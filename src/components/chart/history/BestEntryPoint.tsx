@@ -6,18 +6,18 @@ export interface BestEntryPointProps {
 
 export const BestEntryPoint = ({ price, reason }: BestEntryPointProps) => {
   const formatNumber = (num: number | undefined) => {
-    if (num === undefined) return "غير متوفر";
+    if (num === undefined || isNaN(num)) return "غير متوفر";
     return Number(num).toFixed(3);
   };
   
-  if (!price) return <div className="text-center">غير متوفر</div>;
+  if (!price) return <div className="text-center text-muted-foreground">غير متوفر</div>;
   
   return (
     <div className="space-y-1 text-center w-full">
-      <div className="text-sm">السعر: {formatNumber(price)}</div>
+      <div className="text-sm font-medium">السعر: {formatNumber(price)}</div>
       {reason && (
-        <div className="text-xs text-muted-foreground break-words">
-          السبب: {reason}
+        <div className="text-xs text-muted-foreground break-words max-w-56 mx-auto">
+          {reason}
         </div>
       )}
     </div>

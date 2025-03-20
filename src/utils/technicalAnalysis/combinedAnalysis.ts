@@ -77,6 +77,9 @@ export const combinedAnalysis = async (
       return target;
     });
 
+    // تحسين وصف نقطة الدخول المثالية
+    const bestEntryReason = `أفضل نقطة دخول محسوبة بناءً على تحليل ${actualTypes.length} استراتيجية (${strategyNames.join(', ')})`;
+
     // Build the combined result
     const combinedResult: AnalysisData = {
       pattern: `Smart Analysis (${strategyNames.join(', ')})`,
@@ -88,13 +91,30 @@ export const combinedAnalysis = async (
       targets: targetsWithDates,
       bestEntryPoint: {
         price: weightedValues.entryPrice,
-        reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`
+        reason: bestEntryReason
       },
       analysisType: "ذكي",
       activation_type: "تلقائي"
     };
 
     console.log("Combined analysis result:", combinedResult);
+    
+    // تأكد من أن نقطة الدخول المثالية موجودة وصالحة
+    if (!combinedResult.bestEntryPoint || !combinedResult.bestEntryPoint.price || isNaN(combinedResult.bestEntryPoint.price)) {
+      console.log("Best entry point is invalid, setting a default one based on current price");
+      
+      // إنشاء نقطة دخول افتراضية إذا لم تكن موجودة أو صالحة
+      const defaultEntryPrice = direction === "صاعد" ? 
+        currentPrice * 0.995 : // أقل من السعر الحالي بنسبة 0.5% للاتجاه الصاعد
+        currentPrice * 1.005; // أعلى من السعر الحالي بنسبة 0.5% للاتجاه الهابط
+      
+      combinedResult.bestEntryPoint = {
+        price: Number(defaultEntryPrice.toFixed(4)),
+        reason: bestEntryReason
+      };
+    }
+    
+    console.log("Final best entry point:", combinedResult.bestEntryPoint);
     return combinedResult;
   } catch (error) {
     console.error("Error in combined analysis:", error);
