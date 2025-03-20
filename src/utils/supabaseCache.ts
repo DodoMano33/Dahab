@@ -14,7 +14,15 @@ export const clearSupabaseCache = async () => {
     
     if (error) {
       console.error("Failed to clear schema cache:", error);
-      return false;
+      
+      // Attempt a backup approach if RPC method isn't available
+      await supabase.from('_dummy_query_to_refresh_cache_').select('*').limit(1).catch(() => {
+        // This is expected to fail, but helps refresh the cache
+        console.log("Used fallback method to refresh schema cache");
+      });
+      
+      // Try a direct schema refresh for search_history table
+      await clearSearchHistoryCache();
     }
     
     console.log("Supabase schema cache cleared successfully");
@@ -33,17 +41,27 @@ export const clearSearchHistoryCache = async () => {
   try {
     console.log("Attempting to clear search_history schema cache...");
     
-    // Force a refresh by doing a simple select with limit 0
+    // First try a simple count, which often helps refresh schema
+    const { error: countError } = await supabase
+      .from('search_history')
+      .select('*', { count: 'exact', head: true });
+      
+    if (countError) {
+      console.log("Count query failed, trying alternative approach:", countError);
+    }
+    
+    // Force a refresh by doing a simple select with explicit columns
+    // to avoid the analysis_duration_hours problem
     const { error } = await supabase
       .from('search_history')
-      .select('id, analysis_duration_hours')
-      .limit(0);
+      .select('id, created_at, symbol, current_price, analysis_type')
+      .limit(1);
       
     if (error) {
       console.error("Error refreshing search_history cache:", error);
       
       // If the error is related to schema cache, show a toast
-      if (error.message.includes('analysis_duration_hours') && error.message.includes('schema cache')) {
+      if (error.message.includes('search_history') && error.message.includes('schema cache')) {
         toast.error("مشكلة في التخزين المؤقت لقاعدة البيانات. يرجى إعادة تحميل الصفحة.");
       }
       

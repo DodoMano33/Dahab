@@ -3,6 +3,7 @@ import { saveAnalysis } from "../utils/saveAnalysis";
 import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { toast } from "sonner";
 import { SearchHistoryItem, AnalysisType } from "@/types/analysis";
+import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 
 interface SaveAnalysisParams {
   userId: string;
@@ -30,6 +31,9 @@ export const useSaveAnalysis = () => {
       // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
       
+      // تنظيف التخزين المؤقت قبل محاولة الحفظ
+      await clearSearchHistoryCache();
+      
       // Fix for Fibonacci Advanced analysis
       if (analysisType === "fibonacci_advanced" || 
           analysisType.includes("fibonacci advanced") ||
@@ -54,14 +58,13 @@ export const useSaveAnalysis = () => {
       
       console.log("Final analysis result with type:", analysisResultWithMappedType);
       
-      // Add proper error handling for debugging
       try {
         const savedData = await saveAnalysis({
           userId,
           symbol,
           currentPrice,
           analysisResult: analysisResultWithMappedType,
-          analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+          analysisType: mappedAnalysisType as AnalysisType,
           timeframe,
           durationHours: duration
         });
@@ -75,7 +78,7 @@ export const useSaveAnalysis = () => {
             analysis: analysisResultWithMappedType,
             targetHit: false,
             stopLossHit: false,
-            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            analysisType: mappedAnalysisType as AnalysisType,
             timeframe,
             analysis_duration_hours: duration
           };
@@ -89,8 +92,49 @@ export const useSaveAnalysis = () => {
           duration: 5000,
         });
         
+        return savedData;
+        
       } catch (dbError: any) {
         console.error("Database error saving analysis:", dbError);
+        
+        // إذا كان الخطأ متعلقًا بمخطط البيانات، نحاول مسح التخزين المؤقت وإعادة المحاولة
+        if (dbError.message && dbError.message.includes('schema cache')) {
+          console.log("Schema cache error detected, attempting to clear cache and retry");
+          
+          await clearSupabaseCache();
+          await clearSearchHistoryCache();
+          
+          // محاولة ثانية بعد مسح التخزين المؤقت
+          const retryData = await saveAnalysis({
+            userId,
+            symbol,
+            currentPrice,
+            analysisResult: analysisResultWithMappedType,
+            analysisType: mappedAnalysisType as AnalysisType,
+            timeframe,
+            durationHours: duration
+          });
+          
+          if (retryData && onAnalysisComplete) {
+            const newHistoryEntry: SearchHistoryItem = {
+              id: retryData.id,
+              date: new Date(),
+              symbol,
+              currentPrice,
+              analysis: analysisResultWithMappedType,
+              targetHit: false,
+              stopLossHit: false,
+              analysisType: mappedAnalysisType as AnalysisType,
+              timeframe,
+              analysis_duration_hours: duration
+            };
+            
+            console.log("Adding new analysis to history after retry:", newHistoryEntry);
+            onAnalysisComplete(newHistoryEntry);
+          }
+          
+          return retryData;
+        }
         
         // Provide more helpful error message for constraint violations
         if (dbError.message && dbError.message.includes('search_history_analysis_type_check')) {

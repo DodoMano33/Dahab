@@ -1,6 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { clearSupabaseCache } from './utils/supabaseCache';
+import { clearSupabaseCache, clearSearchHistoryCache } from './utils/supabaseCache';
 import { Toaster } from "sonner";
 import Index from "./pages/Index";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -51,12 +51,20 @@ function App() {
     // مسح التخزين المؤقت لمخطط Supabase عند بدء التطبيق
     async function initializeCache() {
       console.log("Initializing app: clearing Supabase schema cache");
-      await clearSupabaseCache();
       
-      // محاولة ثانية بعد ثانية واحدة للتأكد
-      setTimeout(async () => {
+      try {
+        // مسح التخزين المؤقت بشكل متتابع للتأكد من تحديث المخطط
         await clearSupabaseCache();
-      }, 1000);
+        await clearSearchHistoryCache();
+        
+        // محاولة ثانية بعد ثانية واحدة للتأكد
+        setTimeout(async () => {
+          await clearSupabaseCache();
+          await clearSearchHistoryCache();
+        }, 1000);
+      } catch (error) {
+        console.error("Error clearing cache during initialization:", error);
+      }
     }
     
     initializeCache();

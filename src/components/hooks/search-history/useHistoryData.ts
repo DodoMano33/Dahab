@@ -10,17 +10,24 @@ export function useHistoryData() {
   const { user } = useAuth();
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   // فحص البيانات عند تحميل المكون أو تغير المستخدم
   useEffect(() => {
     if (user) {
       // مسح ذاكرة التخزين المؤقت لمخطط البيانات قبل جلب البيانات
       const initFetch = async () => {
-        // محاولة مسح التخزين المؤقت لمخطط قاعدة البيانات 
-        await clearSupabaseCache();
-        await clearSearchHistoryCache();
-        // ثم جلب البيانات
-        fetchSearchHistory();
+        setRetryCount(0);
+        try {
+          // محاولة مسح التخزين المؤقت لمخطط قاعدة البيانات 
+          await clearSupabaseCache();
+          await clearSearchHistoryCache();
+          // ثم جلب البيانات
+          await fetchSearchHistory();
+        } catch (error) {
+          console.error("Error during initial fetch:", error);
+        }
       };
       
       initFetch();
@@ -93,9 +100,16 @@ export function useHistoryData() {
           
           await clearSupabaseCache();
           
-          // انتظار لحظة ثم إعادة المحاولة
-          setTimeout(() => fetchSearchHistory(), 500);
-          return;
+          // زيادة عداد المحاولات
+          setRetryCount(prev => prev + 1);
+          
+          if (retryCount < maxRetries) {
+            // انتظار لحظة ثم إعادة المحاولة
+            setTimeout(() => fetchSearchHistory(), 500);
+            return;
+          } else {
+            toast.error("فشل في استرداد البيانات بعد عدة محاولات. يرجى إعادة تحميل الصفحة.");
+          }
         }
         
         throw error;
@@ -120,6 +134,8 @@ export function useHistoryData() {
       }));
 
       setSearchHistory(formattedHistory);
+      // إعادة تعيين عداد المحاولات بعد النجاح
+      setRetryCount(0);
     } catch (error) {
       console.error("خطأ في جلب سجل البحث:", error);
       toast.error("حدث خطأ أثناء جلب سجل البحث");
