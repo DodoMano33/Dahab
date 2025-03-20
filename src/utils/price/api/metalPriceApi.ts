@@ -1,3 +1,4 @@
+
 import { PriceResponse } from "./types";
 import { getMetalPriceApiKey, mapSymbolToMetalPriceSymbol } from "./helpers";
 import { checkRateLimit, handleApiResponse, setRateLimited } from "./rateLimit";
@@ -31,13 +32,14 @@ export const fetchPriceFromMetalPriceApi = async (
     
     console.log(`جاري جلب سعر ${base}/${target} من Metal Price API...`);
     
+    // تصحيح الطريقة: استخدام المعدن كعملة وليس قاعدة في واجهة Metal Price API
     // Map symbols to required format
     const apiBase = 'USD';  // Always use USD as base in Metal Price API
     const apiCurrency = mapSymbolToMetalPriceApi(base);
     
     console.log(`استخدام العملة ${apiCurrency} كعملة في طلب API`);
 
-    // Build request URL
+    // Build request URL - نستخدم الذهب كعملة وليس كقاعدة في Metal Price API
     const url = `${METAL_PRICE_API_URL}/latest?api_key=${apiKey}&base=${apiBase}&currencies=${apiCurrency}`;
     console.log(`URL الطلب (بدون مفتاح): ${url.replace(apiKey, 'API_KEY_HIDDEN')}`);
     
@@ -100,7 +102,7 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
-    // In Metal Price API, when using USD as base we need to invert the ratio
+    // في Metal Price API: عندما نستخدم USD كقاعدة، القيمة المعادة هي USD/XAU - نحن نريد XAU/USD، لذلك نأخذ المقلوب
     const finalRate = 1 / rate;
     console.log(`تم جلب السعر بنجاح للرمز ${base}/${target}: ${finalRate}`);
     
@@ -123,24 +125,24 @@ export const fetchPriceFromMetalPriceApi = async (
  * Map base currency symbol to appropriate format for Metal Price API
  */
 function mapSymbolToMetalPriceApi(base: string): string {
-  // Convert to lowercase
+  // تحويل إلى أحرف صغيرة
   const lowerBase = base.toLowerCase();
   
-  // Define special mappings
+  // تعريف التحويلات الخاصة
   const specialMappings: Record<string, string> = {
-    'xau': 'gold',
-    'xag': 'silver',
-    'gold': 'gold',
-    'silver': 'silver',
-    'btc': 'btc',
-    'eth': 'eth'
+    'xau': 'XAU',
+    'xag': 'XAG',
+    'gold': 'XAU',
+    'silver': 'XAG',
+    'btc': 'BTC',
+    'eth': 'ETH'
   };
   
-  // If symbol is in special mappings, use that
+  // إذا كان الرمز في التحويلات الخاصة، نستخدمه
   if (specialMappings[lowerBase]) {
     return specialMappings[lowerBase];
   }
   
-  // Otherwise, return the symbol as is
-  return lowerBase;
+  // وإلا، نعيد الرمز كما هو ولكن بأحرف كبيرة
+  return lowerBase.toUpperCase();
 }

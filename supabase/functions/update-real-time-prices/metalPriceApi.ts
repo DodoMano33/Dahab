@@ -13,7 +13,7 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
     
     // تحويل الرمز إلى صيغة مناسبة لـ API
     let apiCurrency = getApiCurrency(symbol);
-    const apiBase = 'USD'; // دائما نستخدم USD كأساس
+    const apiBase = 'USD'; // دائمًا نستخدم USD كأساس
     
     console.log(`استخدام العملة ${apiCurrency} مع القاعدة ${apiBase} للرمز ${symbol}`);
     
@@ -43,7 +43,7 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
     console.log(`استجابة API:`, data);
     
     if (data && data.success && data.rates && data.rates[apiCurrency]) {
-      // قلب السعر لأن الأساس هو USD
+      // قلب السعر لأن الأساس هو USD والنتيجة بصيغة USD/XAU، نحن نحتاج XAU/USD
       const price = 1 / data.rates[apiCurrency];
       console.log(`تم جلب السعر للرمز ${symbol}: ${price}`);
       return price;
