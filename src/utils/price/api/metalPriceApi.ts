@@ -56,7 +56,7 @@ export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<Price
     return { 
       success: false, 
       price: null,
-      message: `خطأ: ${error.message}` 
+      message: `خطأ: ${error.message || 'خطأ غير معروف'}` 
     };
   }
 };

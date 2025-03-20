@@ -1,5 +1,6 @@
 
 import { METAL_PRICE_API_KEY } from "../config";
+import { supabase } from "@/lib/supabase";
 
 /**
  * الحصول على مفتاح API من التكوين أو من ملف التعريف
@@ -81,4 +82,29 @@ export const parseCurrencyPair = (symbol: string): { base: string; target: strin
   
   // الافتراضي
   return { base: cleanSymbol, target: 'USD' };
+};
+
+/**
+ * الحصول على السعر المخزن من قاعدة البيانات
+ * @param symbol رمز العملة
+ * @returns السعر المخزن إذا وجد، أو null
+ */
+export const getStoredPrice = async (symbol: string): Promise<number | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('real_time_prices')
+      .select('price')
+      .eq('symbol', symbol)
+      .single();
+
+    if (error || !data) {
+      console.error(`خطأ في جلب السعر المخزن للرمز ${symbol}:`, error);
+      return null;
+    }
+
+    return data.price;
+  } catch (error) {
+    console.error(`خطأ غير متوقع في جلب السعر المخزن للرمز ${symbol}:`, error);
+    return null;
+  }
 };

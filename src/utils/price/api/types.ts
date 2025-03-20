@@ -28,6 +28,7 @@ export interface PriceResponse {
   price: number | null;
   error?: string;
   timestamp?: number;
+  message?: string; // إضافة حقل الرسالة
 }
 
 // معلومات الذاكرة المؤقتة

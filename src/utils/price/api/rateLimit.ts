@@ -11,7 +11,7 @@ let rateLimitResetTime = 0;
 /**
  * التحقق مما إذا تم تجاوز حد معدل الاستخدام
  */
-export const checkRateLimit = (): boolean => {
+const checkRateLimit = (): boolean => {
   if (!isRateLimited) return false;
   
   const now = Date.now();
@@ -26,7 +26,7 @@ export const checkRateLimit = (): boolean => {
 /**
  * تعيين حالة تجاوز حد معدل الاستخدام
  */
-export const setRateLimited = (limited: boolean): void => {
+const setRateLimited = (limited: boolean): void => {
   isRateLimited = limited;
   if (limited) {
     rateLimitResetTime = Date.now();
@@ -37,7 +37,7 @@ export const setRateLimited = (limited: boolean): void => {
 /**
  * التعامل مع استجابة API التي قد تتضمن تجاوز حد معدل الاستخدام
  */
-export const handleApiResponse = (status: number, responseData: any): boolean => {
+const handleApiResponse = (status: number, responseData: any): boolean => {
   if (status === 429) {
     setRateLimited(true);
     return true;
@@ -50,4 +50,11 @@ export const handleApiResponse = (status: number, responseData: any): boolean =>
   }
   
   return false;
+};
+
+// تصدير الدوال المساعدة
+export const rateLimit = {
+  isRateLimited: checkRateLimit,
+  setRateLimited,
+  handleApiResponse
 };
