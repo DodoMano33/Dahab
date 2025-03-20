@@ -3,7 +3,9 @@ import { PriceResponse } from "./types";
 import { getMetalPriceApiKey } from "./helpers";
 import { checkRateLimit, handleApiResponse, setRateLimited } from "./rateLimit";
 import { getCachedPrice, setCachedPrice } from "./cache";
-import { METAL_PRICE_API_URL } from "../config";
+
+// Base URL for Metal Price API
+const METAL_PRICE_API_URL = 'https://api.metalpriceapi.com/v1';
 
 /**
  * دالة مساعدة لجلب السعر من Metal Price API
@@ -35,7 +37,7 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
-    const apiKey = await getMetalPriceApiKey();
+    const apiKey = getMetalPriceApiKey();
     if (!apiKey) {
       console.error("مفتاح API غير متوفر");
       return { 
@@ -46,7 +48,17 @@ export const fetchPriceFromMetalPriceApi = async (
     }
 
     console.log(`جاري جلب سعر ${base}/${target} من Metal Price API...`);
-    const url = `${METAL_PRICE_API_URL}/latest?api_key=${apiKey}&base=${base}&currencies=${target}`;
+    
+    // تحديد القاعدة المناسبة للطلب
+    // إذا كانت base = XAU مثلا، نستخدم الدولار كأساس للطلب ونأخذ XAU كعملة
+    let apiBase = 'USD';
+    let apiCurrency = base.toLowerCase();
+    
+    // التعامل مع المعادن والعملات الخاصة
+    if (base === 'XAU') apiCurrency = 'gold';
+    if (base === 'XAG') apiCurrency = 'silver';
+    
+    const url = `${METAL_PRICE_API_URL}/latest?api_key=${apiKey}&base=${apiBase}&currencies=${apiCurrency}`;
     
     const response = await fetch(url, {
       headers: {
@@ -91,7 +103,7 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
-    const rate = data.rates?.[target];
+    const rate = data.rates?.[apiCurrency];
     if (rate === undefined) {
       console.error(`لم يتم العثور على سعر الصرف للرمز ${base}/${target} في الاستجابة:`, data);
       return { 
@@ -101,8 +113,8 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
-    // في API Metal Price، العملات الأساسية تحتاج إلى عكس النسبة
-    const finalRate = base === target ? 1 : rate;
+    // في API Metal Price، عندما نستخدم USD كأساس نحتاج إلى قلب النسبة
+    const finalRate = 1 / rate;
     console.log(`تم جلب السعر بنجاح للرمز ${base}/${target}: ${finalRate}`);
     
     // تخزين السعر في الذاكرة المؤقتة

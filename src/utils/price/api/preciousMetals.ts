@@ -1,6 +1,7 @@
 
 import { PRECIOUS_METALS } from "../config";
 import { fetchPriceFromMetalPriceApi } from "./metalPriceApi";
+import { PriceResponse } from "./types";
 
 /**
  * جلب سعر الذهب والمعادن الثمينة
@@ -11,14 +12,28 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
     const upperSymbol = symbol.toUpperCase();
     const metalConfig = PRECIOUS_METALS[upperSymbol as keyof typeof PRECIOUS_METALS];
     
+    let base = 'XAU'; // الافتراضي للذهب
+    let target = 'USD';
+    
     if (metalConfig) {
-      const result = await fetchPriceFromMetalPriceApi(metalConfig.base, metalConfig.target);
-      return result.success ? result.price : null;
-    } else {
-      // افتراضي للذهب
-      const result = await fetchPriceFromMetalPriceApi('XAU', 'USD');
-      return result.success ? result.price : null;
+      base = metalConfig.base;
+      target = metalConfig.target;
+    } else if (upperSymbol === 'XAUUSD' || upperSymbol === 'GOLD') {
+      base = 'XAU';
+    } else if (upperSymbol === 'XAGUSD' || upperSymbol === 'SILVER') {
+      base = 'XAG';
     }
+    
+    console.log(`جلب سعر المعدن الثمين: ${base}/${target}`);
+    
+    const result = await fetchPriceFromMetalPriceApi(base, target);
+    
+    if (result.success && result.price !== null) {
+      return result.price;
+    }
+    
+    console.log(`فشل في جلب سعر المعدن الثمين للرمز ${symbol}`);
+    return null;
   } catch (error) {
     console.error(`خطأ في fetchPreciousMetalPrice للرمز ${symbol}:`, error);
     return null;

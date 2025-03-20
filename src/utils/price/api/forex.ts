@@ -2,6 +2,7 @@
 import { parseCurrencyPair } from "./helpers";
 import { FOREX_SYMBOLS } from "../config";
 import { fetchPriceFromMetalPriceApi } from "./metalPriceApi";
+import { PriceResponse } from "./types";
 
 /**
  * جلب سعر الفوركس
@@ -25,8 +26,16 @@ export const fetchForexPrice = async (symbol: string): Promise<number | null> =>
       to = parsedPair.target;
     }
     
+    console.log(`جلب سعر الفوركس: ${from}/${to}`);
+    
     const result = await fetchPriceFromMetalPriceApi(from, to);
-    return result.success ? result.price : null;
+    
+    if (result.success && result.price !== null) {
+      return result.price;
+    }
+    
+    console.log(`فشل في جلب سعر الفوركس للرمز ${symbol}`);
+    return null;
   } catch (error) {
     console.error(`خطأ في fetchForexPrice للرمز ${symbol}:`, error);
     return null;

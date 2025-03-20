@@ -63,3 +63,30 @@ export const mapSymbolToTargetCurrency = (symbol: string): string => {
   // بشكل افتراضي، نستخدم USD
   return 'USD';
 };
+
+/**
+ * تحليل زوج العملات إلى عملة أساسية وعملة هدف
+ */
+export const parseCurrencyPair = (symbol: string): { base: string; target: string } => {
+  const cleanSymbol = symbol.replace('CAPITALCOM:', '').toUpperCase();
+  
+  // للعملات ذات الطول 6 أحرف (مثل EURUSD)
+  if (cleanSymbol.length === 6 && /[A-Z]{6}/.test(cleanSymbol)) {
+    return {
+      base: cleanSymbol.substring(0, 3),
+      target: cleanSymbol.substring(3, 6)
+    };
+  }
+  
+  // للرموز الخاصة
+  if (cleanSymbol === 'XAUUSD' || cleanSymbol === 'GOLD') {
+    return { base: 'XAU', target: 'USD' };
+  }
+  
+  if (cleanSymbol === 'XAGUSD' || cleanSymbol === 'SILVER') {
+    return { base: 'XAG', target: 'USD' };
+  }
+  
+  // الافتراضي
+  return { base: cleanSymbol, target: 'USD' };
+};

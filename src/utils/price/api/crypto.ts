@@ -2,6 +2,7 @@
 import { parseCurrencyPair } from "./helpers";
 import { CRYPTO_SYMBOLS } from "../config";
 import { fetchPriceFromMetalPriceApi } from "./metalPriceApi";
+import { PriceResponse } from "./types";
 
 /**
  * جلب سعر العملات الرقمية
@@ -25,8 +26,16 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number | null> =
       target = parsedPair.target;
     }
     
+    console.log(`جلب سعر العملة الرقمية: ${base}/${target}`);
+    
     const result = await fetchPriceFromMetalPriceApi(base, target);
-    return result.success ? result.price : null;
+    
+    if (result.success && result.price !== null) {
+      return result.price;
+    }
+    
+    console.log(`فشل في جلب سعر العملة الرقمية للرمز ${symbol}`);
+    return null;
   } catch (error) {
     console.error(`خطأ في fetchCryptoPrice للرمز ${symbol}:`, error);
     return null;

@@ -1,13 +1,17 @@
 
-// تصدير الدوال والأنواع من ملفات API المختلفة
-export * from './fetchers';
+// تصدير الأنواع فقط من ملفات API المختلفة
 export * from './types';
 export * from './helpers';
 export * from './rateLimit';
-export * from './cache';
-export * from './forex';
-export * from './crypto';
-export * from './preciousMetals';
+
+// تصدير دوال التخزين المؤقت
+export { getCachedPrice, setCachedPrice } from './cache';
+
+// تصدير دوال الجلب الرئيسية بعد التأكد من عدم وجود تضارب
+export { fetchPriceFromMetalPriceApi } from './metalPriceApi';
+export { fetchForexPrice } from './forex';
+export { fetchCryptoPrice } from './crypto';
+export { fetchPreciousMetalPrice } from './preciousMetals';
 
 // جلب السعر المناسب بناءً على الرمز
 import { FOREX_SYMBOLS, CRYPTO_SYMBOLS, PRECIOUS_METALS } from '../config';
