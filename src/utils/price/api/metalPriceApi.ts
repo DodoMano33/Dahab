@@ -7,6 +7,9 @@ import { getCachedPrice, setCachedPrice } from "./cache";
 // Base URL for Metal Price API
 const METAL_PRICE_API_URL = 'https://api.metalpriceapi.com/v1';
 
+// Metal Price API Key (المفتاح الثابت)
+const FIXED_API_KEY = '42ed2fe2e7d1d8f688ddeb027219c766';
+
 /**
  * دالة مساعدة لجلب السعر من Metal Price API
  */
@@ -39,17 +42,9 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
-    // الحصول على مفتاح API - استخدام المفتاح المقدم مباشرة إذا لم يكن هناك مفتاح في التكوين
-    const apiKey = getMetalPriceApiKey() || '42ed2fe2e7d1d8f688ddeb027219c766';
-    if (!apiKey) {
-      console.error("مفتاح API غير متوفر");
-      return { 
-        success: false, 
-        price: null,
-        error: "مفتاح API غير متوفر" 
-      };
-    }
-
+    // استخدام المفتاح الثابت دائمًا
+    const apiKey = FIXED_API_KEY;
+    
     console.log(`جاري جلب سعر ${base}/${target} من Metal Price API...`);
     
     // تحويل رموز المعادن إلى الصيغة المطلوبة

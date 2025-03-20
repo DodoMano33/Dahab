@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { usePriceEventHandlers } from './usePriceEventHandlers';
 import { UseCurrentPriceResult } from './types';

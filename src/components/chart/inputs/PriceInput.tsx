@@ -17,8 +17,7 @@ interface PriceInputProps {
 export const PriceInput = ({ 
   value, 
   onChange, 
-  defaultValue,
-  tradingViewPrice
+  defaultValue
 }: PriceInputProps) => {
   const [useAutoPrice, setUseAutoPrice] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,13 +93,11 @@ export const PriceInput = ({
   };
 
   // اختيار السعر المناسب للعرض
-  const displayPrice = tradingViewPrice !== null && tradingViewPrice !== undefined
-    ? tradingViewPrice.toFixed(5)
-    : value 
-      ? parseFloat(value).toFixed(5)
-      : defaultValue 
-        ? defaultValue 
-        : "السعر غير متاح";
+  const displayPrice = value 
+    ? parseFloat(value).toFixed(5)
+    : defaultValue 
+      ? defaultValue 
+      : "السعر غير متاح";
 
   return (
     <div>
@@ -163,12 +160,6 @@ export const PriceInput = ({
       {useAutoPrice && !isLoading && !errorMessage && value && (
         <p className="text-sm text-green-500 mt-1">
           السعر المباشر من Metal Price API: {displayPrice}
-        </p>
-      )}
-      
-      {!useAutoPrice && tradingViewPrice !== null && (
-        <p className="text-sm text-gray-500 mt-1">
-          السعر المتاح من Metal Price API: {displayPrice}
         </p>
       )}
       
