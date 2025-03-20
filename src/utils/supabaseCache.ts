@@ -16,10 +16,16 @@ export const clearSupabaseCache = async () => {
       console.error("Failed to clear schema cache:", error);
       
       // Attempt a backup approach if RPC method isn't available
-      await supabase.from('_dummy_query_to_refresh_cache_').select('*').limit(1).catch(() => {
-        // This is expected to fail, but helps refresh the cache
-        console.log("Used fallback method to refresh schema cache");
-      });
+      // The issue is here - we need to handle the promise differently
+      await supabase.from('_dummy_query_to_refresh_cache_').select('*').limit(1).then(
+        () => {
+          console.log("Unexpectedly succeeded with dummy query");
+        },
+        () => {
+          // This is expected to fail, but helps refresh the cache
+          console.log("Used fallback method to refresh schema cache");
+        }
+      );
       
       // Try a direct schema refresh for search_history table
       await clearSearchHistoryCache();
