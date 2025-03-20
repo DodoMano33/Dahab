@@ -8,7 +8,7 @@ const METAL_PRICE_API_BASE_URL = 'https://api.metalpriceapi.com/v1';
  */
 export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<number | null> {
   try {
-    const apiKey = Deno.env.get('METAL_PRICE_API_KEY');
+    const apiKey = Deno.env.get('METAL_PRICE_API_KEY') || '42ed2fe2e7d1d8f688ddeb027219c766';
     
     if (!apiKey) {
       console.error('مفتاح Metal Price API غير متوفر');
@@ -16,7 +16,12 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
     }
     
     // للاختبار: دعم الرموز المختلفة
-    const useSymbol = symbol.toUpperCase() === 'XAUUSD' ? 'gold' : symbol.toLowerCase();
+    let useSymbol = symbol.toLowerCase();
+    
+    // تعيينات خاصة
+    if (symbol.toUpperCase() === 'XAUUSD') useSymbol = 'gold';
+    if (symbol.toUpperCase() === 'XAGUSD') useSymbol = 'silver';
+    if (symbol.toUpperCase() === 'GOLD') useSymbol = 'gold';
     
     const url = `${METAL_PRICE_API_BASE_URL}/latest?api_key=${apiKey}&base=USD&currencies=${useSymbol}`;
     

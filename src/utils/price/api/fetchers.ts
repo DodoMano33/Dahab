@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { getMetalPriceApiKey } from './helpers';
 import { checkRateLimit, setRateLimited } from './rateLimit';
@@ -36,7 +37,12 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
     }
 
     // للاختبار: دعم الرموز المختلفة
-    const useSymbol = symbol.toUpperCase() === 'XAUUSD' ? 'gold' : symbol.toLowerCase();
+    let useSymbol = symbol.toLowerCase();
+    
+    // تعيينات خاصة
+    if (symbol.toUpperCase() === 'XAUUSD') useSymbol = 'gold';
+    if (symbol.toUpperCase() === 'XAGUSD') useSymbol = 'silver';
+    if (symbol.toUpperCase() === 'GOLD') useSymbol = 'gold';
 
     const url = `${METAL_PRICE_API_BASE_URL}/latest?api_key=${apiKey}&base=USD&currencies=${useSymbol}`;
     console.log(`جاري الاتصال بـ Metal Price API: ${url.replace(apiKey, 'API_KEY_HIDDEN')}`);

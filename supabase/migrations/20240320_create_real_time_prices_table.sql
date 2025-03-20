@@ -62,10 +62,13 @@ BEGIN
 END;
 $$;
 
--- إضافة متغيرات تطبيق
+-- إضافة متغيرات تطبيق للمفتاح
 DO
 $$
 BEGIN
+  -- تعيين مفتاح Metal Price API
+  ALTER DATABASE postgres SET "app.metal_price_api_key" = '42ed2fe2e7d1d8f688ddeb027219c766';
+  
   -- التحقق مما إذا كانت المتغيرات قد تم تعيينها بالفعل
   IF NOT EXISTS (SELECT 1 FROM pg_settings WHERE name = 'app.supabase_url') THEN
     -- تعيين متغيرات التطبيق

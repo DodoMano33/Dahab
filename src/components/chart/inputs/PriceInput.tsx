@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { priceUpdater } from "@/utils/priceUpdater";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 interface PriceInputProps {
   value: string;
@@ -21,6 +23,7 @@ export const PriceInput = ({
   const [useAutoPrice, setUseAutoPrice] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   // محاولة تحديث السعر
   const updatePrice = async () => {
@@ -28,6 +31,7 @@ export const PriceInput = ({
     
     setIsLoading(true);
     setErrorMessage(null);
+    setRetryCount(prev => prev + 1);
     
     try {
       // محاولة الحصول على السعر من Metal Price API
@@ -37,13 +41,16 @@ export const PriceInput = ({
       if (price !== null) {
         onChange(price.toString());
         setErrorMessage(null);
+        toast.success("تم جلب السعر المباشر بنجاح");
       } else {
         // السعر غير متاح من Metal Price API
         setErrorMessage("لم نتمكن من جلب السعر المباشر. يمكنك إدخال السعر يدويًا.");
+        toast.error("فشل في جلب السعر المباشر");
       }
     } catch (error) {
       console.error("خطأ في جلب السعر:", error);
       setErrorMessage("حدث خطأ أثناء جلب السعر المباشر.");
+      toast.error("خطأ في جلب السعر المباشر");
     } finally {
       setIsLoading(false);
     }
@@ -62,6 +69,7 @@ export const PriceInput = ({
       if (useAutoPrice && event.detail && event.detail.price) {
         onChange(event.detail.price.toString());
         setErrorMessage(null);
+        console.log("تم تحديث السعر من حدث metal-price-update:", event.detail.price);
       }
     };
 
@@ -108,17 +116,31 @@ export const PriceInput = ({
           {useAutoPrice ? "السعر التلقائي" : "السعر اليدوي"}
         </Badge>
       </div>
-      <Input
-        id="price"
-        type="number"
-        step="any"
-        placeholder={`أدخل السعر (إجباري)`}
-        value={value}
-        onChange={(e) => !useAutoPrice && onChange(e.target.value)}
-        className={`w-full ${useAutoPrice ? 'bg-gray-100' : ''}`}
-        dir="ltr"
-        disabled={useAutoPrice}
-      />
+      <div className="flex gap-2">
+        <Input
+          id="price"
+          type="number"
+          step="any"
+          placeholder={`أدخل السعر (إجباري)`}
+          value={value}
+          onChange={(e) => !useAutoPrice && onChange(e.target.value)}
+          className={`w-full ${useAutoPrice ? 'bg-gray-100' : ''}`}
+          dir="ltr"
+          disabled={useAutoPrice}
+        />
+        {useAutoPrice && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="icon"
+            disabled={isLoading}
+            onClick={updatePrice}
+            title="تحديث السعر"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
+        )}
+      </div>
       
       {useAutoPrice && isLoading && (
         <p className="text-sm text-yellow-500 mt-1">
@@ -147,6 +169,12 @@ export const PriceInput = ({
       {!useAutoPrice && tradingViewPrice !== null && (
         <p className="text-sm text-gray-500 mt-1">
           السعر المتاح من Metal Price API: {displayPrice}
+        </p>
+      )}
+      
+      {retryCount > 1 && errorMessage && (
+        <p className="text-xs text-gray-500 mt-1">
+          عدد محاولات التحديث: {retryCount}
         </p>
       )}
     </div>

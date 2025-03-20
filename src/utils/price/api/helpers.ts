@@ -1,75 +1,65 @@
 
-import { 
-  METAL_PRICE_API_KEY, 
-  FOREX_SYMBOLS, 
-  CRYPTO_SYMBOLS, 
-  PRECIOUS_METALS 
-} from "../config";
-import { SymbolType } from "./types";
+import { METAL_PRICE_API_KEY } from "../config";
+import { supabase } from "@/lib/supabase";
 
 /**
- * الحصول على مفتاح API
+ * الحصول على مفتاح API من التكوين أو من ملف التعريف
  */
 export const getMetalPriceApiKey = (): string => {
-  console.log("استخدام مفتاح Metal Price API المكوّن مسبقاً");
-  return METAL_PRICE_API_KEY;
+  // استخدام المفتاح المحدد مسبقًا إذا كان متاحًا (للتطوير)
+  if (METAL_PRICE_API_KEY && METAL_PRICE_API_KEY.length > 0) {
+    return METAL_PRICE_API_KEY;
+  }
+  
+  // يمكن تنفيذ طريقة الحصول على المفتاح من ملف التعريف لاحقًا
+  // عندما نريد السماح للمستخدمين بإدخال مفاتيحهم الخاصة
+  
+  return METAL_PRICE_API_KEY || '';
 };
 
 /**
- * التحقق من نوع الرمز وإرجاع تصنيفه
+ * تحويل رمز TradingView إلى رمز Metal Price API
  */
-export const getSymbolType = (symbol: string): SymbolType => {
-  const upperSymbol = symbol.toUpperCase();
+export const mapSymbolToMetalPriceSymbol = (symbol: string): string => {
+  // تنظيف الرمز
+  const cleanSymbol = symbol.replace('CAPITALCOM:', '').toUpperCase();
   
-  if (PRECIOUS_METALS[upperSymbol as keyof typeof PRECIOUS_METALS]) {
-    return 'precious_metal';
-  }
-  
-  if (FOREX_SYMBOLS[upperSymbol as keyof typeof FOREX_SYMBOLS]) {
-    return 'forex';
-  }
-  
-  if (CRYPTO_SYMBOLS[upperSymbol as keyof typeof CRYPTO_SYMBOLS]) {
-    return 'crypto';
-  }
-  
-  // محاولة تخمين النوع من تنسيق الرمز إذا لم يكن معرفًا مسبقًا
-  if (upperSymbol.includes('USD') || upperSymbol.length === 6) {
-    return 'forex';
-  }
-  
-  if (['BTC', 'ETH', 'XRP', 'LTC', 'BCH', 'DOT', 'ADA'].includes(upperSymbol)) {
-    return 'crypto';
-  }
-  
-  return 'unknown';
-};
-
-/**
- * تحويل زوج عملات إلى الأجزاء المكونة له
- */
-export const parseCurrencyPair = (symbol: string): { base: string, target: string } => {
-  const upperSymbol = symbol.toUpperCase();
-  
-  // إذا كان طول الرمز ستة أحرف، نفترض أنه زوج فوركس
-  if (upperSymbol.length === 6) {
-    return {
-      base: upperSymbol.substring(0, 3),
-      target: upperSymbol.substring(3, 6)
-    };
-  }
-  
-  // إذا كان يحتوي على USD، نفترض أنه عملة رقمية
-  if (upperSymbol.includes('USD')) {
-    return {
-      base: upperSymbol.replace('USD', ''),
-      target: 'USD'
-    };
-  }
-  
-  // الافتراضي
-  return {
-    base: upperSymbol,
-    target: 'USD'
+  // تعيين الرموز الخاصة
+  const specialMappings: Record<string, string> = {
+    'GOLD': 'XAU',
+    'SILVER': 'XAG',
+    'USOIL': 'OIL',
+    'UKOIL': 'OIL'
   };
+  
+  if (specialMappings[cleanSymbol]) {
+    return specialMappings[cleanSymbol];
+  }
+  
+  // التعامل مع XAUUSD وما شابه
+  if (cleanSymbol === 'XAUUSD') return 'XAU';
+  if (cleanSymbol === 'XAGUSD') return 'XAG';
+  
+  // للعملات، نستخدم الجزء الأول من الرمز
+  if (cleanSymbol.length === 6 && /[A-Z]{6}/.test(cleanSymbol)) {
+    return cleanSymbol.substring(0, 3);
+  }
+  
+  return cleanSymbol;
+};
+
+/**
+ * تحويل رمز TradingView إلى عملة الهدف
+ */
+export const mapSymbolToTargetCurrency = (symbol: string): string => {
+  // تنظيف الرمز
+  const cleanSymbol = symbol.replace('CAPITALCOM:', '').toUpperCase();
+  
+  // للعملات، نستخدم الجزء الثاني من الرمز
+  if (cleanSymbol.length === 6 && /[A-Z]{6}/.test(cleanSymbol)) {
+    return cleanSymbol.substring(3, 6);
+  }
+  
+  // بشكل افتراضي، نستخدم USD
+  return 'USD';
 };
