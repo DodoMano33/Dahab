@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { ar } from "date-fns/locale";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatRelativeTime } from "../utils/timeUtils";
 
 interface LastCheckedCellProps {
   price?: number;
@@ -20,47 +19,18 @@ export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellPro
     }
     
     const updateFormattedTime = () => {
-      try {
-        console.log(`[${itemId}] Formatting timestamp:`, timestamp, typeof timestamp);
-        
-        let dateObj: Date;
-        if (typeof timestamp === 'string') {
-          dateObj = new Date(timestamp);
-        } else if (timestamp instanceof Date) {
-          dateObj = timestamp;
-        } else {
-          console.error(`[${itemId}] Invalid timestamp type:`, typeof timestamp);
-          setFormattedTime("");
-          return;
-        }
-        
-        if (isNaN(dateObj.getTime())) {
-          console.error(`[${itemId}] Invalid date after conversion:`, dateObj);
-          setFormattedTime("");
-          return;
-        }
-        
-        const formatted = formatDistanceToNow(dateObj, { 
-          addSuffix: true,
-          locale: ar
-        });
-        
-        console.log(`[${itemId}] Formatted time:`, formatted);
-        setFormattedTime(formatted);
-      } catch (error) {
-        console.error(`[${itemId}] Error formatting date:`, error);
-        setFormattedTime("");
-      }
+      const formatted = formatRelativeTime(timestamp, itemId);
+      setFormattedTime(formatted);
     };
     
     updateFormattedTime();
     
-    // تحديث التنسيق كل دقيقة
+    // Update formatting every minute
     const interval = setInterval(updateFormattedTime, 60 * 1000);
     return () => clearInterval(interval);
   }, [timestamp, itemId]);
   
-  // استماع لحدث تحديث سجل البحث
+  // Listen for history update events
   useEffect(() => {
     const handleHistoryUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;

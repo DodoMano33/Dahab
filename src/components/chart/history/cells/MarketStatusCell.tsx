@@ -1,36 +1,14 @@
 
 import { TableCell } from "@/components/ui/table";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useMarketStatus } from "../hooks/useMarketStatus";
 
 interface MarketStatusCellProps {
   itemId: string;
 }
 
 export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
-  const [marketStatus, setMarketStatus] = useState<{isOpen: boolean, serverTime?: string}>({ isOpen: false });
-  
-  // Check market status every 5 minutes
-  useEffect(() => {
-    const checkMarketStatus = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('check-market-status');
-        if (error) {
-          console.error(`[${itemId}] Error checking market status:`, error);
-          return;
-        }
-        setMarketStatus(data);
-      } catch (err) {
-        console.error(`[${itemId}] Failed to check market status:`, err);
-      }
-    };
-    
-    checkMarketStatus();
-    
-    const interval = setInterval(checkMarketStatus, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [itemId]);
+  const marketStatus = useMarketStatus(itemId);
 
   return (
     <TableCell className="w-16 p-2">

@@ -14,11 +14,8 @@ interface TargetsListCellProps {
 }
 
 export const TargetsListCell = ({ targets, isTargetHit }: TargetsListCellProps) => {
-  // التحقق من وجود أهداف والتأكد من أنها مصفوفة
+  // Simple validation of targets array
   const hasTargets = Array.isArray(targets) && targets.length > 0;
-  
-  console.log("TargetsListCell - received targets:", targets);
-  console.log("TargetsListCell - hasTargets:", hasTargets);
   
   return (
     <TableCell className="w-24 p-2">
