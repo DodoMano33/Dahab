@@ -28,7 +28,7 @@ export const BestEntryPointCell = ({ price, reason }: BestEntryPointCellProps) =
   return (
     <TableCell className="w-24 p-2">
       <BestEntryPoint 
-        price={validPrice}
+        price={validPrice} 
         reason={reason}
       />
     </TableCell>

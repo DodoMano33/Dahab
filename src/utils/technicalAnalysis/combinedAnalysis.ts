@@ -79,9 +79,11 @@ export const combinedAnalysis = async (
     });
 
     // تحسين وصف نقطة الدخول المثالية
-    const bestEntryReason = `أفضل نقطة دخول محسوبة بناءً على تحليل ${actualTypes.length} استراتيجية (${strategyNames.join(', ')})`;
+    const bestEntryReason = strategyNames.length > 0 
+      ? `أفضل نقطة دخول محسوبة بناءً على تحليل ${strategyNames.length} استراتيجية (${strategyNames.join(', ')})`
+      : `أفضل نقطة دخول محسوبة من التحليل المركب`;
 
-    // إنشاء سعر لنقطة الدخول المثالية إذا لم يوجد
+    // إنشاء سعر لنقطة الدخول المثالية
     let bestEntryPrice = weightedValues.entryPrice;
     
     // طباعة تشخيصية
@@ -108,6 +110,14 @@ export const combinedAnalysis = async (
     
     console.log("Final best entry price:", bestEntryPrice);
 
+    // تأكد من أن كائن نقطة الدخول المثالية مُصاغ بشكل صحيح
+    const bestEntryPoint = {
+      price: bestEntryPrice,
+      reason: bestEntryReason
+    };
+
+    console.log("Best entry point object:", bestEntryPoint);
+
     // Build the combined result
     const combinedResult: AnalysisData = {
       pattern: `Smart Analysis (${strategyNames.join(', ')})`,
@@ -117,10 +127,7 @@ export const combinedAnalysis = async (
       resistance: weightedValues.resistance,
       stopLoss: weightedValues.stopLoss,
       targets: targetsWithDates,
-      bestEntryPoint: {
-        price: bestEntryPrice,
-        reason: bestEntryReason
-      },
+      bestEntryPoint,
       analysisType: "ذكي",
       activation_type: "تلقائي"
     };

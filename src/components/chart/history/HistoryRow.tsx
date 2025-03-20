@@ -60,7 +60,7 @@ export const HistoryRow = ({
   console.log(`Targets for analysis ${id}:`, analysis.targets);
   
   // معالجة بيانات أفضل نقطة دخول
-  const bestEntryPoint = (() => {
+  const getBestEntryPoint = () => {
     // طباعة تشخيصية للمعلومات الكاملة
     console.log(`Full analysis data for ${id}:`, analysis);
     console.log(`Best entry point data for ${id}:`, analysis.bestEntryPoint);
@@ -68,6 +68,15 @@ export const HistoryRow = ({
     // التحقق من وجود كائن أفضل نقطة دخول
     if (!analysis.bestEntryPoint) {
       console.log(`No bestEntryPoint object for analysis ${id}`);
+      
+      // إذا كان هناك entryPoint يمكن استخدامه كبديل
+      if (analysis.entryPoint && !isNaN(Number(analysis.entryPoint))) {
+        return { 
+          price: Number(analysis.entryPoint), 
+          reason: "نقطة دخول محسوبة من التحليل" 
+        };
+      }
+      
       return { price: undefined, reason: undefined };
     }
     
@@ -99,13 +108,31 @@ export const HistoryRow = ({
     } else if (typeof analysis.bestEntryPoint === 'number') {
       // إذا كان السعر رقم مباشر
       price = analysis.bestEntryPoint;
+      reason = "نقطة دخول محسوبة من التحليل";
       console.log(`Direct numeric price for ${id}:`, price);
+    }
+    
+    // إذا كان السعر غير محدد ولكن تم تحديد الاتجاه والسعر الحالي، نقوم بإنشاء سعر
+    if ((price === undefined || isNaN(Number(price))) && analysis.direction && analysis.currentPrice) {
+      console.log(`Creating price based on direction and current price`);
+      
+      if (analysis.direction === "صاعد") {
+        price = Number((analysis.currentPrice * 0.995).toFixed(4));
+      } else {
+        price = Number((analysis.currentPrice * 1.005).toFixed(4));
+      }
+      
+      if (!reason) {
+        reason = "نقطة دخول تلقائية بناء على الاتجاه";
+      }
     }
     
     console.log(`Final best entry point for analysis ${id}:`, { price, reason });
     
     return { price, reason };
-  })();
+  };
+  
+  const bestEntryPoint = getBestEntryPoint();
   
   // التحقق من صحة بيانات الأهداف وإصلاحها إذا لزم الأمر
   const fixedTargets = (() => {

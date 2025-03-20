@@ -64,9 +64,11 @@ export const calculateWeightedValues = (analyses: AnalysisData[]) => {
       const direction = analyses[0]?.direction || "صاعد";
       
       // تعيين سعر الدخول بناءً على الاتجاه
-      entryPrice = direction === "صاعد"
-        ? Number((currentPrice * 0.995).toFixed(4)) // أقل من السعر الحالي بنسبة 0.5% للاتجاه الصاعد
-        : Number((currentPrice * 1.005).toFixed(4)); // أعلى من السعر الحالي بنسبة 0.5% للاتجاه الهابط
+      if (direction === "صاعد") {
+        entryPrice = Number((currentPrice * 0.995).toFixed(4)); // أقل من السعر الحالي بنسبة 0.5% للاتجاه الصاعد
+      } else {
+        entryPrice = Number((currentPrice * 1.005).toFixed(4)); // أعلى من السعر الحالي بنسبة 0.5% للاتجاه الهابط
+      }
       
       console.log(`Calculated entry price based on direction: ${entryPrice}`);
     } else if (support && resistance) {
@@ -80,6 +82,8 @@ export const calculateWeightedValues = (analyses: AnalysisData[]) => {
   if (entryPrice === undefined || isNaN(Number(entryPrice))) {
     console.warn("Entry price calculation failed, setting to undefined");
     entryPrice = undefined;
+  } else {
+    console.log(`Final calculated entry price: ${entryPrice}`);
   }
 
   return {
