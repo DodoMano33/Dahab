@@ -19,6 +19,15 @@ interface TimeframeData {
   fail: number;
 }
 
+// Interface for chart data item
+interface ChartDataItem {
+  name: string;
+  success: number;
+  fail: number;
+  total: number;
+  rate: number;
+}
+
 export function DashboardStats() {
   const { stats, isLoading: statsLoading, refresh: refreshStats } = useBacktestStats();
   const { results, isLoading: resultsLoading, refresh: refreshResults } = useBestEntryPointResults();
@@ -64,15 +73,20 @@ export function DashboardStats() {
     return acc;
   }, {} as Record<string, TimeframeData>);
 
-  const timeframeChartData = Object.entries(timeframeData).map(([timeframe, data]) => ({
-    name: timeframe,
-    success: data.success,
-    fail: data.fail,
-    total: data.success + data.fail,
-    rate: data.success + data.fail > 0 
-      ? Math.round((data.success / (data.success + data.fail)) * 100) 
-      : 0
-  }));
+  // Use explicit typing for the mapped data
+  const timeframeChartData: ChartDataItem[] = Object.entries(timeframeData).map(([timeframe, data]) => {
+    // Destructure with type assertion
+    const { success, fail } = data as TimeframeData;
+    return {
+      name: timeframe,
+      success,
+      fail,
+      total: success + fail,
+      rate: success + fail > 0 
+        ? Math.round((success / (success + fail)) * 100) 
+        : 0
+    };
+  });
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
