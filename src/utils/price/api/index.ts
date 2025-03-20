@@ -6,19 +6,17 @@ export * from './rateLimit';
 
 // تصدير دوال جلب الأسعار الرئيسية
 export { fetchPriceFromMetalPriceApi } from './metalPriceApi';
-export { fetchForexPrice } from './forex';
-export { fetchCryptoPrice } from './crypto';
-export { fetchPreciousMetalPrice } from './preciousMetals';
+export { fetchForexPrice } from './fetchers';
+export { fetchCryptoPrice } from './fetchers';
+export { fetchPreciousMetalPrice } from './fetchers';
 
 // جلب السعر المناسب بناءً على الرمز
 import { FOREX_SYMBOLS, CRYPTO_SYMBOLS, PRECIOUS_METALS } from '../config';
-import { fetchForexPrice } from './forex';
-import { fetchCryptoPrice } from './crypto';
-import { fetchPreciousMetalPrice } from './preciousMetals';
+import { fetchForexPrice, fetchCryptoPrice, fetchPreciousMetalPrice } from './fetchers';
 import { mapSymbolToMetalPriceSymbol } from './helpers';
 
 /**
- * جلب السعر المناسب بناءً على الرمز
+ * جلب السعر المناسب بناءً على الرمز، مصدر السعر الوحيد هو Metal Price API
  */
 export const fetchPrice = async (symbol: string): Promise<number | null> => {
   try {

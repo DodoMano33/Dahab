@@ -1,17 +1,11 @@
 
 import { METAL_PRICE_API_KEY } from "../config";
-import { supabase } from "@/lib/supabase";
 
 /**
  * الحصول على مفتاح API من التكوين أو من ملف التعريف
  */
 export const getMetalPriceApiKey = (): string => {
-  // استخدام المفتاح المحدد مسبقًا إذا كان متاحًا (للتطوير)
-  if (METAL_PRICE_API_KEY && METAL_PRICE_API_KEY.length > 0) {
-    return METAL_PRICE_API_KEY;
-  }
-  
-  // استخدام المفتاح الثابت كخيار أخير
+  // استخدام المفتاح الثابت المحدد
   return '42ed2fe2e7d1d8f688ddeb027219c766';
 };
 

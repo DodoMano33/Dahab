@@ -8,12 +8,8 @@ const METAL_PRICE_API_BASE_URL = 'https://api.metalpriceapi.com/v1';
  */
 export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<number | null> {
   try {
-    const apiKey = Deno.env.get('METAL_PRICE_API_KEY') || '42ed2fe2e7d1d8f688ddeb027219c766';
-    
-    if (!apiKey) {
-      console.error('مفتاح Metal Price API غير متوفر');
-      return null;
-    }
+    // استخدام المفتاح الثابت المحدد مسبقًا
+    const apiKey = '42ed2fe2e7d1d8f688ddeb027219c766';
     
     // تحويل الرمز إلى صيغة مناسبة لـ API
     let apiCurrency = getApiCurrency(symbol);

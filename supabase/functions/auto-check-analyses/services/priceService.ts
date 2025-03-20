@@ -28,7 +28,7 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
  * Gets the last stored price for a symbol - وظيفة الدعم فقط
  */
 export async function getLastStoredPrice(supabase: any, symbol: string): Promise<number | null> {
-  // نقوم بإرجاع null لأننا لا نريد استخدام السعر من قاعدة البيانات
-  console.log('getLastStoredPrice called but bypassed as per requirements');
+  // نقوم بإرجاع null لأننا نستخدم Metal Price API فقط
+  console.log('getLastStoredPrice called but bypassed as we use Metal Price API only');
   return null;
 }

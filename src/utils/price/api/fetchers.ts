@@ -1,9 +1,9 @@
 
 import { supabase } from '@/lib/supabase';
-import { getMetalPriceApiKey } from './helpers';
 import { checkRateLimit, setRateLimited } from './rateLimit';
 
 const METAL_PRICE_API_BASE_URL = 'https://api.metalpriceapi.com/v1';
+const METAL_PRICE_API_KEY = '42ed2fe2e7d1d8f688ddeb027219c766';
 
 /**
  * تخزين السعر مؤقتًا
@@ -30,12 +30,6 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
       return null;
     }
 
-    const apiKey = getMetalPriceApiKey();
-    if (!apiKey) {
-      console.error('مفتاح API مفقود.');
-      return null;
-    }
-
     // للاختبار: دعم الرموز المختلفة
     let useSymbol = symbol.toLowerCase();
     
@@ -44,8 +38,8 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
     if (symbol.toUpperCase() === 'XAGUSD') useSymbol = 'silver';
     if (symbol.toUpperCase() === 'GOLD') useSymbol = 'gold';
 
-    const url = `${METAL_PRICE_API_BASE_URL}/latest?api_key=${apiKey}&base=USD&currencies=${useSymbol}`;
-    console.log(`جاري الاتصال بـ Metal Price API: ${url.replace(apiKey, 'API_KEY_HIDDEN')}`);
+    const url = `${METAL_PRICE_API_BASE_URL}/latest?api_key=${METAL_PRICE_API_KEY}&base=USD&currencies=${useSymbol}`;
+    console.log(`جاري الاتصال بـ Metal Price API: ${url.replace(METAL_PRICE_API_KEY, 'API_KEY_HIDDEN')}`);
 
     const response = await fetch(url);
 
@@ -83,7 +77,6 @@ export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<numbe
  */
 export async function fetchForexPrice(symbol: string): Promise<number | null> {
     try {
-        // تنفيذ جلب سعر الفوركس
         console.log(`جلب سعر الفوركس للرمز ${symbol}`);
         return await fetchPriceFromMetalPriceApi(symbol);
     } catch (error) {
@@ -97,7 +90,6 @@ export async function fetchForexPrice(symbol: string): Promise<number | null> {
  */
 export async function fetchCryptoPrice(symbol: string): Promise<number | null> {
     try {
-        // تنفيذ جلب سعر العملات المشفرة
         console.log(`جلب سعر العملات المشفرة للرمز ${symbol}`);
         return await fetchPriceFromMetalPriceApi(symbol);
     } catch (error) {
@@ -143,18 +135,11 @@ export async function fetchStoredPrice(symbol: string): Promise<number | null> {
 }
 
 /**
- * جلب سعر المعدن من Metal Price API أو من قاعدة البيانات
+ * جلب سعر المعدن من Metal Price API
  */
 export async function fetchPreciousMetalPrice(symbol: string): Promise<number | null> {
   try {
-    // أولاً، محاولة جلب السعر من قاعدة البيانات
-    const storedPrice = await fetchStoredPrice(symbol);
-    if (storedPrice !== null) {
-      return storedPrice;
-    }
-    
-    // إذا لم يتم العثور على سعر في قاعدة البيانات، نجلبه من Metal Price API
-    console.log(`لم يتم العثور على سعر مخزن للرمز ${symbol}، جلب من Metal Price API`);
+    console.log(`جلب السعر من Metal Price API للرمز ${symbol}`);
     return await fetchPriceFromMetalPriceApi(symbol);
   } catch (error) {
     console.error(`خطأ في جلب سعر المعدن الثمين للرمز ${symbol}:`, error);

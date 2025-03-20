@@ -5,10 +5,8 @@ import { fetchPrice } from './priceService.ts';
 
 const SUPPORTED_SYMBOLS = ['XAUUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'BTCUSD'];
 
-// تعيين مفتاح API إذا لم يكن موجودًا في البيئة
-if (!Deno.env.get('METAL_PRICE_API_KEY')) {
-  Deno.env.set('METAL_PRICE_API_KEY', '42ed2fe2e7d1d8f688ddeb027219c766');
-}
+// تعيين مفتاح API لحفظه
+Deno.env.set('METAL_PRICE_API_KEY', '42ed2fe2e7d1d8f688ddeb027219c766');
 
 Deno.serve(async (req) => {
   // التعامل مع طلبات CORS المسبقة
