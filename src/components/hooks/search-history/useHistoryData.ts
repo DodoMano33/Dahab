@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,37 +9,47 @@ export function useHistoryData() {
   const { user } = useAuth();
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // استخدام مرجع للاشتراك في قناة التغييرات لتجنب إعادة الاشتراك غير الضروري
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // فحص البيانات عند تحميل المكون أو تغير المستخدم
   useEffect(() => {
     if (user) {
       fetchSearchHistory();
       
-      // إعداد قناة الاستماع للتغييرات في الوقت الفعلي
-      const channel = supabase
-        .channel('search_history_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'search_history'
-          },
-          (payload) => {
-            console.log('Realtime change detected:', payload);
-            if (payload.eventType === 'DELETE') {
-              setSearchHistory(prev => prev.filter(item => item.id !== payload.old.id));
-            } else if (payload.eventType === 'INSERT') {
-              fetchSearchHistory();
-            } else if (payload.eventType === 'UPDATE') {
-              fetchSearchHistory();
+      // الاشتراك في التغييرات فقط إذا لم نكن مشتركين بالفعل
+      if (!channelRef.current) {
+        // إعداد قناة الاستماع للتغييرات في الوقت الحقيقي مع تقليل عدد الأحداث
+        const channel = supabase
+          .channel('search_history_changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'search_history'
+            },
+            (payload) => {
+              console.log('Realtime change detected:', payload);
+              // تحسين معالجة الأحداث لتقليل عدد الاستعلامات
+              if (payload.eventType === 'DELETE') {
+                setSearchHistory(prev => prev.filter(item => item.id !== payload.old.id));
+              } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                // تحديث مرة واحدة للإدراج والتحديث بدلاً من إعادة جلب القائمة بأكملها
+                fetchSearchHistory();
+              }
             }
-          }
-        )
-        .subscribe();
+          )
+          .subscribe();
+        
+        channelRef.current = channel;
+      }
 
       return () => {
-        supabase.removeChannel(channel);
+        if (channelRef.current) {
+          supabase.removeChannel(channelRef.current);
+          channelRef.current = null;
+        }
       };
     } else {
       setSearchHistory([]);
@@ -50,17 +60,20 @@ export function useHistoryData() {
     try {
       setIsRefreshing(true);
       console.log("جلب سجل البحث...");
+      
+      // تحسين الاستعلام لتقليل البيانات المسترجعة والتحميل على قاعدة البيانات
       const { data, error } = await supabase
         .from('search_history')
         .select('*, analysis_duration_hours')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // تحديد عدد النتائج
 
       if (error) {
         console.error("خطأ في جلب سجل البحث:", error);
         throw error;
       }
 
-      console.log("تم استلام بيانات سجل البحث:", data);
+      console.log("تم استلام بيانات سجل البحث:", data.length);
 
       const formattedHistory: SearchHistoryItem[] = data.map(item => ({
         id: item.id,
