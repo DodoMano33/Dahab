@@ -1,5 +1,5 @@
 
-// تصدير الأنواع فقط من ملفات API المختلفة
+// تصدير الأنواع من ملفات API المختلفة
 export * from './types';
 export * from './helpers';
 export * from './rateLimit';
@@ -7,7 +7,7 @@ export * from './rateLimit';
 // تصدير دوال التخزين المؤقت
 export { getCachedPrice, setCachedPrice } from './cache';
 
-// تصدير دوال الجلب الرئيسية بعد التأكد من عدم وجود تضارب
+// تصدير دوال جلب الأسعار الرئيسية
 export { fetchPriceFromMetalPriceApi } from './metalPriceApi';
 export { fetchForexPrice } from './forex';
 export { fetchCryptoPrice } from './crypto';

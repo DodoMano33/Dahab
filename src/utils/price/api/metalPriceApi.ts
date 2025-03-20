@@ -17,6 +17,7 @@ export const fetchPriceFromMetalPriceApi = async (
   try {
     // التحقق مما إذا تم تجاوز حد معدل الاستخدام
     if (checkRateLimit()) {
+      console.error(`تم تجاوز حد معدل API للرمز ${base}/${target}`);
       return {
         success: false,
         price: null,
@@ -30,6 +31,7 @@ export const fetchPriceFromMetalPriceApi = async (
     // التحقق من الذاكرة المؤقتة أولاً
     const cachedPrice = getCachedPrice(cacheKey);
     if (cachedPrice !== null) {
+      console.log(`استخدام السعر المخزن مؤقتًا للرمز ${base}/${target}: ${cachedPrice}`);
       return { 
         success: true, 
         price: cachedPrice,
@@ -37,7 +39,8 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
-    const apiKey = getMetalPriceApiKey();
+    // الحصول على مفتاح API - استخدام المفتاح المقدم مباشرة إذا لم يكن هناك مفتاح في التكوين
+    const apiKey = getMetalPriceApiKey() || '42ed2fe2e7d1d8f688ddeb027219c766';
     if (!apiKey) {
       console.error("مفتاح API غير متوفر");
       return { 
@@ -49,24 +52,26 @@ export const fetchPriceFromMetalPriceApi = async (
 
     console.log(`جاري جلب سعر ${base}/${target} من Metal Price API...`);
     
-    // تحديد القاعدة المناسبة للطلب
-    // إذا كانت base = XAU مثلا، نستخدم الدولار كأساس للطلب ونأخذ XAU كعملة
-    let apiBase = 'USD';
-    let apiCurrency = base.toLowerCase();
+    // تحويل رموز المعادن إلى الصيغة المطلوبة
+    let apiBase = 'USD';  // دائمًا نستخدم USD كأساس في Metal Price API
+    let apiCurrency = mapBaseToCurrency(base);
     
-    // التعامل مع المعادن والعملات الخاصة
-    if (base === 'XAU') apiCurrency = 'gold';
-    if (base === 'XAG') apiCurrency = 'silver';
-    
+    console.log(`استخدام العملة ${apiCurrency} كعملة في طلب API`);
+
+    // بناء URL الطلب
     const url = `${METAL_PRICE_API_URL}/latest?api_key=${apiKey}&base=${apiBase}&currencies=${apiCurrency}`;
+    console.log(`URL الطلب (بدون مفتاح): ${url.replace(apiKey, 'API_KEY_HIDDEN')}`);
     
+    // إرسال الطلب إلى API
     const response = await fetch(url, {
+      method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0'
+        'User-Agent': 'Metal-Price-API-Client/1.0'
       }
     });
 
+    // التحقق من حالة الاستجابة
     if (!response.ok) {
       console.error(`خطأ في جلب السعر للرمز ${base}/${target}: ${response.status} ${response.statusText}`);
       
@@ -82,7 +87,9 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
+    // تحليل بيانات الاستجابة
     const data = await response.json();
+    console.log(`استجابة API لـ ${base}/${target}:`, data);
     
     if (!data.success) {
       console.error(`استجابة خاطئة من API للرمز ${base}/${target}:`, data);
@@ -103,6 +110,7 @@ export const fetchPriceFromMetalPriceApi = async (
       };
     }
 
+    // استخراج سعر الصرف من الاستجابة
     const rate = data.rates?.[apiCurrency];
     if (rate === undefined) {
       console.error(`لم يتم العثور على سعر الصرف للرمز ${base}/${target} في الاستجابة:`, data);
@@ -134,3 +142,29 @@ export const fetchPriceFromMetalPriceApi = async (
     };
   }
 };
+
+/**
+ * تحويل رمز العملة الأساسية إلى صيغة مناسبة لـ Metal Price API
+ */
+function mapBaseToCurrency(base: string): string {
+  // تحويل الرمز إلى حروف صغيرة
+  const lowerBase = base.toLowerCase();
+  
+  // تعيين الرموز الخاصة
+  const specialMappings: Record<string, string> = {
+    'xau': 'gold',
+    'xag': 'silver',
+    'gold': 'gold',
+    'silver': 'silver',
+    'btc': 'btc',
+    'eth': 'eth'
+  };
+  
+  // إذا كان الرمز موجودًا في القائمة الخاصة، استخدمه
+  if (specialMappings[lowerBase]) {
+    return specialMappings[lowerBase];
+  }
+  
+  // بخلاف ذلك، أعد الرمز كما هو
+  return lowerBase;
+}

@@ -11,10 +11,8 @@ export const getMetalPriceApiKey = (): string => {
     return METAL_PRICE_API_KEY;
   }
   
-  // يمكن تنفيذ طريقة الحصول على المفتاح من ملف التعريف لاحقًا
-  // عندما نريد السماح للمستخدمين بإدخال مفاتيحهم الخاصة
-  
-  return METAL_PRICE_API_KEY || '';
+  // استخدام المفتاح الثابت كخيار أخير
+  return '42ed2fe2e7d1d8f688ddeb027219c766';
 };
 
 /**
