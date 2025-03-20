@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 import { fetchPrice } from './priceService.ts';
 
-// نستخدم فقط XAUUSD لسعر الذهب من CFI
+// نستخدم فقط XAUUSD لسعر الذهب
 const SUPPORTED_SYMBOLS = ['XAUUSD'];
 
 Deno.serve(async (req) => {

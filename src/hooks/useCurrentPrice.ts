@@ -57,11 +57,11 @@ export const useCurrentPrice = () => {
     }
   }, []);
 
-  // استدعاء fetchLatestPrice عند التحميل وكل 60 ثانية (دقيقة واحدة)
+  // استدعاء fetchLatestPrice عند التحميل مباشرة وكل 60 ثانية (دقيقة واحدة)
   useEffect(() => {
     console.log('بدء تعقب سعر الذهب (XAUUSD)');
     
-    // جلب السعر الأولي
+    // جلب السعر الأولي فوراً
     fetchLatestPrice();
     
     // إعداد فاصل زمني لتحديث السعر كل دقيقة

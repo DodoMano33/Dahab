@@ -19,7 +19,7 @@ export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<Price
     console.log(`جلب سعر الذهب من Metal Price API للرمز: ${symbolToUse}`);
     
     // استخدم API Metal Price للحصول على سعر الذهب (XAU/USD)
-    const apiKey = '8f39d08df9d1c0df6c55fa0ce4c03574'; // مفتاح API (وهمي/تجريبي)
+    const apiKey = '42ed2fe2e7d1d8f688ddeb027219c766'; // استخدام المفتاح من الدالة المساعدة
     const url = `https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=USD&currencies=XAU`;
     
     console.log(`الاتصال بـ Metal Price API: ${url}`);

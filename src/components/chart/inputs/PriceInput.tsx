@@ -78,14 +78,11 @@ export const PriceInput = ({
   
   // استدعاء updatePrice مباشرة عند تحميل المكون
   useEffect(() => {
-    const loadInitialPrice = async () => {
-      if (useAutoPrice && (!value || value === "")) {
-        console.log("جاري جلب السعر الأولي عند تحميل المكون...");
-        await updatePrice();
-      }
-    };
-    
-    loadInitialPrice();
+    // تحقق إذا كان السعر فارغًا وكان وضع السعر التلقائي مفعل
+    if (useAutoPrice && (!value || value === "")) {
+      console.log("جاري جلب السعر الأولي عند تحميل المكون...");
+      updatePrice();
+    }
   }, []);
   
   // تفعيل أو تعطيل وضع السعر التلقائي

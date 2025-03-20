@@ -8,12 +8,11 @@ export * from './rateLimit';
 export { fetchPriceFromMetalPriceApi } from './metalPriceApi';
 export { fetchForexPrice, fetchCryptoPrice, fetchPreciousMetalPrice, fetchStoredPrice } from './fetchers';
 
-// جلب سعر الذهب (XAUUSD) من CFI
-import { fetchPreciousMetalPrice } from './preciousMetals';
-import { mapSymbolToMetalPriceSymbol } from './helpers';
+// جلب سعر الذهب (XAUUSD)
+import { fetchPreciousMetalPrice } from './fetchers';
 
 /**
- * جلب سعر الذهب فقط (XAUUSD) من شركة CFI
+ * جلب سعر الذهب فقط (XAUUSD)
  */
 export const fetchPrice = async (symbol: string): Promise<number | null> => {
   try {
@@ -24,7 +23,7 @@ export const fetchPrice = async (symbol: string): Promise<number | null> => {
     
     // نسمح فقط بـ XAUUSD, GOLD, أو XAU
     if (cleanSymbol === 'XAUUSD' || cleanSymbol === 'GOLD' || cleanSymbol === 'XAU') {
-      console.log(`جلب سعر الذهب من CFI للرمز: ${cleanSymbol}`);
+      console.log(`جلب سعر الذهب من Metal Price API للرمز: ${cleanSymbol}`);
       return await fetchPreciousMetalPrice(cleanSymbol);
     }
     

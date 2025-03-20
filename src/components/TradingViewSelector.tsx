@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
@@ -21,10 +22,11 @@ export const TradingViewSelector = ({
   defaultSymbol,
   defaultPrice
 }: TradingViewSelectorProps) => {
-  const [symbol, setSymbol] = useState(defaultSymbol || "");
+  const [symbol, setSymbol] = useState(defaultSymbol || "XAUUSD");
   const [currentPrice, setCurrentPrice] = useState(defaultPrice?.toString() || "");
   const [customHours, setCustomHours] = useState<string>("24");
 
+  // تحديث القيم عند تغير القيم الافتراضية
   useEffect(() => {
     if (defaultSymbol) setSymbol(defaultSymbol);
     if (defaultPrice) setCurrentPrice(defaultPrice.toString());
