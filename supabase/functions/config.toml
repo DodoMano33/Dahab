@@ -3,8 +3,6 @@ project_id = "nhvkviofvefwbvditgxo"
 
 [update-real-time-prices]
 verify_jwt = false
-timeout_seconds = 30
 
 [schedule-realtime-prices]
 verify_jwt = false
-timeout_seconds = 30

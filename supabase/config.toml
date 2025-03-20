@@ -4,8 +4,6 @@ project_id = "nhvkviofvefwbvditgxo"
 [functions]
 [functions.update-real-time-prices]
 verify_jwt = false
-timeout_seconds = 30
 
 [functions.schedule-realtime-prices]
 verify_jwt = false
-timeout_seconds = 30
