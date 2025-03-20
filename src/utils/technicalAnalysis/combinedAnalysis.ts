@@ -84,6 +84,9 @@ export const combinedAnalysis = async (
     // إنشاء سعر لنقطة الدخول المثالية إذا لم يوجد
     let bestEntryPrice = weightedValues.entryPrice;
     
+    // طباعة تشخيصية
+    console.log("Best entry price from weightedValues:", bestEntryPrice);
+    
     // التأكد من أن سعر نقطة الدخول المثالية رقم صالح
     if (bestEntryPrice === undefined || bestEntryPrice === null || isNaN(Number(bestEntryPrice))) {
       console.log("Creating default entry price based on direction");
@@ -94,6 +97,13 @@ export const combinedAnalysis = async (
       } else {
         bestEntryPrice = Number((currentPrice * 1.005).toFixed(4)); // أعلى من السعر الحالي بنسبة 0.5% للاتجاه الهابط
       }
+    }
+    
+    // تحويل السعر إلى رقم صحيح للتأكد من أنه ليس NaN
+    bestEntryPrice = Number(bestEntryPrice);
+    if (isNaN(bestEntryPrice)) {
+      console.error("Best entry price is still NaN after conversion, using current price as fallback");
+      bestEntryPrice = currentPrice;
     }
     
     console.log("Final best entry price:", bestEntryPrice);

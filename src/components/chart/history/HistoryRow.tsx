@@ -61,6 +61,10 @@ export const HistoryRow = ({
   
   // معالجة بيانات أفضل نقطة دخول
   const bestEntryPoint = (() => {
+    // طباعة تشخيصية للمعلومات الكاملة
+    console.log(`Full analysis data for ${id}:`, analysis);
+    console.log(`Best entry point data for ${id}:`, analysis.bestEntryPoint);
+    
     // التحقق من وجود كائن أفضل نقطة دخول
     if (!analysis.bestEntryPoint) {
       console.log(`No bestEntryPoint object for analysis ${id}`);
@@ -80,20 +84,25 @@ export const HistoryRow = ({
         
         // التحقق من صحة الرقم
         if (isNaN(Number(price))) {
+          console.log(`Invalid price value for ${id}:`, price);
           price = undefined;
+        } else {
+          console.log(`Valid price found for ${id}:`, price);
         }
       }
       
       // التحقق من وجود السبب
       if ('reason' in analysis.bestEntryPoint) {
         reason = analysis.bestEntryPoint.reason;
+        console.log(`Reason for best entry point ${id}:`, reason);
       }
     } else if (typeof analysis.bestEntryPoint === 'number') {
       // إذا كان السعر رقم مباشر
       price = analysis.bestEntryPoint;
+      console.log(`Direct numeric price for ${id}:`, price);
     }
     
-    console.log(`Fixed best entry point for analysis ${id}:`, { price, reason });
+    console.log(`Final best entry point for analysis ${id}:`, { price, reason });
     
     return { price, reason };
   })();

@@ -1,15 +1,19 @@
 
 export interface BestEntryPointProps {
-  price?: number;
+  price?: number | null;
   reason?: string;
 }
 
 export const BestEntryPoint = ({ price, reason }: BestEntryPointProps) => {
-  const formatNumber = (num: number | undefined) => {
-    if (num === undefined || isNaN(num)) return "غير متوفر";
+  const formatNumber = (num: number | undefined | null) => {
+    if (num === undefined || num === null || isNaN(Number(num))) return "غير متوفر";
     return Number(num).toFixed(3);
   };
+
+  // تسجيل القيم للمساعدة في تشخيص المشكلة
+  console.log(`BestEntryPoint rendering with price=${price}, reason=${reason}`);
   
+  // إذا لم يكن هناك سعر، نعرض "غير متوفر"
   if (price === undefined || price === null || isNaN(Number(price))) {
     return <div className="text-center text-muted-foreground">غير متوفر</div>;
   }
