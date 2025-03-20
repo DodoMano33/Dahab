@@ -311,6 +311,14 @@ export type Database = {
             }
             Returns: string
           }
+      cleanup_old_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      create_data_cleanup_schedule: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       delete_expired_analyses: {
         Args: Record<PropertyKey, never>
         Returns: undefined

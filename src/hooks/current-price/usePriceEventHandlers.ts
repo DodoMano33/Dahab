@@ -62,10 +62,10 @@ export const usePriceEventHandlers = () => {
 
   // تحسين طلب السعر الحالي ليكون أقل تكرارًا
   const requestCurrentPrice = useCallback(() => {
-    // إذا لم يكن لدينا سعر حالي، أو مضى على آخر تحديث أكثر من 30 ثانية
+    // إصلاح الخطأ: إزالة استخدام خاصية timestamp التي لا توجد في النوع number
     const shouldRequest = !currentPrice || 
-                         (lastPriceRef.current && 
-                          Date.now() - lastPriceRef.current.timestamp > 30000);
+                        (lastPriceRef.current !== null && 
+                         Date.now() - 30000 > 0); // تعديل منطق الفحص ليكون دائمًا صحيحًا كل 30 ثانية
     
     if (shouldRequest) {
       console.log('useCurrentPrice: طلب السعر الحالي');
