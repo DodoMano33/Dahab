@@ -49,7 +49,7 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
       onError: handlePriceError
     });
     
-    // تحديث السعر كل 60 ثانية (تم تغييرها من 30000 إلى 60000)
+    // تحديث السعر كل 60 ثانية (دقيقة واحدة)
     const priceRefreshInterval = setInterval(() => {
       // إعادة طلب السعر من Metal Price API مباشرة
       priceUpdater.fetchPrice(symbol)
@@ -61,7 +61,7 @@ export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResul
         .catch(error => {
           console.error('فشل في تحديث السعر:', error);
         });
-    }, 60000); // تم تغييرها من 30000 (30 ثانية) إلى 60000 (دقيقة واحدة)
+    }, 60000); // دقيقة واحدة
     
     // تنظيف مستمعي الأحداث والاشتراكات عند إزالة المكون
     return () => {

@@ -33,19 +33,18 @@ Deno.serve(async (req) => {
       throw functionError
     }
 
-    // جدولة تحديث الأسعار (بالفعل كل دقيقة، لم يتم تغييرها)
+    // جدولة تحديث الأسعار كل 5 دقائق
     const { error: scheduleError } = await supabase.sql`
       SELECT cron.schedule(
         'update-real-time-prices-every-minute',
-        '* * * * *',  -- تشغيل كل دقيقة
-        $$
-        SELECT
-          net.http_post(
-            url:='${supabaseUrl}/functions/v1/update-real-time-prices',
-            headers:='{"Content-Type": "application/json", "Authorization": "Bearer ${supabaseAnonKey}"}'::jsonb,
-            body:='{}'::jsonb
-          ) as request_id;
-        $$
+        '*/5 * * * *',
+        $cron$
+        SELECT net.http_post(
+          url:='${supabaseUrl}/functions/v1/update-real-time-prices',
+          headers:='{"Content-Type": "application/json", "Authorization": "Bearer ${supabaseAnonKey}"}'::jsonb,
+          body:='{}'::jsonb
+        ) as request_id;
+        $cron$
       );
     `
 
@@ -54,11 +53,11 @@ Deno.serve(async (req) => {
       throw scheduleError
     }
 
-    console.log('تمت جدولة تحديث الأسعار الحقيقية كل دقيقة بنجاح')
+    console.log('تمت جدولة تحديث الأسعار الحقيقية كل 5 دقائق بنجاح')
     
     return new Response(
       JSON.stringify({ 
-        message: 'تمت جدولة تحديث الأسعار الحقيقية كل دقيقة بنجاح',
+        message: 'تمت جدولة تحديث الأسعار الحقيقية كل 5 دقائق بنجاح',
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

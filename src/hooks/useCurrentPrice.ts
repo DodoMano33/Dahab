@@ -47,7 +47,7 @@ export const useCurrentPrice = () => {
     // جلب السعر الأولي
     fetchLatestPrice();
     
-    // إعداد فاصل زمني لتحديث السعر كل دقيقة (تم تغييرها من 10000 إلى 60000)
+    // إعداد فاصل زمني لتحديث السعر كل دقيقة
     const intervalId = setInterval(fetchLatestPrice, 60000);
     
     // الاستماع لأحداث تحديث السعر من المصادر الأخرى

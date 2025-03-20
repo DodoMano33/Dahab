@@ -69,21 +69,26 @@ function getApiCurrency(symbol: string): string {
   
   // التعامل مع الرموز الخاصة
   if (upperSymbol === 'XAUUSD' || upperSymbol === 'GOLD' || upperSymbol === 'XAU') {
-    return 'gold';
+    return 'XAU';
   }
   
   if (upperSymbol === 'XAGUSD' || upperSymbol === 'SILVER' || upperSymbol === 'XAG') {
-    return 'silver';
+    return 'XAG';
   }
   
   if (upperSymbol === 'BTCUSD' || upperSymbol === 'BTC') {
-    return 'btc';
+    return 'BTC';
   }
   
   if (upperSymbol === 'ETHUSD' || upperSymbol === 'ETH') {
-    return 'eth';
+    return 'ETH';
   }
   
-  // للرموز الأخرى، استخدم الحروف الصغيرة
-  return upperSymbol.toLowerCase();
+  // للرموز الأخرى، استخدم الحروف الأولى الثلاثة
+  if (upperSymbol.length >= 6) {
+    return upperSymbol.substring(0, 3);
+  }
+  
+  // للرموز الأخرى، استخدم الرمز كما هو
+  return upperSymbol;
 }
