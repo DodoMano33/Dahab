@@ -1,8 +1,2 @@
 
 project_id = "nhvkviofvefwbvditgxo"
-
-[update-real-time-prices]
-verify_jwt = false
-
-[schedule-realtime-prices]
-verify_jwt = false

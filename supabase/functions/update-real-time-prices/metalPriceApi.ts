@@ -1,88 +1,89 @@
 
-// تنفيذ وظيفة جلب الأسعار من Metal Price API
+// API URL and Key
+const API_URL = 'https://api.metalpriceapi.com/v1';
+const API_KEY = '42ed2fe2e7d1d8f688ddeb027219c766';
 
-const METAL_PRICE_API_KEY = '42ed2fe2e7d1d8f688ddeb027219c766';
-const METAL_PRICE_API_BASE_URL = 'https://api.metalpriceapi.com/v1';
+// Cache to avoid rate limits
+const priceCache: Record<string, { price: number, timestamp: number }> = {};
+const CACHE_TTL = 60 * 1000; // 1 minute cache
 
 /**
- * جلب سعر المعدن من Metal Price API
+ * Map symbol to Metal Price API format
  */
-export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<number | null> {
-  try {
-    console.log(`جاري جلب السعر للرمز ${symbol} من Metal Price API...`);
-    
-    // تحويل الرمز إلى الصيغة المناسبة لـ Metal Price API
-    const apiCurrency = getApiCurrency(symbol);
-    const apiBase = 'USD'; // دائمًا نستخدم USD كعملة أساسية
-    
-    // بناء URL الطلب
-    const url = `${METAL_PRICE_API_BASE_URL}/latest?api_key=${METAL_PRICE_API_KEY}&base=${apiBase}&currencies=${apiCurrency}`;
-    
-    // إرسال الطلب إلى API
-    const response = await fetch(url);
-    
-    // التحقق من حالة الاستجابة
-    if (!response.ok) {
-      throw new Error(`خطأ في جلب السعر: ${response.status} ${response.statusText}`);
-    }
-    
-    // تحليل بيانات الاستجابة
-    const data = await response.json();
-    console.log(`استجابة API للرمز ${symbol}:`, data);
-    
-    if (!data.success) {
-      throw new Error(`استجابة غير ناجحة من API: ${JSON.stringify(data)}`);
-    }
-    
-    // استخراج سعر الصرف من الاستجابة
-    const rate = data.rates[apiCurrency];
-    
-    if (rate === undefined) {
-      throw new Error(`لم يتم العثور على سعر للرمز ${symbol} في الاستجابة`);
-    }
-    
-    // تحويل السعر - في Metal Price API عندما نستخدم USD كعملة أساسية والعملة المطلوبة هي XAU،
-    // فإن القيمة المعادة هي كم دولار يساوي 1 وحدة من XAU، لذلك نحتاج إلى أخذ مقلوب القيمة
-    // للحصول على سعر XAU/USD (أي كم وحدة من XAU تساوي 1 دولار)
-    const finalPrice = 1 / rate;
-    
-    console.log(`تم جلب السعر بنجاح للرمز ${symbol}: ${finalPrice}`);
-    return finalPrice;
-    
-  } catch (error) {
-    console.error(`خطأ في جلب السعر للرمز ${symbol} من Metal Price API:`, error);
-    return null;
+function mapSymbolToMetalPriceFormat(symbol: string): { base: string, target: string } {
+  // Clean up the symbol
+  const cleanSymbol = symbol.replace('CAPITALCOM:', '').toUpperCase();
+  
+  // Special mappings
+  if (cleanSymbol === 'XAUUSD' || cleanSymbol === 'GOLD') {
+    return { base: 'USD', target: 'XAU' };
   }
+  if (cleanSymbol === 'XAGUSD' || cleanSymbol === 'SILVER') {
+    return { base: 'USD', target: 'XAG' };
+  }
+  
+  // For forex pairs (like EURUSD)
+  if (cleanSymbol.length === 6 && /[A-Z]{6}/.test(cleanSymbol)) {
+    return { 
+      base: 'USD',
+      target: cleanSymbol.substring(0, 3)
+    };
+  }
+  
+  // Default case
+  return { base: 'USD', target: cleanSymbol };
 }
 
 /**
- * تحويل رمز العملة إلى صيغة مناسبة لـ Metal Price API
+ * Fetch price from Metal Price API
  */
-function getApiCurrency(symbol: string): string {
-  const upperSymbol = symbol.toUpperCase();
-  
-  // التعامل مع الرموز الخاصة
-  if (upperSymbol === 'XAUUSD' || upperSymbol === 'GOLD' || upperSymbol === 'XAU') {
-    return 'XAU';
+export async function fetchPriceFromMetalPriceApi(symbol: string): Promise<number | null> {
+  try {
+    // Check cache first
+    const cacheKey = symbol.toUpperCase();
+    const cachedData = priceCache[cacheKey];
+    
+    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_TTL) {
+      console.log(`Using cached price for ${symbol}: ${cachedData.price}`);
+      return cachedData.price;
+    }
+    
+    // Map the symbol to the format required by the API
+    const { base, target } = mapSymbolToMetalPriceFormat(symbol);
+    console.log(`Fetching price for ${symbol} as ${base}/${target} from Metal Price API`);
+    
+    // Build request URL
+    const url = `${API_URL}/latest?api_key=${API_KEY}&base=${base}&currencies=${target}`;
+    
+    // Fetch data from API
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(`API error: ${data.error || 'Unknown error'}`);
+    }
+    
+    // Extract rate from response and calculate proper price
+    const rate = data.rates[target];
+    if (rate === undefined) {
+      throw new Error(`No rate found for ${target}`);
+    }
+    
+    // For XAU/USD and similar, we need to invert the rate (API returns USD/XAU)
+    const price = 1 / rate;
+    
+    // Cache the result
+    priceCache[cacheKey] = { price, timestamp: Date.now() };
+    
+    console.log(`Fetched price for ${symbol}: ${price}`);
+    return price;
+  } catch (error) {
+    console.error(`Error fetching price for ${symbol}:`, error);
+    return null;
   }
-  
-  if (upperSymbol === 'XAGUSD' || upperSymbol === 'SILVER' || upperSymbol === 'XAG') {
-    return 'XAG';
-  }
-  
-  if (upperSymbol === 'BTCUSD' || upperSymbol === 'BTC') {
-    return 'BTC';
-  }
-  
-  if (upperSymbol === 'ETHUSD' || upperSymbol === 'ETH') {
-    return 'ETH';
-  }
-  
-  // للرموز الأخرى، استخدم الحروف الأولى الثلاثة
-  if (upperSymbol.length >= 6) {
-    return upperSymbol.substring(0, 3);
-  }
-  
-  // للرموز الأخرى، استخدم الرمز كما هو
-  return upperSymbol;
 }

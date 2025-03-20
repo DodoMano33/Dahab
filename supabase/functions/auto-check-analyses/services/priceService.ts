@@ -1,5 +1,7 @@
 
-import { fetchPrice } from '../../../utils/price/api/index.ts';
+// import { fetchPrice } from '../../../utils/price/api/index.ts';
+// Edge functions cannot import from outside their directory
+// We need to implement price fetching directly here
 
 /**
  * جلب السعر الحالي
@@ -19,7 +21,7 @@ export async function getEffectivePrice(requestData: any, supabase: any): Promis
       // جلب السعر للرمز المحدد
       const symbol = requestData?.symbol || 'XAUUSD';
       
-      // استخدام Metal Price API لجلب السعر
+      // استخدام السعر المخزن في قاعدة البيانات
       try {
         const price = await getLastStoredPrice(supabase, symbol);
         if (price !== null) {
