@@ -69,14 +69,7 @@ export const HistoryRow = ({
     if (!analysis.bestEntryPoint) {
       console.log(`No bestEntryPoint object for analysis ${id}`);
       
-      // إذا كان هناك entryPoint يمكن استخدامه كبديل
-      if (analysis.entryPoint && !isNaN(Number(analysis.entryPoint))) {
-        return { 
-          price: Number(analysis.entryPoint), 
-          reason: "نقطة دخول محسوبة من التحليل" 
-        };
-      }
-      
+      // لا نستخدم entryPoint لأنها غير موجودة في نوع البيانات AnalysisData
       return { price: undefined, reason: undefined };
     }
     
