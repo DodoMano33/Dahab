@@ -76,13 +76,18 @@ export const PriceInput = ({
     }
   };
   
-  // استخدام السعر تلقائيًا عند التحميل
+  // استدعاء updatePrice مباشرة عند تحميل المكون
   useEffect(() => {
-    if (useAutoPrice) {
-      updatePrice();
-    }
-  }, [useAutoPrice]);
-
+    const loadInitialPrice = async () => {
+      if (useAutoPrice && (!value || value === "")) {
+        console.log("جاري جلب السعر الأولي عند تحميل المكون...");
+        await updatePrice();
+      }
+    };
+    
+    loadInitialPrice();
+  }, []);
+  
   // تفعيل أو تعطيل وضع السعر التلقائي
   const toggleAutoPriceMode = () => {
     const newMode = !useAutoPrice;
@@ -99,7 +104,7 @@ export const PriceInput = ({
 
   // اختيار السعر المناسب للعرض
   const displayPrice = value 
-    ? parseFloat(value).toFixed(5)
+    ? parseFloat(value).toFixed(2)
     : defaultValue 
       ? defaultValue 
       : "السعر غير متاح";

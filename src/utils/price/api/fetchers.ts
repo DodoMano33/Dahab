@@ -1,113 +1,73 @@
 
-import { supabase } from '@/lib/supabase';
 import { fetchPriceFromMetalPriceApi } from './metalPriceApi';
-import { mapSymbolToMetalPriceSymbol, parseCurrencyPair } from './helpers';
+import { rateLimit } from './rateLimit';
+import { getStoredPrice } from './helpers';
+import { PRECIOUS_METALS } from '../config';
+import { fetchPreciousMetalPrice } from './preciousMetals';
 
 /**
- * تخزين السعر مؤقتًا
+ * جلب سعر العملات الأجنبية
  */
-export const setCachedPrice = (symbol: string, price: number) => {
-  localStorage.setItem(`price_${symbol}`, price.toString());
-};
-
-/**
- * جلب السعر من الذاكرة المؤقتة
- */
-export const getCachedPrice = (symbol: string): number | null => {
-  const priceStr = localStorage.getItem(`price_${symbol}`);
-  return priceStr ? parseFloat(priceStr) : null;
-};
-
-/**
- * جلب سعر الفوركس - ملاحظة: مستخدم فقط للذهب الآن
- */
-export async function fetchForexPrice(symbol: string): Promise<number | null> {
+export const fetchForexPrice = async (symbol: string): Promise<number | null> => {
   try {
-    // نتأكد أن الرمز هو XAUUSD
-    if (symbol.toUpperCase() !== 'XAUUSD' && symbol.toUpperCase() !== 'GOLD' && symbol.toUpperCase() !== 'XAU') {
-      console.log(`الرمز ${symbol} غير مدعوم. استخدام XAUUSD.`);
-      symbol = 'XAUUSD';
+    // تحقق من حدود الاستخدام
+    if (rateLimit.isRateLimited()) {
+      console.log('تم تجاوز حد معدل الاستخدام. استخدام السعر المخزن.');
+      return await fetchStoredPrice(symbol);
     }
-    
-    // استخدام Metal Price API لجلب السعر
-    const result = await fetchPriceFromMetalPriceApi('XAU');
-    
-    if (result.success && result.price !== null) {
-      // تخزين السعر مؤقتًا
-      setCachedPrice(symbol, result.price);
-      return result.price;
-    }
-    
-    // محاولة جلب السعر من التخزين المؤقت إذا فشلت محاولة API
-    return getCachedPrice(symbol);
-  } catch (error) {
-    console.error(`خطأ في جلب سعر الذهب للرمز ${symbol}:`, error);
-    return getCachedPrice(symbol);
-  }
-}
 
-/**
- * جلب سعر العملات المشفرة (غير مستخدم الآن - يعود بسعر الذهب)
- */
-export async function fetchCryptoPrice(symbol: string): Promise<number | null> {
-  console.log('استخدام سعر الذهب بدلاً من العملات المشفرة');
-  return fetchPreciousMetalPrice('XAUUSD');
-}
-
-/**
- * جلب سعر المعدن (الذهب فقط الآن)
- */
-export async function fetchPreciousMetalPrice(symbol: string): Promise<number | null> {
-  try {
-    // نتأكد أن الرمز هو XAUUSD
-    if (symbol.toUpperCase() !== 'XAUUSD' && symbol.toUpperCase() !== 'GOLD' && symbol.toUpperCase() !== 'XAU') {
-      console.log(`الرمز ${symbol} غير مدعوم للمعادن الثمينة. استخدام XAUUSD.`);
-      symbol = 'XAUUSD';
-    }
-    
-    // استخدام Metal Price API لجلب سعر الذهب
-    const result = await fetchPriceFromMetalPriceApi('XAU');
-    
-    if (result.success && result.price !== null) {
-      // تخزين السعر مؤقتًا
-      setCachedPrice(symbol, result.price);
-      return result.price;
-    }
-    
-    // محاولة جلب السعر من التخزين المؤقت إذا فشلت محاولة API
-    return getCachedPrice(symbol);
+    // ملاحظة: للتبسيط، نقوم دائمًا بإرجاع سعر الذهب بغض النظر عن الرمز
+    console.log(`تحويل ${symbol} إلى XAUUSD للحصول على سعر الذهب`);
+    return await fetchPreciousMetalPrice('XAUUSD');
   } catch (error) {
-    console.error(`خطأ في جلب سعر الذهب للرمز ${symbol}:`, error);
-    return getCachedPrice(symbol);
-  }
-}
-
-/**
- * جلب السعر المخزن في قاعدة البيانات من real_time_prices
- */
-export async function fetchStoredPrice(symbol: string): Promise<number | null> {
-  try {
-    // نتأكد أن الرمز هو XAUUSD للذهب من CFI
-    if (symbol.toUpperCase() !== 'XAUUSD' && symbol.toUpperCase() !== 'GOLD' && symbol.toUpperCase() !== 'XAU') {
-      console.log(`الرمز ${symbol} غير مدعوم. استخدام XAUUSD.`);
-      symbol = 'XAUUSD';
-    }
-    
-    const { data, error } = await supabase
-      .from('real_time_prices')
-      .select('price, updated_at')
-      .eq('symbol', 'XAUUSD')
-      .single();
-    
-    if (error || !data) {
-      console.log(`لم يتم العثور على سعر مخزن للذهب XAUUSD`);
-      return null;
-    }
-    
-    console.log(`تم العثور على سعر مخزن للذهب XAUUSD: ${data.price}`);
-    return data.price;
-  } catch (error) {
-    console.error(`خطأ في جلب السعر المخزن للذهب:`, error);
+    console.error(`خطأ في fetchForexPrice: ${error}`);
     return null;
   }
-}
+};
+
+/**
+ * جلب سعر العملات المشفرة
+ */
+export const fetchCryptoPrice = async (symbol: string): Promise<number | null> => {
+  try {
+    // تحقق من حدود الاستخدام
+    if (rateLimit.isRateLimited()) {
+      console.log('تم تجاوز حد معدل الاستخدام. استخدام السعر المخزن.');
+      return await fetchStoredPrice(symbol);
+    }
+
+    // ملاحظة: للتبسيط، نقوم دائمًا بإرجاع سعر الذهب بغض النظر عن الرمز
+    console.log(`تحويل ${symbol} إلى XAUUSD للحصول على سعر الذهب`);
+    return await fetchPreciousMetalPrice('XAUUSD');
+  } catch (error) {
+    console.error(`خطأ في fetchCryptoPrice: ${error}`);
+    return null;
+  }
+};
+
+/**
+ * جلب سعر المعادن الثمينة (مثل الذهب والفضة)
+ * من Metal Price API
+ */
+export { fetchPreciousMetalPrice } from './preciousMetals';
+
+/**
+ * جلب السعر المخزن في قاعدة البيانات
+ */
+export const fetchStoredPrice = async (symbol: string): Promise<number | null> => {
+  try {
+    // نقوم دائمًا بالبحث عن XAUUSD بغض النظر عن الرمز المقدم
+    const storedPrice = await getStoredPrice('XAUUSD');
+    
+    if (storedPrice !== null) {
+      console.log(`تم استخدام سعر الذهب المخزن: ${storedPrice}`);
+      return storedPrice;
+    }
+    
+    console.log(`لم يتم العثور على سعر الذهب المخزن، محاولة جلبه مباشرة...`);
+    return await fetchPreciousMetalPrice('XAUUSD');
+  } catch (error) {
+    console.error(`خطأ في fetchStoredPrice: ${error}`);
+    return null;
+  }
+};

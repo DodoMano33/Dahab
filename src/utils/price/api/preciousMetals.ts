@@ -4,14 +4,14 @@ import { fetchPriceFromMetalPriceApi } from "./metalPriceApi";
 import { PriceResponse } from "./types";
 
 /**
- * جلب سعر الذهب من شركة CFI
+ * جلب سعر الذهب من Metal Price API
  */
 export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | null> => {
   try {
     // تنسيق الرمز والتأكد من أنه XAUUSD
     const upperSymbol = symbol.toUpperCase();
     
-    // اعتبار فقط XAUUSD أو GOLD كرموز صالحة للذهب من CFI
+    // اعتبار فقط XAUUSD أو GOLD أو XAU كرموز صالحة للذهب
     if (upperSymbol !== 'XAUUSD' && upperSymbol !== 'GOLD' && upperSymbol !== 'XAU') {
       console.log(`الرمز ${symbol} غير مدعوم. نستخدم فقط XAUUSD من CFI.`);
       return null;

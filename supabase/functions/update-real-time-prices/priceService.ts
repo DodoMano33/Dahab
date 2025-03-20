@@ -2,7 +2,7 @@
 import { fetchPriceFromMetalPriceApi } from './metalPriceApi.ts';
 
 /**
- * جلب سعر الذهب الحالي فقط (XAUUSD) من شركة CFI
+ * جلب سعر الذهب الحالي فقط (XAUUSD) من Metal Price API
  */
 export async function fetchPrice(symbol: string): Promise<number | null> {
   try {
@@ -13,9 +13,15 @@ export async function fetchPrice(symbol: string): Promise<number | null> {
     }
     
     // استخدام Metal Price API لجلب سعر الذهب (XAU)
-    const price = await fetchPriceFromMetalPriceApi('XAU');
-    console.log(`تم جلب سعر الذهب: ${price}`);
-    return price;
+    const result = await fetchPriceFromMetalPriceApi('XAU');
+    
+    if (result.success && result.price !== null) {
+      console.log(`تم جلب سعر الذهب: ${result.price}`);
+      return result.price;
+    }
+    
+    console.error(`فشل في جلب سعر الذهب من Metal Price API:`, result.message);
+    return null;
   } catch (error) {
     console.error(`خطأ في جلب سعر الذهب:`, error);
     return null;
