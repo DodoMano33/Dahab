@@ -6,6 +6,7 @@ import { RateLimitManager } from './rateLimit';
 import { retry } from './retry';
 import { SubscriptionService } from './subscriptions';
 import { PriceUpdaterConfig, RetryOptions } from './types';
+import { supabase } from '@/lib/supabase';
 
 /**
  * محدث الأسعار - الفئة الرئيسية لإدارة تحديثات الأسعار والاشتراكات
@@ -15,6 +16,9 @@ export class PriceUpdater {
   private rateLimit: RateLimitManager;
   private subscriptions: SubscriptionService;
   private retryOptions: RetryOptions;
+  private polling: boolean = false;
+  private pollingInterval: number = 300000; // 5 دقائق
+  private intervalId?: NodeJS.Timeout;
 
   constructor(config: Partial<PriceUpdaterConfig> = {}) {
     const {
@@ -32,75 +36,103 @@ export class PriceUpdater {
   }
 
   /**
-   * الاشتراك في تحديثات السعر
-   */
-  subscribe(subscription: PriceSubscription): void {
-    this.subscriptions.subscribe(subscription);
-    
-    // محاولة جلب السعر الأولي
-    this.fetchInitialPrice(subscription);
-  }
-
-  /**
-   * جلب السعر الأولي للمشترك الجديد
-   */
-  private fetchInitialPrice(subscription: PriceSubscription): void {
-    this.fetchPrice(subscription.symbol)
-      .then(price => {
-        if (price !== null) {
-          this.subscriptions.notifySubscribers(subscription.symbol, price);
-        }
-      })
-      .catch(error => {
-        this.subscriptions.notifyError(subscription.symbol, error);
-      });
-  }
-
-  /**
-   * إلغاء الاشتراك من تحديثات السعر
-   */
-  unsubscribe(symbol: string, callback: (price: number) => void): void {
-    this.subscriptions.unsubscribe(symbol, callback);
-  }
-
-  /**
    * جلب سعر الرمز المحدد
    */
-  async fetchPrice(symbol: string): Promise<number | null> {
-    // التحقق من تجاوز حد معدل الاستخدام
-    if (this.rateLimit.isRateLimited()) {
-      return this.handleRateLimitedFetch(symbol);
-    }
-    
-    // التحقق من الذاكرة المؤقتة أولاً
-    const cachedPrice = this.cache.get(symbol);
-    if (cachedPrice !== null) return cachedPrice;
-
-    console.log('بدء محاولة جلب السعر للرمز', symbol);
-    
+  async fetchPrice(symbol: string, providedPrice?: number): Promise<number | null> {
     try {
-      // استخدام وظيفة إعادة المحاولة
-      const price = await this.fetchPriceWithRetry(symbol);
-      
-      if (price !== null) {
-        this.handleSuccessfulFetch(symbol, price);
+      console.log(`بدء محاولة جلب السعر للرمز ${symbol} من Metal Price API`);
+
+      if (!symbol) {
+        throw new Error("الرمز غير صالح");
       }
       
-      return price;
-    } catch (error) {
-      return this.handleFetchError(symbol, error as Error);
-    }
-  }
+      // إذا تم توفير سعر، استخدمه مباشرة
+      if (providedPrice !== undefined) {
+        console.log(`استخدام السعر المقدم للرمز ${symbol}: ${providedPrice}`);
+        this.cache.set(symbol, providedPrice);
+        return providedPrice;
+      }
 
-  /**
-   * التعامل مع حالة تجاوز حد معدل الاستخدام
-   */
-  private handleRateLimitedFetch(symbol: string): number | null {
-    // محاولة استخدام السعر المخزن مؤقتًا
-    const cachedPrice = this.cache.get(symbol);
-    if (cachedPrice !== null) return cachedPrice;
-    
-    throw new Error('تم تجاوز حد معدل API');
+      // التحقق من الذاكرة المؤقتة أولاً
+      const cachedPrice = this.cache.get(symbol);
+      if (cachedPrice !== null) return cachedPrice;
+
+      // التحقق من حالة حد معدل الاستخدام
+      if (this.rateLimit.isRateLimited()) {
+        console.log(`تم تجاوز حد معدل API للرمز ${symbol}`);
+        return this.handleRateLimitedFetch(symbol);
+      }
+
+      // محاولة جلب السعر من قاعدة البيانات أولاً
+      try {
+        const { data, error } = await supabase
+          .from('real_time_prices')
+          .select('price, updated_at')
+          .eq('symbol', symbol)
+          .single();
+          
+        if (data && !error) {
+          const { price, updated_at } = data;
+          
+          // تحقق من أن السعر حديث (أقل من 10 دقائق)
+          const timestamp = new Date(updated_at).getTime();
+          const now = Date.now();
+          const tenMinutes = 10 * 60 * 1000;
+          
+          if (now - timestamp <= tenMinutes) {
+            console.log(`تم العثور على سعر مخزن حديث في قاعدة البيانات للرمز ${symbol}: ${price}`);
+            // تخزين السعر مؤقتًا
+            this.cache.set(symbol, price);
+            
+            // إرسال حدث تحديث السعر
+            window.dispatchEvent(new CustomEvent('metal-price-update', {
+              detail: { price, symbol }
+            }));
+            
+            return price;
+          } else {
+            console.log(`السعر المخزن للرمز ${symbol} قديم (${new Date(updated_at).toLocaleTimeString()})`);
+          }
+        }
+      } catch (dbError) {
+        console.error(`خطأ في جلب السعر من قاعدة البيانات للرمز ${symbol}:`, dbError);
+        // تجاهل هذا الخطأ والمتابعة لجلب السعر من API
+      }
+
+      // محاولة جلب السعر من API باستخدام وظيفة إعادة المحاولة
+      const price = await this.fetchPriceWithRetry(symbol);
+
+      if (price !== null) {
+        console.log(`تم جلب السعر من Metal Price API للرمز ${symbol}: ${price}`);
+        this.cache.set(symbol, price);
+        
+        // إرسال حدث تحديث السعر
+        window.dispatchEvent(new CustomEvent('metal-price-update', {
+          detail: { price, symbol }
+        }));
+        
+        return price;
+      }
+
+      // إذا لم يتم العثور على سعر، استخدم آخر سعر معروف أو null
+      if (cachedPrice) {
+        console.log(`لم يتم العثور على سعر جديد للرمز ${symbol}، استخدام آخر سعر مخزن: ${cachedPrice}`);
+        return cachedPrice;
+      }
+      
+      console.log(`لم يتم العثور على سعر للرمز ${symbol}`);
+      return null;
+    } catch (error) {
+      console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
+      
+      // في حالة الخطأ، نستخدم آخر سعر معروف أو null
+      const cachedPrice = this.cache.get(symbol);
+      if (cachedPrice !== null) {
+        return cachedPrice;
+      }
+      
+      return null;
+    }
   }
 
   /**
@@ -117,32 +149,101 @@ export class PriceUpdater {
   }
 
   /**
-   * التعامل مع نجاح جلب السعر
+   * التعامل مع حالة تجاوز حد معدل الاستخدام
    */
-  private handleSuccessfulFetch(symbol: string, price: number): void {
-    this.cache.set(symbol, price);
-    
-    // إشعار المشتركين بالسعر الجديد
-    this.subscriptions.notifySubscribers(symbol, price);
+  private handleRateLimitedFetch(symbol: string): number | null {
+    // محاولة استخدام السعر المخزن مؤقتًا
+    const cachedPrice = this.cache.get(symbol);
+    return cachedPrice;
   }
 
   /**
-   * التعامل مع خطأ جلب السعر
+   * الاشتراك في تحديثات السعر
    */
-  private handleFetchError(symbol: string, error: Error): never {
-    console.error(`خطأ في fetchPrice للرمز ${symbol}:`, error);
+  subscribe(subscription: PriceSubscription, providedPrice?: number) {
+    const { symbol } = subscription;
+    console.log(`اشتراك جديد للرمز ${symbol}`);
     
-    // التحقق مما إذا كان الخطأ متعلقًا بحد معدل الاستخدام
-    if (error.message.includes('rate limit')) {
-      this.rateLimit.setRateLimited(true);
-    }
-    
-    // إشعار المشتركين بالخطأ
-    this.subscriptions.notifyError(symbol, error);
-    
-    throw error;
+    this.subscriptions.subscribe(subscription);
+
+    // جلب السعر الأولي
+    this.fetchPrice(symbol, providedPrice)
+      .then(price => {
+        if (price !== null) {
+          console.log(`تم جلب السعر الأولي للرمز ${symbol}: ${price}`);
+          this.subscriptions.notifySubscribers(symbol, price);
+        } else {
+          console.error(`لم يتم العثور على سعر أولي للرمز ${symbol}`);
+          this.subscriptions.notifyError(symbol, new Error(`لم يتم العثور على سعر للرمز ${symbol}`));
+        }
+      })
+      .catch(error => {
+        console.error(`خطأ في جلب السعر الأولي للرمز ${symbol}:`, error);
+        this.subscriptions.notifyError(symbol, error as Error);
+      });
+      
+    // بدء التحديث الدوري إذا لم يكن قد بدأ بالفعل
+    this.startPolling();
   }
 
+  /**
+   * إلغاء الاشتراك من تحديثات السعر
+   */
+  unsubscribe(symbol: string, callback: (price: number) => void) {
+    console.log(`إلغاء اشتراك للرمز ${symbol}`);
+    this.subscriptions.unsubscribe(symbol, callback);
+    
+    // إيقاف التحديث الدوري إذا لم تعد هناك اشتراكات
+    if (this.subscriptions.getSubscribedSymbols().length === 0) {
+      this.stopPolling();
+    }
+  }
+  
+  /**
+   * بدء التحديث الدوري للأسعار
+   */
+  private startPolling() {
+    if (this.polling) return;
+    
+    console.log("بدء التحديث الدوري للأسعار من Metal Price API");
+    this.polling = true;
+    
+    this.intervalId = setInterval(async () => {
+      const symbols = this.subscriptions.getSubscribedSymbols();
+      for (const symbol of symbols) {
+        try {
+          const price = await this.fetchPrice(symbol);
+          if (price !== null) {
+            this.subscriptions.notifySubscribers(symbol, price);
+          } else {
+            this.subscriptions.notifyError(
+              symbol, 
+              new Error(`لم يتم العثور على سعر للرمز ${symbol}`)
+            );
+          }
+        } catch (error) {
+          console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
+          this.subscriptions.notifyError(symbol, error as Error);
+        }
+      }
+    }, this.pollingInterval);
+  }
+  
+  /**
+   * إيقاف التحديث الدوري للأسعار
+   */
+  private stopPolling() {
+    if (!this.polling) return;
+    
+    console.log("إيقاف التحديث الدوري للأسعار");
+    this.polling = false;
+    
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+    }
+  }
+  
   /**
    * التحقق من حالة حد معدل الاستخدام
    */

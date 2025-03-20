@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { priceUpdater } from "@/utils/priceUpdater";
+import { priceUpdater } from "@/utils/price/updater";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";

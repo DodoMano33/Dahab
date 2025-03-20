@@ -16,4 +16,6 @@ export interface SubscriptionManager {
   unsubscribe: (symbol: string, callback: (price: number) => void) => void;
   notifySubscribers: (symbol: string, price: number) => void;
   notifyError: (symbol: string, error: Error) => void;
+  getSubscribedSymbols: () => string[];
+  hasSubscribers: (symbol: string) => boolean;
 }

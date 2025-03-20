@@ -1,6 +1,5 @@
-
 import { useEffect, useRef, useState } from 'react';
-import { priceUpdater } from '@/utils/priceUpdater';
+import { priceUpdater } from '@/utils/price/updater';
 
 interface UseTradingViewMessagesProps {
   symbol: string;
@@ -23,12 +22,10 @@ export const useTradingViewMessages = ({
   useEffect(() => {
     isComponentMountedRef.current = true;
     
-    // بدلاً من الاستماع لرسائل TradingView، نستخدم Metal Price API مباشرة
     const fetchInitialPrice = async () => {
       if (!isComponentMountedRef.current) return;
       
       try {
-        // تحقق من وجود سعر مخزن مؤقتًا حديث (أقل من 60 ثانية)
         const now = Date.now();
         const cachedData = priceCache.current[symbol];
         const isCacheValid = cachedData && (now - cachedData.timestamp < 60000);
@@ -50,10 +47,8 @@ export const useTradingViewMessages = ({
           setCurrentPrice(price);
           onPriceUpdate?.(price);
           
-          // تخزين السعر مؤقتًا
           priceCache.current[symbol] = { price, timestamp: now };
           
-          // إطلاق حدث تحديث السعر للمكونات الأخرى
           window.dispatchEvent(new CustomEvent('metal-price-update', { 
             detail: { price, symbol }
           }));
@@ -67,12 +62,10 @@ export const useTradingViewMessages = ({
 
     fetchInitialPrice();
 
-    // الاشتراك في تحديثات Metal Price API
     const handlePriceUpdated = (price: number) => {
       if (!isComponentMountedRef.current) return;
       
       const now = Date.now();
-      // منع التحديثات المتكررة جدًا (الحد الأدنى 10 ثواني بين التحديثات)
       if (now - lastUpdateTimeRef.current < 10000) {
         return;
       }
@@ -81,7 +74,6 @@ export const useTradingViewMessages = ({
       setCurrentPrice(price);
       onPriceUpdate?.(price);
       
-      // تخزين السعر مؤقتًا
       priceCache.current[symbol] = { price, timestamp: now };
       lastUpdateTimeRef.current = now;
     };
@@ -90,19 +82,16 @@ export const useTradingViewMessages = ({
       console.error('خطأ في تحديث السعر من Metal Price API:', error);
     };
     
-    // الاشتراك في تحديثات السعر
     priceUpdater.subscribe({
       symbol,
       onUpdate: handlePriceUpdated,
       onError: handlePriceError
     });
     
-    // تحديث السعر كل 60 ثانية
     intervalIdRef.current = window.setInterval(() => {
       if (!isComponentMountedRef.current) return;
       
       const now = Date.now();
-      // تحقق من الوقت المنقضي منذ آخر تحديث
       if (now - lastUpdateTimeRef.current < 60000) {
         return;
       }

@@ -1,8 +1,7 @@
-
 import { useEffect } from 'react';
 import { usePriceEventHandlers } from './usePriceEventHandlers';
 import { UseCurrentPriceResult } from './types';
-import { priceUpdater } from '@/utils/priceUpdater';
+import { priceUpdater } from '@/utils/price/updater';
 
 export const useCurrentPrice = (symbol: string = 'XAUUSD'): UseCurrentPriceResult => {
   const {
