@@ -59,10 +59,46 @@ export const HistoryRow = ({
   // تشخيص بيانات الأهداف
   console.log(`Targets for analysis ${id}:`, analysis.targets);
   
-  // تشخيص بيانات أفضل نقطة دخول
-  console.log(`Best entry point for analysis ${id}:`, analysis.bestEntryPoint);
+  // معالجة بيانات أفضل نقطة دخول
+  const bestEntryPoint = (() => {
+    // التحقق من وجود كائن أفضل نقطة دخول
+    if (!analysis.bestEntryPoint) {
+      console.log(`No bestEntryPoint object for analysis ${id}`);
+      return { price: undefined, reason: undefined };
+    }
+    
+    // التحقق من وجود السعر والسبب
+    let price = undefined;
+    let reason = undefined;
+    
+    // إذا كان الكائن موجود، افحص إذا كان السعر والسبب موجودين
+    if (typeof analysis.bestEntryPoint === 'object') {
+      // التحقق من السعر وتحويله إلى رقم إذا كان موجود
+      if ('price' in analysis.bestEntryPoint && analysis.bestEntryPoint.price !== undefined) {
+        const priceValue = analysis.bestEntryPoint.price;
+        price = typeof priceValue === 'string' ? parseFloat(priceValue) : priceValue;
+        
+        // التحقق من صحة الرقم
+        if (isNaN(Number(price))) {
+          price = undefined;
+        }
+      }
+      
+      // التحقق من وجود السبب
+      if ('reason' in analysis.bestEntryPoint) {
+        reason = analysis.bestEntryPoint.reason;
+      }
+    } else if (typeof analysis.bestEntryPoint === 'number') {
+      // إذا كان السعر رقم مباشر
+      price = analysis.bestEntryPoint;
+    }
+    
+    console.log(`Fixed best entry point for analysis ${id}:`, { price, reason });
+    
+    return { price, reason };
+  })();
   
-  // التحقق من صحة نوع بيانات الأهداف وإصلاحها إذا لزم الأمر
+  // التحقق من صحة بيانات الأهداف وإصلاحها إذا لزم الأمر
   const fixedTargets = (() => {
     if (!analysis.targets) {
       console.log(`No targets found for analysis ${id}, creating default empty array`);
@@ -105,29 +141,6 @@ export const HistoryRow = ({
       return target;
     }).filter(Boolean);
   })();
-  
-  // التحقق من صحة بيانات أفضل نقطة دخول وإصلاحها إذا لزم الأمر
-  const bestEntryPoint = (() => {
-    if (!analysis.bestEntryPoint) {
-      console.log(`No best entry point found for analysis ${id}`);
-      return { price: undefined, reason: undefined };
-    }
-    
-    // تحقق من أن السعر موجود
-    const price = analysis.bestEntryPoint.price;
-    const reason = analysis.bestEntryPoint.reason;
-    
-    if (price === undefined || price === null || isNaN(price)) {
-      console.log(`Invalid best entry point price for analysis ${id}`);
-      return { price: undefined, reason };
-    }
-    
-    console.log(`Valid best entry point found for analysis ${id}: ${price}`);
-    return { price, reason };
-  })();
-  
-  console.log(`Fixed targets for analysis ${id}:`, fixedTargets);
-  console.log(`Fixed best entry point for analysis ${id}:`, bestEntryPoint);
 
   // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {

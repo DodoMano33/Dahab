@@ -10,7 +10,9 @@ export const BestEntryPoint = ({ price, reason }: BestEntryPointProps) => {
     return Number(num).toFixed(3);
   };
   
-  if (!price) return <div className="text-center text-muted-foreground">غير متوفر</div>;
+  if (price === undefined || price === null || isNaN(Number(price))) {
+    return <div className="text-center text-muted-foreground">غير متوفر</div>;
+  }
   
   return (
     <div className="space-y-1 text-center w-full">
