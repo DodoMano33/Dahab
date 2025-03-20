@@ -1,4 +1,3 @@
-
 import { fetchPrice } from './api';
 
 /**

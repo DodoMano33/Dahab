@@ -1,12 +1,8 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
-import { fetchPrice } from './priceService.ts';
 
 const SUPPORTED_SYMBOLS = ['XAUUSD', 'EURUSD', 'GBPUSD', 'USDJPY', 'BTCUSD'];
-
-// تعيين مفتاح API لحفظه
-Deno.env.set('METAL_PRICE_API_KEY', '42ed2fe2e7d1d8f688ddeb027219c766');
 
 Deno.serve(async (req) => {
   // التعامل مع طلبات CORS المسبقة
@@ -42,54 +38,13 @@ Deno.serve(async (req) => {
     }
     
     const symbolsToUpdate = requestData.symbols || SUPPORTED_SYMBOLS;
-    console.log('تحديث الأسعار للرموز:', symbolsToUpdate);
-    
-    const results = [];
-    const errors = [];
-    
-    // جلب الأسعار لكل رمز
-    for (const symbol of symbolsToUpdate) {
-      try {
-        console.log(`جلب السعر الحالي للرمز ${symbol}...`);
-        const price = await fetchPrice(symbol);
-        
-        if (price !== null) {
-          console.log(`تم جلب السعر للرمز ${symbol}: ${price}`);
-          
-          // تحديث أو إدراج السعر في قاعدة البيانات
-          const { data, error } = await supabase
-            .from('real_time_prices')
-            .upsert({
-              symbol,
-              price,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'symbol'
-            });
-          
-          if (error) {
-            console.error(`خطأ في تحديث السعر للرمز ${symbol}:`, error);
-            errors.push({ symbol, error: error.message });
-          } else {
-            console.log(`تم تحديث السعر للرمز ${symbol} بنجاح`);
-            results.push({ symbol, price });
-          }
-        } else {
-          console.error(`فشل في جلب السعر للرمز ${symbol}`);
-          errors.push({ symbol, error: 'فشل في جلب السعر' });
-        }
-      } catch (error) {
-        console.error(`خطأ غير متوقع في تحديث السعر للرمز ${symbol}:`, error);
-        errors.push({ symbol, error: error.message });
-      }
-    }
+    console.log('تم حذف وظائف جلب الأسعار - بحاجة لتنفيذ مصدر السعر الجديد للرموز:', symbolsToUpdate);
     
     return new Response(
       JSON.stringify({
-        message: 'تم تحديث الأسعار الحقيقية',
+        message: 'تم حذف وظائف جلب الأسعار وبحاجة لتنفيذ مصدر السعر الجديد',
         updated_at: new Date().toISOString(),
-        results,
-        errors: errors.length > 0 ? errors : undefined
+        symbols: symbolsToUpdate
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

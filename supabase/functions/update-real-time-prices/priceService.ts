@@ -1,4 +1,3 @@
-
 import { fetchPriceFromMetalPriceApi } from './metalPriceApi.ts';
 
 /**

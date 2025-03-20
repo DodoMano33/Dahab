@@ -1,6 +1,6 @@
 
 /**
- * Gets the current price from Metal Price API
+ * جلب السعر الحالي - تم حذف المصدر السابق
  */
 export function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
   return new Promise(async (resolve) => {
@@ -9,26 +9,24 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
       const providedPrice = requestData?.currentPrice || null;
       
       if (providedPrice !== null && !isNaN(providedPrice)) {
-        console.log('Using provided price from request:', providedPrice);
+        console.log('استخدام السعر المقدم من الطلب:', providedPrice);
         resolve(providedPrice);
         return;
       }
       
-      // إذا لم يكن السعر متوفرًا في الطلب، نقوم بإرجاع null
-      console.log('No valid price in request. Returning null');
+      console.log('تم حذف مصدر السعر السابق، يجب استخدام المصدر الجديد');
       resolve(null);
     } catch (err) {
-      console.error('Exception in getEffectivePrice:', err);
+      console.error('خطأ في getEffectivePrice:', err);
       resolve(null);
     }
   });
 }
 
 /**
- * Gets the last stored price for a symbol - وظيفة الدعم فقط
+ * جلب آخر سعر مخزن للرمز - تم حذف المصدر السابق
  */
 export async function getLastStoredPrice(supabase: any, symbol: string): Promise<number | null> {
-  // نقوم بإرجاع null لأننا نستخدم Metal Price API فقط
-  console.log('getLastStoredPrice called but bypassed as we use Metal Price API only');
+  console.log('تم حذف وظيفة جلب آخر سعر مخزن للرمز وتحتاج إلى تنفيذ المصدر الجديد');
   return null;
 }

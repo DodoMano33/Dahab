@@ -2,7 +2,6 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { priceUpdater } from "@/utils/price/updater";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
@@ -22,7 +21,6 @@ export const PriceInput = ({
   const [useAutoPrice, setUseAutoPrice] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
   
   // محاولة تحديث السعر
   const updatePrice = async () => {
@@ -30,53 +28,26 @@ export const PriceInput = ({
     
     setIsLoading(true);
     setErrorMessage(null);
-    setRetryCount(prev => prev + 1);
     
     try {
-      // محاولة الحصول على السعر من Metal Price API
-      const symbol = 'XAUUSD'; // الرمز الافتراضي
-      const price = await priceUpdater.fetchPrice(symbol);
-      
-      if (price !== null) {
-        onChange(price.toString());
-        setErrorMessage(null);
-        toast.success("تم جلب السعر المباشر بنجاح");
-      } else {
-        // السعر غير متاح من Metal Price API
-        setErrorMessage("لم نتمكن من جلب السعر المباشر. يمكنك إدخال السعر يدويًا.");
-        toast.error("فشل في جلب السعر المباشر");
-      }
+      // تم حذف وظيفة جلب السعر - يجب استبدالها بمصدر السعر الجديد
+      toast.warning("تم حذف مصدر السعر السابق، يجب تنفيذ المصدر الجديد");
+      setErrorMessage("تم حذف مصدر السعر السابق، يرجى إدخال السعر يدويًا حتى يتم تنفيذ المصدر الجديد");
     } catch (error) {
       console.error("خطأ في جلب السعر:", error);
-      setErrorMessage("حدث خطأ أثناء جلب السعر المباشر.");
-      toast.error("خطأ في جلب السعر المباشر");
+      setErrorMessage("تم حذف مصدر السعر السابق، يرجى إدخال السعر يدويًا");
+      toast.error("مصدر السعر غير متوفر حاليًا");
     } finally {
       setIsLoading(false);
     }
   };
   
-  // استخدام السعر من Metal Price API تلقائيًا
+  // استخدام السعر تلقائيًا
   useEffect(() => {
     if (useAutoPrice) {
       updatePrice();
     }
   }, [useAutoPrice]);
-
-  // استمع للتحديثات المباشرة من Metal Price API
-  useEffect(() => {
-    const handleMetalPriceUpdate = (event: CustomEvent) => {
-      if (useAutoPrice && event.detail && event.detail.price) {
-        onChange(event.detail.price.toString());
-        setErrorMessage(null);
-        console.log("تم تحديث السعر من حدث metal-price-update:", event.detail.price);
-      }
-    };
-
-    window.addEventListener('metal-price-update', handleMetalPriceUpdate as EventListener);
-    return () => {
-      window.removeEventListener('metal-price-update', handleMetalPriceUpdate as EventListener);
-    };
-  }, [useAutoPrice, onChange]);
 
   // تفعيل أو تعطيل وضع السعر التلقائي
   const toggleAutoPriceMode = () => {
@@ -141,7 +112,7 @@ export const PriceInput = ({
       
       {useAutoPrice && isLoading && (
         <p className="text-sm text-yellow-500 mt-1">
-          جارِ جلب السعر المباشر من Metal Price API...
+          جارِ محاولة جلب السعر...
         </p>
       )}
       
@@ -149,25 +120,19 @@ export const PriceInput = ({
         <div className="flex flex-col mt-1">
           <p className="text-sm text-red-500">{errorMessage}</p>
           <button 
-            onClick={updatePrice} 
+            onClick={() => setUseAutoPrice(false)}
             className="text-xs text-blue-500 hover:underline mt-1"
           >
-            إعادة المحاولة
+            التحويل إلى الإدخال اليدوي
           </button>
         </div>
       )}
       
-      {useAutoPrice && !isLoading && !errorMessage && value && (
+      {!useAutoPrice && value && (
         <p className="text-sm text-green-500 mt-1">
-          السعر المباشر من Metal Price API: {displayPrice}
-        </p>
-      )}
-      
-      {retryCount > 1 && errorMessage && (
-        <p className="text-xs text-gray-500 mt-1">
-          عدد محاولات التحديث: {retryCount}
+          السعر المدخل يدوياً: {displayPrice}
         </p>
       )}
     </div>
   );
-};
+}
