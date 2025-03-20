@@ -1,38 +1,25 @@
 
-import { FOREX_SYMBOLS, CRYPTO_SYMBOLS, PRECIOUS_METALS } from "../config";
-
-// أنواع الرموز
-export type SymbolType = 'forex' | 'crypto' | 'precious_metal' | 'unknown';
-
-// تكوين المعادن الثمينة
-export type PreciousMetalConfig = {
-  base: string;
-  target: string;
-};
-
-// تكوين العملات الرقمية
-export type CryptoConfig = {
-  base: string;
-  target: string;
-};
-
-// تكوين الفوركس
-export type ForexConfig = {
-  from: string;
-  to: string;
-};
-
-// استجابة السعر
 export interface PriceResponse {
   success: boolean;
   price: number | null;
-  error?: string;
-  timestamp?: number;
-  message?: string; // إضافة حقل الرسالة
+  message: string;
 }
 
-// معلومات الذاكرة المؤقتة
-export interface CacheInfo {
+export interface PriceData {
+  symbol: string;
   price: number;
   timestamp: number;
+}
+
+export interface PriceUpdateEvent extends CustomEvent {
+  detail: {
+    price: number;
+    symbol: string;
+  };
+}
+
+export interface RateLimitResponse {
+  isLimited: boolean;
+  resetTime?: number;
+  message?: string;
 }

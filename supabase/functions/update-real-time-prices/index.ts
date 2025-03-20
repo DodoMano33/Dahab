@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
     
     // جلب وتخزين سعر الذهب فقط
     try {
+      console.log('محاولة جلب سعر الذهب...');
       // جلب السعر الحالي للذهب
       const price = await fetchPrice('XAUUSD');
       
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
         if (error) {
           console.error(`خطأ في تخزين سعر الذهب:`, error);
           return new Response(
-            JSON.stringify({ error: 'خطأ في تخزين سعر الذهب' }),
+            JSON.stringify({ error: 'خطأ في تخزين سعر الذهب', details: error }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         } else {
@@ -73,14 +74,14 @@ Deno.serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`خطأ في معالجة سعر الذهب:`, error);
       return new Response(
         JSON.stringify({ error: error.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('خطأ غير معالج في update-real-time-prices:', error);
     return new Response(
       JSON.stringify({ error: error.message }),

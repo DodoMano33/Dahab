@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { fetchPreciousMetalPrice } from "@/utils/price/api/fetchers";
 
 interface PriceInputProps {
   value: string;
@@ -31,14 +32,35 @@ export const PriceInput = ({
     setErrorMessage(null);
     
     try {
-      // استدعاء Edge Function لجلب السعر من Metal Price API
+      console.log("بدء جلب سعر الذهب...");
+      
+      // أولاً: محاولة جلب السعر مباشرة من Metal Price API
+      const price = await fetchPreciousMetalPrice('XAUUSD');
+      
+      if (price) {
+        console.log(`تم جلب سعر الذهب من Metal Price API: ${price}`);
+        const priceStr = price.toString();
+        onChange(priceStr);
+        
+        // إرسال حدث لتحديث السعر في جميع أنحاء التطبيق
+        window.dispatchEvent(new CustomEvent('metal-price-update', { 
+          detail: { price, symbol: 'XAUUSD' } 
+        }));
+        
+        toast.success(`تم تحديث السعر: ${price}`);
+        setIsLoading(false);
+        return;
+      }
+      
+      // ثانياً: إذا فشلت المحاولة المباشرة، استخدم Edge Function
+      console.log("محاولة استخدام Edge Function لجلب السعر...");
       const { data, error } = await supabase.functions.invoke('update-real-time-prices', {
         body: { symbols: ['XAUUSD'] }
       });
 
       if (error) {
         console.error("خطأ في استدعاء وظيفة تحديث السعر:", error);
-        throw new Error("فشل في تحديث السعر");
+        throw new Error("فشل في تحديث السعر عبر وظيفة Edge");
       }
 
       // استرجاع السعر المحدث من قاعدة البيانات
@@ -65,25 +87,36 @@ export const PriceInput = ({
         const updateTime = new Date(priceData.updated_at).toLocaleTimeString();
         toast.success(`تم تحديث السعر: ${priceData.price} (${updateTime})`);
       } else {
-        throw new Error("لا يوجد سعر متاح");
+        throw new Error("لا يوجد سعر متاح في قاعدة البيانات");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("خطأ في جلب السعر:", error);
       setErrorMessage("لم نتمكن من جلب السعر الحالي. يرجى المحاولة مرة أخرى أو إدخال السعر يدويًا");
-      toast.error("فشل في تحديث السعر");
+      toast.error("فشل في تحديث السعر: " + (error.message || "خطأ غير معروف"));
     } finally {
       setIsLoading(false);
     }
   };
   
-  // استدعاء updatePrice مباشرة عند تحميل المكون
+  // استدعاء updatePrice مباشرة عند تحميل المكون وكل 30 ثانية
   useEffect(() => {
     // تحقق إذا كان السعر فارغًا وكان وضع السعر التلقائي مفعل
-    if (useAutoPrice && (!value || value === "")) {
+    if (useAutoPrice) {
       console.log("جاري جلب السعر الأولي عند تحميل المكون...");
       updatePrice();
+      
+      // محاولة تحديث السعر كل 30 ثانية
+      const interval = setInterval(() => {
+        if (useAutoPrice) {
+          console.log("محاولة تحديث السعر دورياً...");
+          updatePrice();
+        }
+      }, 30000);
+      
+      // تنظيف الفاصل الزمني عند إزالة المكون
+      return () => clearInterval(interval);
     }
-  }, []);
+  }, [useAutoPrice]);
   
   // تفعيل أو تعطيل وضع السعر التلقائي
   const toggleAutoPriceMode = () => {

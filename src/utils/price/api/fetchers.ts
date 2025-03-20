@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { rateLimit } from "./rateLimit";
 import { getStoredPrice } from "./helpers";
 import { fetchPriceFromMetalPriceApi } from "./metalPriceApi";
+import { PriceResponse } from "./types";
 
 /**
  * جلب سعر معدن ثمين
@@ -36,11 +37,11 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
       return null;
     }
     
-    // استخدام Metal Price API
-    const metalPriceResult = await fetchPriceFromMetalPriceApi(metalSymbol);
+    // استخدام Metal Price API مباشرة
+    const response: PriceResponse = await fetchPriceFromMetalPriceApi(metalSymbol);
     
-    if (metalPriceResult.success && metalPriceResult.price !== null) {
-      console.log(`تم جلب سعر الذهب من Metal Price API: ${metalPriceResult.price}`);
+    if (response.success && response.price !== null) {
+      console.log(`تم جلب سعر الذهب من Metal Price API: ${response.price}`);
       
       // حفظ السعر في قاعدة البيانات
       try {
@@ -48,7 +49,7 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
           .from('real_time_prices')
           .upsert({ 
             symbol: 'XAUUSD', 
-            price: metalPriceResult.price,
+            price: response.price,
             updated_at: new Date().toISOString() 
           }, { 
             onConflict: 'symbol' 
@@ -58,12 +59,17 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
           console.error('خطأ في حفظ سعر الذهب في قاعدة البيانات:', error);
         } else {
           console.log('تم حفظ سعر الذهب في قاعدة البيانات');
+          
+          // إرسال حدث تحديث السعر
+          window.dispatchEvent(new CustomEvent('metal-price-update', {
+            detail: { price: response.price, symbol: 'XAUUSD' }
+          }));
         }
       } catch (saveError) {
         console.error('خطأ غير متوقع في حفظ سعر الذهب:', saveError);
       }
       
-      return metalPriceResult.price;
+      return response.price;
     }
     
     // إذا لم ننجح في الحصول على السعر من Metal Price API، نستخدم السعر المخزن

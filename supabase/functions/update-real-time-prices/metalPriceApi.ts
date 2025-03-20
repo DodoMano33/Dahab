@@ -28,13 +28,20 @@ export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<Price
     
     console.log(`الاتصال بـ Metal Price API: ${url}`);
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      cache: 'no-cache'
+    });
     
     if (!response.ok) {
       throw new Error(`فشل الاتصال بـ Metal Price API: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log("بيانات Metal Price API المستلمة:", data);
     
     if (data.success && data.rates && data.rates.XAU) {
       // Metal Price API يعطي سعر XAU بالدولار، لكننا نحتاج USD/XAU للتوافق
@@ -48,14 +55,14 @@ export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<Price
         message: 'تم استلام السعر بنجاح' 
       };
     } else {
-      console.error('لم يتم العثور على بيانات سعر صالحة في استجابة API');
+      console.error('لم يتم العثور على بيانات سعر صالحة في استجابة API:', data);
       return { 
         success: false, 
         price: null,
         message: 'بيانات السعر غير صالحة في استجابة API' 
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(`خطأ في جلب سعر المعادن من Metal Price API:`, error);
     return { 
       success: false, 

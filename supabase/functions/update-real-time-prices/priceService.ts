@@ -12,17 +12,19 @@ export async function fetchPrice(symbol: string): Promise<number | null> {
       symbol = 'XAUUSD';
     }
     
+    console.log("محاولة جلب سعر الذهب من Metal Price API...");
+    
     // استخدام Metal Price API لجلب سعر الذهب (XAU)
     const result = await fetchPriceFromMetalPriceApi('XAU');
     
     if (result.success && result.price !== null) {
-      console.log(`تم جلب سعر الذهب: ${result.price}`);
+      console.log(`تم جلب سعر الذهب بنجاح: ${result.price}`);
       return result.price;
     }
     
     console.error(`فشل في جلب سعر الذهب من Metal Price API:`, result.message);
     return null;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`خطأ في جلب سعر الذهب:`, error);
     return null;
   }
