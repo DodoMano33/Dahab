@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { clearSupabaseCache } from "@/utils/supabaseCache";
+import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 
 export function useHistoryData() {
   const { user } = useAuth();
@@ -14,10 +14,16 @@ export function useHistoryData() {
   // فحص البيانات عند تحميل المكون أو تغير المستخدم
   useEffect(() => {
     if (user) {
-      // Clear schema cache before fetching data
-      clearSupabaseCache().then(() => {
+      // مسح ذاكرة التخزين المؤقت لمخطط البيانات قبل جلب البيانات
+      const initFetch = async () => {
+        // محاولة مسح التخزين المؤقت لمخطط قاعدة البيانات 
+        await clearSupabaseCache();
+        await clearSearchHistoryCache();
+        // ثم جلب البيانات
         fetchSearchHistory();
-      });
+      };
+      
+      initFetch();
       
       // إعداد قناة الاستماع للتغييرات في الوقت الفعلي
       const channel = supabase
@@ -55,7 +61,10 @@ export function useHistoryData() {
       setIsRefreshing(true);
       console.log("جلب سجل البحث...");
       
-      // Use an explicit column selection to avoid schema cache issues
+      // محاولة مسح التخزين المؤقت قبل الاستعلام
+      await clearSearchHistoryCache();
+      
+      // استخدام تحديد صريح للأعمدة لتجنب مشاكل التخزين المؤقت لمخطط البيانات
       const { data, error } = await supabase
         .from('search_history')
         .select(`
@@ -77,6 +86,18 @@ export function useHistoryData() {
 
       if (error) {
         console.error("خطأ في جلب سجل البحث:", error);
+        
+        // محاولة مسح التخزين المؤقت وإعادة المحاولة إذا كان الخطأ متعلقًا بمخطط البيانات
+        if (error.message.includes('schema cache') || error.message.includes('analysis_duration_hours')) {
+          console.log("محاولة إصلاح مشكلة التخزين المؤقت وإعادة المحاولة...");
+          
+          await clearSupabaseCache();
+          
+          // انتظار لحظة ثم إعادة المحاولة
+          setTimeout(() => fetchSearchHistory(), 500);
+          return;
+        }
+        
         throw error;
       }
 

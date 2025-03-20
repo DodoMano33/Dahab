@@ -48,8 +48,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Clear Supabase schema cache on app initialization
-    clearSupabaseCache();
+    // مسح التخزين المؤقت لمخطط Supabase عند بدء التطبيق
+    async function initializeCache() {
+      console.log("Initializing app: clearing Supabase schema cache");
+      await clearSupabaseCache();
+      
+      // محاولة ثانية بعد ثانية واحدة للتأكد
+      setTimeout(async () => {
+        await clearSupabaseCache();
+      }, 1000);
+    }
+    
+    initializeCache();
   }, []);
 
   return (
