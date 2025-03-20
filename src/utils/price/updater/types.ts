@@ -9,6 +9,7 @@ export interface RetryOptions {
 export interface PriceUpdaterConfig {
   rateLimitResetTime: number;
   cacheLifetime: number;
+  pollingInterval: number;
 }
 
 export interface SubscriptionManager {
