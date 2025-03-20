@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { AnalysisStats } from "./types";
 
+// Define interface for timeframe data
+interface TimeframeData {
+  success: number;
+  fail: number;
+}
+
 export function DashboardStats() {
   const { stats, isLoading: statsLoading, refresh: refreshStats } = useBacktestStats();
   const { results, isLoading: resultsLoading, refresh: refreshResults } = useBestEntryPointResults();
@@ -41,18 +47,22 @@ export function DashboardStats() {
       : 0
   }));
 
-  const timeframeData = results.reduce((acc, result) => {
-    const timeframe = result.timeframe || 'unknown';
+  // Define result with proper type casting
+  const timeframeData = results.reduce((acc: Record<string, TimeframeData>, result) => {
+    const timeframe = result.timeframe ? result.timeframe.toString() : 'unknown';
     if (!acc[timeframe]) {
       acc[timeframe] = { success: 0, fail: 0 };
     }
-    if (result.is_successful) {
+    
+    // Safely check and update success/fail counts
+    if (result.is_successful === true) {
       acc[timeframe].success += 1;
-    } else {
+    } else if (result.is_successful === false) {
       acc[timeframe].fail += 1;
     }
+    
     return acc;
-  }, {} as Record<string, { success: number, fail: number }>);
+  }, {} as Record<string, TimeframeData>);
 
   const timeframeChartData = Object.entries(timeframeData).map(([timeframe, data]) => ({
     name: timeframe,
