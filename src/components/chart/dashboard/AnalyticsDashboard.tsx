@@ -33,6 +33,20 @@ export function AnalyticsDashboard() {
     
   const totalAnalyses = stats.reduce((acc, stat) => acc + stat.success + stat.fail, 0);
 
+  // Prepare data for charts
+  const analysisData = stats.map(stat => ({
+    name: stat.display_name || stat.type,
+    success: stat.success,
+    fail: stat.fail,
+    total: stat.success + stat.fail,
+    rate: (stat.success + stat.fail) > 0 
+      ? Math.round((stat.success / (stat.success + stat.fail)) * 100) 
+      : 0
+  }));
+
+  // Using the same data for timeframes as we don't have specific timeframe data
+  const timeframeData = analysisData;
+
   if (!user) {
     return (
       <Card className="animate-fade-in">
@@ -116,15 +130,25 @@ export function AnalyticsDashboard() {
               </Card>
             </div>
             
-            <SuccessRateChart stats={stats} />
+            <SuccessRateChart 
+              successRate={overallSuccessRate}
+              totalTests={totalAnalyses}
+              isLoading={isLoading}
+            />
           </TabsContent>
           
           <TabsContent value="types">
-            <AnalysisStatsChart stats={stats} />
+            <AnalysisStatsChart 
+              data={analysisData}
+              isLoading={isLoading}
+            />
           </TabsContent>
           
           <TabsContent value="timeframes">
-            <TimeframePerfChart stats={stats} />
+            <TimeframePerfChart 
+              data={timeframeData}
+              isLoading={isLoading}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
