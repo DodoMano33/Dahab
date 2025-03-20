@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { AutoAnalysisButton } from "./AutoAnalysisButton";
 import { useAutoAnalysis } from "./hooks/useAutoAnalysis";
 import { toast } from "sonner";
 import { SearchHistoryItem } from "@/types/analysis";
+import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 
 interface AutoAnalysisProps {
   selectedTimeframes: string[];
@@ -30,7 +32,18 @@ export const AutoAnalysis = ({
     if (isAnalyzing) {
       stopAutoAnalysis();
       setIsAnalyzing(false);
+      toast.info("تم إيقاف التحليل التلقائي");
       return;
+    }
+
+    // محاولة مسح التخزين المؤقت لمخطط قاعدة البيانات
+    try {
+      await clearSupabaseCache();
+      await clearSearchHistoryCache();
+      console.log("تم مسح ذاكرة التخزين المؤقت قبل بدء التحليل التلقائي");
+    } catch (error) {
+      console.error("خطأ أثناء مسح ذاكرة التخزين المؤقت:", error);
+      // نستمر رغم الخطأ
     }
 
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
@@ -57,9 +70,23 @@ export const AutoAnalysis = ({
       return;
     }
 
+    if (selectedTimeframes.length === 0) {
+      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
+      return;
+    }
+
+    if (selectedAnalysisTypes.length === 0) {
+      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      return;
+    }
+
     console.log("Starting auto analysis with symbol:", symbol, "and duration:", durationHours);
+    console.log("Selected timeframes:", selectedTimeframes);
+    console.log("Selected analysis types:", selectedAnalysisTypes);
 
     setIsAnalyzing(true);
+    toast.success("جاري بدء التحليل التلقائي...");
+    
     try {
       await startAutoAnalysis({
         timeframes: selectedTimeframes,
@@ -78,7 +105,7 @@ export const AutoAnalysis = ({
       });
     } catch (error) {
       console.error("Error in auto analysis:", error);
-      toast.error("حدث خطأ أثناء التحليل التلقائي");
+      toast.error("حدث خطأ أثناء التحليل التلقائي: " + (error instanceof Error ? error.message : "خطأ غير معروف"));
       setIsAnalyzing(false);
     }
   };

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
 import { supabase } from "@/lib/supabase";
 import { HistoryButton } from "./components/HistoryButton";
+import { toast } from "sonner";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
@@ -24,11 +25,12 @@ export const AutoAnalysisButton = ({
   const [isEntryPointBackTestOpen, setIsEntryPointBackTestOpen] = useState(false);
   const [backtestCount, setBacktestCount] = useState(0);
   const [searchHistoryCount, setSearchHistoryCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        // Get backtest results count
+        // محاولة الحصول على عدد نتائج الاختبار التراجعي
         const { count: backtestCount, error: backtestError } = await supabase
           .from('backtest_results')
           .select('*', { count: 'exact', head: true });
@@ -38,7 +40,7 @@ export const AutoAnalysisButton = ({
           return;
         }
 
-        // Get search history count
+        // محاولة الحصول على عدد عناصر سجل البحث
         const { count: historyCount, error: historyError } = await supabase
           .from('search_history')
           .select('*', { count: 'exact', head: true });
@@ -51,7 +53,7 @@ export const AutoAnalysisButton = ({
         setBacktestCount(backtestCount || 0);
         setSearchHistoryCount(historyCount || 0);
 
-        // Set up realtime subscription for counts
+        // إعداد اشتراك في الوقت الحقيقي للتغييرات في العدد
         const channel = supabase
           .channel('counts_changes')
           .on(
@@ -77,16 +79,33 @@ export const AutoAnalysisButton = ({
     fetchCounts();
   }, []);
 
+  const handleMainButtonClick = async () => {
+    try {
+      setIsLoading(true);
+      await onClick();
+    } catch (error) {
+      console.error("Error during button click:", error);
+      toast.error("حدث خطأ أثناء تنفيذ العملية");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <Button 
-        onClick={onClick}
-        disabled={disabled}
+        onClick={handleMainButtonClick}
+        disabled={disabled || isLoading}
         className={`${
           isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-        } text-white px-8 py-2 text-lg flex items-center gap-2 h-17 max-w-[600px] w-full`}
+        } text-white px-8 py-2 text-lg flex items-center gap-2 h-17 max-w-[600px] w-full transition-colors`}
       >
-        {isAnalyzing ? (
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+            جاري المعالجة...
+          </span>
+        ) : isAnalyzing ? (
           <>
             <Square className="w-5 h-5" />
             إيقاف التفعيل
