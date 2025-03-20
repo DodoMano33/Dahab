@@ -17,6 +17,10 @@ export const clearSupabaseCache = async (): Promise<void> => {
       .then(response => {
         console.log("Schema refresh query executed:", response);
         return response;
+      })
+      .then(null, error => {
+        console.error("Error during schema refresh query:", error);
+        // We still continue despite errors
       });
     
     // Wait a brief moment to ensure the cache is cleared
@@ -44,13 +48,20 @@ export const clearSearchHistoryCache = async (): Promise<void> => {
       .then(response => {
         console.log("Search history schema refresh query executed:", response);
         return response;
+      })
+      .then(null, error => {
+        console.error("Error during search history refresh:", error);
       });
     
-    // Make a HEAD request to ensure the schema is up to date
+    // Make a basic query to ensure the schema is up to date (replacing .head())
     await supabase
       .from('search_history')
-      .select('*')
-      .head();
+      .select('count')
+      .limit(0)
+      .then(response => {
+        console.log("Search history count query executed:", response);
+        return response;
+      });
     
     console.log("Search history cache cleared successfully");
   } catch (error) {
