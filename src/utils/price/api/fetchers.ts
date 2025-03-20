@@ -24,10 +24,10 @@ export const getCachedPrice = (symbol: string): number | null => {
 export async function fetchForexPrice(symbol: string): Promise<number | null> {
   try {
     // تحليل زوج العملات
-    const { base, target } = parseCurrencyPair(symbol);
+    const { base } = parseCurrencyPair(symbol);
     
     // استخدام Metal Price API لجلب السعر
-    const result = await fetchPriceFromMetalPriceApi(base, target);
+    const result = await fetchPriceFromMetalPriceApi(base);
     
     if (result.success && result.price !== null) {
       // تخزين السعر مؤقتًا
@@ -53,7 +53,7 @@ export async function fetchCryptoPrice(symbol: string): Promise<number | null> {
     const base = cleanSymbol.includes('USD') ? cleanSymbol.replace('USD', '') : cleanSymbol;
     
     // استخدام Metal Price API لجلب السعر
-    const result = await fetchPriceFromMetalPriceApi(base, 'USD');
+    const result = await fetchPriceFromMetalPriceApi(base);
     
     if (result.success && result.price !== null) {
       // تخزين السعر مؤقتًا
@@ -78,7 +78,7 @@ export async function fetchPreciousMetalPrice(symbol: string): Promise<number | 
     const metalSymbol = mapSymbolToMetalPriceSymbol(symbol);
     
     // استخدام Metal Price API لجلب السعر
-    const result = await fetchPriceFromMetalPriceApi(metalSymbol, 'USD');
+    const result = await fetchPriceFromMetalPriceApi(metalSymbol);
     
     if (result.success && result.price !== null) {
       // تخزين السعر مؤقتًا

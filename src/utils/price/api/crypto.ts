@@ -13,22 +13,19 @@ export const fetchCryptoPrice = async (symbol: string): Promise<number | null> =
     const upperSymbol = symbol.toUpperCase();
     const cryptoConfig = CRYPTO_SYMBOLS[upperSymbol as keyof typeof CRYPTO_SYMBOLS];
     
-    let base: string;
-    let target: string;
+    let symbolToFetch: string;
     
     if (cryptoConfig) {
-      base = cryptoConfig.base;
-      target = cryptoConfig.target;
+      symbolToFetch = cryptoConfig.base;
     } else {
       // استخدام الرمز كما هو مع الهدف الافتراضي USD
       const parsedPair = parseCurrencyPair(upperSymbol);
-      base = parsedPair.base;
-      target = parsedPair.target;
+      symbolToFetch = parsedPair.base;
     }
     
-    console.log(`جلب سعر العملة الرقمية: ${base}/${target}`);
+    console.log(`جلب سعر العملة الرقمية: ${symbolToFetch}`);
     
-    const result = await fetchPriceFromMetalPriceApi(base, target);
+    const result = await fetchPriceFromMetalPriceApi(symbolToFetch);
     
     if (result.success && result.price !== null) {
       return result.price;

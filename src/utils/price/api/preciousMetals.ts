@@ -12,21 +12,19 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
     const upperSymbol = symbol.toUpperCase();
     const metalConfig = PRECIOUS_METALS[upperSymbol as keyof typeof PRECIOUS_METALS];
     
-    let base = 'XAU'; // الافتراضي للذهب
-    let target = 'USD';
+    let symbolToFetch = 'XAU'; // الافتراضي للذهب
     
     if (metalConfig) {
-      base = metalConfig.base;
-      target = metalConfig.target;
+      symbolToFetch = metalConfig.base;
     } else if (upperSymbol === 'XAUUSD' || upperSymbol === 'GOLD') {
-      base = 'XAU';
+      symbolToFetch = 'XAU';
     } else if (upperSymbol === 'XAGUSD' || upperSymbol === 'SILVER') {
-      base = 'XAG';
+      symbolToFetch = 'XAG';
     }
     
-    console.log(`جلب سعر المعدن الثمين: ${base}/${target}`);
+    console.log(`جلب سعر المعدن الثمين: ${symbolToFetch}`);
     
-    const result = await fetchPriceFromMetalPriceApi(base, target);
+    const result = await fetchPriceFromMetalPriceApi(symbolToFetch);
     
     if (result.success && result.price !== null) {
       return result.price;

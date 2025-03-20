@@ -13,22 +13,19 @@ export const fetchForexPrice = async (symbol: string): Promise<number | null> =>
     const upperSymbol = symbol.toUpperCase();
     const forexConfig = FOREX_SYMBOLS[upperSymbol as keyof typeof FOREX_SYMBOLS];
     
-    let from: string;
-    let to: string;
+    let symbolToFetch: string;
     
     if (forexConfig) {
-      from = forexConfig.from;
-      to = forexConfig.to;
+      symbolToFetch = forexConfig.from;
     } else {
       // تقسيم زوج الفوركس إلى عملتين أساسية ومقابلة
       const parsedPair = parseCurrencyPair(upperSymbol);
-      from = parsedPair.base;
-      to = parsedPair.target;
+      symbolToFetch = parsedPair.base;
     }
     
-    console.log(`جلب سعر الفوركس: ${from}/${to}`);
+    console.log(`جلب سعر الفوركس: ${symbolToFetch}`);
     
-    const result = await fetchPriceFromMetalPriceApi(from, to);
+    const result = await fetchPriceFromMetalPriceApi(symbolToFetch);
     
     if (result.success && result.price !== null) {
       return result.price;
