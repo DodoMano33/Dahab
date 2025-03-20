@@ -1,8 +1,4 @@
 
-// import { fetchPrice } from '../../../utils/price/api/index.ts';
-// Edge functions cannot import from outside their directory
-// We need to implement price fetching directly here
-
 /**
  * جلب السعر الحالي
  */
@@ -18,23 +14,23 @@ export async function getEffectivePrice(requestData: any, supabase: any): Promis
         return;
       }
       
-      // جلب السعر للرمز المحدد
-      const symbol = requestData?.symbol || 'XAUUSD';
+      // جلب فقط سعر الذهب (XAUUSD)
+      const symbol = 'XAUUSD'; // استخدام XAUUSD دائمًا بغض النظر عن الطلب
       
       // استخدام السعر المخزن في قاعدة البيانات
       try {
         const price = await getLastStoredPrice(supabase, symbol);
         if (price !== null) {
-          console.log(`استخدام السعر المخزن للرمز ${symbol}: ${price}`);
+          console.log(`استخدام سعر الذهب المخزن: ${price}`);
           resolve(price);
           return;
         }
       } catch (err) {
-        console.error('خطأ في جلب السعر المخزن:', err);
+        console.error('خطأ في جلب سعر الذهب المخزن:', err);
       }
 
       // استخدام سعر افتراضي إذا فشلت كل المحاولات
-      console.log('لم يتم العثور على سعر، استخدام سعر افتراضي');
+      console.log('لم يتم العثور على سعر الذهب، استخدام سعر افتراضي');
       resolve(null);
     } catch (err) {
       console.error('خطأ في getEffectivePrice:', err);
@@ -44,25 +40,26 @@ export async function getEffectivePrice(requestData: any, supabase: any): Promis
 }
 
 /**
- * جلب آخر سعر مخزن للرمز
+ * جلب آخر سعر مخزن للذهب
  */
 export async function getLastStoredPrice(supabase: any, symbol: string): Promise<number | null> {
   try {
+    // استخدام XAUUSD دائمًا
     const { data, error } = await supabase
       .from('real_time_prices')
       .select('price, updated_at')
-      .eq('symbol', symbol)
+      .eq('symbol', 'XAUUSD')
       .single();
     
     if (error || !data) {
-      console.log(`لم يتم العثور على سعر مخزن للرمز ${symbol}`);
+      console.log('لم يتم العثور على سعر الذهب المخزن');
       return null;
     }
     
-    console.log(`تم العثور على سعر مخزن للرمز ${symbol}: ${data.price}`);
+    console.log(`تم العثور على سعر الذهب المخزن: ${data.price}`);
     return data.price;
   } catch (error) {
-    console.error(`خطأ في جلب السعر المخزن للرمز ${symbol}:`, error);
+    console.error('خطأ في جلب سعر الذهب المخزن:', error);
     return null;
   }
 }

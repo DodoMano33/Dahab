@@ -6,36 +6,36 @@ export const useCurrentPrice = () => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [priceUpdateCount, setPriceUpdateCount] = useState<number>(0);
   const [lastUpdateTime, setLastUpdateTime] = useState<string | null>(null);
-  const [symbol, setSymbol] = useState<string>('XAUUSD');
+  const [symbol] = useState<string>('XAUUSD'); // استخدام XAUUSD دائماً
 
   const fetchLatestPrice = useCallback(async () => {
     try {
-      console.log('جاري جلب أحدث سعر للرمز:', symbol);
+      console.log('جاري جلب أحدث سعر للذهب (XAUUSD)');
       
       // أولاً، نحاول تحديث السعر من خلال وظيفة Edge
       try {
         const { data, error } = await supabase.functions.invoke('update-real-time-prices', {
-          body: { symbols: [symbol] }
+          body: { symbols: ['XAUUSD'] }
         });
         
         if (error) {
-          console.warn('لم نتمكن من تحديث السعر من خلال وظيفة Edge:', error);
+          console.warn('لم نتمكن من تحديث سعر الذهب من خلال وظيفة Edge:', error);
         } else {
-          console.log('تم تحديث السعر بنجاح من خلال وظيفة Edge:', data);
+          console.log('تم تحديث سعر الذهب بنجاح من خلال وظيفة Edge:', data);
         }
       } catch (updateError) {
-        console.warn('خطأ في استدعاء وظيفة تحديث السعر:', updateError);
+        console.warn('خطأ في استدعاء وظيفة تحديث سعر الذهب:', updateError);
       }
       
       // ثم نجلب أحدث سعر من قاعدة البيانات
       const { data, error } = await supabase
         .from('real_time_prices')
         .select('price, updated_at')
-        .eq('symbol', symbol)
+        .eq('symbol', 'XAUUSD')
         .single();
 
       if (error) {
-        console.error('خطأ في جلب السعر من قاعدة البيانات:', error);
+        console.error('خطأ في جلب سعر الذهب من قاعدة البيانات:', error);
         return;
       }
 
@@ -45,21 +45,21 @@ export const useCurrentPrice = () => {
         setLastUpdateTime(updated_at);
         setPriceUpdateCount(prev => prev + 1);
         
-        console.log(`تم تحديث السعر للرمز ${symbol}: ${price}`);
+        console.log(`تم تحديث سعر الذهب: ${price}`);
         
         // إطلاق حدث تحديث السعر
         window.dispatchEvent(new CustomEvent('metal-price-update', { 
-          detail: { price, symbol } 
+          detail: { price, symbol: 'XAUUSD' } 
         }));
       }
     } catch (error) {
-      console.error('خطأ غير متوقع في جلب السعر:', error);
+      console.error('خطأ غير متوقع في جلب سعر الذهب:', error);
     }
-  }, [symbol]);
+  }, []);
 
   // استدعاء fetchLatestPrice عند التحميل وكل 60 ثانية (دقيقة واحدة)
   useEffect(() => {
-    console.log('بدء تعقب السعر للرمز:', symbol);
+    console.log('بدء تعقب سعر الذهب (XAUUSD)');
     
     // جلب السعر الأولي
     fetchLatestPrice();
@@ -71,10 +71,9 @@ export const useCurrentPrice = () => {
     const handlePriceUpdate = (event: CustomEvent) => {
       if (event.detail && event.detail.price) {
         const newPrice = event.detail.price;
-        const eventSymbol = event.detail.symbol || symbol;
         
-        if (eventSymbol === symbol && newPrice !== currentPrice) {
-          console.log(`تم استلام تحديث السعر من حدث خارجي: ${newPrice} للرمز ${eventSymbol}`);
+        if (newPrice !== currentPrice) {
+          console.log(`تم استلام تحديث سعر الذهب من حدث خارجي: ${newPrice}`);
           setCurrentPrice(newPrice);
           setLastUpdateTime(new Date().toISOString());
           setPriceUpdateCount(prev => prev + 1);
@@ -88,13 +87,13 @@ export const useCurrentPrice = () => {
       clearInterval(intervalId);
       window.removeEventListener('metal-price-update', handlePriceUpdate as EventListener);
     };
-  }, [symbol, fetchLatestPrice, currentPrice]);
+  }, [fetchLatestPrice, currentPrice]);
 
   return { 
     currentPrice, 
     priceUpdateCount, 
     lastUpdateTime,
-    setSymbol,
+    symbol: 'XAUUSD', // دائماً نرجع XAUUSD
     fetchLatestPrice
   };
 };

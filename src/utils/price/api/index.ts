@@ -8,41 +8,31 @@ export * from './rateLimit';
 export { fetchPriceFromMetalPriceApi } from './metalPriceApi';
 export { fetchForexPrice, fetchCryptoPrice, fetchPreciousMetalPrice, fetchStoredPrice } from './fetchers';
 
-// جلب السعر المناسب بناءً على الرمز
-import { FOREX_SYMBOLS, CRYPTO_SYMBOLS, PRECIOUS_METALS } from '../config';
-import { fetchForexPrice, fetchCryptoPrice, fetchPreciousMetalPrice } from './fetchers';
+// جلب سعر الذهب (XAUUSD) من CFI
+import { fetchPreciousMetalPrice } from './preciousMetals';
 import { mapSymbolToMetalPriceSymbol } from './helpers';
 
 /**
- * جلب السعر المناسب بناءً على الرمز، مصدر السعر الوحيد هو Metal Price API
+ * جلب سعر الذهب فقط (XAUUSD) من شركة CFI
  */
 export const fetchPrice = async (symbol: string): Promise<number | null> => {
   try {
-    console.log(`بدء جلب السعر للرمز: ${symbol}`);
+    console.log(`بدء جلب سعر الذهب للرمز: ${symbol}`);
     
     // تنظيف الرمز
     const cleanSymbol = symbol.replace('CAPITALCOM:', '').toUpperCase();
     
-    // تحديد نوع الرمز
-    if (cleanSymbol in FOREX_SYMBOLS) {
-      return await fetchForexPrice(cleanSymbol);
-    }
-    
-    if (cleanSymbol in CRYPTO_SYMBOLS) {
-      return await fetchCryptoPrice(cleanSymbol);
-    }
-    
-    if (cleanSymbol in PRECIOUS_METALS || cleanSymbol === 'GOLD' || cleanSymbol === 'XAUUSD') {
+    // نسمح فقط بـ XAUUSD, GOLD, أو XAU
+    if (cleanSymbol === 'XAUUSD' || cleanSymbol === 'GOLD' || cleanSymbol === 'XAU') {
+      console.log(`جلب سعر الذهب من CFI للرمز: ${cleanSymbol}`);
       return await fetchPreciousMetalPrice(cleanSymbol);
     }
     
-    // لأي رمز آخر، نحاول استخدام Metal Price API مباشرة
-    const mappedSymbol = mapSymbolToMetalPriceSymbol(cleanSymbol);
-    console.log(`استخدام الرمز المُعيّن: ${mappedSymbol} للرمز الأصلي: ${cleanSymbol}`);
-    
-    return await fetchPreciousMetalPrice(mappedSymbol);
+    // إذا كان الرمز غير مدعوم، نرجع XAUUSD على أي حال
+    console.log(`الرمز ${cleanSymbol} غير مدعوم. استخدام XAUUSD بدلاً منه.`);
+    return await fetchPreciousMetalPrice('XAUUSD');
   } catch (error) {
-    console.error(`خطأ في جلب السعر للرمز ${symbol}:`, error);
+    console.error(`خطأ في جلب سعر الذهب للرمز ${symbol}:`, error);
     return null;
   }
 };
