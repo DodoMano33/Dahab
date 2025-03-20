@@ -6,29 +6,10 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://nhvkviofvefwbvditgxo.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U";
 
-// تكوين عميل Supabase مع خيارات محسنة لتقليل استهلاك الموارد
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'x-application-name': 'chart-analyzer',
-    }
-  },
-  // تقليل عدد الأحداث في الوقت الحقيقي بشكل كبير
-  realtime: {
-    params: {
-      eventsPerSecond: 2 // تخفيض من 5 إلى 2
-    }
-  },
-  // تمكين التخزين المؤقت للاستعلامات
-  db: {
-    schema: 'public'
-  }
-});
+// Import the supabase client like this:
+// import { supabase } from "@/integrations/supabase/client";
+
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 /**
  * Ensures that the user has a valid session.

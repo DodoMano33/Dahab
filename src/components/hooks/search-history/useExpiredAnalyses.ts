@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
@@ -7,39 +7,21 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function useExpiredAnalyses(searchHistory: SearchHistoryItem[], updateHistory: (newHistory: SearchHistoryItem[]) => void) {
   const { user } = useAuth();
-  // معرف للفحص الدوري
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  // آخر وقت تم فيه الفحص
-  const lastCheckRef = useRef<number>(0);
 
   // تحقق من التحليلات المنتهية بشكل دوري
   useEffect(() => {
     if (user) {
-      // فحص التحليلات المنتهية كل 5 دقائق بدلاً من كل دقيقة
-      checkIntervalRef.current = setInterval(() => {
-        // تجنب الفحص المتكرر إذا تم فحص التحليلات خلال آخر 3 دقائق
-        const now = Date.now();
-        if (now - lastCheckRef.current > 180000) { // 3 دقائق
-          checkAndDeleteExpiredAnalyses();
-          lastCheckRef.current = now;
-        }
-      }, 300000); // كل 5 دقائق
+      // فحص التحليلات المنتهية كل دقيقة
+      const checkExpiredInterval = setInterval(() => {
+        checkAndDeleteExpiredAnalyses();
+      }, 60000); // كل دقيقة
       
-      return () => {
-        if (checkIntervalRef.current) {
-          clearInterval(checkIntervalRef.current);
-          checkIntervalRef.current = null;
-        }
-      };
+      return () => clearInterval(checkExpiredInterval);
     }
-  }, [user]);
+  }, [user, searchHistory]);
 
   const checkAndDeleteExpiredAnalyses = async () => {
     try {
-      if (!searchHistory.length) {
-        return; // لا توجد تحليلات للفحص
-      }
-      
       console.log("فحص التحليلات المنتهية...");
       
       // تحويل التاريخ الحالي إلى كائن Date
@@ -56,21 +38,14 @@ export function useExpiredAnalyses(searchHistory: SearchHistoryItem[], updateHis
         console.log(`وجدنا ${expiredItems.length} تحليل منتهي، جاري الحذف...`);
         
         // حذف التحليلات المنتهية من قاعدة البيانات
-        // استخدام عملية حذف واحدة بدلاً من عدة عمليات
-        const expiredIds = expiredItems.map(item => item.id);
+        const deletePromises = expiredItems.map(item => 
+          supabase.from('search_history').delete().eq('id', item.id)
+        );
         
-        const { error } = await supabase
-          .from('search_history')
-          .delete()
-          .in('id', expiredIds);
-        
-        if (error) {
-          console.error("خطأ في حذف التحليلات المنتهية:", error);
-          return;
-        }
+        await Promise.all(deletePromises);
         
         // تحديث القائمة المحلية
-        updateHistory(searchHistory.filter(item => !expiredIds.includes(item.id)));
+        updateHistory(searchHistory.filter(item => !expiredItems.some(expired => expired.id === item.id)));
         
         console.log(`تم حذف ${expiredItems.length} تحليل منتهي بنجاح`);
         

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { addHours, differenceInMinutes, differenceInHours, differenceInSeconds } from "date-fns";
 import { supabase } from "@/lib/supabase";
 
@@ -12,10 +12,6 @@ interface UseExpiryTimerProps {
 export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: UseExpiryTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState<boolean>(false);
-  // معرف للمؤقت
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  // معرف لرمز الحذف (لتجنب الحذف المتكرر)
-  const deleteAttemptedRef = useRef<boolean>(false);
 
   useEffect(() => {
     // إضافة ساعات إلى تاريخ الإنشاء لحساب تاريخ الانتهاء
@@ -30,9 +26,8 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
         setIsExpired(true);
         setTimeLeft("منتهي");
         
-        // عندما ينتهي التحليل، نقوم بحذفه تلقائيًا (مرة واحدة فقط)
-        if (analysisId && !deleteAttemptedRef.current) {
-          deleteAttemptedRef.current = true;
+        // عندما ينتهي التحليل، نقوم بحذفه تلقائيًا
+        if (analysisId) {
           console.log(`التحليل ${analysisId} منتهي، جاري الحذف...`);
           supabase
             .from('search_history')
@@ -46,13 +41,6 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
               }
             });
         }
-        
-        // توقف المؤقت بعد انتهاء الوقت
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-        
         return;
       }
       
@@ -63,20 +51,11 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
       setTimeLeft(`${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
     };
     
-    // تحديث الوقت المتبقي كل ثانية، لكن تبطئ التحديث إذا كان الوقت المتبقي طويلاً
+    // تحديث الوقت المتبقي كل ثانية
     calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
     
-    // استخدام فترات تحديث متغيرة حسب الوقت المتبقي للتحليل
-    const updateInterval = expiryDate.getTime() - Date.now() > 3600000 ? 60000 : 1000; // ساعة أو أكثر: تحديث كل دقيقة، أقل من ساعة: تحديث كل ثانية
-    
-    timerRef.current = setInterval(calculateTimeLeft, updateInterval);
-    
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
+    return () => clearInterval(timer);
   }, [createdAt, durationHours, analysisId]);
   
   return { timeLeft, isExpired };

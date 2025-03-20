@@ -179,30 +179,87 @@ export type Database = {
       }
       search_history: {
         Row: {
+          activation_type: string | null
           analysis: Json
+          analysis_duration_hours: number | null
+          analysis_expiry_date: string | null
           analysis_type: string
+          best_entry_point_price: number | null
+          best_entry_point_reason: string | null
           created_at: string
           current_price: number
+          direction: string | null
+          entry_point_analysis_completed: boolean | null
+          expiry_time: string | null
           id: string
+          is_success: boolean | null
+          last_checked_at: string | null
+          last_checked_price: number | null
+          original_analysis_completed: boolean | null
+          pattern: string | null
+          resistance: number | null
+          result_timestamp: string | null
+          stop_loss_hit: boolean
+          support: number | null
           symbol: string
+          target_hit: boolean
+          timeframe: string
           user_id: string
         }
         Insert: {
+          activation_type?: string | null
           analysis: Json
+          analysis_duration_hours?: number | null
+          analysis_expiry_date?: string | null
           analysis_type: string
+          best_entry_point_price?: number | null
+          best_entry_point_reason?: string | null
           created_at?: string
           current_price: number
+          direction?: string | null
+          entry_point_analysis_completed?: boolean | null
+          expiry_time?: string | null
           id?: string
+          is_success?: boolean | null
+          last_checked_at?: string | null
+          last_checked_price?: number | null
+          original_analysis_completed?: boolean | null
+          pattern?: string | null
+          resistance?: number | null
+          result_timestamp?: string | null
+          stop_loss_hit?: boolean
+          support?: number | null
           symbol: string
+          target_hit?: boolean
+          timeframe?: string
           user_id: string
         }
         Update: {
+          activation_type?: string | null
           analysis?: Json
+          analysis_duration_hours?: number | null
+          analysis_expiry_date?: string | null
           analysis_type?: string
+          best_entry_point_price?: number | null
+          best_entry_point_reason?: string | null
           created_at?: string
           current_price?: number
+          direction?: string | null
+          entry_point_analysis_completed?: boolean | null
+          expiry_time?: string | null
           id?: string
+          is_success?: boolean | null
+          last_checked_at?: string | null
+          last_checked_price?: number | null
+          original_analysis_completed?: boolean | null
+          pattern?: string | null
+          resistance?: number | null
+          result_timestamp?: string | null
+          stop_loss_hit?: boolean
+          support?: number | null
           symbol?: string
+          target_hit?: boolean
+          timeframe?: string
           user_id?: string
         }
         Relationships: []
@@ -311,14 +368,6 @@ export type Database = {
             }
             Returns: string
           }
-      cleanup_old_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      create_data_cleanup_schedule: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       delete_expired_analyses: {
         Args: Record<PropertyKey, never>
         Returns: undefined

@@ -10,7 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('بيانات اعتماد Supabase مفقودة');
 }
 
-// تكوين العميل مع إعدادات محسنة للمصادقة وتقليل استهلاك الموارد
+// تكوين العميل مع إعدادات محسنة للمصادقة
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -25,12 +25,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   realtime: {
     params: {
-      eventsPerSecond: 2 // تخفيض من 10 إلى 2 لتقليل استهلاك الموارد
+      eventsPerSecond: 10
     }
-  },
-  // تمكين التخزين المؤقت للاستعلامات
-  db: {
-    schema: 'public'
   }
 });
 
