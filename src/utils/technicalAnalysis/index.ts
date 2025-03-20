@@ -2,4 +2,5 @@
 export * from './timeframe';
 export * from './fibonacci';
 export * from './priceAnalysis';
-export * from './timeUtils';
+// Export everything from timeUtils except getTimeframeLabel to avoid conflict
+export { getExpectedTime } from './timeUtils';
