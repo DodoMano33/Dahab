@@ -144,7 +144,17 @@ export function DashboardStats() {
         </CardContent>
       </Card>
       
-      <LivePriceTestCard />
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>اختبار السعر المباشر</CardTitle>
+          <CardDescription>
+            تحقق من قدرة التطبيق على جلب أسعار المعادن الثمينة المباشرة من Metal Price API
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LivePriceTestCard />
+        </CardContent>
+      </Card>
     </div>
   );
 }
