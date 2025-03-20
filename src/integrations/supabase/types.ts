@@ -201,29 +201,50 @@ export type Database = {
       search_history: {
         Row: {
           analysis: Json
+          analysis_duration_hours: number | null
           analysis_type: string
           created_at: string
           current_price: number
           id: string
+          last_checked_at: string | null
+          last_checked_price: number | null
+          result_timestamp: string | null
+          stop_loss_hit: boolean | null
           symbol: string
+          target_hit: boolean | null
+          timeframe: string | null
           user_id: string
         }
         Insert: {
           analysis: Json
+          analysis_duration_hours?: number | null
           analysis_type: string
           created_at?: string
           current_price: number
           id?: string
+          last_checked_at?: string | null
+          last_checked_price?: number | null
+          result_timestamp?: string | null
+          stop_loss_hit?: boolean | null
           symbol: string
+          target_hit?: boolean | null
+          timeframe?: string | null
           user_id: string
         }
         Update: {
           analysis?: Json
+          analysis_duration_hours?: number | null
           analysis_type?: string
           created_at?: string
           current_price?: number
           id?: string
+          last_checked_at?: string | null
+          last_checked_price?: number | null
+          result_timestamp?: string | null
+          stop_loss_hit?: boolean | null
           symbol?: string
+          target_hit?: boolean | null
+          timeframe?: string | null
           user_id?: string
         }
         Relationships: []
@@ -333,6 +354,10 @@ export type Database = {
             Returns: string
           }
       cleanup_old_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      clear_supabase_schema_cache: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
