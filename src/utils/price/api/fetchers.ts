@@ -1,10 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
-
-/**
- * تم حذف وظائف جلب الأسعار سابقاً.
- * يجب إضافة مصدر السعر الجديد هنا.
- */
+import { fetchPriceFromMetalPriceApi } from './metalPriceApi';
+import { mapSymbolToMetalPriceSymbol, parseCurrencyPair } from './helpers';
 
 /**
  * تخزين السعر مؤقتًا
@@ -22,27 +19,79 @@ export const getCachedPrice = (symbol: string): number | null => {
 };
 
 /**
- * جلب سعر الفوركس - تم حذف المصدر السابق
+ * جلب سعر الفوركس
  */
 export async function fetchForexPrice(symbol: string): Promise<number | null> {
-  console.log(`تم حذف وظيفة جلب سعر الفوركس للرمز ${symbol} وتحتاج إلى تنفيذ المصدر الجديد`);
-  return null;
+  try {
+    // تحليل زوج العملات
+    const { base, target } = parseCurrencyPair(symbol);
+    
+    // استخدام Metal Price API لجلب السعر
+    const result = await fetchPriceFromMetalPriceApi(base, target);
+    
+    if (result.success && result.price !== null) {
+      // تخزين السعر مؤقتًا
+      setCachedPrice(symbol, result.price);
+      return result.price;
+    }
+    
+    // محاولة جلب السعر من التخزين المؤقت إذا فشلت محاولة API
+    return getCachedPrice(symbol);
+  } catch (error) {
+    console.error(`خطأ في جلب سعر الفوركس للرمز ${symbol}:`, error);
+    return getCachedPrice(symbol);
+  }
 }
 
 /**
- * جلب سعر العملات المشفرة - تم حذف المصدر السابق
+ * جلب سعر العملات المشفرة
  */
 export async function fetchCryptoPrice(symbol: string): Promise<number | null> {
-  console.log(`تم حذف وظيفة جلب سعر العملات المشفرة للرمز ${symbol} وتحتاج إلى تنفيذ المصدر الجديد`);
-  return null;
+  try {
+    // تنظيف الرمز
+    const cleanSymbol = symbol.replace('CAPITALCOM:', '').toUpperCase();
+    const base = cleanSymbol.includes('USD') ? cleanSymbol.replace('USD', '') : cleanSymbol;
+    
+    // استخدام Metal Price API لجلب السعر
+    const result = await fetchPriceFromMetalPriceApi(base, 'USD');
+    
+    if (result.success && result.price !== null) {
+      // تخزين السعر مؤقتًا
+      setCachedPrice(symbol, result.price);
+      return result.price;
+    }
+    
+    // محاولة جلب السعر من التخزين المؤقت إذا فشلت محاولة API
+    return getCachedPrice(symbol);
+  } catch (error) {
+    console.error(`خطأ في جلب سعر العملات المشفرة للرمز ${symbol}:`, error);
+    return getCachedPrice(symbol);
+  }
 }
 
 /**
- * جلب سعر المعدن - تم حذف المصدر السابق
+ * جلب سعر المعدن
  */
 export async function fetchPreciousMetalPrice(symbol: string): Promise<number | null> {
-  console.log(`تم حذف وظيفة جلب سعر المعدن الثمين للرمز ${symbol} وتحتاج إلى تنفيذ المصدر الجديد`);
-  return null;
+  try {
+    // تحويل الرمز إلى صيغة Metal Price API
+    const metalSymbol = mapSymbolToMetalPriceSymbol(symbol);
+    
+    // استخدام Metal Price API لجلب السعر
+    const result = await fetchPriceFromMetalPriceApi(metalSymbol, 'USD');
+    
+    if (result.success && result.price !== null) {
+      // تخزين السعر مؤقتًا
+      setCachedPrice(symbol, result.price);
+      return result.price;
+    }
+    
+    // محاولة جلب السعر من التخزين المؤقت إذا فشلت محاولة API
+    return getCachedPrice(symbol);
+  } catch (error) {
+    console.error(`خطأ في جلب سعر المعدن للرمز ${symbol}:`, error);
+    return getCachedPrice(symbol);
+  }
 }
 
 /**

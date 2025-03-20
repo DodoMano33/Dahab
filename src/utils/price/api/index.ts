@@ -1,3 +1,4 @@
+
 // تصدير الأنواع من ملفات API المختلفة
 export * from './types';
 export * from './helpers';
@@ -5,9 +6,7 @@ export * from './rateLimit';
 
 // تصدير دوال جلب الأسعار الرئيسية
 export { fetchPriceFromMetalPriceApi } from './metalPriceApi';
-export { fetchForexPrice } from './fetchers';
-export { fetchCryptoPrice } from './fetchers';
-export { fetchPreciousMetalPrice } from './fetchers';
+export { fetchForexPrice, fetchCryptoPrice, fetchPreciousMetalPrice, fetchStoredPrice } from './fetchers';
 
 // جلب السعر المناسب بناءً على الرمز
 import { FOREX_SYMBOLS, CRYPTO_SYMBOLS, PRECIOUS_METALS } from '../config';

@@ -1,8 +1,10 @@
 
+import { fetchPrice } from '../../../utils/price/api/index.ts';
+
 /**
- * جلب السعر الحالي - تم حذف المصدر السابق
+ * جلب السعر الحالي
  */
-export function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
+export async function getEffectivePrice(requestData: any, supabase: any): Promise<number | null> {
   return new Promise(async (resolve) => {
     try {
       // استخدام السعر من الطلب إذا كان متوفرًا
@@ -14,7 +16,23 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
         return;
       }
       
-      console.log('تم حذف مصدر السعر السابق، يجب استخدام المصدر الجديد');
+      // جلب السعر للرمز المحدد
+      const symbol = requestData?.symbol || 'XAUUSD';
+      
+      // استخدام Metal Price API لجلب السعر
+      try {
+        const price = await getLastStoredPrice(supabase, symbol);
+        if (price !== null) {
+          console.log(`استخدام السعر المخزن للرمز ${symbol}: ${price}`);
+          resolve(price);
+          return;
+        }
+      } catch (err) {
+        console.error('خطأ في جلب السعر المخزن:', err);
+      }
+
+      // استخدام سعر افتراضي إذا فشلت كل المحاولات
+      console.log('لم يتم العثور على سعر، استخدام سعر افتراضي');
       resolve(null);
     } catch (err) {
       console.error('خطأ في getEffectivePrice:', err);
@@ -24,9 +42,25 @@ export function getEffectivePrice(requestData: any, supabase: any): Promise<numb
 }
 
 /**
- * جلب آخر سعر مخزن للرمز - تم حذف المصدر السابق
+ * جلب آخر سعر مخزن للرمز
  */
 export async function getLastStoredPrice(supabase: any, symbol: string): Promise<number | null> {
-  console.log('تم حذف وظيفة جلب آخر سعر مخزن للرمز وتحتاج إلى تنفيذ المصدر الجديد');
-  return null;
+  try {
+    const { data, error } = await supabase
+      .from('real_time_prices')
+      .select('price, updated_at')
+      .eq('symbol', symbol)
+      .single();
+    
+    if (error || !data) {
+      console.log(`لم يتم العثور على سعر مخزن للرمز ${symbol}`);
+      return null;
+    }
+    
+    console.log(`تم العثور على سعر مخزن للرمز ${symbol}: ${data.price}`);
+    return data.price;
+  } catch (error) {
+    console.error(`خطأ في جلب السعر المخزن للرمز ${symbol}:`, error);
+    return null;
+  }
 }

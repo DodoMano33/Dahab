@@ -1,3 +1,4 @@
+
 import { fetchPriceFromMetalPriceApi } from './metalPriceApi.ts';
 
 /**
@@ -5,7 +6,7 @@ import { fetchPriceFromMetalPriceApi } from './metalPriceApi.ts';
  */
 export async function fetchPrice(symbol: string): Promise<number | null> {
   try {
-    // استخدام Metal Price API فقط لجلب السعر
+    // استخدام Metal Price API لجلب السعر
     const price = await fetchPriceFromMetalPriceApi(symbol);
     return price;
   } catch (error) {
