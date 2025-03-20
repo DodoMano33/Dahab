@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 import { performAnalysis } from "../components/AnalysisPerformer";
@@ -66,8 +65,7 @@ export const useAnalysisOperations = (
           entryPoint: currentPrice,
           analysis: `تحليل تلقائي لـ ${symbol} على الإطار الزمني ${timeframe}`,
           confidence: Math.random() * 100,
-          pattern: "نمط السعر",
-          stopLoss: currentPrice * 0.98
+          pattern: "نمط السعر"
         }
       };
     };
