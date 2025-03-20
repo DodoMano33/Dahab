@@ -40,15 +40,15 @@ export const useCurrentPrice = () => {
     }
   }, [symbol]);
 
-  // استدعاء fetchLatestPrice عند التحميل وكل 10 ثوانٍ
+  // استدعاء fetchLatestPrice عند التحميل وكل 60 ثانية (دقيقة واحدة)
   useEffect(() => {
     console.log('بدء تعقب السعر للرمز:', symbol);
     
     // جلب السعر الأولي
     fetchLatestPrice();
     
-    // إعداد فاصل زمني لتحديث السعر
-    const intervalId = setInterval(fetchLatestPrice, 10000);
+    // إعداد فاصل زمني لتحديث السعر كل دقيقة (تم تغييرها من 10000 إلى 60000)
+    const intervalId = setInterval(fetchLatestPrice, 60000);
     
     // الاستماع لأحداث تحديث السعر من المصادر الأخرى
     const handlePriceUpdate = (event: CustomEvent) => {

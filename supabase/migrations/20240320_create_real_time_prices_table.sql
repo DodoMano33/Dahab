@@ -46,7 +46,7 @@ BEGIN
   -- حذف الجدولة إذا كانت موجودة بالفعل
   PERFORM cron.unschedule('update-real-time-prices-every-minute');
   
-  -- إنشاء جدولة جديدة
+  -- إنشاء جدولة جديدة (بالفعل كل دقيقة، لم يتم تغييرها)
   PERFORM cron.schedule(
     'update-real-time-prices-every-minute',
     '* * * * *',  -- تشغيل كل دقيقة

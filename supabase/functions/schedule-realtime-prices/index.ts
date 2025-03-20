@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
       throw functionError
     }
 
-    // جدولة تحديث الأسعار
+    // جدولة تحديث الأسعار (بالفعل كل دقيقة، لم يتم تغييرها)
     const { error: scheduleError } = await supabase.sql`
       SELECT cron.schedule(
         'update-real-time-prices-every-minute',

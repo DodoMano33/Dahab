@@ -18,7 +18,7 @@ export class PriceUpdater {
   constructor(config: Partial<PriceUpdaterConfig> = {}) {
     const {
       rateLimitResetTime = 24 * 60 * 60 * 1000, // 24 ساعة
-      pollingInterval = 300000 // 5 دقائق
+      pollingInterval = 60000 // 1 دقيقة (تم تغييرها من 300000)
     } = config;
     
     this.rateLimit = new RateLimitManager(rateLimitResetTime);

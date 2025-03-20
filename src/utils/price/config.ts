@@ -32,6 +32,5 @@ export const PRECIOUS_METALS = {
   'XAGUSD': { base: 'XAG', target: 'USD' }, // الفضة/دولار
 } as const;
 
-// إعدادات ذاكرة التخزين المؤقت والاستطلاع
-export const CACHE_DURATION = 300000; // 5 دقائق بالمللي ثانية
-export const POLLING_INTERVAL = 300000; // 5 دقائق بالمللي ثانية
+// إعدادات الاستطلاع - تم تغيير القيمة من 300000 (5 دقائق) إلى 60000 (1 دقيقة)
+export const POLLING_INTERVAL = 60000; // 1 دقيقة بالمللي ثانية

@@ -22,7 +22,7 @@ export function IntervalSettings({
   label, 
   id 
 }: IntervalSettingsProps) {
-  // تحديد القيم بشكل أكثر مناسبة للاستخدام
+  // تحديث القيم لتشمل 1 دقيقة (60000 مللي ثانية)
   const timeIntervalOptions = [
     { value: 10000, label: "10 ثواني" },
     { value: 20000, label: "20 ثانية" },
