@@ -26,24 +26,45 @@ export const AutoAnalysis = ({
   duration = "8"
 }: AutoAnalysisProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { startAutoAnalysis, stopAutoAnalysis } = useAutoAnalysis();
 
   const handleAnalysisClick = async () => {
     if (isAnalyzing) {
-      stopAutoAnalysis();
-      setIsAnalyzing(false);
-      toast.info("تم إيقاف التحليل التلقائي");
+      setIsLoading(true);
+      try {
+        stopAutoAnalysis();
+        setIsAnalyzing(false);
+        toast.info("تم إيقاف التحليل التلقائي");
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
 
-    // محاولة مسح التخزين المؤقت لمخطط قاعدة البيانات
+    setIsLoading(true);
+    
     try {
+      // محاولة مسح التخزين المؤقت لمخطط قاعدة البيانات
       await clearSupabaseCache();
       await clearSearchHistoryCache();
       console.log("تم مسح ذاكرة التخزين المؤقت قبل بدء التحليل التلقائي");
     } catch (error) {
       console.error("خطأ أثناء مسح ذاكرة التخزين المؤقت:", error);
       // نستمر رغم الخطأ
+    }
+
+    // Validate inputs before proceeding
+    if (selectedTimeframes.length === 0) {
+      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
+      setIsLoading(false);
+      return;
+    }
+
+    if (selectedAnalysisTypes.length === 0) {
+      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      setIsLoading(false);
+      return;
     }
 
     const symbolInput = document.querySelector('input#symbol') as HTMLInputElement;
@@ -56,27 +77,20 @@ export const AutoAnalysis = ({
 
     if (!symbol) {
       toast.error("الرجاء إدخال رمز العملة أو الزوج");
+      setIsLoading(false);
       return;
     }
 
     if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) {
       toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      setIsLoading(false);
       return;
     }
 
     const durationHours = Number(duration);
     if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
       toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
-      return;
-    }
-
-    if (selectedTimeframes.length === 0) {
-      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
-      return;
-    }
-
-    if (selectedAnalysisTypes.length === 0) {
-      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      setIsLoading(false);
       return;
     }
 
@@ -84,10 +98,10 @@ export const AutoAnalysis = ({
     console.log("Selected timeframes:", selectedTimeframes);
     console.log("Selected analysis types:", selectedAnalysisTypes);
 
-    setIsAnalyzing(true);
-    toast.success("جاري بدء التحليل التلقائي...");
-    
     try {
+      setIsAnalyzing(true);
+      toast.success("جاري بدء التحليل التلقائي...");
+      
       await startAutoAnalysis({
         timeframes: selectedTimeframes,
         interval: selectedInterval,
@@ -107,6 +121,8 @@ export const AutoAnalysis = ({
       console.error("Error in auto analysis:", error);
       toast.error("حدث خطأ أثناء التحليل التلقائي: " + (error instanceof Error ? error.message : "خطأ غير معروف"));
       setIsAnalyzing(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,6 +132,7 @@ export const AutoAnalysis = ({
       onClick={handleAnalysisClick}
       onBackTestClick={() => {}}
       setIsHistoryOpen={setIsHistoryOpen}
+      isLoading={isLoading}
     />
   );
 };

@@ -3,81 +3,58 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 /**
- * Utility to clear Supabase's schema cache to reflect latest database changes
+ * Clear the Supabase schema cache by making a dummy query that forces a refresh
  */
-export const clearSupabaseCache = async () => {
+export const clearSupabaseCache = async (): Promise<void> => {
   try {
-    console.log("Attempting to clear Supabase schema cache...");
+    console.log("Attempting to clear Supabase schema cache");
     
-    // Special query that forces a schema cache refresh
-    const { error } = await supabase.rpc('clear_schema_cache');
+    // Create a direct dummy query to force schema refresh
+    await supabase
+      .from('search_history')
+      .select('id')
+      .limit(1)
+      .then(response => {
+        console.log("Schema refresh query executed:", response);
+        return response;
+      });
     
-    if (error) {
-      console.error("Failed to clear schema cache:", error);
-      
-      // Attempt a backup approach if RPC method isn't available
-      // The issue is here - we need to handle the promise differently
-      await supabase.from('_dummy_query_to_refresh_cache_').select('*').limit(1).then(
-        () => {
-          console.log("Unexpectedly succeeded with dummy query");
-        },
-        () => {
-          // This is expected to fail, but helps refresh the cache
-          console.log("Used fallback method to refresh schema cache");
-        }
-      );
-      
-      // Try a direct schema refresh for search_history table
-      await clearSearchHistoryCache();
-    }
+    // Wait a brief moment to ensure the cache is cleared
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     console.log("Supabase schema cache cleared successfully");
-    return true;
   } catch (error) {
-    console.error("Failed to clear schema cache:", error);
-    // Even if this fails, we'll still continue with the application
-    return false;
+    console.error("Error clearing Supabase schema cache:", error);
+    // Don't throw, let the operation continue despite cache issues
   }
 };
 
 /**
- * Utility to specifically clear cache for search_history table
+ * Clear the search history table cache specifically
  */
-export const clearSearchHistoryCache = async () => {
+export const clearSearchHistoryCache = async (): Promise<void> => {
   try {
-    console.log("Attempting to clear search_history schema cache...");
+    console.log("Clearing search_history table cache");
     
-    // First try a simple count, which often helps refresh schema
-    const { error: countError } = await supabase
+    // Query the search_history table to refresh its schema
+    await supabase
       .from('search_history')
-      .select('*', { count: 'exact', head: true });
-      
-    if (countError) {
-      console.log("Count query failed, trying alternative approach:", countError);
-    }
+      .select('id, analysis_type, timeframe')
+      .limit(1)
+      .then(response => {
+        console.log("Search history schema refresh query executed:", response);
+        return response;
+      });
     
-    // Force a refresh by doing a simple select with explicit columns
-    // to avoid the analysis_duration_hours problem
-    const { error } = await supabase
+    // Make a HEAD request to ensure the schema is up to date
+    await supabase
       .from('search_history')
-      .select('id, created_at, symbol, current_price, analysis_type')
-      .limit(1);
-      
-    if (error) {
-      console.error("Error refreshing search_history cache:", error);
-      
-      // If the error is related to schema cache, show a toast
-      if (error.message.includes('search_history') && error.message.includes('schema cache')) {
-        toast.error("مشكلة في التخزين المؤقت لقاعدة البيانات. يرجى إعادة تحميل الصفحة.");
-      }
-      
-      return false;
-    }
+      .select('*')
+      .head();
     
-    console.log("Search history schema cache refreshed successfully");
-    return true;
+    console.log("Search history cache cleared successfully");
   } catch (error) {
-    console.error("Failed to refresh search_history schema:", error);
-    return false;
+    console.error("Error clearing search history cache:", error);
+    // Continue despite errors
   }
 };

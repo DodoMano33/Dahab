@@ -1,8 +1,10 @@
+
 import { toast } from "sonner";
 import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
 import { mapAnalysisTypeToConfig, mapToAnalysisType } from "../utils/analysisTypeMapper";
 import { SearchHistoryItem } from "@/types/analysis";
 import { AnalysisType } from "@/types/analysis";
+import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 
 interface AnalysisPerformerProps {
   symbol: string;
@@ -26,6 +28,10 @@ export const performAnalysis = async ({
   try {
     console.log(`Starting analysis for ${timeframe} - ${analysisType}`);
     
+    // Clear caches before starting analysis
+    await clearSupabaseCache();
+    await clearSearchHistoryCache();
+    
     const config = mapAnalysisTypeToConfig(analysisType);
     console.log("Analysis configuration:", config);
     
@@ -47,18 +53,45 @@ export const performAnalysis = async ({
     if (result && result.analysisResult && user) {
       console.log("Analysis completed successfully:", result);
       
+      // Ensure timeframe is included in the result
+      result.analysisResult.timeframe = timeframe;
+      
       // Convert string to AnalysisType
       const mappedAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
 
-      const savedData = await saveAnalysisToHistory(
-        result,
-        symbol,
-        timeframe,
-        mappedAnalysisType,
-        user.id
-      );
-
-      console.log("Analysis saved to history:", savedData);
+      // Try up to 3 times to save if there are schema cache issues
+      let savedData = null;
+      let attempt = 0;
+      let lastError = null;
+      
+      while (attempt < 3 && !savedData) {
+        try {
+          if (attempt > 0) {
+            console.log(`Retrying save (attempt ${attempt+1}/3)...`);
+            await clearSupabaseCache();
+            await clearSearchHistoryCache();
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+          
+          savedData = await saveAnalysisToHistory(
+            result,
+            symbol,
+            timeframe,
+            mappedAnalysisType,
+            user.id
+          );
+          
+          console.log("Analysis saved to history:", savedData);
+        } catch (error) {
+          console.error(`Failed save attempt ${attempt+1}:`, error);
+          lastError = error;
+          attempt++;
+        }
+      }
+      
+      if (!savedData) {
+        throw lastError || new Error("Failed to save analysis after multiple attempts");
+      }
 
       if (onAnalysisComplete) {
         const newHistoryEntry: SearchHistoryItem = {
@@ -80,5 +113,6 @@ export const performAnalysis = async ({
   } catch (error) {
     console.error(`Error in ${analysisType} analysis on ${timeframe}:`, error);
     toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
+    throw error;
   }
 };

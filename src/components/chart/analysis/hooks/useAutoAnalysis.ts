@@ -113,12 +113,14 @@ export const useAutoAnalysis = () => {
                        isWaves ? "waves" : 
                        isPatternAnalysis ? "patterns" : 
                        isPriceAction ? "price_action" : "normal",
-          direction: Math.random() > 0.5 ? "bullish" : "bearish",
+          direction: Math.random() > 0.5 ? "صاعد" : "هابط",
           targets: [currentPrice * 1.01, currentPrice * 1.02, currentPrice * 1.03],
           stopLoss: currentPrice * 0.98,
           entryPoint: currentPrice,
           analysis: `تحليل تلقائي لـ ${symbol} على الإطار الزمني ${timeframe}`,
-          confidence: Math.random() * 100
+          confidence: Math.random() * 100,
+          pattern: "نمط السعر", // إضافة حقل pattern
+          stopLoss: currentPrice * 0.98 // إضافة حقل stopLoss
         }
       };
     };
@@ -137,7 +139,7 @@ export const useAutoAnalysis = () => {
       console.log(`Starting analysis cycle ${counter} of ${maxAnalyses}`);
 
       // تنظيف ذاكرة التخزين المؤقت بشكل دوري
-      if (counter % 5 === 0) {
+      if (counter % 3 === 0) {
         try {
           await clearSupabaseCache();
           await clearSearchHistoryCache();
@@ -147,12 +149,21 @@ export const useAutoAnalysis = () => {
       }
 
       for (const timeframe of timeframes) {
+        if (signal.aborted) break;
+        
         for (const analysisType of analysisTypes) {
           if (signal.aborted) break;
           
           console.log(`Performing ${analysisType} analysis on ${timeframe} timeframe`);
           
           try {
+            // Add a small delay between operations to let the database catch up
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Clear cache before each analysis
+            await clearSupabaseCache();
+            await clearSearchHistoryCache();
+            
             await performAnalysis({
               symbol,
               price: currentPrice,
@@ -164,7 +175,7 @@ export const useAutoAnalysis = () => {
             });
             
             // إضافة تأخير صغير بين التحليلات
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 1000));
           } catch (error) {
             console.error(`Error during ${analysisType} on ${timeframe}:`, error);
             
@@ -172,7 +183,9 @@ export const useAutoAnalysis = () => {
             try {
               await clearSupabaseCache();
               await clearSearchHistoryCache();
+              await new Promise(resolve => setTimeout(resolve, 1000));
               
+              console.log(`Retrying ${analysisType} on ${timeframe}...`);
               await performAnalysis({
                 symbol,
                 price: currentPrice,
@@ -185,6 +198,9 @@ export const useAutoAnalysis = () => {
             } catch (retryError) {
               console.error(`Retry also failed for ${analysisType} on ${timeframe}:`, retryError);
               toast.error(`فشل تحليل ${analysisType} على الإطار ${timeframe}`);
+              
+              // Continue with the next analysis instead of stopping everything
+              continue;
             }
           }
         }

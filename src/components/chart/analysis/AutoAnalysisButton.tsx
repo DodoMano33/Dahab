@@ -13,19 +13,20 @@ interface AutoAnalysisButtonProps {
   onBackTestClick?: () => void;
   disabled?: boolean;
   setIsHistoryOpen: (open: boolean) => void;
+  isLoading?: boolean;
 }
 
 export const AutoAnalysisButton = ({ 
   isAnalyzing, 
   onClick, 
   disabled,
-  setIsHistoryOpen
+  setIsHistoryOpen,
+  isLoading = false
 }: AutoAnalysisButtonProps) => {
   const [isBackTestOpen, setIsBackTestOpen] = useState(false);
   const [isEntryPointBackTestOpen, setIsEntryPointBackTestOpen] = useState(false);
   const [backtestCount, setBacktestCount] = useState(0);
   const [searchHistoryCount, setSearchHistoryCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -79,22 +80,10 @@ export const AutoAnalysisButton = ({
     fetchCounts();
   }, []);
 
-  const handleMainButtonClick = async () => {
-    try {
-      setIsLoading(true);
-      await onClick();
-    } catch (error) {
-      console.error("Error during button click:", error);
-      toast.error("حدث خطأ أثناء تنفيذ العملية");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-6">
       <Button 
-        onClick={handleMainButtonClick}
+        onClick={onClick}
         disabled={disabled || isLoading}
         className={`${
           isAnalyzing ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
