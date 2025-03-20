@@ -1,6 +1,7 @@
+
 import { AnalysisData } from "@/types/analysis";
-import { addDays, addHours, addMinutes } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
+import { getExpectedTime } from "@/utils/technicalAnalysis";
 
 export const analyzeGannChart = async (
   chartImage: string,
@@ -86,26 +87,4 @@ const calculateGannLevels = (currentPrice: number, range: number) => {
     { level: 0.618, price: currentPrice + (range * 0.618) },
     { level: 0.75, price: currentPrice + (range * 0.75) }
   ];
-};
-
-const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
-  const now = new Date();
-  const multiplier = targetIndex + 1;
-
-  switch (timeframe) {
-    case "1m":
-      return addMinutes(now, multiplier * 15);
-    case "5m":
-      return addMinutes(now, multiplier * 45);
-    case "30m":
-      return addHours(now, multiplier * 2);
-    case "1h":
-      return addHours(now, multiplier * 4);
-    case "4h":
-      return addHours(now, multiplier * 12);
-    case "1d":
-      return addDays(now, multiplier * 3);
-    default:
-      return addHours(now, multiplier * 12);
-  }
 };

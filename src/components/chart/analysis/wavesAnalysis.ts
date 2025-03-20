@@ -1,6 +1,7 @@
+
 import { AnalysisData } from "@/types/analysis";
-import { addMinutes, addHours, addDays } from "date-fns";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
+import { getExpectedTime } from "@/utils/technicalAnalysis";
 
 export const analyzeWavesChart = async (
   chartImage: string,
@@ -72,26 +73,4 @@ export const analyzeWavesChart = async (
 
   console.log("نتائج تحليل Waves:", analysisResult);
   return analysisResult;
-};
-
-const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
-  const now = new Date();
-  const multiplier = targetIndex + 1;
-
-  switch (timeframe) {
-    case "1m":
-      return addMinutes(now, multiplier * 5);
-    case "5m":
-      return addMinutes(now, multiplier * 15);
-    case "30m":
-      return addMinutes(now, multiplier * 60);
-    case "1h":
-      return addHours(now, multiplier * 2);
-    case "4h":
-      return addHours(now, multiplier * 8);
-    case "1d":
-      return addDays(now, multiplier * 2);
-    default:
-      return addHours(now, multiplier * 8);
-  }
 };
