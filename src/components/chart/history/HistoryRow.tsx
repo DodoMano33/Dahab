@@ -56,6 +56,55 @@ export const HistoryRow = ({
   // تشخيص وقت آخر فحص
   console.log(`Last checked at for ${id}:`, last_checked_at, typeof last_checked_at);
   
+  // تشخيص بيانات الأهداف
+  console.log(`Targets for analysis ${id}:`, analysis.targets);
+  
+  // التحقق من صحة نوع بيانات الأهداف وإصلاحها إذا لزم الأمر
+  const fixedTargets = (() => {
+    if (!analysis.targets) {
+      console.log(`No targets found for analysis ${id}, creating default empty array`);
+      return [];
+    }
+    
+    if (!Array.isArray(analysis.targets)) {
+      console.log(`Targets is not an array for analysis ${id}, converting to array`);
+      return [];
+    }
+    
+    console.log(`Found ${analysis.targets.length} targets for analysis ${id}`);
+    
+    return analysis.targets.map(target => {
+      if (typeof target === 'number') {
+        // تحويل الرقم إلى كائن هدف
+        return {
+          price: target,
+          expectedTime: new Date(date.getTime() + 24 * 60 * 60 * 1000) // افتراضيًا بعد 24 ساعة
+        };
+      }
+      
+      if (!target || typeof target !== 'object') {
+        return null;
+      }
+      
+      // التأكد من وجود سعر
+      if (target.price === undefined || target.price === null) {
+        return null;
+      }
+      
+      // التأكد من وجود تاريخ متوقع
+      if (!target.expectedTime) {
+        return {
+          ...target,
+          expectedTime: new Date(date.getTime() + 24 * 60 * 60 * 1000)
+        };
+      }
+      
+      return target;
+    }).filter(Boolean);
+  })();
+  
+  console.log(`Fixed targets for analysis ${id}:`, fixedTargets);
+
   // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {
     const handleHistoryUpdate = (event: Event) => {
@@ -88,7 +137,7 @@ export const HistoryRow = ({
         reason={analysis.bestEntryPoint?.reason}
       />
       <TargetsListCell 
-        targets={analysis.targets || []} 
+        targets={fixedTargets} 
         isTargetHit={false}
       />
       <StopLossCell 

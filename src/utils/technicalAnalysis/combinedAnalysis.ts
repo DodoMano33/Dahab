@@ -60,6 +60,22 @@ export const combinedAnalysis = async (
 
     // Combine and sort targets
     const combinedTargets = combineAndSortTargets(analysisResults);
+    console.log("Combined targets:", combinedTargets);
+
+    // إضافة التوقيت المتوقع لكل هدف إذا لم يكن موجودًا
+    const now = new Date();
+    const targetsWithDates = combinedTargets.slice(0, 3).map((target, index) => {
+      // إذا كان الهدف لا يحتوي على وقت متوقع، نضيف له وقتًا افتراضيًا
+      if (!target.expectedTime) {
+        const expectedTime = new Date(now);
+        expectedTime.setHours(expectedTime.getHours() + (index + 1) * 24); // كل هدف بعد 24 ساعة من السابق
+        return {
+          ...target,
+          expectedTime
+        };
+      }
+      return target;
+    });
 
     // Build the combined result
     const combinedResult: AnalysisData = {
@@ -69,7 +85,7 @@ export const combinedAnalysis = async (
       support: weightedValues.support,
       resistance: weightedValues.resistance,
       stopLoss: weightedValues.stopLoss,
-      targets: combinedTargets.slice(0, 3),
+      targets: targetsWithDates,
       bestEntryPoint: {
         price: weightedValues.entryPrice,
         reason: `Based on combining ${actualTypes.length} strategies (${strategyNames.join(', ')})`

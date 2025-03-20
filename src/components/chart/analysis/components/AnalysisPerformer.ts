@@ -56,6 +56,43 @@ export const performAnalysis = async ({
       // Ensure timeframe is included in the result
       result.analysisResult.timeframe = timeframe;
       
+      // إضافة أهداف افتراضية إذا لم تكن موجودة
+      if (!result.analysisResult.targets || !Array.isArray(result.analysisResult.targets) || result.analysisResult.targets.length === 0) {
+        console.log("No targets in result, adding default targets");
+        const basePrice = result.analysisResult.currentPrice || price;
+        const isUptrend = result.analysisResult.direction === "صاعد";
+        const now = new Date();
+        
+        result.analysisResult.targets = [
+          {
+            price: isUptrend ? basePrice * 1.01 : basePrice * 0.99,
+            expectedTime: new Date(now.getTime() + 24 * 60 * 60 * 1000) // غدًا
+          },
+          {
+            price: isUptrend ? basePrice * 1.02 : basePrice * 0.98,
+            expectedTime: new Date(now.getTime() + 48 * 60 * 60 * 1000) // بعد غد
+          },
+          {
+            price: isUptrend ? basePrice * 1.03 : basePrice * 0.97,
+            expectedTime: new Date(now.getTime() + 72 * 60 * 60 * 1000) // بعد 3 أيام
+          }
+        ];
+        
+        console.log("Added default targets:", result.analysisResult.targets);
+      } else {
+        // تأكد من أن جميع الأهداف لديها تواريخ متوقعة
+        const now = new Date();
+        result.analysisResult.targets = result.analysisResult.targets.map((target, index) => {
+          if (!target.expectedTime) {
+            return {
+              ...target,
+              expectedTime: new Date(now.getTime() + (index + 1) * 24 * 60 * 60 * 1000)
+            };
+          }
+          return target;
+        });
+      }
+      
       // Convert string to AnalysisType
       const mappedAnalysisType = mapToAnalysisType(analysisType) as AnalysisType;
 

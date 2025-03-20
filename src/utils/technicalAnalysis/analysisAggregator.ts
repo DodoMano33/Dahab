@@ -20,9 +20,52 @@ export const calculateCombinedDirection = (results: AnalysisData[]): "صاعد" 
  * Combine and sort targets from multiple analyses
  */
 export const combineAndSortTargets = (results: AnalysisData[]): { price: number; expectedTime: Date; }[] => {
-  const allTargets = results.flatMap(r => r.targets || []);
-  if (!allTargets.length) return [];
+  // جمع جميع الأهداف من جميع التحليلات
+  const allTargets = results.flatMap(r => {
+    // التحقق من وجود الأهداف ومعالجة الحالة إذا كانت غير موجودة
+    if (!r.targets || !Array.isArray(r.targets) || r.targets.length === 0) {
+      console.log(`No targets found for analysis: ${r.pattern}`, r);
+      return [];
+    }
+    
+    console.log(`Found ${r.targets.length} targets for analysis: ${r.pattern}`);
+    
+    // تحويل الأهداف إلى الصيغة المطلوبة
+    return r.targets.map(target => {
+      if (typeof target === 'number') {
+        // إذا كان الهدف رقمًا فقط (النمط القديم)
+        return {
+          price: target,
+          expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // افتراضيًا بعد 24 ساعة
+        };
+      } else if (target && typeof target === 'object') {
+        // إذا كان الهدف كائنًا (النمط الجديد)
+        const price = typeof target.price === 'number' ? target.price : parseFloat(String(target.price));
+        
+        let expectedTime = target.expectedTime;
+        // التحقق من صحة التاريخ وإنشاء تاريخ جديد إذا لزم الأمر
+        if (!expectedTime || !(expectedTime instanceof Date)) {
+          expectedTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        }
+        
+        return {
+          price,
+          expectedTime
+        };
+      }
+      // إرجاع قيمة افتراضية إذا كان الهدف في هيكل غير متوقع
+      return null;
+    }).filter(Boolean); // حذف القيم الفارغة
+  });
   
+  console.log("All targets before grouping:", allTargets);
+  
+  if (!allTargets.length) {
+    console.log("No valid targets found in any analysis");
+    return [];
+  }
+
+  // تجميع الأهداف المتشابهة
   const groupedTargets = allTargets.reduce((groups: any[], target) => {
     const existingGroup = groups.find(g => 
       Math.abs(g.price - target.price) / target.price < 0.01
@@ -40,12 +83,17 @@ export const combineAndSortTargets = (results: AnalysisData[]): { price: number;
     return groups;
   }, []);
 
-  return groupedTargets
+  // تحويل المجموعات إلى أهداف نهائية وترتيبها
+  const finalTargets = groupedTargets
     .map(group => ({
       price: Number((group.prices.reduce((a: number, b: number) => a + b, 0) / group.prices.length).toFixed(2)),
       expectedTime: new Date(Math.max(...group.times.map((t: Date) => t.getTime())))
     }))
     .sort((a, b) => Math.abs(a.price) - Math.abs(b.price));
+  
+  console.log("Final grouped and sorted targets:", finalTargets);
+  
+  return finalTargets;
 };
 
 /**
