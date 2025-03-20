@@ -1,5 +1,5 @@
 
-export interface BestEntryPointProps {
+interface BestEntryPointProps {
   price?: number | null;
   reason?: string;
 }
