@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnalysisStatsChart } from "./AnalysisStatsChart";
 import { SuccessRateChart } from "./SuccessRateChart";
@@ -10,6 +11,7 @@ import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { AnalysisStats } from "./types";
 
 export function DashboardStats() {
   const { stats, isLoading: statsLoading, refresh: refreshStats } = useBacktestStats();
