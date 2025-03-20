@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { PriceUpdateEvent, CurrentPriceResponseEvent } from './types';
 
 export const usePriceEventHandlers = () => {
