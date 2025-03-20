@@ -1,5 +1,6 @@
-
-import { BrowserRouter as Router } from "react-router-dom";
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { clearSupabaseCache } from './utils/supabaseCache';
 import { Toaster } from "sonner";
 import Index from "./pages/Index";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -44,6 +45,11 @@ function App() {
       const img = new Image();
       img.src = src;
     });
+  }, []);
+
+  useEffect(() => {
+    // Clear Supabase schema cache on app initialization
+    clearSupabaseCache();
   }, []);
 
   return (

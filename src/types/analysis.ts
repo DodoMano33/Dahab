@@ -1,4 +1,3 @@
-
 export type AnalysisType = 
   | "سكالبينج" 
   | "ذكي" 
@@ -63,15 +62,14 @@ export interface SearchHistoryItem {
   symbol: string;
   currentPrice: number;
   analysis: AnalysisData;
+  analysisType: AnalysisType; 
+  timeframe: string;
   targetHit?: boolean;
   stopLossHit?: boolean;
-  analysisType: AnalysisType;
-  timeframe: string;
   analysis_duration_hours?: number;
   last_checked_price?: number;
-  last_checked_at?: Date;
-  result_timestamp?: Date;
-  is_success?: boolean;
+  last_checked_at?: Date | string | null;
+  result_timestamp?: Date | string | null;
 }
 
 export interface CombinedAnalysisProps {

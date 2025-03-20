@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { clearSupabaseCache } from "@/utils/supabaseCache";
 
 export function useHistoryData() {
   const { user } = useAuth();
@@ -13,7 +14,10 @@ export function useHistoryData() {
   // فحص البيانات عند تحميل المكون أو تغير المستخدم
   useEffect(() => {
     if (user) {
-      fetchSearchHistory();
+      // Clear schema cache before fetching data
+      clearSupabaseCache().then(() => {
+        fetchSearchHistory();
+      });
       
       // إعداد قناة الاستماع للتغييرات في الوقت الفعلي
       const channel = supabase
@@ -50,9 +54,25 @@ export function useHistoryData() {
     try {
       setIsRefreshing(true);
       console.log("جلب سجل البحث...");
+      
+      // Use an explicit column selection to avoid schema cache issues
       const { data, error } = await supabase
         .from('search_history')
-        .select('*, analysis_duration_hours')
+        .select(`
+          id, 
+          created_at, 
+          symbol, 
+          current_price, 
+          analysis, 
+          analysis_type, 
+          timeframe, 
+          target_hit, 
+          stop_loss_hit, 
+          analysis_duration_hours, 
+          last_checked_at, 
+          last_checked_price, 
+          result_timestamp
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -72,7 +92,10 @@ export function useHistoryData() {
         timeframe: item.timeframe || '1d',
         targetHit: item.target_hit || false,
         stopLossHit: item.stop_loss_hit || false,
-        analysis_duration_hours: item.analysis_duration_hours || 8
+        analysis_duration_hours: item.analysis_duration_hours || 8,
+        last_checked_at: item.last_checked_at,
+        last_checked_price: item.last_checked_price,
+        result_timestamp: item.result_timestamp
       }));
 
       setSearchHistory(formattedHistory);
