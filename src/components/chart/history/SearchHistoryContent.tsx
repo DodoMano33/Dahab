@@ -1,51 +1,48 @@
+import { Table, TableBody } from "@/components/ui/table";
+import { HistoryTableHeader } from "./HistoryTableHeader";
+import { HistoryRow } from "./HistoryRow";
+import { AnalysisData } from "@/types/analysis";
 
-import { useState } from "react";
-import { SearchHistoryItem } from "@/types/analysis";
-import { HistoryContent } from "./HistoryContent";
-import { AnalysisChartDisplay } from "../AnalysisChartDisplay";
-import { Separator } from "@/components/ui/separator";
-
-interface SearchHistoryContentProps {
-  history: SearchHistoryItem[];
+interface HistoryContentProps {
+  history: Array<{
+    id: string;
+    date: Date;
+    symbol: string;
+    currentPrice: number;
+    analysis: AnalysisData;
+    targetHit?: boolean;
+    stopLossHit?: boolean;
+    analysisType: "عادي" | "سكالبينج" | "ذكي" | "SMC" | "ICT" | "Turtle Soup" | "Gann" | "Waves" | "Patterns";
+    timeframe: string;
+  }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
-  onSelectAll: (checked: boolean) => void;
-  onDelete: (id: string) => Promise<void>;
-  isRefreshing: boolean;
-  refreshHistory: () => Promise<void>;
+  onDelete: (id: string) => void;
 }
 
-export const SearchHistoryContent = ({
+export const HistoryContent = ({
   history,
   selectedItems,
   onSelect,
-  onSelectAll,
   onDelete,
-  isRefreshing,
-  refreshHistory
-}: SearchHistoryContentProps) => {
-  const [showChart, setShowChart] = useState(true);
-
+}: HistoryContentProps) => {
   return (
-    <div className="flex flex-col space-y-4">
-      {showChart && (
-        <>
-          <AnalysisChartDisplay 
-            searchHistory={history} 
-            isRefreshing={isRefreshing} 
-            onRefresh={refreshHistory} 
-          />
-          <Separator />
-        </>
-      )}
-      
-      <HistoryContent
-        history={history}
-        selectedItems={selectedItems}
-        onSelect={onSelect}
-        onSelectAll={onSelectAll}
-        onDelete={onDelete}
-      />
+    <div className="relative rounded-md border bg-background h-full overflow-y-auto">
+      <div className="overflow-x-auto">
+        <Table>
+          <HistoryTableHeader showCheckbox={true} />
+          <TableBody>
+            {history.map((item) => (
+              <HistoryRow
+                key={item.id}
+                {...item}
+                isSelected={selectedItems.has(item.id)}
+                onSelect={() => onSelect(item.id)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
