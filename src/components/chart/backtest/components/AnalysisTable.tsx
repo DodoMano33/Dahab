@@ -71,26 +71,12 @@ export const AnalysisTable = ({
     if (value === null || value === undefined) return "-";
     const num = typeof value === "string" ? parseFloat(value) : value;
     
-    // إذا كانت النتيجة فاشلة، نجعل الرقم سالبًا دائمًا
-    if (!isSuccess) {
-      return `-${Math.abs(Number(num)).toFixed(4)}`;
-    }
-    
-    // وإلا نعرض الرقم كما هو (مع إشارة سالب إذا كان سالبًا)
-    const formattedValue = Number(num).toFixed(4);
-    if (num < 0) {
-      return `-${Math.abs(Number(formattedValue)).toFixed(4)}`;
-    }
-    return formattedValue;
+    return num.toFixed(4);
   };
 
   // تنسيق القيمة الإجمالية للربح/الخسارة
   const formatTotalProfitLoss = (value: number) => {
-    if (value >= 0) {
-      return value.toFixed(4);
-    } else {
-      return `-${Math.abs(value).toFixed(4)}`;
-    }
+    return value.toFixed(4);
   };
 
   return (
@@ -144,7 +130,7 @@ export const AnalysisTable = ({
               {analysis.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="w-32 text-center truncate">{analysis.analysis_duration || '0 ساعة'}</div>
-            <div className={`w-28 text-center font-medium ${Number(analysis.profit_loss) >= 0 && analysis.is_success ? 'text-success' : 'text-destructive'}`}>
+            <div className={`w-28 text-center font-medium ${Number(analysis.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
               {analysis.profit_loss !== null && analysis.profit_loss !== undefined 
                 ? formatProfitLoss(analysis.profit_loss, analysis.is_success) 
                 : 'N/A'}

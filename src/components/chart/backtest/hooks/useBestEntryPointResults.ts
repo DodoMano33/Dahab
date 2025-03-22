@@ -61,6 +61,8 @@ export const useBestEntryPointResults = () => {
               } else {
                 // اتجاه صاعد ووصل لوقف الخسارة: سعر الدخول - سعر الإغلاق (سلبي)
                 result.profit_loss = Number(result.entry_point_price) - Number(closePrice);
+                // جعل قيمة الخسارة سالبة
+                result.profit_loss = -Math.abs(result.profit_loss);
               }
             } else if (result.direction === 'down' || result.direction === 'هابط') {
               if (result.is_success) {
@@ -69,6 +71,8 @@ export const useBestEntryPointResults = () => {
               } else {
                 // اتجاه هابط ووصل لوقف الخسارة: سعر الإغلاق - سعر الدخول (سلبي)
                 result.profit_loss = Number(closePrice) - Number(result.entry_point_price);
+                // جعل قيمة الخسارة سالبة
+                result.profit_loss = -Math.abs(result.profit_loss);
               }
             } else {
               console.warn(`Result with unknown direction: ${result.direction}`);
@@ -79,14 +83,13 @@ export const useBestEntryPointResults = () => {
         return result;
       }) || [];
       
-      // Calculate total profit/loss
+      // تصحيح حساب إجمالي الربح/الخسارة
+      // احتساب مباشر للقيم مع مراعاة العلامات السالبة والموجبة
       let total = 0;
       processedResults.forEach(result => {
         if (result.profit_loss !== null && result.profit_loss !== undefined) {
           const profitLossValue = Number(result.profit_loss);
-          // إذا كانت النتيجة ناجحة، نضيف قيمة الربح (موجبة بالفعل)
-          // إذا كانت النتيجة فاشلة، نضيف قيمة الخسارة (سالبة بالفعل)
-          total += profitLossValue;
+          total += profitLossValue; // القيم السالبة ستطرح تلقائياً والقيم الموجبة ستجمع
         }
       });
 

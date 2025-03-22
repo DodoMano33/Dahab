@@ -29,11 +29,7 @@ export const BackTestHeader = ({
 }: BackTestHeaderProps) => {
   // تنسيق الرقم لعرضه بأربع خانات عشرية وإضافة إشارة سالب إذا كان سالبًا
   const formatProfitLoss = (value: number) => {
-    if (value >= 0) {
-      return value.toFixed(4);
-    } else {
-      return `-${Math.abs(value).toFixed(4)}`;
-    }
+    return value.toFixed(4);
   };
   
   const isProfitable = totalProfitLoss >= 0;
