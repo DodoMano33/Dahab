@@ -16,10 +16,6 @@ interface SearchHistoryToolbarProps {
   refreshHistory: () => Promise<void>;
   showChart: boolean;
   setShowChart: (show: boolean) => void;
-  dateRange?: { from: Date | undefined; to: Date | undefined };
-  isDatePickerOpen?: boolean;
-  setIsDatePickerOpen?: (open: boolean) => void;
-  setDateRange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
 }
 
 export const SearchHistoryToolbar = ({
@@ -29,11 +25,7 @@ export const SearchHistoryToolbar = ({
   isRefreshing,
   refreshHistory,
   showChart,
-  setShowChart,
-  dateRange,
-  isDatePickerOpen,
-  setIsDatePickerOpen,
-  setDateRange
+  setShowChart
 }: SearchHistoryToolbarProps) => {
   const activeCount = history.filter(item => !item.result_timestamp).length;
   const completedCount = history.filter(item => item.result_timestamp).length;
@@ -71,15 +63,9 @@ export const SearchHistoryToolbar = ({
             تحديث
           </Button>
           
-          {selectedItems.size > 0 && (
-            <div>
-              <ShareButtonGroup 
-                items={Array.from(selectedItems).map(id => 
-                  history.find(item => item.id === id)
-                ).filter(Boolean) as SearchHistoryItem[]} 
-              />
-            </div>
-          )}
+          <ShareButtonGroup selectedAnalyses={Array.from(selectedItems).map(id => 
+            history.find(item => item.id === id)
+          ).filter(Boolean) as SearchHistoryItem[]} />
           
           <Button
             variant="outline"

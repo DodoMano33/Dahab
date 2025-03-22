@@ -6,9 +6,6 @@ import { AnalysisForm } from "../analysis/AnalysisForm";
 import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
-import { ChartButton } from "../history/ChartButton";
-import { HistoryPanel } from "../analysis/HistoryPanel";
-import { Button } from "@/components/ui/button";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -23,7 +20,6 @@ interface AnalysisTabContentProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
-  setIsChartOpen: (open: boolean) => void;
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
   onManualCheck?: () => void;
@@ -44,15 +40,12 @@ export const AnalysisTabContent = ({
   onTimeframesChange,
   onIntervalChange,
   setIsHistoryOpen,
-  setIsChartOpen,
   onAnalysisComplete,
   chartDisplayComponent,
-  onManualCheck,
-  isCheckLoading,
-  lastCheckTime
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* معلومات سريعة */}
       <AnalysisInfoCard 
         total={searchHistoryStats.total}
         active={searchHistoryStats.active}
@@ -60,23 +53,14 @@ export const AnalysisTabContent = ({
         isRefreshing={isRefreshing}
       />
 
-      <div className="flex flex-wrap gap-3">
-        <ChartButton onClick={() => setIsChartOpen(true)} />
-        <Button 
-          variant="outline" 
-          onClick={() => setIsHistoryOpen(true)}
-          className="flex items-center justify-center gap-2"
-        >
-          <span>سجل البحث</span>
-        </Button>
-      </div>
-
+      {/* TradingView Chart */}
       <LiveTradingViewChart
         symbol={autoSymbol}
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />
 
+      {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm
         onAnalysis={onAddToSearchHistory}
         isAnalyzing={isAnalyzing}
@@ -85,6 +69,7 @@ export const AnalysisTabContent = ({
         defaultPrice={autoPrice}
       />
 
+      {/* Auto Analysis Settings */}
       <AnalysisSettings
         onTimeframesChange={onTimeframesChange}
         onIntervalChange={onIntervalChange}
@@ -94,8 +79,10 @@ export const AnalysisTabContent = ({
         defaultPrice={autoPrice}
       />
       
+      {/* Manual Analysis Display */}
       {chartDisplayComponent}
       
+      {/* فقط عرض زر فحص التحليلات بدون وظيفة */}
       <BacktestCheckButton />
     </div>
   );

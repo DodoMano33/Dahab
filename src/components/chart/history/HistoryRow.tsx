@@ -14,7 +14,7 @@ import { AnalysisTypeCell } from "./cells/AnalysisTypeCell";
 import { TimeframeCell } from "./cells/TimeframeCell";
 import { DateCell } from "./cells/DateCell";
 import { SymbolCell } from "./cells/SymbolCell";
-import { useHistoryRowData } from "./hooks/useHistoryRowData";
+import { useHistoryRowData } from "./HistoryRowData";
 import { TableCell } from "@/components/ui/table";
 
 interface HistoryRowProps {

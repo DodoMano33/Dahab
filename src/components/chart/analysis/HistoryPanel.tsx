@@ -1,97 +1,57 @@
 import { Button } from "@/components/ui/button";
-import { SearchHistoryItem } from "@/types/analysis";
-import { useNavigate } from "react-router-dom";
-import { List, History, BarChart, Clock } from "lucide-react";
-import { toast } from "sonner";
+import { X } from "lucide-react";
+import { SearchHistory } from "../SearchHistory";
+import { useState } from "react";
 
 interface HistoryPanelProps {
-  analysisCount: number;
-  isRefreshing?: boolean;
-  setIsHistoryOpen?: (open: boolean) => void;
-  onManualCheck?: () => Promise<void>;
-  isCheckLoading?: boolean;
-  lastCheckTime?: Date | null;
+  showHistory: boolean;
+  onClose: () => void;
 }
 
-export const HistoryPanel = ({
-  analysisCount,
-  isRefreshing = false,
-  setIsHistoryOpen,
-  onManualCheck,
-  isCheckLoading = false,
-  lastCheckTime,
-}: HistoryPanelProps) => {
-  const navigate = useNavigate();
+export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined
+  });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  const handleOpenDashboard = () => {
-    navigate("/dashboard");
-  };
-
-  const handleOpenHistory = () => {
-    if (setIsHistoryOpen) {
-      setIsHistoryOpen(true);
-    }
-  };
-
-  const handleManualCheck = async (id: string = '') => {
-    if (onManualCheck) {
-      try {
-        await onManualCheck();
-        return Promise.resolve();
-      } catch (error) {
-        console.error("Error in manual check:", error);
-        toast.error("حدث خطأ أثناء الفحص اليدوي");
-        return Promise.reject(error);
+  const handleSelect = (id: string) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
       }
-    }
-    return Promise.resolve();
+      return newSet;
+    });
   };
+
+  if (!showHistory) return null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <Button 
-        variant="outline" 
-        onClick={handleOpenHistory}
-        className="w-full justify-start"
+    <div className="relative bg-white rounded-lg shadow-lg p-6 mt-4">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-2 top-2"
+        onClick={onClose}
       >
-        <History className="h-4 w-4 mr-2" />
-        سجل التحليلات
-        {analysisCount > 0 && (
-          <span className="ml-auto bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
-            {analysisCount}
-          </span>
-        )}
+        <X className="h-4 w-4" />
       </Button>
-      
-      <Button 
-        variant="outline" 
-        onClick={handleOpenDashboard}
-        className="w-full justify-start"
-      >
-        <List className="h-4 w-4 mr-2" />
-        لوحة الإحصائيات
-      </Button>
-      
-      {onManualCheck && (
-        <Button 
-          variant="outline" 
-          onClick={() => handleManualCheck()}
-          disabled={isCheckLoading}
-          className="w-full justify-start"
-        >
-          {isCheckLoading ? (
-            <Clock className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <History className="h-4 w-4 mr-2" />
-          )}
-          فحص التحليلات
-          {lastCheckTime && (
-            <span className="ml-auto text-muted-foreground text-xs">
-              {new Date(lastCheckTime).toLocaleTimeString()}
-            </span>
-          )}
-        </Button>
-      )}
+      <SearchHistory
+        isOpen={true}
+        onClose={onClose}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        isDatePickerOpen={isDatePickerOpen}
+        setIsDatePickerOpen={setIsDatePickerOpen}
+        selectedItems={selectedItems}
+        onDelete={() => {}}
+        validHistory={[]}
+        handleSelect={handleSelect}
+      />
     </div>
   );
 };
