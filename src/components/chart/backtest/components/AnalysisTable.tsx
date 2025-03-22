@@ -5,6 +5,7 @@ import { ar } from "date-fns/locale";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
 import { Badge } from "@/components/ui/badge";
+import { DirectionIndicator } from "../../history/DirectionIndicator";
 
 interface AnalysisTableProps {
   analyses: any[];
@@ -12,6 +13,7 @@ interface AnalysisTableProps {
   onSelectAll: (checked: boolean) => void;
   onSelect: (id: string) => void;
   totalProfitLoss?: number;
+  currentTradingViewPrice?: number | null;
 }
 
 export const AnalysisTable = ({
@@ -19,7 +21,8 @@ export const AnalysisTable = ({
   selectedItems,
   onSelectAll,
   onSelect,
-  totalProfitLoss = 0
+  totalProfitLoss = 0,
+  currentTradingViewPrice = null
 }: AnalysisTableProps) => {
   // دالة لتنسيق الأرقام لتظهر 3 أرقام فقط بعد الفاصلة
   const formatNumber = (value: number | string | null | undefined) => {
@@ -42,6 +45,18 @@ export const AnalysisTable = ({
     return total >= 0 ? `+${total.toFixed(3)}` : `${total.toFixed(3)}`;
   };
 
+  // دالة لتنسيق تاريخ إنشاء التحليل (تاريخ/شهر/سنة ساعة:دقيقة)
+  const formatCreationDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      return format(date, 'yyyy/MM/dd HH:mm', { locale: ar });
+    } catch (error) {
+      console.error("Error formatting date:", error, dateString);
+      return "-";
+    }
+  };
+
   console.log("Rendering analysis table with analyses:", analyses.length);
   if (analyses.length > 0) {
     console.log("Sample analysis types from items:", analyses.slice(0, 5).map(a => 
@@ -53,7 +68,7 @@ export const AnalysisTable = ({
 
   return (
     <div className="border rounded-lg bg-white shadow-sm">
-      <div className="grid grid-cols-11 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
+      <div className="grid grid-cols-14 gap-1 p-2 bg-muted/50 text-right text-xs font-medium border-b sticky top-0 z-40">
         <div className="text-center flex items-center justify-center">
           <Checkbox 
             checked={selectedItems.size === analyses.length && analyses.length > 0}
@@ -73,6 +88,9 @@ export const AnalysisTable = ({
           )}
         </div>
         <div>النتيجة</div>
+        <div>السعر الحالي</div>
+        <div>الاتجاه</div>
+        <div>تاريخ الإنشاء</div>
         <div>الاطار الزمني</div>
         <div>نوع التحليل</div>
         <div>الرمز</div>
@@ -84,7 +102,7 @@ export const AnalysisTable = ({
           return (
             <div
               key={analysis.id}
-              className={`grid grid-cols-11 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
+              className={`grid grid-cols-14 gap-1 p-2 items-center text-right hover:bg-muted/50 transition-colors ${
                 analysis.is_success ? 'bg-success/10' : 'bg-destructive/10'
               }`}
             >
@@ -148,6 +166,17 @@ export const AnalysisTable = ({
               </TooltipProvider>
               <div className={`font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
                 {analysis.is_success ? 'ناجح' : 'فاشل'}
+              </div>
+              <div className="truncate">
+                {currentTradingViewPrice ? formatNumber(currentTradingViewPrice) : "-"}
+              </div>
+              <div className="flex justify-center">
+                {analysis.direction && (
+                  <DirectionIndicator direction={analysis.direction === "up" ? "صاعد" : analysis.direction === "down" ? "هابط" : "محايد"} />
+                )}
+              </div>
+              <div className="truncate">
+                {formatCreationDate(analysis.created_at)}
               </div>
               <div className="truncate">{analysis.timeframe}</div>
               <div className="truncate">{displayedAnalysisType}</div>

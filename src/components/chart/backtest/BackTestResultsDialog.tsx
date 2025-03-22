@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +33,8 @@ export const BackTestResultsDialog = ({
     hasMore,
     loadMore,
     refresh: refreshResults,
-    totalProfitLoss
+    totalProfitLoss,
+    currentTradingViewPrice
   } = useBacktestResults();
 
   useEffect(() => {
@@ -160,6 +162,7 @@ export const BackTestResultsDialog = ({
                   onSelectAll={handleSelectAll}
                   onSelect={handleSelect}
                   totalProfitLoss={totalProfitLoss}
+                  currentTradingViewPrice={currentTradingViewPrice}
                 />
                 
                 {hasMore && (
@@ -194,4 +197,3 @@ export const BackTestResultsDialog = ({
     </Dialog>
   );
 };
-

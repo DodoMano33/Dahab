@@ -25,7 +25,8 @@ export const BestEntryPointResultsDialog = ({
     handleSelectItem,
     handleSelectAll,
     handleDeleteSelected,
-    isDeleting
+    isDeleting,
+    currentTradingViewPrice
   } = useBestEntryPointResults();
 
   useEffect(() => {
@@ -64,6 +65,7 @@ export const BestEntryPointResultsDialog = ({
                 selectedItems={selectedItems}
                 onSelectAll={handleSelectAll}
                 onSelect={handleSelectItem}
+                currentTradingViewPrice={currentTradingViewPrice}
               />
               
               {hasMore && (
