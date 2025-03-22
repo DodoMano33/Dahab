@@ -14,6 +14,7 @@ interface AnalysisPerformerProps {
   user: { id: string } | null;
   handleTradingViewConfig: any;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
+  duration?: number; // إضافة مدة التحليل كمعامل اختياري
 }
 
 export const performAnalysis = async ({
@@ -23,7 +24,8 @@ export const performAnalysis = async ({
   analysisType,
   user,
   handleTradingViewConfig,
-  onAnalysisComplete
+  onAnalysisComplete,
+  duration // استلام مدة التحليل
 }: AnalysisPerformerProps) => {
   try {
     console.log(`Starting analysis for ${timeframe} - ${analysisType}`);
@@ -35,6 +37,7 @@ export const performAnalysis = async ({
     const config = mapAnalysisTypeToConfig(analysisType);
     console.log("Analysis configuration:", config);
     
+    // تمرير مدة التحليل إلى handleTradingViewConfig
     const result = await handleTradingViewConfig(
       symbol,
       timeframe,
@@ -47,7 +50,16 @@ export const performAnalysis = async ({
       config.isGann,
       config.isWaves,
       config.isPatternAnalysis,
-      config.isPriceAction
+      config.isPriceAction,
+      false, // isNeuralNetwork
+      false, // isRNN
+      false, // isTimeClustering
+      false, // isMultiVariance
+      false, // isCompositeCandlestick 
+      false, // isBehavioral
+      false, // isFibonacci
+      false, // isFibonacciAdvanced
+      duration ? duration.toString() : undefined // إضافة مدة التحليل
     );
 
     if (result && result.analysisResult && user) {
@@ -55,6 +67,12 @@ export const performAnalysis = async ({
       
       // Ensure timeframe is included in the result
       result.analysisResult.timeframe = timeframe;
+      
+      // إضافة مدة التحليل إلى النتائج إذا تم توفيرها
+      if (duration) {
+        result.analysisResult.duration = duration;
+        console.log(`Adding analysis duration: ${duration} hours`);
+      }
       
       // إضافة أهداف افتراضية إذا لم تكن موجودة
       if (!result.analysisResult.targets || !Array.isArray(result.analysisResult.targets) || result.analysisResult.targets.length === 0) {
@@ -115,7 +133,8 @@ export const performAnalysis = async ({
             symbol,
             timeframe,
             mappedAnalysisType,
-            user.id
+            user.id,
+            duration // تمرير مدة التحليل إلى وظيفة الحفظ
           );
           
           console.log("Analysis saved to history:", savedData);
@@ -138,7 +157,9 @@ export const performAnalysis = async ({
           currentPrice: price,
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
-          timeframe: timeframe
+          timeframe: timeframe,
+          analysisDate: new Date(),
+          duration: duration // إضافة مدة التحليل إلى عنصر سجل البحث الجديد
         };
         
         console.log("Adding new analysis to history:", newHistoryEntry);

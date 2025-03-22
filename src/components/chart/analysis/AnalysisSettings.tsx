@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TimeframeAnalysis } from "./TimeframeAnalysis";
 import { IntervalAnalysis } from "./IntervalAnalysis";
