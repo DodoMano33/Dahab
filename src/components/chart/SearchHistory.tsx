@@ -40,6 +40,7 @@ export const SearchHistory = ({
   // Convert the selection handler to return a Promise as required by the interface
   const handleSelectWithPromise = async (id: string) => {
     handleSelect(id);
+    return Promise.resolve();
   };
 
   return (
@@ -50,7 +51,7 @@ export const SearchHistory = ({
           <SearchHistoryToolbar
             selectedItems={selectedItems}
             onDelete={handleBulkDelete}
-            validHistory={validHistory}
+            history={validHistory}
             dateRange={dateRange}
             isDatePickerOpen={isDatePickerOpen}
             setIsDatePickerOpen={setIsDatePickerOpen}

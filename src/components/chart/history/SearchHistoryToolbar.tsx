@@ -16,6 +16,10 @@ interface SearchHistoryToolbarProps {
   refreshHistory: () => Promise<void>;
   showChart: boolean;
   setShowChart: (show: boolean) => void;
+  dateRange?: { from: Date | undefined; to: Date | undefined };
+  isDatePickerOpen?: boolean;
+  setIsDatePickerOpen?: (open: boolean) => void;
+  setDateRange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
 }
 
 export const SearchHistoryToolbar = ({
@@ -25,7 +29,11 @@ export const SearchHistoryToolbar = ({
   isRefreshing,
   refreshHistory,
   showChart,
-  setShowChart
+  setShowChart,
+  dateRange,
+  isDatePickerOpen,
+  setIsDatePickerOpen,
+  setDateRange
 }: SearchHistoryToolbarProps) => {
   const activeCount = history.filter(item => !item.result_timestamp).length;
   const completedCount = history.filter(item => item.result_timestamp).length;
@@ -63,7 +71,6 @@ export const SearchHistoryToolbar = ({
             تحديث
           </Button>
           
-          {/* Update the component to match the expected type */}
           {selectedItems.size > 0 && (
             <div>
               <ShareButtonGroup 

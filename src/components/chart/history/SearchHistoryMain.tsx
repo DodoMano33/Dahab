@@ -1,119 +1,45 @@
 
-import { useState, useEffect } from "react";
-import { SearchHistoryHeader } from "./SearchHistoryHeader";
 import { SearchHistoryContent } from "./SearchHistoryContent";
-import { SearchHistoryToolbar } from "./SearchHistoryToolbar";
 import { SearchHistoryItem } from "@/types/analysis";
+import { useState } from "react";
 
 interface SearchHistoryMainProps {
   history: SearchHistoryItem[];
+  onSelect: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  isRefreshing: boolean;
-  refreshHistory: () => Promise<void>;
+  selectedItems: Set<string>; // Add this prop
 }
 
-export const SearchHistoryMain = ({
-  history,
+export const SearchHistoryMain = ({ 
+  history, 
+  onSelect, 
   onDelete,
-  isRefreshing,
-  refreshHistory
+  selectedItems
 }: SearchHistoryMainProps) => {
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [filteredHistory, setFilteredHistory] = useState<SearchHistoryItem[]>(history);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [symbolFilter, setSymbolFilter] = useState<string | null>(null);
-  const [timeframeFilter, setTimeframeFilter] = useState<string | null>(null);
-  const [directionFilter, setDirectionFilter] = useState<string | null>(null);
-  const [showChart, setShowChart] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // تحديث البيانات المصفاة عند تغير أي من المرشحات
-  useEffect(() => {
-    let result = [...history];
-    
-    // تطبيق مرشح البحث النصي
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(item => 
-        item.symbol?.toLowerCase().includes(term) ||
-        item.analysisType?.toLowerCase().includes(term)
-      );
-    }
-    
-    // تطبيق مرشح الرمز
-    if (symbolFilter) {
-      result = result.filter(item => item.symbol === symbolFilter);
-    }
-    
-    // تطبيق مرشح الإطار الزمني
-    if (timeframeFilter) {
-      result = result.filter(item => item.timeframe === timeframeFilter);
-    }
-    
-    // تطبيق مرشح الاتجاه
-    if (directionFilter) {
-      result = result.filter(item => item.analysis?.direction === directionFilter);
-    }
-    
-    setFilteredHistory(result);
-    
-    // إعادة تعيين المحدد عند تغير المرشحات
-    setSelectedItems(new Set());
-  }, [history, searchTerm, symbolFilter, timeframeFilter, directionFilter]);
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const newSelected = new Set<string>();
-      filteredHistory.forEach(item => {
-        if (item.id) newSelected.add(item.id);
-      });
-      setSelectedItems(newSelected);
-    } else {
-      setSelectedItems(new Set());
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Any additional refresh logic if needed
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
-  const handleSelect = (id: string) => {
-    const newSelected = new Set(selectedItems);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedItems(newSelected);
+  const handleSelectAll = (checked: boolean) => {
+    // This logic will be handled in HistoryContent
   };
 
   return (
-    <div className="flex flex-col space-y-4">
-      <SearchHistoryHeader
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        symbolFilter={symbolFilter}
-        setSymbolFilter={setSymbolFilter}
-        timeframeFilter={timeframeFilter}
-        setTimeframeFilter={setTimeframeFilter}
-        directionFilter={directionFilter}
-        setDirectionFilter={setDirectionFilter}
-        history={history}
-      />
-      
-      <SearchHistoryToolbar
-        history={filteredHistory}
-        selectedItems={selectedItems}
-        onDelete={onDelete}
-        isRefreshing={isRefreshing}
-        refreshHistory={refreshHistory}
-        showChart={showChart}
-        setShowChart={setShowChart}
-      />
-      
+    <div className="flex-1 overflow-auto p-4">
       <SearchHistoryContent
-        history={filteredHistory}
+        history={history}
         selectedItems={selectedItems}
-        onSelect={handleSelect}
-        onSelectAll={handleSelectAll}
+        onSelect={onSelect}
         onDelete={onDelete}
-        isRefreshing={isRefreshing}
-        refreshHistory={refreshHistory}
+        onSelectAll={handleSelectAll}
       />
     </div>
   );
