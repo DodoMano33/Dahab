@@ -14,7 +14,7 @@ interface AnalysisPerformerProps {
   user: { id: string } | null;
   handleTradingViewConfig: any;
   onAnalysisComplete?: (newItem: SearchHistoryItem) => void;
-  duration?: number; // إضافة مدة التحليل كمعامل اختياري
+  duration?: number; // مدة التحليل كمعامل اختياري
 }
 
 export const performAnalysis = async ({
@@ -25,10 +25,11 @@ export const performAnalysis = async ({
   user,
   handleTradingViewConfig,
   onAnalysisComplete,
-  duration // استلام مدة التحليل
+  duration
 }: AnalysisPerformerProps) => {
   try {
-    console.log(`Starting analysis for ${timeframe} - ${analysisType} with duration ${duration} hours`);
+    // نضيف سجل لتتبع مدة التحليل
+    console.log(`Starting analysis for ${timeframe} - ${analysisType} with duration ${duration || 8} hours`);
     
     // Clear caches before starting analysis
     await clearSupabaseCache();
@@ -36,6 +37,10 @@ export const performAnalysis = async ({
     
     const config = mapAnalysisTypeToConfig(analysisType);
     console.log("Analysis configuration:", config);
+    
+    // التأكد من أن مدة التحليل مرسلة كسلسلة نصية
+    const durationString = duration !== undefined ? duration.toString() : "8";
+    console.log("Sending duration as string:", durationString);
     
     // تمرير مدة التحليل إلى handleTradingViewConfig
     const result = await handleTradingViewConfig(
@@ -59,7 +64,7 @@ export const performAnalysis = async ({
       false, // isBehavioral
       false, // isFibonacci
       false, // isFibonacciAdvanced
-      duration ? duration.toString() : undefined // تحويل القيمة إلى سلسلة نصية
+      durationString // تمرير مدة التحليل كسلسلة نصية
     );
 
     if (result && result.analysisResult && user) {
@@ -68,11 +73,10 @@ export const performAnalysis = async ({
       // Ensure timeframe is included in the result
       result.analysisResult.timeframe = timeframe;
       
-      // إضافة مدة التحليل إلى النتائج إذا تم توفيرها
-      if (duration) {
-        result.duration = duration;
-        console.log(`Adding analysis duration: ${duration} hours`);
-      }
+      // التأكد من تضمين مدة التحليل في النتائج
+      // استخدام المدة من النتيجة أو المدة المقدمة كمعامل أو 8 ساعات كقيمة افتراضية
+      const finalDuration = result.duration || duration || 8;
+      console.log(`Using final duration: ${finalDuration} hours`);
       
       // إضافة أهداف افتراضية إذا لم تكن موجودة
       if (!result.analysisResult.targets || !Array.isArray(result.analysisResult.targets) || result.analysisResult.targets.length === 0) {
@@ -128,13 +132,16 @@ export const performAnalysis = async ({
             await new Promise(resolve => setTimeout(resolve, 300));
           }
           
-          // التأكد من إضافة مدة التحليل إلى كائن النتيجة المرسل إلى وظيفة الحفظ
-          if (duration) {
-            result.duration = duration;
-          }
+          // إضافة مدة التحليل إلى كائن النتيجة المرسل إلى وظيفة الحفظ
+          const resultWithDuration = {
+            ...result,
+            duration: finalDuration // تأكيد تمرير المدة النهائية
+          };
+          
+          console.log("Saving analysis with duration:", finalDuration);
           
           savedData = await saveAnalysisToHistory(
-            result,
+            resultWithDuration,
             symbol,
             timeframe,
             mappedAnalysisType,
@@ -162,10 +169,10 @@ export const performAnalysis = async ({
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
           timeframe: timeframe,
-          analysis_duration_hours: duration || 8 // استخدام مدة التحليل المدخلة
+          analysis_duration_hours: finalDuration // استخدام المدة النهائية
         };
         
-        console.log("Adding new analysis to history:", newHistoryEntry);
+        console.log("Adding new analysis to history with duration:", finalDuration, newHistoryEntry);
         onAnalysisComplete(newHistoryEntry);
       }
 

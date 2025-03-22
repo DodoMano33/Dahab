@@ -96,21 +96,39 @@ export const processChartAnalysis = async ({
     
     if (isAI && selectedTypes && selectedTypes.length > 0) {
       console.log("Starting AI combined analysis with selected types:", selectedTypes);
+      console.log("Using duration:", durationHours, "for combined analysis");
+      
       analysisResult = await combinedAnalysis(
         chartImage,
         finalPrice,
         timeframe,
         selectedTypes
       );
+      
+      // تأكد من تضمين مدة التحليل في نتائج التحليل
+      if (analysisResult) {
+        console.log("Attaching duration to analysis result:", durationHours);
+        analysisResult.analysis_duration_hours = durationHours;
+      }
+      
       console.log("Combined analysis completed:", analysisResult);
     } else {
       console.log("Starting regular analysis with options:", options);
+      console.log("Using duration:", durationHours, "for regular analysis");
+      
       analysisResult = await executeAnalysis(
         chartImage,
         finalPrice,
         timeframe,
         options
       );
+      
+      // تأكد من تضمين مدة التحليل في نتائج التحليل
+      if (analysisResult) {
+        console.log("Attaching duration to analysis result:", durationHours);
+        analysisResult.analysis_duration_hours = durationHours;
+      }
+      
       console.log("Regular analysis completed:", analysisResult);
     }
 
@@ -127,11 +145,12 @@ export const processChartAnalysis = async ({
     // Show success toast
     showSuccessToast(analysisType, timeframe, symbol, finalPrice);
     
+    console.log("Returning final analysis results with duration:", durationHours);
     return { 
       analysisResult, 
       currentPrice: finalPrice, 
       symbol,
-      duration: durationHours  // تأكيد تمرير قيمة مدة التحليل
+      duration: durationHours
     };
     
   } catch (error) {

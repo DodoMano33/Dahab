@@ -14,8 +14,12 @@ export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: Use
   const [isExpired, setIsExpired] = useState<boolean>(false);
 
   useEffect(() => {
+    // سجل لتتبع مدة التحليل المستخدمة
+    console.log(`Setting up expiry timer for analysis ${analysisId} with duration: ${durationHours} hours`);
+    
     // إضافة ساعات إلى تاريخ الإنشاء لحساب تاريخ الانتهاء
     const expiryDate = addHours(new Date(createdAt), durationHours);
+    console.log(`Analysis created at: ${new Date(createdAt).toISOString()}, expires at: ${expiryDate.toISOString()}`);
     
     const calculateTimeLeft = () => {
       const now = new Date();

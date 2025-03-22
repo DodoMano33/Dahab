@@ -91,7 +91,7 @@ export const useAnalysisHandler = () => {
 
       // التحقق من صحة مدة التحليل
       const durationHours = duration ? parseInt(duration) : 8;
-      console.log("Validating duration hours:", durationHours);
+      console.log("Validating duration hours:", durationHours, "from input:", duration);
       
       if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
         showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
@@ -125,7 +125,8 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
-      // Process the chart analysis
+      // Process the chart analysis with duration
+      console.log("Calling processChartAnalysis with duration:", duration);
       const result = await processChartAnalysis({
         symbol: upperSymbol,
         timeframe,
@@ -137,6 +138,8 @@ export const useAnalysisHandler = () => {
         options,
         duration
       });
+      
+      console.log("Analysis result returned with duration:", result.duration);
       
       // Store the image and analysis result
       setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number) : null);

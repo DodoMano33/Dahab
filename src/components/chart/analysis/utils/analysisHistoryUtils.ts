@@ -20,7 +20,19 @@ export const saveAnalysisToHistory = async (
     console.log("Saving analysis to history with user_id:", userId);
     console.log("Mapped analysis type:", analysisType);
     console.log("Timeframe:", timeframe);
-    console.log("Duration (hours):", result.duration);
+    console.log("Result object duration:", result.duration);
+    console.log("Analysis result duration:", result.analysisResult.analysis_duration_hours);
+
+    // نستخدم القيمة من result.duration إذا كانت موجودة،
+    // ثم نستخدم result.analysisResult.analysis_duration_hours إذا كانت موجودة،
+    // وإلا نستخدم القيمة الافتراضية 8 ساعات
+    const finalDuration = result.duration !== undefined ? 
+                        result.duration : 
+                        (result.analysisResult.analysis_duration_hours !== undefined ? 
+                         result.analysisResult.analysis_duration_hours : 
+                         8);
+    
+    console.log("Final duration to use:", finalDuration);
 
     // Clear caches before inserting
     await clearSupabaseCache();
@@ -37,7 +49,7 @@ export const saveAnalysisToHistory = async (
       analysis: result.analysisResult,
       analysis_type: analysisType,
       timeframe: timeframe,
-      analysis_duration_hours: result.duration || 8 // استخدام المدة من النتيجة أو 8 ساعات كقيمة افتراضية
+      analysis_duration_hours: finalDuration
     };
     
     console.log("Inserting data payload:", JSON.stringify(payload, null, 2));
@@ -59,7 +71,7 @@ export const saveAnalysisToHistory = async (
         throw new Error("No data returned from insert operation");
       }
 
-      console.log("Analysis saved successfully to history");
+      console.log("Analysis saved successfully to history with duration:", finalDuration);
       toast.success("تم حفظ نتائج التحليل في السجل");
       return data;
     } catch (firstError) {
@@ -87,7 +99,7 @@ export const saveAnalysisToHistory = async (
         throw new Error("No data returned from insert operation");
       }
 
-      console.log("Analysis saved successfully to history (2nd attempt)");
+      console.log("Analysis saved successfully to history (2nd attempt) with duration:", finalDuration);
       toast.success("تم حفظ نتائج التحليل في السجل");
       return data;
     }

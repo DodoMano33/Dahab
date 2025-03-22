@@ -130,7 +130,14 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         }
 
         try {
-          console.log("Saving analysis with duration:", resultDuration || durationHours);
+          // استخدام المدة من النتيجة أولاً، ثم من المدة المقدمة، ثم استخدام القيمة الافتراضية
+          const finalDuration = resultDuration !== undefined ? 
+                             resultDuration : 
+                             (durationHours !== undefined ? 
+                             durationHours : 
+                             8);
+                             
+          console.log("Saving analysis with duration:", finalDuration);
           
           // Map the analysis type to a valid database enum value
           const mappedAnalysisType = mapToAnalysisType(analysisType);
@@ -143,7 +150,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
             analysisResult,
             analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
             timeframe,
-            durationHours: resultDuration || durationHours // استخدام المدة من النتيجة أو من المدخلات
+            durationHours: finalDuration // استخدام المدة النهائية
           });
 
           if (savedData) {
@@ -157,11 +164,11 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
               stopLossHit: false,
               analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
               timeframe,
-              analysis_duration_hours: resultDuration || durationHours // استخدام المدة من النتيجة أو من المدخلات
+              analysis_duration_hours: finalDuration // استخدام المدة النهائية
             };
 
             onAnalysis(newHistoryEntry);
-            console.log("تم تحديث سجل البحث:", newHistoryEntry);
+            console.log("تم تحديث سجل البحث مع مدة تحليل:", finalDuration, newHistoryEntry);
           }
         } catch (saveError) {
           console.error("Error saving analysis:", saveError);

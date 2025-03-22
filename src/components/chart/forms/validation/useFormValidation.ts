@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 interface ValidationProps {
@@ -33,11 +34,19 @@ export const useFormValidation = () => {
     }
 
     const durationHours = Number(duration);
-    if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
-      toast.error("الرجاء إدخال مدة صالحة بين 1 و 72 ساعة");
+    console.log("Validating duration:", duration, "Parsed:", durationHours);
+    
+    if (isNaN(durationHours)) {
+      toast.error("الرجاء إدخال مدة صالحة");
+      return false;
+    }
+    
+    if (durationHours < 1 || durationHours > 72) {
+      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
       return false;
     }
 
+    console.log("Form validation passed with duration:", durationHours);
     return true;
   };
 

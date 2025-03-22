@@ -36,7 +36,7 @@ export const saveAnalysis = async ({
 
   // Ensure analysisType is a valid value for the database
   console.log("Final analysis type being saved to database:", analysisType);
-  console.log("Duration hours being saved:", durationHours);
+  console.log("Duration hours being saved to database:", durationHours);
 
   // Set automatic activation type for Fibonacci analysis types
   if (!analysisResult.activation_type) {
@@ -83,6 +83,7 @@ export const saveAnalysis = async ({
       throw error;
     }
 
+    console.log("Analysis saved with duration:", durationHours, "Data:", data);
     return data;
   } catch (error) {
     console.error("Error in saveAnalysis:", error);
