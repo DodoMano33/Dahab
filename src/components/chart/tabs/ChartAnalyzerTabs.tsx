@@ -18,6 +18,7 @@ interface ChartAnalyzerTabsProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
+  setIsChartOpen: (open: boolean) => void; // إضافة خاصية جديدة
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
   onManualCheck: () => void;
@@ -38,6 +39,7 @@ export const ChartAnalyzerTabs = ({
   onTimeframesChange,
   onIntervalChange,
   setIsHistoryOpen,
+  setIsChartOpen, // إضافة المتغير الجديد للمعاملات
   onAnalysisComplete,
   chartDisplayComponent,
   onManualCheck,
@@ -67,6 +69,7 @@ export const ChartAnalyzerTabs = ({
           onTimeframesChange={onTimeframesChange}
           onIntervalChange={onIntervalChange}
           setIsHistoryOpen={setIsHistoryOpen}
+          setIsChartOpen={setIsChartOpen} // إضافة المتغير الجديد للمعاملات
           onAnalysisComplete={onAnalysisComplete}
           chartDisplayComponent={chartDisplayComponent}
           onManualCheck={onManualCheck}

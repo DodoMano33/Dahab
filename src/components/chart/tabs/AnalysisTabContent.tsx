@@ -6,6 +6,8 @@ import { AnalysisForm } from "../analysis/AnalysisForm";
 import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
+import { ChartButton } from "../history/ChartButton";
+import { HistoryPanel } from "../analysis/HistoryPanel";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -20,6 +22,7 @@ interface AnalysisTabContentProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
+  setIsChartOpen: (open: boolean) => void; // إضافة خاصية جديدة
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
   onManualCheck?: () => void;
@@ -40,8 +43,12 @@ export const AnalysisTabContent = ({
   onTimeframesChange,
   onIntervalChange,
   setIsHistoryOpen,
+  setIsChartOpen, // إضافة المتغير الجديد للمعاملات
   onAnalysisComplete,
   chartDisplayComponent,
+  onManualCheck,
+  isCheckLoading,
+  lastCheckTime
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
@@ -52,6 +59,18 @@ export const AnalysisTabContent = ({
         completed={searchHistoryStats.completed}
         isRefreshing={isRefreshing}
       />
+
+      {/* أزرار الرسم البياني وسجل البحث */}
+      <div className="flex flex-wrap gap-3">
+        <ChartButton onClick={() => setIsChartOpen(true)} />
+        <Button 
+          variant="outline" 
+          onClick={() => setIsHistoryOpen(true)}
+          className="flex items-center justify-center gap-2"
+        >
+          <span>سجل البحث</span>
+        </Button>
+      </div>
 
       {/* TradingView Chart */}
       <LiveTradingViewChart
