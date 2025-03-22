@@ -1,3 +1,4 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -54,6 +55,14 @@ export const BestEntryPointTable = ({
     }
   };
 
+  const getClosePriceLabel = (result: any) => {
+    if (result.is_success) {
+      return "الهدف الأول";
+    } else {
+      return "وقف الخسارة";
+    }
+  };
+
   return (
     <div className="border rounded-lg bg-white shadow-sm">
       <div className="flex p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-40">
@@ -72,9 +81,8 @@ export const BestEntryPointTable = ({
         <div className="w-32 text-center">مدة بقاء التحليل</div>
         <div className="w-28 text-center">الربح/الخسارة</div>
         <div className="w-28 text-center">السعر عند التحليل</div>
-        <div className="w-28 text-center">الهدف الأول</div>
-        <div className="w-28 text-center">وقف الخسارة</div>
         <div className="w-28 text-center">أفضل نقطة دخول</div>
+        <div className="w-28 text-center">سعر الإغلاق</div>
         <div className="w-36 text-center">تاريخ النتيجة</div>
         <div className="w-28 text-center">السعر الحالي</div>
       </div>
@@ -109,9 +117,15 @@ export const BestEntryPointTable = ({
               {result.profit_loss !== null ? formatNumber(result.profit_loss) : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
-            <div className="w-28 text-center">{formatNumber(result.target_price)}</div>
-            <div className="w-28 text-center">{formatNumber(result.stop_loss)}</div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
+            <div className="w-28 text-center">
+              <div className="flex flex-col items-center">
+                <div>{formatNumber(result.is_success ? result.target_price : result.stop_loss)}</div>
+                <div className={`text-xs ${result.is_success ? 'text-success' : 'text-destructive'}`}>
+                  {getClosePriceLabel(result)}
+                </div>
+              </div>
+            </div>
             <div className="w-36 text-center">
               {result.result_timestamp && (
                 <div className="flex flex-col items-center justify-center">

@@ -1,3 +1,4 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -57,6 +58,14 @@ export const AnalysisTable = ({
     }
   };
 
+  const getClosePriceLabel = (analysis: any) => {
+    if (analysis.is_success) {
+      return "الهدف الأول";
+    } else {
+      return "وقف الخسارة";
+    }
+  };
+
   return (
     <div className="border rounded-lg bg-white shadow-sm">
       <div className="flex p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-10">
@@ -75,8 +84,7 @@ export const AnalysisTable = ({
         <div className="w-32 text-center">مدة بقاء التحليل</div>
         <div className="w-28 text-center">الربح/الخسارة</div>
         <div className="w-28 text-center">سعر الدخول</div>
-        <div className="w-28 text-center">الهدف</div>
-        <div className="w-28 text-center">وقف الخسارة</div>
+        <div className="w-28 text-center">سعر الإغلاق</div>
         <div className="w-36 text-center">تاريخ النتيجة</div>
         <div className="w-28 text-center">السعر الحالي</div>
       </div>
@@ -113,8 +121,14 @@ export const AnalysisTable = ({
               {analysis.profit_loss !== null ? formatNumber(analysis.profit_loss) : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(analysis.entry_price)}</div>
-            <div className="w-28 text-center">{formatNumber(analysis.target_price)}</div>
-            <div className="w-28 text-center">{formatNumber(analysis.stop_loss)}</div>
+            <div className="w-28 text-center">
+              <div className="flex flex-col items-center">
+                <div>{formatNumber(analysis.is_success ? analysis.target_price : analysis.stop_loss)}</div>
+                <div className={`text-xs ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
+                  {getClosePriceLabel(analysis)}
+                </div>
+              </div>
+            </div>
             <div className="w-36 text-center">
               {analysis.result_timestamp && (
                 <div className="flex flex-col items-center justify-center">
