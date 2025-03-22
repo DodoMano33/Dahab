@@ -138,6 +138,8 @@ export const BackTestResultsDialog = ({
           selectedItemsCount={selectedItems.size}
           isDeleting={isDeleting}
           useEntryPoint={useEntryPoint}
+          totalProfitLoss={totalProfitLoss}
+          currentTradingViewPrice={currentTradingViewPrice}
         />
 
         <div className="flex-1 overflow-hidden">
