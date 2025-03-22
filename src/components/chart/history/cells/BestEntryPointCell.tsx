@@ -1,7 +1,7 @@
 
 import { TableCell } from "@/components/ui/table";
-import { BestEntryPoint } from "../BestEntryPoint";
 import { validatePrice } from "../utils/cellUtils";
+import { EntryPointIndicator } from "../components/EntryPointIndicator";
 
 interface BestEntryPointCellProps {
   price?: number | string | null;
@@ -14,7 +14,7 @@ export const BestEntryPointCell = ({ price, reason }: BestEntryPointCellProps) =
   
   return (
     <TableCell className="w-24 p-2">
-      <BestEntryPoint 
+      <EntryPointIndicator 
         price={validPrice} 
         reason={reason}
       />
