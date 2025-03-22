@@ -14,8 +14,8 @@ export const HistoryTableHeader = ({
   isAllSelected
 }: HistoryTableHeaderProps) => {
   return (
-    <TableHeader className="sticky top-0 bg-background z-30 border-b shadow-sm">
-      <TableRow>
+    <TableHeader className="sticky top-0 bg-background z-30 border-b shadow-md">
+      <TableRow className="bg-muted/40 hover:bg-muted/40">
         {showCheckbox && (
           <TableHead className="w-10 text-center">
             <Checkbox 
@@ -25,18 +25,18 @@ export const HistoryTableHeader = ({
             />
           </TableHead>
         )}
-        <TableHead className="text-center w-36">تاريخ التحليل</TableHead>
-        <TableHead className="text-center w-28">نوع التحليل</TableHead>
-        <TableHead className="text-center w-16">الرمز</TableHead>
-        <TableHead className="text-center w-20">الإطار الزمني</TableHead>
-        <TableHead className="text-center w-16">الاتجاه</TableHead>
-        <TableHead className="text-center w-16">سعر الدخول</TableHead>
-        <TableHead className="text-center w-20">وقف الخسارة</TableHead>
-        <TableHead className="text-center w-24">الأهداف</TableHead>
-        <TableHead className="text-center w-24">أفضل نقطة دخول</TableHead>
-        <TableHead className="text-center w-20">الوقت المتبقي</TableHead>
-        <TableHead className="text-center w-24">آخر فحص</TableHead>
-        <TableHead className="text-center w-16">حالة السوق</TableHead>
+        <TableHead className="text-center w-36 font-bold">تاريخ التحليل</TableHead>
+        <TableHead className="text-center w-28 font-bold">نوع التحليل</TableHead>
+        <TableHead className="text-center w-16 font-bold">الرمز</TableHead>
+        <TableHead className="text-center w-20 font-bold">الإطار الزمني</TableHead>
+        <TableHead className="text-center w-16 font-bold">الاتجاه</TableHead>
+        <TableHead className="text-center w-16 font-bold">سعر الدخول</TableHead>
+        <TableHead className="text-center w-20 font-bold">وقف الخسارة</TableHead>
+        <TableHead className="text-center w-24 font-bold">الأهداف</TableHead>
+        <TableHead className="text-center w-24 font-bold">أفضل نقطة دخول</TableHead>
+        <TableHead className="text-center w-20 font-bold">الوقت المتبقي</TableHead>
+        <TableHead className="text-center w-24 font-bold">آخر فحص</TableHead>
+        <TableHead className="text-center w-16 font-bold">حالة السوق</TableHead>
       </TableRow>
     </TableHeader>
   );
