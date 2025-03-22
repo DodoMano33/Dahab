@@ -9,7 +9,7 @@ export const saveAnalysisToHistory = async (
     analysisResult: AnalysisData; 
     currentPrice?: number; 
     symbol?: string;
-    duration?: number; // Add duration to the result object type
+    duration?: number; // نوع لمدة التحليل في كائن النتيجة
   },
   symbol: string,
   timeframe: string,
@@ -37,7 +37,7 @@ export const saveAnalysisToHistory = async (
       analysis: result.analysisResult,
       analysis_type: analysisType,
       timeframe: timeframe,
-      analysis_duration_hours: result.duration || 8 // Use duration from result or default to 8 hours
+      analysis_duration_hours: result.duration || 8 // استخدام المدة من النتيجة أو 8 ساعات كقيمة افتراضية
     };
     
     console.log("Inserting data payload:", JSON.stringify(payload, null, 2));

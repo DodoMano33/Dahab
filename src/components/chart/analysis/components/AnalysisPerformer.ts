@@ -70,7 +70,7 @@ export const performAnalysis = async ({
       
       // إضافة مدة التحليل إلى النتائج إذا تم توفيرها
       if (duration) {
-        result.analysisResult.duration = duration;
+        result.duration = duration;
         console.log(`Adding analysis duration: ${duration} hours`);
       }
       
@@ -128,8 +128,7 @@ export const performAnalysis = async ({
             await new Promise(resolve => setTimeout(resolve, 300));
           }
           
-          // FIX: Pass duration as part of the result object instead of a separate parameter
-          // This ensures we're only passing the 5 expected arguments
+          // التأكد من إضافة مدة التحليل إلى كائن النتيجة المرسل إلى وظيفة الحفظ
           if (duration) {
             result.duration = duration;
           }
@@ -163,8 +162,7 @@ export const performAnalysis = async ({
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
           timeframe: timeframe,
-          // FIX: Remove analysisDate property as it doesn't exist in SearchHistoryItem type
-          analysis_duration_hours: duration // Use analysis_duration_hours instead of duration
+          analysis_duration_hours: duration || 8 // استخدام مدة التحليل المدخلة أو 8 ساعات كقيمة افتراضية
         };
         
         console.log("Adding new analysis to history:", newHistoryEntry);
