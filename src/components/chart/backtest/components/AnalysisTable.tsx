@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
-import { Badge } from "@/components/ui/badge";
 import { DirectionIndicator } from "../../history/DirectionIndicator";
 
 interface AnalysisTableProps {
@@ -40,11 +39,6 @@ export const AnalysisTable = ({
     return isSuccess ? formattedValue : `-${formattedValue}`;
   };
 
-  // دالة لتنسيق إجمالي الربح/الخسارة
-  const formatTotalProfitLoss = (total: number) => {
-    return total >= 0 ? `+${total.toFixed(3)}` : `${total.toFixed(3)}`;
-  };
-
   // دالة لتنسيق تاريخ إنشاء التحليل (تاريخ/شهر/سنة ساعة:دقيقة)
   const formatCreationDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
@@ -74,14 +68,7 @@ export const AnalysisTable = ({
         <div className="w-24 text-center">الاطار الزمني</div>
         <div className="w-20 text-center">الاتجاه</div>
         <div className="w-24 text-center">النتيجة</div>
-        <div className="w-28 text-center flex items-center justify-center gap-2">
-          <span>الربح/الخسارة</span>
-          {analyses.length > 0 && (
-            <Badge variant={totalProfitLoss >= 0 ? "success" : "destructive"} className="font-bold">
-              {formatTotalProfitLoss(totalProfitLoss)}
-            </Badge>
-          )}
-        </div>
+        <div className="w-28 text-center">الربح/الخسارة</div>
         <div className="w-28 text-center">السعر عند التحليل</div>
         <div className="w-28 text-center">أفضل نقطة دخول</div>
         <div className="w-28 text-center">الهدف الأول</div>
