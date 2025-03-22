@@ -19,14 +19,18 @@ export const useBestEntryPoint = (analysis: AnalysisData, id: string): EntryPoin
     if ('entryPoint' in analysis && analysis.entryPoint !== undefined) {
       const price = typeof analysis.entryPoint === 'string' 
         ? parseFloat(analysis.entryPoint) 
-        : analysis.entryPoint;
+        : typeof analysis.entryPoint === 'number'
+          ? analysis.entryPoint
+          : undefined;
         
       console.log(`Using legacy entryPoint value for ${id}:`, price);
       
-      return {
-        price,
-        reason: "نقطة دخول من التحليل"
-      };
+      if (price !== undefined) {
+        return {
+          price,
+          reason: "نقطة دخول من التحليل"
+        };
+      }
     }
     
     // إذا لم نجد أي من الحقلين، نعيد قيمًا فارغة

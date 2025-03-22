@@ -27,7 +27,7 @@ export const useTradingViewMessages = ({
     const updatePrice = async () => {
       try {
         // استخدام وظيفة تحديث السعر من priceUpdater
-        const price = await priceUpdater.getPrice(symbol);
+        const price = await priceUpdater.fetchPrice(symbol);
         if (price && isComponentMountedRef.current) {
           console.log('Metal Price API returned price:', price);
           
