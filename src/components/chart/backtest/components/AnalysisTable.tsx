@@ -130,10 +130,16 @@ export const AnalysisTable = ({
               {analysis.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="w-32 text-center truncate">{analysis.analysis_duration || '0 ساعة'}</div>
-            <div className={`w-28 text-center font-medium ${Number(analysis.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {analysis.profit_loss !== null && analysis.profit_loss !== undefined 
-                ? formatProfitLoss(analysis.profit_loss, analysis.is_success) 
-                : 'N/A'}
+            <div className="w-28 text-center">
+              {analysis.profit_loss !== null && analysis.profit_loss !== undefined ? (
+                <span className={`py-1 px-3 rounded-md font-medium ${
+                  Number(analysis.profit_loss) >= 0 
+                    ? 'bg-success/20 text-success border border-success/30' 
+                    : 'bg-destructive/20 text-destructive border border-destructive/30'
+                }`}>
+                  {formatProfitLoss(analysis.profit_loss, analysis.is_success)}
+                </span>
+              ) : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(analysis.entry_price)}</div>
             <div className="w-28 text-center">
@@ -171,7 +177,7 @@ export const AnalysisTable = ({
       </div>
       <div className="flex p-4 justify-between bg-muted/20 border-t">
         <div className="font-bold">إجمالي النتائج: {analyses.length}</div>
-        <div className={`font-bold py-1 px-3 rounded-md ${totalProfitLoss >= 0 ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
+        <div className={`py-1 px-3 rounded-md font-bold ${totalProfitLoss >= 0 ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
           الربح/الخسارة الإجمالية: {formatTotalProfitLoss(totalProfitLoss)}
         </div>
       </div>

@@ -128,10 +128,16 @@ export const BestEntryPointTable = ({
               {result.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="w-32 text-center">{result.analysis_duration || '0 ساعة'}</div>
-            <div className={`w-28 text-center font-medium ${Number(result.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
-              {result.profit_loss !== null && result.profit_loss !== undefined 
-                ? formatProfitLoss(result.profit_loss, result.is_success) 
-                : 'N/A'}
+            <div className="w-28 text-center">
+              {result.profit_loss !== null && result.profit_loss !== undefined ? (
+                <span className={`py-1 px-3 rounded-md font-medium ${
+                  Number(result.profit_loss) >= 0 
+                    ? 'bg-success/20 text-success border border-success/30' 
+                    : 'bg-destructive/20 text-destructive border border-destructive/30'
+                }`}>
+                  {formatProfitLoss(result.profit_loss, result.is_success)}
+                </span>
+              ) : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
@@ -170,7 +176,7 @@ export const BestEntryPointTable = ({
       </div>
       <div className="flex p-4 justify-between bg-muted/20 border-t">
         <div className="font-bold">إجمالي النتائج: {results.length}</div>
-        <div className={`font-bold py-1 px-3 rounded-md ${totalProfitLoss >= 0 ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
+        <div className={`py-1 px-3 rounded-md font-bold ${totalProfitLoss >= 0 ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
           الربح/الخسارة الإجمالية: {formatTotalProfitLoss(totalProfitLoss)}
         </div>
       </div>
