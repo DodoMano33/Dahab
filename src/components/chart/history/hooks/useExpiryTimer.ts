@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { addHours, differenceInMinutes, differenceInHours, differenceInSeconds } from "date-fns";
 import { supabase } from "@/lib/supabase";
@@ -9,7 +8,7 @@ interface UseExpiryTimerProps {
   durationHours?: number;
 }
 
-export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: UseExpiryTimerProps) => {
+export const useExpiryTimer = ({ createdAt, analysisId, durationHours = 36 }: UseExpiryTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState<boolean>(false);
 

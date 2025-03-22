@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 
 interface AnalysisDurationInputProps {
@@ -15,7 +16,7 @@ export const AnalysisDurationInput = ({ value, onChange }: AnalysisDurationInput
         type="number"
         min="1"
         max="72"
-        placeholder="أدخل عدد الساعات (8 ساعات افتراضياً)"
+        placeholder="أدخل عدد الساعات (36 ساعة افتراضياً)"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full"

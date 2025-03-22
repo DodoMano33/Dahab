@@ -75,7 +75,7 @@ export const processChartAnalysis = async ({
     console.log("Analysis using price:", finalPrice);
 
     // تحويل مدة التحليل إلى رقم إذا كانت موجودة
-    const durationHours = duration ? parseInt(duration) : 8;
+    const durationHours = duration ? parseInt(duration) : 36;
     console.log(`Analysis duration set to: ${durationHours} hours`);
 
     // Get the chart image

@@ -9,7 +9,7 @@ interface ExpiryTimerProps {
   durationHours?: number;
 }
 
-export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 8 }: ExpiryTimerProps) => {
+export const ExpiryTimer = ({ createdAt, analysisId, durationHours = 36 }: ExpiryTimerProps) => {
   const { timeLeft, isExpired } = useExpiryTimer({ 
     createdAt, 
     analysisId,

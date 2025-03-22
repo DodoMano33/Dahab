@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnalysisType, SearchHistoryItem } from "@/types/analysis";
@@ -41,7 +40,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
     duration?: string,
     selectedTypes?: string[]
   ) => {
-    // Create toast IDs for tracking
     const loadingToastId = showLoadingToast(
       `جاري التحليل للرمز ${symbol} على الإطار الزمني ${timeframe}...`
     );
@@ -53,14 +51,12 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         return;
       }
 
-      // Use the validation utility
       if (!validateAnalysisInputs(symbol, timeframe, providedPrice)) {
         dismissToasts(loadingToastId);
         return;
       }
 
-      // التحقق من صحة مدة التحليل
-      const durationHours = duration ? parseInt(duration) : 8;
+      const durationHours = duration ? parseInt(duration) : 36;
       console.log("Using duration hours:", durationHours);
       
       if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
@@ -69,7 +65,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         return;
       }
 
-      // Get the analysis type using the utility function
       const { analysisType } = buildAnalysisConfig(
         isScalping,
         isAI,
@@ -117,7 +112,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         selectedTypes
       );
       
-      // Dismiss the loading toast
       dismissToasts(loadingToastId);
       
       if (result && result.analysisResult) {
@@ -130,16 +124,14 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         }
 
         try {
-          // استخدام المدة من النتيجة أولاً، ثم من المدة المقدمة، ثم استخدام القيمة الافتراضية
           const finalDuration = resultDuration !== undefined ? 
                              resultDuration : 
                              (durationHours !== undefined ? 
                              durationHours : 
-                             8);
+                             36);
                              
           console.log("Saving analysis with duration:", finalDuration);
           
-          // Map the analysis type to a valid database enum value
           const mappedAnalysisType = mapToAnalysisType(analysisType);
           console.log("Mapped analysis type:", mappedAnalysisType);
           
@@ -148,9 +140,9 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
             symbol: upperSymbol,
             currentPrice,
             analysisResult,
-            analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+            analysisType: mappedAnalysisType as AnalysisType,
             timeframe,
-            durationHours: finalDuration // استخدام المدة النهائية
+            durationHours: finalDuration
           });
 
           if (savedData) {
@@ -162,9 +154,9 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
               analysis: analysisResult,
               targetHit: false,
               stopLossHit: false,
-              analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
+              analysisType: mappedAnalysisType as AnalysisType,
               timeframe,
-              analysis_duration_hours: finalDuration // استخدام المدة النهائية
+              analysis_duration_hours: finalDuration
             };
 
             onAnalysis(newHistoryEntry);
@@ -179,7 +171,6 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
       console.error("خطأ في التحليل:", error);
       showErrorToast(error);
       
-      // Dismiss any loading toasts
       dismissToasts(loadingToastId);
     }
   };

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SymbolInput } from "../inputs/SymbolInput";
 import { PriceInput } from "../inputs/PriceInput";
@@ -52,7 +51,7 @@ export const ChartAnalysisForm = ({
   const [symbol, setSymbol] = useState(defaultSymbol || "XAUUSD");
   const [price, setPrice] = useState(defaultPrice?.toString() || "");
   const [timeframe, setTimeframe] = useState("1d");
-  const [duration, setDuration] = useState("8");
+  const [duration, setDuration] = useState("36");
 
   const { validateInputs } = useFormValidation();
   const { isAIDialogOpen, setIsAIDialogOpen, handleCombinedAnalysis } = useCombinedAnalysis({

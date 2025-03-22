@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { saveAnalysisToHistory } from "../utils/analysisHistoryUtils";
 import { mapAnalysisTypeToConfig, mapToAnalysisType } from "../utils/analysisTypeMapper";
@@ -29,7 +28,7 @@ export const performAnalysis = async ({
 }: AnalysisPerformerProps) => {
   try {
     // نضيف سجل لتتبع مدة التحليل
-    console.log(`Starting analysis for ${timeframe} - ${analysisType} with duration ${duration || 8} hours`);
+    console.log(`Starting analysis for ${timeframe} - ${analysisType} with duration ${duration || 36} hours`);
     
     // Clear caches before starting analysis
     await clearSupabaseCache();
@@ -39,7 +38,7 @@ export const performAnalysis = async ({
     console.log("Analysis configuration:", config);
     
     // التأكد من أن مدة التحليل مرسلة كسلسلة نصية
-    const durationString = duration !== undefined ? duration.toString() : "8";
+    const durationString = duration !== undefined ? duration.toString() : "36";
     console.log("Sending duration as string:", durationString);
     
     // تمرير مدة التحليل إلى handleTradingViewConfig
@@ -74,8 +73,8 @@ export const performAnalysis = async ({
       result.analysisResult.timeframe = timeframe;
       
       // التأكد من تضمين مدة التحليل في النتائج
-      // استخدام المدة من النتيجة أو المدة المقدمة كمعامل أو 8 ساعات كقيمة افتراضية
-      const finalDuration = result.duration || duration || 8;
+      // استخدام المدة من النتيجة أو المدة المقدمة كمعامل أو 36 ساعات كقيمة افتراضية
+      const finalDuration = result.duration || duration || 36;
       console.log(`Using final duration: ${finalDuration} hours`);
       
       // إضافة أهداف افتراضية إذا لم تكن موجودة
