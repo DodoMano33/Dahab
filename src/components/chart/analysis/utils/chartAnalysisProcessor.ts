@@ -131,7 +131,7 @@ export const processChartAnalysis = async ({
       analysisResult, 
       currentPrice: finalPrice, 
       symbol,
-      duration: durationHours
+      duration: durationHours  // تأكيد تمرير قيمة مدة التحليل
     };
     
   } catch (error) {

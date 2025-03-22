@@ -59,7 +59,7 @@ export const performAnalysis = async ({
       false, // isBehavioral
       false, // isFibonacci
       false, // isFibonacciAdvanced
-      duration ? duration.toString() : undefined // إضافة مدة التحليل
+      duration ? duration.toString() : undefined // تحويل القيمة إلى سلسلة نصية
     );
 
     if (result && result.analysisResult && user) {
@@ -162,7 +162,7 @@ export const performAnalysis = async ({
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
           timeframe: timeframe,
-          analysis_duration_hours: duration || 8 // استخدام مدة التحليل المدخلة أو 8 ساعات كقيمة افتراضية
+          analysis_duration_hours: duration || 8 // استخدام مدة التحليل المدخلة
         };
         
         console.log("Adding new analysis to history:", newHistoryEntry);
