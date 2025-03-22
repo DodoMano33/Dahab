@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { AnalysisInfoCard } from "../info/AnalysisInfoCard";
 import { LiveTradingViewChart } from "../LiveTradingViewChart";
@@ -8,6 +7,7 @@ import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
 import { ChartButton } from "../history/ChartButton";
 import { HistoryPanel } from "../analysis/HistoryPanel";
+import { Button } from "@/components/ui/button";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -22,7 +22,7 @@ interface AnalysisTabContentProps {
   onTimeframesChange: (timeframes: string[]) => void;
   onIntervalChange: (interval: string) => void;
   setIsHistoryOpen: (open: boolean) => void;
-  setIsChartOpen: (open: boolean) => void; // إضافة خاصية جديدة
+  setIsChartOpen: (open: boolean) => void;
   onAnalysisComplete: (newItem: SearchHistoryItem) => void;
   chartDisplayComponent: ReactNode;
   onManualCheck?: () => void;
@@ -43,7 +43,7 @@ export const AnalysisTabContent = ({
   onTimeframesChange,
   onIntervalChange,
   setIsHistoryOpen,
-  setIsChartOpen, // إضافة المتغير الجديد للمعاملات
+  setIsChartOpen,
   onAnalysisComplete,
   chartDisplayComponent,
   onManualCheck,
@@ -52,7 +52,6 @@ export const AnalysisTabContent = ({
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* معلومات سريعة */}
       <AnalysisInfoCard 
         total={searchHistoryStats.total}
         active={searchHistoryStats.active}
@@ -60,7 +59,6 @@ export const AnalysisTabContent = ({
         isRefreshing={isRefreshing}
       />
 
-      {/* أزرار الرسم البياني وسجل البحث */}
       <div className="flex flex-wrap gap-3">
         <ChartButton onClick={() => setIsChartOpen(true)} />
         <Button 
@@ -72,14 +70,12 @@ export const AnalysisTabContent = ({
         </Button>
       </div>
 
-      {/* TradingView Chart */}
       <LiveTradingViewChart
         symbol={autoSymbol}
         onSymbolChange={onSymbolChange}
         onPriceUpdate={onPriceUpdate}
       />
 
-      {/* Symbol, Price, and Timeframe Form */}
       <AnalysisForm
         onAnalysis={onAddToSearchHistory}
         isAnalyzing={isAnalyzing}
@@ -88,7 +84,6 @@ export const AnalysisTabContent = ({
         defaultPrice={autoPrice}
       />
 
-      {/* Auto Analysis Settings */}
       <AnalysisSettings
         onTimeframesChange={onTimeframesChange}
         onIntervalChange={onIntervalChange}
@@ -98,10 +93,8 @@ export const AnalysisTabContent = ({
         defaultPrice={autoPrice}
       />
       
-      {/* Manual Analysis Display */}
       {chartDisplayComponent}
       
-      {/* فقط عرض زر فحص التحليلات بدون وظيفة */}
       <BacktestCheckButton />
     </div>
   );
