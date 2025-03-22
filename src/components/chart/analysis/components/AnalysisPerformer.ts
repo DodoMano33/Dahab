@@ -128,13 +128,18 @@ export const performAnalysis = async ({
             await new Promise(resolve => setTimeout(resolve, 300));
           }
           
+          // FIX: Pass duration as part of the result object instead of a separate parameter
+          // This ensures we're only passing the 5 expected arguments
+          if (duration) {
+            result.duration = duration;
+          }
+          
           savedData = await saveAnalysisToHistory(
             result,
             symbol,
             timeframe,
             mappedAnalysisType,
-            user.id,
-            duration // تمرير مدة التحليل إلى وظيفة الحفظ
+            user.id
           );
           
           console.log("Analysis saved to history:", savedData);
@@ -158,8 +163,8 @@ export const performAnalysis = async ({
           analysis: result.analysisResult,
           analysisType: mappedAnalysisType,
           timeframe: timeframe,
-          analysisDate: new Date(),
-          duration: duration // إضافة مدة التحليل إلى عنصر سجل البحث الجديد
+          // FIX: Remove analysisDate property as it doesn't exist in SearchHistoryItem type
+          analysis_duration_hours: duration // Use analysis_duration_hours instead of duration
         };
         
         console.log("Adding new analysis to history:", newHistoryEntry);

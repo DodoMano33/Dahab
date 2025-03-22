@@ -8,7 +8,8 @@ export const saveAnalysisToHistory = async (
   result: { 
     analysisResult: AnalysisData; 
     currentPrice?: number; 
-    symbol?: string; 
+    symbol?: string;
+    duration?: number; // Add duration to the result object type
   },
   symbol: string,
   timeframe: string,
@@ -19,6 +20,7 @@ export const saveAnalysisToHistory = async (
     console.log("Saving analysis to history with user_id:", userId);
     console.log("Mapped analysis type:", analysisType);
     console.log("Timeframe:", timeframe);
+    console.log("Duration (hours):", result.duration);
 
     // Clear caches before inserting
     await clearSupabaseCache();
@@ -34,7 +36,8 @@ export const saveAnalysisToHistory = async (
       current_price: currentPrice,
       analysis: result.analysisResult,
       analysis_type: analysisType,
-      timeframe: timeframe
+      timeframe: timeframe,
+      analysis_duration_hours: result.duration || 8 // Use duration from result or default to 8 hours
     };
     
     console.log("Inserting data payload:", JSON.stringify(payload, null, 2));
