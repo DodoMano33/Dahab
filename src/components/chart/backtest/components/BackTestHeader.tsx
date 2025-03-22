@@ -49,12 +49,9 @@ export const BackTestHeader = ({
           </Badge>
         )}
         
-        <Badge 
-          className={`${isProfitable ? 'bg-success/10 text-success hover:bg-success/20' : 'bg-destructive/10 text-destructive hover:bg-destructive/20'}`} 
-          variant="secondary"
-        >
-          الربح/الخسارة: {formattedProfitLoss}
-        </Badge>
+        <div className={`py-1 px-3 rounded-md font-medium ${isProfitable ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
+          الربح/الخسارة: {isProfitable ? formattedProfitLoss : `-${Math.abs(Number(formattedProfitLoss)).toFixed(4)}`}
+        </div>
       </div>
       
       <div className="flex items-center gap-2">

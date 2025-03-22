@@ -39,6 +39,18 @@ export const BestEntryPointTable = ({
     return Number(num).toFixed(4);
   };
   
+  // تنسيق الربح والخسارة مع إضافة إشارة سالب للقيم السالبة
+  const formatProfitLoss = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    const num = typeof value === "string" ? parseFloat(value) : value;
+    const formattedValue = Number(num).toFixed(4);
+    // إضافة إشارة سالب للقيم السالبة
+    if (num < 0) {
+      return `-${Math.abs(Number(formattedValue)).toFixed(4)}`;
+    }
+    return formattedValue;
+  };
+  
   const formatCreationDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     try {
@@ -115,7 +127,7 @@ export const BestEntryPointTable = ({
             <div className="w-32 text-center">{result.analysis_duration || '0 ساعة'}</div>
             <div className={`w-28 text-center font-medium ${Number(result.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
               {result.profit_loss !== null && result.profit_loss !== undefined 
-                ? formatNumber(result.profit_loss) 
+                ? formatProfitLoss(result.profit_loss) 
                 : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>

@@ -66,6 +66,18 @@ export const AnalysisTable = ({
     }
   };
 
+  // تنسيق الربح والخسارة مع إضافة إشارة سالب للقيم السالبة
+  const formatProfitLoss = (value: number | string | null | undefined, isSuccess: boolean) => {
+    if (value === null || value === undefined) return "-";
+    const num = typeof value === "string" ? parseFloat(value) : value;
+    const formattedValue = Number(num).toFixed(4);
+    // إضافة إشارة سالب للقيم السالبة
+    if (num < 0) {
+      return `-${Math.abs(Number(formattedValue)).toFixed(4)}`;
+    }
+    return formattedValue;
+  };
+
   return (
     <div className="border rounded-lg bg-white shadow-sm">
       <div className="flex p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-10">
@@ -119,7 +131,7 @@ export const AnalysisTable = ({
             <div className="w-32 text-center truncate">{analysis.analysis_duration || '0 ساعة'}</div>
             <div className={`w-28 text-center font-medium ${Number(analysis.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
               {analysis.profit_loss !== null && analysis.profit_loss !== undefined 
-                ? formatNumber(analysis.profit_loss) 
+                ? formatProfitLoss(analysis.profit_loss, analysis.is_success) 
                 : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(analysis.entry_price)}</div>
@@ -159,7 +171,7 @@ export const AnalysisTable = ({
       <div className="flex p-4 justify-between bg-muted/20 border-t">
         <div className="font-bold">إجمالي النتائج: {analyses.length}</div>
         <div className={`font-bold ${totalProfitLoss >= 0 ? 'text-success' : 'text-destructive'}`}>
-          الربح/الخسارة الإجمالية: {totalProfitLoss.toFixed(4)}
+          الربح/الخسارة الإجمالية: {totalProfitLoss >= 0 ? totalProfitLoss.toFixed(4) : `-${Math.abs(totalProfitLoss).toFixed(4)}`}
         </div>
       </div>
     </div>
