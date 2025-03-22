@@ -1,4 +1,3 @@
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -25,9 +24,7 @@ export const BestEntryPointTable = ({
   const { currentPrice: realTimePrice } = useCurrentPrice();
   const [displayPrice, setDisplayPrice] = useState<number | null>(null);
   
-  // تحديث السعر المعروض عند تغير السعر الحقيقي أو سعر TradingView
   useEffect(() => {
-    // نستخدم السعر الحقيقي من Metal Price API إذا كان متاحاً، وإلا نستخدم سعر TradingView كاحتياطي
     if (realTimePrice !== null) {
       setDisplayPrice(realTimePrice);
     } else if (currentTradingViewPrice !== null) {
@@ -35,19 +32,22 @@ export const BestEntryPointTable = ({
     }
   }, [realTimePrice, currentTradingViewPrice]);
   
-  // دالة لتنسيق الأرقام
   const formatNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return "-";
     const num = typeof value === "string" ? parseFloat(value) : value;
     return Number(num).toFixed(4);
   };
   
-  // دالة لتنسيق تاريخ الإنشاء
   const formatCreationDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     try {
       const date = new Date(dateString);
-      return format(date, 'yyyy/MM/dd HH:mm', { locale: ar });
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <div>{format(date, 'yyyy/MM/dd', { locale: ar })}</div>
+          <div className="font-medium">{format(date, 'HH:mm', { locale: ar })}</div>
+        </div>
+      );
     } catch (error) {
       console.error("Error formatting date:", error, dateString);
       return "-";
@@ -92,7 +92,7 @@ export const BestEntryPointTable = ({
                 onCheckedChange={() => onSelect(result.id)}
               />
             </div>
-            <div className="w-36 text-center truncate">{formatCreationDate(result.created_at)}</div>
+            <div className="w-36 text-center">{formatCreationDate(result.created_at)}</div>
             <div className="w-32 text-center truncate">{result.analysis_type}</div>
             <div className="w-20 text-center">{result.symbol}</div>
             <div className="w-24 text-center">{result.timeframe}</div>
@@ -113,8 +113,12 @@ export const BestEntryPointTable = ({
             <div className="w-28 text-center">{formatNumber(result.stop_loss)}</div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
             <div className="w-36 text-center">
-              {result.result_timestamp && 
-                format(new Date(result.result_timestamp), 'yyyy/MM/dd HH:mm', { locale: ar })}
+              {result.result_timestamp && (
+                <div className="flex flex-col items-center justify-center">
+                  <div>{format(new Date(result.result_timestamp), 'yyyy/MM/dd', { locale: ar })}</div>
+                  <div className="font-medium">{format(new Date(result.result_timestamp), 'HH:mm', { locale: ar })}</div>
+                </div>
+              )}
             </div>
             <div className="w-28 text-center relative">
               <TooltipProvider>
