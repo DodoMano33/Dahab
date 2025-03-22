@@ -39,7 +39,15 @@ export const useHistoryRowData = ({
   const bestEntryPoint = useBestEntryPoint(analysis, id);
   
   // معالجة بيانات الأهداف
-  const fixedTargets = processTargets(analysis, id, date);
+  const [fixedTargets, setFixedTargets] = useState(processTargets(analysis, id, date));
+
+  // إعادة معالجة الأهداف عند تغير البيانات
+  useEffect(() => {
+    console.log(`Re-processing targets for analysis ${id}...`);
+    const processedTargets = processTargets(analysis, id, date);
+    console.log(`Processed targets for ${id}:`, processedTargets);
+    setFixedTargets(processedTargets);
+  }, [analysis, id, date]);
 
   // الاستماع للتحديثات في الوقت الحقيقي
   useEffect(() => {

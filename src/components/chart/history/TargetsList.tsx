@@ -12,10 +12,15 @@ export interface TargetsListProps {
 }
 
 export const TargetsList = ({ targets, isTargetHit }: TargetsListProps) => {
-  // Validate targets data
-  const validTargets = targets.filter(target => 
+  // طباعة تشخيصية للأهداف
+  console.log("TargetsList received targets:", targets);
+  
+  // التحقق من صحة بيانات الأهداف
+  const validTargets = Array.isArray(targets) ? targets.filter(target => 
     target && typeof target.price === 'number' && !isNaN(target.price)
-  );
+  ) : [];
+  
+  console.log("TargetsList valid targets:", validTargets);
   
   return (
     <div className="space-y-2 text-center w-full">
@@ -32,7 +37,7 @@ export const TargetsList = ({ targets, isTargetHit }: TargetsListProps) => {
           </div>
         ))
       ) : (
-        <div>لا توجد أهداف</div>
+        <div className="text-muted-foreground text-sm">لا توجد أهداف</div>
       )}
     </div>
   );
