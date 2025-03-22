@@ -13,6 +13,7 @@ interface BestEntryPointTableProps {
   onSelectAll: (checked: boolean) => void;
   onSelect: (id: string) => void;
   currentTradingViewPrice?: number | null;
+  totalProfitLoss?: number;
 }
 
 export const BestEntryPointTable = ({
@@ -20,7 +21,8 @@ export const BestEntryPointTable = ({
   selectedItems,
   onSelectAll,
   onSelect,
-  currentTradingViewPrice = null
+  currentTradingViewPrice = null,
+  totalProfitLoss = 0
 }: BestEntryPointTableProps) => {
   const { currentPrice: realTimePrice } = useCurrentPrice();
   const [displayPrice, setDisplayPrice] = useState<number | null>(null);
@@ -55,6 +57,15 @@ export const BestEntryPointTable = ({
       return `-${Math.abs(Number(formattedValue)).toFixed(4)}`;
     }
     return formattedValue;
+  };
+
+  // تنسيق القيمة الإجمالية للربح/الخسارة
+  const formatTotalProfitLoss = (value: number) => {
+    if (value >= 0) {
+      return value.toFixed(4);
+    } else {
+      return `-${Math.abs(value).toFixed(4)}`;
+    }
   };
   
   const formatCreationDate = (dateString: string | null | undefined) => {
@@ -170,6 +181,12 @@ export const BestEntryPointTable = ({
             </div>
           </div>
         ))}
+      </div>
+      <div className="flex p-4 justify-between bg-muted/20 border-t">
+        <div className="font-bold">إجمالي النتائج: {results.length}</div>
+        <div className={`font-bold py-1 px-3 rounded-md ${totalProfitLoss >= 0 ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
+          الربح/الخسارة الإجمالية: {formatTotalProfitLoss(totalProfitLoss)}
+        </div>
       </div>
     </div>
   );

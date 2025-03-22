@@ -69,6 +69,7 @@ export const BestEntryPointResultsDialog = ({
                 onSelectAll={handleSelectAll}
                 onSelect={handleSelectItem}
                 currentTradingViewPrice={currentTradingViewPrice}
+                totalProfitLoss={totalProfitLoss}
               />
               
               {hasMore && (

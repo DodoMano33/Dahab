@@ -27,8 +27,15 @@ export const BackTestHeader = ({
   totalProfitLoss = 0,
   currentTradingViewPrice = null
 }: BackTestHeaderProps) => {
-  // تنسيق الرقم لعرضه بنقطتين عشريتين
-  const formattedProfitLoss = totalProfitLoss ? totalProfitLoss.toFixed(4) : "0.00";
+  // تنسيق الرقم لعرضه بأربع خانات عشرية وإضافة إشارة سالب إذا كان سالبًا
+  const formatProfitLoss = (value: number) => {
+    if (value >= 0) {
+      return value.toFixed(4);
+    } else {
+      return `-${Math.abs(value).toFixed(4)}`;
+    }
+  };
+  
   const isProfitable = totalProfitLoss >= 0;
   
   return (
@@ -50,7 +57,7 @@ export const BackTestHeader = ({
         )}
         
         <div className={`py-1 px-3 rounded-md font-medium ${isProfitable ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
-          الربح/الخسارة: {isProfitable ? formattedProfitLoss : `-${Math.abs(Number(formattedProfitLoss)).toFixed(4)}`}
+          الربح/الخسارة: {formatProfitLoss(totalProfitLoss)}
         </div>
       </div>
       

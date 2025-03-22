@@ -84,6 +84,15 @@ export const AnalysisTable = ({
     return formattedValue;
   };
 
+  // تنسيق القيمة الإجمالية للربح/الخسارة
+  const formatTotalProfitLoss = (value: number) => {
+    if (value >= 0) {
+      return value.toFixed(4);
+    } else {
+      return `-${Math.abs(value).toFixed(4)}`;
+    }
+  };
+
   return (
     <div className="border rounded-lg bg-white shadow-sm">
       <div className="flex p-4 bg-muted/50 text-right text-sm font-medium border-b sticky top-0 z-10">
@@ -176,8 +185,8 @@ export const AnalysisTable = ({
       </div>
       <div className="flex p-4 justify-between bg-muted/20 border-t">
         <div className="font-bold">إجمالي النتائج: {analyses.length}</div>
-        <div className={`font-bold ${totalProfitLoss >= 0 ? 'text-success' : 'text-destructive'}`}>
-          الربح/الخسارة الإجمالية: {totalProfitLoss >= 0 ? totalProfitLoss.toFixed(4) : `-${Math.abs(totalProfitLoss).toFixed(4)}`}
+        <div className={`font-bold py-1 px-3 rounded-md ${totalProfitLoss >= 0 ? 'bg-success/20 text-success border border-success/30' : 'bg-destructive/20 text-destructive border border-destructive/30'}`}>
+          الربح/الخسارة الإجمالية: {formatTotalProfitLoss(totalProfitLoss)}
         </div>
       </div>
     </div>
