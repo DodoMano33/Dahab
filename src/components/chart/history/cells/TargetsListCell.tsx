@@ -15,32 +15,53 @@ interface TargetsListCellProps {
 }
 
 export const TargetsListCell = ({ targets, isTargetHit }: TargetsListCellProps) => {
+  const [processedTargets, setProcessedTargets] = useState<Target[]>([]);
   const [hasValidTargets, setHasValidTargets] = useState(false);
   
-  // التحقق من صحة مصفوفة الأهداف
+  // معالجة وتنظيف الأهداف
   useEffect(() => {
-    const validTargets = Array.isArray(targets) && targets.some(target => 
-      target && typeof target.price === 'number' && !isNaN(target.price)
-    );
+    console.log("TargetsListCell received targets:", targets);
     
-    setHasValidTargets(validTargets);
+    // التحقق مما إذا كانت الأهداف موجودة وصالحة
+    if (!targets || !Array.isArray(targets) || targets.length === 0) {
+      console.log("No targets or empty array");
+      setHasValidTargets(false);
+      setProcessedTargets([]);
+      return;
+    }
     
-    // طباعة تشخيصية
-    console.log("TargetsListCell targets:", targets);
-    console.log("TargetsListCell hasValidTargets:", validTargets);
+    // معالجة الأهداف وتصفية الأهداف غير الصالحة
+    const validTargets = targets
+      .filter(target => target && (
+        (typeof target.price === 'number' && !isNaN(target.price)) || 
+        (typeof target.price === 'string' && !isNaN(Number(target.price)))
+      ))
+      .map(target => ({
+        ...target,
+        price: typeof target.price === 'string' ? Number(target.price) : target.price
+      }));
+    
+    console.log("Processed targets:", validTargets);
+    
+    setProcessedTargets(validTargets);
+    setHasValidTargets(validTargets.length > 0);
   }, [targets]);
+  
+  // إنشاء أهداف افتراضية إذا لم تكن هناك أهداف صالحة (سيظهر في المستقبل)
+  const createDefaultTargets = () => {
+    // هذه الوظيفة سيتم استخدامها في المستقبل لإنشاء أهداف افتراضية
+    return [];
+  };
   
   return (
     <TableCell className="w-24 p-2">
-      {!hasValidTargets && (
+      {!hasValidTargets ? (
         <Badge variant="outline" className="text-xs mx-auto">
           لا توجد أهداف
         </Badge>
-      )}
-      
-      {hasValidTargets && (
+      ) : (
         <TargetsList 
-          targets={targets} 
+          targets={processedTargets} 
           isTargetHit={isTargetHit}
         />
       )}
