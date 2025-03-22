@@ -6,9 +6,11 @@ import { getExpectedTime } from "@/utils/technicalAnalysis";
 export const analyzeWavesChart = async (
   chartImage: string,
   currentPrice: number,
-  timeframe: string
+  timeframe: string,
+  duration?: number
 ): Promise<AnalysisData> => {
   console.log("بدء تحليل Waves للرمز:", timeframe);
+  console.log("مدة التحليل المحددة:", duration || 8, "ساعات");
 
   // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
@@ -68,7 +70,8 @@ export const analyzeWavesChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "Waves"
+    analysisType: "Waves",
+    analysis_duration_hours: duration // Add the duration to the analysis result
   };
 
   console.log("نتائج تحليل Waves:", analysisResult);

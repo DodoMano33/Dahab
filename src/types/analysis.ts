@@ -1,3 +1,4 @@
+
 export type AnalysisType = 
   | "سكالبينج" 
   | "ذكي" 
@@ -54,6 +55,7 @@ export interface AnalysisData {
   }[];
   activation_type?: "تلقائي" | "يدوي";
   analysisType: AnalysisType;
+  analysis_duration_hours?: number; // Added this property to fix the TypeScript errors
 }
 
 export interface SearchHistoryItem {
