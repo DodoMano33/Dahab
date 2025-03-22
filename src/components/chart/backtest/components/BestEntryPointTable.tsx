@@ -40,11 +40,17 @@ export const BestEntryPointTable = ({
   };
   
   // تنسيق الربح والخسارة مع إضافة إشارة سالب للقيم السالبة
-  const formatProfitLoss = (value: number | string | null | undefined) => {
+  const formatProfitLoss = (value: number | string | null | undefined, isSuccess: boolean) => {
     if (value === null || value === undefined) return "-";
     const num = typeof value === "string" ? parseFloat(value) : value;
+    
+    // إذا كانت النتيجة فاشلة، نجعل الرقم سالبًا دائمًا
+    if (!isSuccess) {
+      return `-${Math.abs(Number(num)).toFixed(4)}`;
+    }
+    
+    // وإلا نعرض الرقم كما هو (مع إشارة سالب إذا كان سالبًا)
     const formattedValue = Number(num).toFixed(4);
-    // إضافة إشارة سالب للقيم السالبة
     if (num < 0) {
       return `-${Math.abs(Number(formattedValue)).toFixed(4)}`;
     }
@@ -125,9 +131,9 @@ export const BestEntryPointTable = ({
               {result.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="w-32 text-center">{result.analysis_duration || '0 ساعة'}</div>
-            <div className={`w-28 text-center font-medium ${Number(result.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
+            <div className={`w-28 text-center font-medium ${Number(result.profit_loss) >= 0 && result.is_success ? 'text-success' : 'text-destructive'}`}>
               {result.profit_loss !== null && result.profit_loss !== undefined 
-                ? formatProfitLoss(result.profit_loss) 
+                ? formatProfitLoss(result.profit_loss, result.is_success) 
                 : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
