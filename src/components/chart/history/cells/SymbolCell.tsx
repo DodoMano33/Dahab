@@ -1,12 +1,10 @@
 
-import { TableCell } from "@/components/ui/table";
-
 interface SymbolCellProps {
   symbol: string;
 }
 
 export const SymbolCell = ({ symbol }: SymbolCellProps) => (
-  <TableCell className="font-medium w-16 p-2">
+  <div className="font-medium">
     {symbol}
-  </TableCell>
+  </div>
 );

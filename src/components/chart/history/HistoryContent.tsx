@@ -1,3 +1,4 @@
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody } from "@/components/ui/table";
 import { HistoryTableHeader } from "./HistoryTableHeader";
@@ -170,26 +171,28 @@ export const HistoryContent = ({
   return (
     <div className="relative w-full h-full">
       <ScrollArea className="h-full">
-        <Table className="w-full table-fixed">
-          <HistoryTableHeader 
-            showCheckbox={true} 
-            onSelectAll={handleSelectAll}
-            isAllSelected={localHistory.length > 0 && selectedItems.size === localHistory.length}
-          />
-          <TableBody>
-            {localHistory.map((item) => (
-              <HistoryRow
-                key={item.id}
-                {...item}
-                analysis_duration_hours={item.analysis_duration_hours}
-                last_checked_price={item.last_checked_price}
-                last_checked_at={item.last_checked_at}
-                isSelected={selectedItems.has(item.id)}
-                onSelect={() => onSelect(item.id)}
-              />
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <Table className="w-full min-w-max">
+            <HistoryTableHeader 
+              showCheckbox={true} 
+              onSelectAll={handleSelectAll}
+              isAllSelected={localHistory.length > 0 && selectedItems.size === localHistory.length}
+            />
+            <TableBody>
+              {localHistory.map((item) => (
+                <HistoryRow
+                  key={item.id}
+                  {...item}
+                  analysis_duration_hours={item.analysis_duration_hours}
+                  last_checked_price={item.last_checked_price}
+                  last_checked_at={item.last_checked_at}
+                  isSelected={selectedItems.has(item.id)}
+                  onSelect={() => onSelect(item.id)}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </ScrollArea>
     </div>
   );

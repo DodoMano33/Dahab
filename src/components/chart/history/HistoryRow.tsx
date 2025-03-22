@@ -15,6 +15,7 @@ import { TimeframeCell } from "./cells/TimeframeCell";
 import { DateCell } from "./cells/DateCell";
 import { SymbolCell } from "./cells/SymbolCell";
 import { useHistoryRowData } from "./HistoryRowData";
+import { TableCell } from "@/components/ui/table";
 
 interface HistoryRowProps {
   id: string;
@@ -56,41 +57,55 @@ export const HistoryRow = ({
   });
 
   return (
-    <TableRow className="text-xs">
+    <TableRow className="text-xs text-center">
       <CheckboxCell isSelected={isSelected} onSelect={onSelect} />
-      <MarketStatusCell itemId={id} />
-      <LastCheckedCell 
-        price={last_checked_price}
-        timestamp={last_checked_at} 
-        itemId={id}
-      />
-      <ExpiryTimerCell 
-        createdAt={date} 
-        analysisId={id} 
-        durationHours={analysis_duration_hours}
-      />
-      <BestEntryPointCell 
-        price={bestEntryPoint.price}
-        reason={bestEntryPoint.reason}
-      />
-      <TargetsListCell 
-        targets={fixedTargets} 
-        isTargetHit={false}
-      />
-      <StopLossCell 
-        value={analysis.stopLoss} 
-        isHit={false}
-      />
-      <DirectionCell direction={analysis.direction} />
-      <CurrentPriceCell price={currentPrice} />
-      <AnalysisTypeCell 
-        analysisType={displayAnalysisType} 
-        pattern={analysis.pattern}
-        activation_type={analysis.activation_type}
-      />
-      <TimeframeCell timeframe={timeframe} />
-      <DateCell date={date} />
-      <SymbolCell symbol={symbol} />
+      <TableCell className="text-center p-2 w-36"><DateCell date={date} /></TableCell>
+      <TableCell className="text-center p-2 w-28">
+        <AnalysisTypeCell 
+          analysisType={displayAnalysisType} 
+          pattern={analysis.pattern}
+          activation_type={analysis.activation_type}
+        />
+      </TableCell>
+      <TableCell className="text-center p-2 w-16"><SymbolCell symbol={symbol} /></TableCell>
+      <TableCell className="text-center p-2 w-20"><TimeframeCell timeframe={timeframe} /></TableCell>
+      <TableCell className="text-center p-2 w-16"><DirectionCell direction={analysis.direction} /></TableCell>
+      <TableCell className="text-center p-2 w-16"><CurrentPriceCell price={currentPrice} /></TableCell>
+      <TableCell className="text-center p-2 w-20">
+        <StopLossCell 
+          value={analysis.stopLoss} 
+          isHit={false}
+        />
+      </TableCell>
+      <TableCell className="text-center p-2 w-24">
+        <TargetsListCell 
+          targets={fixedTargets} 
+          isTargetHit={false}
+        />
+      </TableCell>
+      <TableCell className="text-center p-2 w-24">
+        <BestEntryPointCell 
+          price={bestEntryPoint.price}
+          reason={bestEntryPoint.reason}
+        />
+      </TableCell>
+      <TableCell className="text-center p-2 w-20">
+        <ExpiryTimerCell 
+          createdAt={date} 
+          analysisId={id} 
+          durationHours={analysis_duration_hours}
+        />
+      </TableCell>
+      <TableCell className="text-center p-2 w-24">
+        <LastCheckedCell 
+          price={last_checked_price}
+          timestamp={last_checked_at} 
+          itemId={id}
+        />
+      </TableCell>
+      <TableCell className="text-center p-2 w-16">
+        <MarketStatusCell itemId={id} />
+      </TableCell>
     </TableRow>
   );
 };
