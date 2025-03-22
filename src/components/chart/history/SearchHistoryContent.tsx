@@ -1,14 +1,13 @@
 
-import { useState } from "react";
-import { SearchHistoryItem } from "@/types/analysis";
 import { HistoryContent } from "./HistoryContent";
-import { AnalysisChartDisplay } from "../AnalysisChartDisplay";
+import { SearchHistoryItem } from "@/types/analysis";
 import { Separator } from "@/components/ui/separator";
+import { HistoryChartSection } from "./HistoryChartSection";
 
 interface SearchHistoryContentProps {
   history: SearchHistoryItem[];
   selectedItems: Set<string>;
-  onSelect: (id: string) => void;
+  onSelect: (id: string) => Promise<void>;
   onSelectAll: (checked: boolean) => void;
   onDelete: (id: string) => Promise<void>;
   isRefreshing: boolean;
@@ -24,20 +23,15 @@ export const SearchHistoryContent = ({
   isRefreshing,
   refreshHistory
 }: SearchHistoryContentProps) => {
-  const [showChart, setShowChart] = useState(true);
-
   return (
     <div className="flex flex-col space-y-4">
-      {showChart && (
-        <>
-          <AnalysisChartDisplay 
-            searchHistory={history} 
-            isRefreshing={isRefreshing} 
-            onRefresh={refreshHistory} 
-          />
-          <Separator />
-        </>
-      )}
+      <HistoryChartSection
+        searchHistory={history}
+        isRefreshing={isRefreshing}
+        onRefresh={refreshHistory}
+      />
+      
+      <Separator />
       
       <HistoryContent
         history={history}

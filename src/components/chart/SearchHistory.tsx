@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SearchHistoryHeader } from "./history/SearchHistoryHeader";
 import { SearchHistoryToolbar } from "./history/SearchHistoryToolbar";
 import { SearchHistoryMain } from "./history/SearchHistoryMain";
+import { useState } from "react";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface SearchHistoryProps {
   onDelete: (id: string) => Promise<void>;
   validHistory: any[];
   handleSelect: (id: string) => void;
+  isRefreshing: boolean;
+  refreshHistory: () => Promise<void>;
 }
 
 export const SearchHistory = ({
@@ -28,7 +31,11 @@ export const SearchHistory = ({
   onDelete,
   validHistory,
   handleSelect,
+  isRefreshing,
+  refreshHistory
 }: SearchHistoryProps) => {
+  const [showChart, setShowChart] = useState(true);
+
   // Convert the synchronous function to return a Promise
   const handleBulkDelete = async () => {
     // Process each item sequentially to ensure proper Promise handling
@@ -56,6 +63,10 @@ export const SearchHistory = ({
             isDatePickerOpen={isDatePickerOpen}
             setIsDatePickerOpen={setIsDatePickerOpen}
             setDateRange={setDateRange}
+            isRefreshing={isRefreshing}
+            refreshHistory={refreshHistory}
+            showChart={showChart}
+            setShowChart={setShowChart}
           />
         </div>
         <div className="flex-1 overflow-hidden">
@@ -64,6 +75,8 @@ export const SearchHistory = ({
             selectedItems={selectedItems}
             onSelect={handleSelectWithPromise}
             onDelete={onDelete}
+            isRefreshing={isRefreshing}
+            refreshHistory={refreshHistory}
           />
         </div>
       </DialogContent>

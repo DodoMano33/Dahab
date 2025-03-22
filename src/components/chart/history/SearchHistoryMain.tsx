@@ -7,27 +7,19 @@ interface SearchHistoryMainProps {
   history: SearchHistoryItem[];
   onSelect: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  selectedItems: Set<string>; // Add this prop
+  selectedItems: Set<string>;
+  isRefreshing: boolean;
+  refreshHistory: () => Promise<void>;
 }
 
 export const SearchHistoryMain = ({ 
   history, 
   onSelect, 
   onDelete,
-  selectedItems
+  selectedItems,
+  isRefreshing,
+  refreshHistory
 }: SearchHistoryMainProps) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      // Any additional refresh logic if needed
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const handleSelectAll = (checked: boolean) => {
     // This logic will be handled in HistoryContent
   };
@@ -40,6 +32,8 @@ export const SearchHistoryMain = ({
         onSelect={onSelect}
         onDelete={onDelete}
         onSelectAll={handleSelectAll}
+        isRefreshing={isRefreshing}
+        refreshHistory={refreshHistory}
       />
     </div>
   );
