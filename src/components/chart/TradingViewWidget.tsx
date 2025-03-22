@@ -17,6 +17,7 @@ function TradingViewWidget({
 }: TradingViewWidgetProps) {
   const container = useRef<HTMLDivElement>(null);
   const currentPriceRef = useRef<number | null>(null);
+  const lastPriceRef = useRef<number | null>(null);
 
   const { currentPrice } = useTradingViewMessages({
     symbol,
@@ -29,8 +30,19 @@ function TradingViewWidget({
     if (currentPrice !== null && !isNaN(currentPrice)) {
       currentPriceRef.current = currentPrice;
       console.log('Updated currentPriceRef to:', currentPrice);
+      
+      // تحقق مما إذا كان السعر قد تغير فعليًا
+      if (lastPriceRef.current !== currentPrice) {
+        // انشر حدث تحديث السعر لتحديث حالة السوق
+        window.dispatchEvent(new CustomEvent('tradingview-price-update', { 
+          detail: { price: currentPrice, symbol } 
+        }));
+        
+        // تحديث مرجع السعر الأخير
+        lastPriceRef.current = currentPrice;
+      }
     }
-  }, [currentPrice]);
+  }, [currentPrice, symbol]);
 
   useAnalysisChecker({
     symbol,

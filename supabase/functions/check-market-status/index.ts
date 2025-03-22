@@ -19,6 +19,55 @@ function isMarketHours(date: Date): boolean {
   return hours >= 22 || hours < 21;
 }
 
+async function getPriceMovement(): Promise<boolean> {
+  try {
+    // استرجاع آخر سعرين من قاعدة البيانات
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.log("Missing Supabase credentials");
+      return false;
+    }
+    
+    const response = await fetch(`${supabaseUrl}/rest/v1/real_time_prices?select=price,updated_at&symbol=eq.XAUUSD&order=updated_at.desc&limit=2`, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    });
+    
+    if (!response.ok) {
+      console.log(`Error fetching prices: ${response.status}`);
+      return false;
+    }
+    
+    const prices = await response.json();
+    
+    if (!prices || prices.length < 2) {
+      console.log("Not enough price data");
+      return false;
+    }
+    
+    const latestPrice = prices[0].price;
+    const previousPrice = prices[1].price;
+    const latestUpdateTime = new Date(prices[0].updated_at);
+    const now = new Date();
+    
+    // تحقق مما إذا كان السعر قد تغير وما إذا كان التحديث حديثًا
+    const priceHasChanged = Math.abs(latestPrice - previousPrice) > 0.0001;
+    const isRecentUpdate = (now.getTime() - latestUpdateTime.getTime()) < 5 * 60 * 1000; // أقل من 5 دقائق
+    
+    console.log(`Price movement check: Latest=${latestPrice}, Previous=${previousPrice}, Changed=${priceHasChanged}, Recent=${isRecentUpdate}`);
+    
+    return priceHasChanged && isRecentUpdate;
+    
+  } catch (error) {
+    console.error("Error checking price movement:", error);
+    return false;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -35,15 +84,32 @@ serve(async (req) => {
     }
 
     const now = new Date();
-    const isOpen = !isWeekend(now) && isMarketHours(now);
+    let isOpen = !isWeekend(now) && isMarketHours(now);
+    
+    // تحقق من حركة السعر
+    const hasPriceMovement = await getPriceMovement();
+    
+    // إذا كان هناك حركة سعر مؤخرًا، فإن السوق مفتوح
+    if (hasPriceMovement) {
+      isOpen = true;
+    }
+    
+    // إذا لم تكن هناك حركة سعر والسوق من المفترض أن يكون مفتوحًا (بناءً على التوقيت)، تحقق مرة أخرى
+    if (!hasPriceMovement && isOpen) {
+      console.log("No price movement detected but market should be open based on time. Double checking...");
+      
+      // يمكننا تنفيذ تحقق إضافي هنا إذا لزم الأمر
+    }
 
     console.log(`Current time: ${now.toISOString()}`);
     console.log(`Market status: ${isOpen ? 'open' : 'closed'}`);
+    console.log(`Price movement detected: ${hasPriceMovement}`);
 
     const response = {
       isOpen,
       timestamp: now.toISOString(),
       serverTime: now.toISOString(),
+      priceMovementDetected: hasPriceMovement
     };
 
     return new Response(

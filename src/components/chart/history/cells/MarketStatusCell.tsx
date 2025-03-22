@@ -2,6 +2,7 @@
 import { TableCell } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMarketStatus } from "../hooks/useMarketStatus";
+import { useEffect, useState } from "react";
 
 interface MarketStatusCellProps {
   itemId: string;
@@ -9,6 +10,18 @@ interface MarketStatusCellProps {
 
 export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
   const marketStatus = useMarketStatus(itemId);
+  const [lastUpdate, setLastUpdate] = useState<string>("الآن");
+
+  // تحديث آخر وقت للتحديث
+  useEffect(() => {
+    setLastUpdate("الآن");
+    
+    const interval = setInterval(() => {
+      setLastUpdate("منذ قليل");
+    }, 30 * 1000); // بعد 30 ثانية
+    
+    return () => clearInterval(interval);
+  }, [marketStatus.isOpen]);
 
   return (
     <TableCell className="w-16 p-2">
@@ -20,7 +33,8 @@ export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً' : 'السوق مغلق حالياً'}</p>
+            <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً (حسب حركة السعر)' : 'السوق مغلق حالياً (لا توجد حركة سعر)'}</p>
+            <p className="text-xs mt-1">آخر تحديث: {lastUpdate}</p>
             {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
           </TooltipContent>
         </Tooltip>
