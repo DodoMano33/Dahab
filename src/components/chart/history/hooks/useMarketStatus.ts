@@ -21,6 +21,7 @@ export const useMarketStatus = (itemId: string) => {
         
         // إذا تغير السعر، قم بتحديث الوقت وتعيين حالة السوق إلى مفتوح
         if (lastPrice !== null && newPrice !== lastPrice) {
+          console.log(`[MarketStatus] Price changed: ${lastPrice} -> ${newPrice}`);
           lastPriceTimeRef.current = Date.now();
           setMarketStatus(prev => ({ ...prev, isOpen: true }));
           
@@ -34,18 +35,21 @@ export const useMarketStatus = (itemId: string) => {
       }
     };
 
-    // إعداد مؤقت للتحقق من استقرار السعر (مغلق بعد دقيقة من عدم الحركة)
+    // إعداد مؤقت للتحقق من استقرار السعر (مغلق بعد 5 دقائق من عدم الحركة)
     const checkPriceStability = () => {
       const now = Date.now();
       const timeSinceLastChange = now - lastPriceTimeRef.current;
       
-      // إذا لم يتغير السعر لأكثر من دقيقة، فإن السوق مغلق
-      if (timeSinceLastChange > 60 * 1000) {
+      // إذا لم يتغير السعر لأكثر من 5 دقائق، فإن السوق مغلق
+      if (timeSinceLastChange > 5 * 60 * 1000) { // 5 دقائق
+        console.log(`[MarketStatus] No price change for 5 minutes, market closed`);
         setMarketStatus(prev => ({ ...prev, isOpen: false }));
+      } else {
+        console.log(`[MarketStatus] Last price change was ${Math.round(timeSinceLastChange/1000)} seconds ago`);
       }
       
-      // إعادة جدولة الفحص كل 5 ثوان
-      priceStableTimerRef.current = setTimeout(checkPriceStability, 5000);
+      // إعادة جدولة الفحص كل 60 ثانية
+      priceStableTimerRef.current = setTimeout(checkPriceStability, 60000); // فحص كل دقيقة
     };
     
     // بدء فحص استقرار السعر
@@ -68,8 +72,9 @@ export const useMarketStatus = (itemId: string) => {
         const now = Date.now();
         const timeSinceLastChange = now - lastPriceTimeRef.current;
         
-        // إذا لم نتلق تحديثات سعر خلال الـ 5 دقائق الماضية، استخدم API
-        if (timeSinceLastChange > 5 * 60 * 1000) {
+        // إذا لم نتلق تحديثات سعر خلال الـ 10 دقائق الماضية، استخدم API
+        if (timeSinceLastChange > 10 * 60 * 1000) {
+          console.log(`[MarketStatus] Using API status check as backup`);
           setMarketStatus(data);
         }
       } catch (err) {
@@ -77,8 +82,8 @@ export const useMarketStatus = (itemId: string) => {
       }
     };
     
-    // تحقق من API كل 10 دقائق كنسخة احتياطية
-    const backupInterval = setInterval(checkMarketStatus, 10 * 60 * 1000);
+    // تحقق من API كل 15 دقيقة كنسخة احتياطية
+    const backupInterval = setInterval(checkMarketStatus, 15 * 60 * 1000);
     
     // تنظيف
     return () => {

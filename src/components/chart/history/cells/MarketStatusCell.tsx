@@ -33,7 +33,7 @@ export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً (حسب حركة السعر)' : 'السوق مغلق حالياً (لا توجد حركة سعر)'}</p>
+            <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً (لوحظت حركة سعر خلال آخر 5 دقائق)' : 'السوق مغلق حالياً (لم تتغير الأسعار منذ أكثر من 5 دقائق)'}</p>
             <p className="text-xs mt-1">آخر تحديث: {lastUpdate}</p>
             {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
           </TooltipContent>

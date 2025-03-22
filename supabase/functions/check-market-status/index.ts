@@ -98,7 +98,8 @@ serve(async (req) => {
     if (!hasPriceMovement && isOpen) {
       console.log("No price movement detected but market should be open based on time. Double checking...");
       
-      // يمكننا تنفيذ تحقق إضافي هنا إذا لزم الأمر
+      // إذا لم يكن هناك حركة أسعار لمدة 5 دقائق، نعتبر السوق مغلقًا بغض النظر عن الوقت
+      isOpen = false;
     }
 
     console.log(`Current time: ${now.toISOString()}`);
