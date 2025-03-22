@@ -4,6 +4,8 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { DirectionIndicator } from "../../history/DirectionIndicator";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useCurrentPrice } from "@/hooks/current-price";
+import { useEffect, useState } from "react";
 
 interface BestEntryPointTableProps {
   results: any[];
@@ -20,6 +22,19 @@ export const BestEntryPointTable = ({
   onSelect,
   currentTradingViewPrice = null
 }: BestEntryPointTableProps) => {
+  const { currentPrice: realTimePrice } = useCurrentPrice();
+  const [displayPrice, setDisplayPrice] = useState<number | null>(null);
+  
+  // تحديث السعر المعروض عند تغير السعر الحقيقي أو سعر TradingView
+  useEffect(() => {
+    // نستخدم السعر الحقيقي من Metal Price API إذا كان متاحاً، وإلا نستخدم سعر TradingView كاحتياطي
+    if (realTimePrice !== null) {
+      setDisplayPrice(realTimePrice);
+    } else if (currentTradingViewPrice !== null) {
+      setDisplayPrice(currentTradingViewPrice);
+    }
+  }, [realTimePrice, currentTradingViewPrice]);
+  
   // دالة لتنسيق الأرقام
   const formatNumber = (value: number | string | null | undefined) => {
     if (value === null || value === undefined) return "-";
@@ -101,8 +116,19 @@ export const BestEntryPointTable = ({
               {result.result_timestamp && 
                 format(new Date(result.result_timestamp), 'yyyy/MM/dd HH:mm', { locale: ar })}
             </div>
-            <div className="w-28 text-center">
-              {currentTradingViewPrice ? formatNumber(currentTradingViewPrice) : "-"}
+            <div className="w-28 text-center relative">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={displayPrice ? 'font-medium text-primary' : ''}>
+                      {displayPrice ? formatNumber(displayPrice) : "-"}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>السعر الحقيقي المباشر</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         ))}
