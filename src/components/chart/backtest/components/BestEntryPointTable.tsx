@@ -83,10 +83,7 @@ export const BestEntryPointTable = ({
             <div className="w-24 text-center">{result.timeframe}</div>
             <div className="w-20 flex justify-center">
               {result.direction && (
-                <DirectionIndicator direction={
-                  result.direction === "up" ? "صاعد" : 
-                  result.direction === "down" ? "هابط" : "محايد"
-                } />
+                <DirectionIndicator direction={result.direction} />
               )}
             </div>
             <div className={`w-24 text-center font-medium ${result.is_success ? 'text-success' : 'text-destructive'}`}>
