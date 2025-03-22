@@ -100,7 +100,10 @@ export const AnalysisTable = ({
               <div className="w-24 text-center truncate">{analysis.timeframe}</div>
               <div className="w-20 flex justify-center">
                 {analysis.direction && (
-                  <DirectionIndicator direction={analysis.direction === "up" ? "صاعد" : analysis.direction === "down" ? "هابط" : "محايد"} />
+                  <DirectionIndicator direction={
+                    analysis.direction === "up" ? "صاعد" : 
+                    analysis.direction === "down" ? "هابط" : "محايد"
+                  } />
                 )}
               </div>
               <div className={`w-24 text-center font-medium truncate ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>

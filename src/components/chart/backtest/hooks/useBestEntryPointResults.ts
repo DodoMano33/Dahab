@@ -52,10 +52,19 @@ export const useBestEntryPointResults = () => {
 
       console.log(`Fetched ${data?.length} best entry point results`);
       
+      // Process results to ensure direction is properly set
+      const processedResults = data?.map(result => {
+        // Make sure direction is logged for debugging
+        if (result.direction) {
+          console.log(`Result ${result.id} has direction: ${result.direction}`);
+        }
+        return result;
+      }) || [];
+      
       if (pageNumber === 0) {
-        setResults(data || []);
+        setResults(processedResults);
       } else {
-        setResults(prev => [...prev, ...(data || [])]);
+        setResults(prev => [...prev, ...processedResults]);
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));

@@ -65,6 +65,13 @@ export const useBacktestResults = () => {
           // Store the absolute value - we'll format it with the sign later based on is_success
           result.profit_loss = Math.abs(Number(result.profit_loss));
         }
+
+        // Make sure direction is set properly for DirectionIndicator
+        if (result.direction) {
+          // الاتجاه سيظل كما هو في قاعدة البيانات (up, down, neutral)
+          // سيتم تحويله في واجهة المستخدم إلى (صاعد، هابط، محايد)
+          console.log(`Result ${result.id} has direction: ${result.direction}`);
+        }
         
         // Log the analysis type for debugging
         console.log(`Result ${result.id} has analysis_type: ${result.analysis_type} -> ${getStrategyName(result.analysis_type)}`);
