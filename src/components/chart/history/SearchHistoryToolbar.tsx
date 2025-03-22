@@ -63,9 +63,16 @@ export const SearchHistoryToolbar = ({
             تحديث
           </Button>
           
-          <ShareButtonGroup selectedAnalyses={Array.from(selectedItems).map(id => 
-            history.find(item => item.id === id)
-          ).filter(Boolean) as SearchHistoryItem[]} />
+          {/* Update the component to match the expected type */}
+          {selectedItems.size > 0 && (
+            <div>
+              <ShareButtonGroup 
+                items={Array.from(selectedItems).map(id => 
+                  history.find(item => item.id === id)
+                ).filter(Boolean) as SearchHistoryItem[]} 
+              />
+            </div>
+          )}
           
           <Button
             variant="outline"

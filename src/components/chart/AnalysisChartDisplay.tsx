@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip as ChartTooltip, Legend } from "chart.js";
+import { Chart as ChartJS, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip as ChartTooltip, Legend } from "chart.js";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +12,7 @@ import { useCurrentPrice } from "@/hooks/current-price";
 import { SearchHistoryItem } from "@/types/analysis";
 
 // تسجيل مكونات الرسم البياني
-Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, ChartTooltip, Legend);
+ChartJS.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, ChartTooltip, Legend);
 
 interface AnalysisChartDisplayProps {
   searchHistory: SearchHistoryItem[];
@@ -27,8 +27,8 @@ export const AnalysisChartDisplay = ({
 }: AnalysisChartDisplayProps) => {
   const targetsChartRef = useRef<HTMLCanvasElement>(null);
   const stopLossChartRef = useRef<HTMLCanvasElement>(null);
-  const [targetsChart, setTargetsChart] = useState<Chart | null>(null);
-  const [stopLossChart, setStopLossChart] = useState<Chart | null>(null);
+  const [targetsChart, setTargetsChart] = useState<ChartJS | null>(null);
+  const [stopLossChart, setStopLossChart] = useState<ChartJS | null>(null);
   const { currentPrice, priceUpdateCount } = useCurrentPrice();
   
   // فلترة التحليلات النشطة فقط (التي ليس لها تاريخ نتيجة)
@@ -110,14 +110,14 @@ export const AnalysisChartDisplay = ({
     };
     
     // إنشاء الرسم البياني للأهداف
-    setTargetsChart(new Chart(targetsChartRef.current, {
+    setTargetsChart(new ChartJS(targetsChartRef.current, {
       type: 'line',
       data: targetsData,
       options: getChartOptions('مخطط الأهداف الأولى', true)
     }));
     
     // إنشاء الرسم البياني لوقف الخسارة
-    setStopLossChart(new Chart(stopLossChartRef.current, {
+    setStopLossChart(new ChartJS(stopLossChartRef.current, {
       type: 'line',
       data: stopLossData,
       options: getChartOptions('مخطط وقف الخسارة', false)

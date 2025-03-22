@@ -12,7 +12,7 @@ interface SearchHistoryProps {
   isDatePickerOpen: boolean;
   setIsDatePickerOpen: (open: boolean) => void;
   selectedItems: Set<string>;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   validHistory: any[];
   handleSelect: (id: string) => void;
 }
@@ -29,8 +29,17 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
-  const handleBulkDelete = () => {
-    selectedItems.forEach(id => onDelete(id));
+  // Convert the synchronous function to return a Promise
+  const handleBulkDelete = async () => {
+    // Process each item sequentially to ensure proper Promise handling
+    for (const id of selectedItems) {
+      await onDelete(id);
+    }
+  };
+
+  // Convert the selection handler to return a Promise as required by the interface
+  const handleSelectWithPromise = async (id: string) => {
+    handleSelect(id);
   };
 
   return (
@@ -52,7 +61,7 @@ export const SearchHistory = ({
           <SearchHistoryMain
             history={validHistory}
             selectedItems={selectedItems}
-            onSelect={handleSelect}
+            onSelect={handleSelectWithPromise}
             onDelete={onDelete}
           />
         </div>

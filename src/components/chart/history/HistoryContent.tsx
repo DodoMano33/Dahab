@@ -24,7 +24,8 @@ interface HistoryContentProps {
   }>;
   selectedItems: Set<string>;
   onSelect: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
+  onSelectAll?: (checked: boolean) => void; // Add this to fix type error
 }
 
 export const HistoryContent = ({
@@ -32,6 +33,7 @@ export const HistoryContent = ({
   selectedItems,
   onSelect,
   onDelete,
+  onSelectAll, // Include this prop
 }: HistoryContentProps) => {
   console.log("HistoryContent rendered with history items:", history.length);
   console.log("Sample first history item last_checked_at:", 
@@ -156,15 +158,19 @@ export const HistoryContent = ({
   }, [refreshHistoryData]);
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      const allIds = localHistory.map(item => item.id);
-      allIds.forEach(id => onSelect(id));
+    if (onSelectAll) {
+      onSelectAll(checked);
     } else {
-      localHistory.forEach(item => {
-        if (selectedItems.has(item.id)) {
-          onSelect(item.id);
-        }
-      });
+      if (checked) {
+        const allIds = localHistory.map(item => item.id);
+        allIds.forEach(id => onSelect(id));
+      } else {
+        localHistory.forEach(item => {
+          if (selectedItems.has(item.id)) {
+            onSelect(item.id);
+          }
+        });
+      }
     }
   };
 

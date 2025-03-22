@@ -43,8 +43,8 @@ export const SearchHistoryContent = ({
         history={history}
         selectedItems={selectedItems}
         onSelect={onSelect}
-        onSelectAll={onSelectAll}
         onDelete={onDelete}
+        onSelectAll={onSelectAll}
       />
     </div>
   );
