@@ -89,6 +89,13 @@ export const useAnalysisHandler = () => {
         return;
       }
 
+      // التحقق من صحة مدة التحليل
+      const durationHours = duration ? parseInt(duration) : 8;
+      if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
+        showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
+        return;
+      }
+
       setIsAnalyzing(true);
       const upperSymbol = symbol.toUpperCase();
       setCurrentSymbol(upperSymbol);

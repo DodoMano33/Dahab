@@ -39,6 +39,7 @@ export const processChartAnalysis = async ({
   analysisResult: AnalysisData;
   currentPrice: number;
   symbol: string;
+  duration?: number;
 }> => {
   // Create toast IDs for tracking
   const loadingToastId = showLoadingToast(
@@ -73,6 +74,10 @@ export const processChartAnalysis = async ({
     // طباعة السعر النهائي المستخدم للتحليل
     console.log("Analysis using price:", finalPrice);
 
+    // تحويل مدة التحليل إلى رقم إذا كانت موجودة
+    const durationHours = duration ? parseInt(duration) : 8;
+    console.log(`Analysis duration set to: ${durationHours} hours`);
+
     // Get the chart image
     console.log("Getting TradingView chart image for:", { 
       symbol, 
@@ -80,7 +85,7 @@ export const processChartAnalysis = async ({
       price: finalPrice,
       analysisType,
       selectedTypes,
-      duration
+      duration: durationHours
     });
 
     const chartImage = await getTradingViewChartImage(symbol, timeframe, finalPrice);
@@ -125,7 +130,8 @@ export const processChartAnalysis = async ({
     return { 
       analysisResult, 
       currentPrice: finalPrice, 
-      symbol 
+      symbol,
+      duration: durationHours
     };
     
   } catch (error) {

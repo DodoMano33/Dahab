@@ -63,8 +63,15 @@ export const useCombinedAnalysis = ({
       return;
     }
     
+    // التحقق من صحة مدة التحليل
+    const durationNumber = Number(duration);
+    if (isNaN(durationNumber) || durationNumber < 1 || durationNumber > 72) {
+      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
+      return;
+    }
+    
     console.log("Starting combined analysis with types:", selectedTypes);
-    console.log("Symbol:", symbol || defaultSymbol, "Price:", providedPrice, "Timeframe:", timeframe);
+    console.log("Symbol:", symbol || defaultSymbol, "Price:", providedPrice, "Timeframe:", timeframe, "Duration:", duration);
     
     // Only pass selected types, not all boolean flags
     onSubmit(

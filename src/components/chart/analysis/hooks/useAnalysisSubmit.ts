@@ -117,7 +117,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
       dismissToasts(loadingToastId);
       
       if (result && result.analysisResult) {
-        const { analysisResult, currentPrice, symbol: upperSymbol } = result;
+        const { analysisResult, currentPrice, symbol: upperSymbol, duration: resultDuration } = result;
         
         if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
           console.error("Invalid analysis result:", analysisResult);
@@ -126,7 +126,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         }
 
         try {
-          console.log("Saving analysis with duration:", durationHours);
+          console.log("Saving analysis with duration:", resultDuration || durationHours);
           
           // Map the analysis type to a valid database enum value
           const mappedAnalysisType = mapToAnalysisType(analysisType);
@@ -139,7 +139,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
             analysisResult,
             analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
             timeframe,
-            durationHours
+            durationHours: resultDuration || durationHours // استخدام المدة من النتيجة أو من المدخلات
           });
 
           if (savedData) {
@@ -153,7 +153,7 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
               stopLossHit: false,
               analysisType: mappedAnalysisType as AnalysisType, // Cast to AnalysisType
               timeframe,
-              analysis_duration_hours: durationHours
+              analysis_duration_hours: resultDuration || durationHours // استخدام المدة من النتيجة أو من المدخلات
             };
 
             onAnalysis(newHistoryEntry);

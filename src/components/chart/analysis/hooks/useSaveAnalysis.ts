@@ -30,6 +30,7 @@ export const useSaveAnalysis = () => {
     try {
       // طباعة نوع التحليل قبل المعالجة
       console.log("Original analysis type before mapping:", analysisType);
+      console.log("Analysis duration to be saved:", duration);
       
       // تنظيف التخزين المؤقت قبل محاولة الحفظ
       await clearSearchHistoryCache();
