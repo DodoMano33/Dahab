@@ -7,3 +7,9 @@ verify_jwt = false
 
 [functions.schedule-realtime-prices]
 verify_jwt = false
+
+[functions.scheduled-price-update]
+verify_jwt = false
+
+[functions.schedule-auto-price-updates]
+verify_jwt = false

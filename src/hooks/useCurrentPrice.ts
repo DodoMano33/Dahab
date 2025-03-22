@@ -12,22 +12,7 @@ export const useCurrentPrice = () => {
     try {
       console.log('جاري جلب أحدث سعر للذهب (XAUUSD)');
       
-      // أولاً، نحاول تحديث السعر من خلال وظيفة Edge
-      try {
-        const { data, error } = await supabase.functions.invoke('update-real-time-prices', {
-          body: { symbols: ['XAUUSD'] }
-        });
-        
-        if (error) {
-          console.warn('لم نتمكن من تحديث سعر الذهب من خلال وظيفة Edge:', error);
-        } else {
-          console.log('تم تحديث سعر الذهب بنجاح من خلال وظيفة Edge:', data);
-        }
-      } catch (updateError) {
-        console.warn('خطأ في استدعاء وظيفة تحديث سعر الذهب:', updateError);
-      }
-      
-      // ثم نجلب أحدث سعر من قاعدة البيانات
+      // جلب أحدث سعر من قاعدة البيانات
       const { data, error } = await supabase
         .from('real_time_prices')
         .select('price, updated_at')
@@ -66,6 +51,23 @@ export const useCurrentPrice = () => {
     
     // إعداد فاصل زمني لتحديث السعر كل دقيقة
     const intervalId = setInterval(fetchLatestPrice, 60000);
+    
+    // تشغيل وظيفة تحديث السعر المجدولة عند بدء التطبيق
+    const initScheduledUpdates = async () => {
+      try {
+        // تشغيل الوظيفة المجدولة عند بدء التطبيق
+        const { error } = await supabase.functions.invoke('schedule-auto-price-updates');
+        if (error) {
+          console.warn('لم نتمكن من بدء الجدولة التلقائية للأسعار:', error);
+        } else {
+          console.log('تم بدء الجدولة التلقائية للأسعار بنجاح');
+        }
+      } catch (err) {
+        console.warn('خطأ في بدء الجدولة التلقائية للأسعار:', err);
+      }
+    };
+    
+    initScheduledUpdates();
     
     // الاستماع لأحداث تحديث السعر من المصادر الأخرى
     const handlePriceUpdate = (event: CustomEvent) => {

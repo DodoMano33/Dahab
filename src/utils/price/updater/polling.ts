@@ -9,7 +9,7 @@ export class PollingService {
   constructor(
     private subscriptions: SubscriptionService,
     private fetchPriceForSymbol: (symbol: string) => Promise<number | null>,
-    pollingInterval: number = 300000
+    pollingInterval: number = 300000 // 5 دقائق افتراضيًا (بالملي ثانية)
   ) {
     this.pollingInterval = pollingInterval;
   }
@@ -20,7 +20,7 @@ export class PollingService {
   start(): void {
     if (this.polling) return;
     
-    console.log("بدء التحديث الدوري للأسعار من Metal Price API");
+    console.log(`بدء التحديث الدوري للأسعار كل ${this.pollingInterval / 60000} دقائق`);
     this.polling = true;
     
     this.intervalId = setInterval(async () => {
