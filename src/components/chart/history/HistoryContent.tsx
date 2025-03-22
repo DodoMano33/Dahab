@@ -48,9 +48,9 @@ export const HistoryContent = ({
   const isAllSelected = localHistory.length > 0 && selectedItems.size === localHistory.length;
 
   return (
-    <div className="relative w-full h-full bg-white dark:bg-gray-950 rounded-md shadow-sm border border-slate-200 dark:border-slate-800">
-      <ScrollArea className="h-full overflow-hidden">
-        <div className="overflow-x-auto">
+    <div className="w-full h-full bg-white dark:bg-gray-950 rounded-md shadow-sm border border-slate-200 dark:border-slate-800">
+      <ScrollArea className="h-full">
+        <div className="min-w-full">
           <HistoryTable 
             history={localHistory}
             selectedItems={selectedItems}

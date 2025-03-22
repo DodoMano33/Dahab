@@ -24,22 +24,26 @@ export const SearchHistoryContent = ({
   refreshHistory
 }: SearchHistoryContentProps) => {
   return (
-    <div className="flex flex-col space-y-4">
-      <HistoryChartSection
-        searchHistory={history}
-        isRefreshing={isRefreshing}
-        onRefresh={refreshHistory}
-      />
+    <div className="flex flex-col space-y-4 h-full overflow-hidden">
+      <div className="flex-shrink-0">
+        <HistoryChartSection
+          searchHistory={history}
+          isRefreshing={isRefreshing}
+          onRefresh={refreshHistory}
+        />
+        
+        <Separator className="my-2" />
+      </div>
       
-      <Separator />
-      
-      <HistoryContent
-        history={history}
-        selectedItems={selectedItems}
-        onSelect={onSelect}
-        onDelete={onDelete}
-        onSelectAll={onSelectAll}
-      />
+      <div className="flex-grow overflow-auto">
+        <HistoryContent
+          history={history}
+          selectedItems={selectedItems}
+          onSelect={onSelect}
+          onDelete={onDelete}
+          onSelectAll={onSelectAll}
+        />
+      </div>
     </div>
   );
 };
