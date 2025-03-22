@@ -36,6 +36,7 @@ export const saveAnalysis = async ({
 
   // Ensure analysisType is a valid value for the database
   console.log("Final analysis type being saved to database:", analysisType);
+  console.log("Duration hours being saved:", durationHours);
 
   // Set automatic activation type for Fibonacci analysis types
   if (!analysisResult.activation_type) {

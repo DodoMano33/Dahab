@@ -61,6 +61,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
 
       // التحقق من صحة مدة التحليل
       const durationHours = duration ? parseInt(duration) : 8;
+      console.log("Using duration hours:", durationHours);
+      
       if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
         showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
         dismissToasts(loadingToastId);
@@ -88,6 +90,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         isFibonacciAdvanced
       );
 
+      console.log("Starting analysis with duration:", duration);
+      
       const result = await handleTradingViewConfig(
         symbol, 
         timeframe, 

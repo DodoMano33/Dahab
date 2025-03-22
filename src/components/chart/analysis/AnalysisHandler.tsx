@@ -91,6 +91,8 @@ export const useAnalysisHandler = () => {
 
       // التحقق من صحة مدة التحليل
       const durationHours = duration ? parseInt(duration) : 8;
+      console.log("Validating duration hours:", durationHours);
+      
       if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
         showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
         return;

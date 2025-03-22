@@ -28,7 +28,7 @@ export const performAnalysis = async ({
   duration // استلام مدة التحليل
 }: AnalysisPerformerProps) => {
   try {
-    console.log(`Starting analysis for ${timeframe} - ${analysisType}`);
+    console.log(`Starting analysis for ${timeframe} - ${analysisType} with duration ${duration} hours`);
     
     // Clear caches before starting analysis
     await clearSupabaseCache();
