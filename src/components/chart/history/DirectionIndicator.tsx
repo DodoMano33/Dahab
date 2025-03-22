@@ -15,11 +15,26 @@ export const DirectionIndicator = ({ direction }: DirectionIndicatorProps) => {
   // عرض السهم المناسب بناءً على الاتجاه
   switch (normalizedDirection) {
     case "صاعد":
-      return <ArrowUp className="text-green-500 inline w-6 h-6" />;
+      return (
+        <div className="flex flex-col items-center justify-center gap-0.5 bg-green-50 rounded-md p-1 dark:bg-green-900/20">
+          <ArrowUp className="text-green-600 dark:text-green-400 w-5 h-5" />
+          <span className="text-[10px] font-medium text-green-700 dark:text-green-400">صاعد</span>
+        </div>
+      );
     case "هابط":
-      return <ArrowDown className="text-red-500 inline w-6 h-6" />;
+      return (
+        <div className="flex flex-col items-center justify-center gap-0.5 bg-red-50 rounded-md p-1 dark:bg-red-900/20">
+          <ArrowDown className="text-red-600 dark:text-red-400 w-5 h-5" />
+          <span className="text-[10px] font-medium text-red-700 dark:text-red-400">هابط</span>
+        </div>
+      );
     case "محايد":
     default:
-      return <Minus className="text-gray-500 inline w-6 h-6" />;
+      return (
+        <div className="flex flex-col items-center justify-center gap-0.5 bg-slate-50 rounded-md p-1 dark:bg-slate-800/50">
+          <Minus className="text-slate-500 w-5 h-5" />
+          <span className="text-[10px] font-medium text-slate-600">محايد</span>
+        </div>
+      );
   }
 };

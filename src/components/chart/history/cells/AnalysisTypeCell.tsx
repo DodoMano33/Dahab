@@ -30,16 +30,16 @@ export const AnalysisTypeCell = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex flex-col items-center">
-              <Badge variant="outline" className={`px-1.5 py-0.5 text-xs ${bgColorClass} border-0 shadow-sm`}>
+            <div className="flex flex-col items-center gap-1.5">
+              <Badge variant="outline" className={`px-2 py-1 text-xs ${bgColorClass} border-0 shadow-sm transition-all hover:scale-105 duration-200`}>
                 {displayName || 'غير محدد'}
               </Badge>
               {pattern && (
-                <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1 py-0 mt-1">
+                <Badge variant="outline" className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-[10px] px-1.5 py-0.5">
                   {pattern}
                 </Badge>
               )}
-              <Badge className={`text-[10px] px-1.5 py-0 mt-1 ${activationTypeClass}`}>
+              <Badge className={`text-[10px] px-2 py-0.5 ${activationTypeClass}`}>
                 {activation_type === 'تلقائي' ? 'اوتوماتيكي' : 'يدوي'}
               </Badge>
             </div>

@@ -169,8 +169,8 @@ export const HistoryContent = ({
   };
 
   return (
-    <div className="relative w-full h-full">
-      <ScrollArea className="h-full">
+    <div className="relative w-full h-full bg-white dark:bg-gray-950 rounded-md shadow-sm border border-slate-200 dark:border-slate-800">
+      <ScrollArea className="h-full overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="w-full min-w-max">
             <HistoryTableHeader 
@@ -178,18 +178,26 @@ export const HistoryContent = ({
               onSelectAll={handleSelectAll}
               isAllSelected={localHistory.length > 0 && selectedItems.size === localHistory.length}
             />
-            <TableBody>
-              {localHistory.map((item) => (
-                <HistoryRow
-                  key={item.id}
-                  {...item}
-                  analysis_duration_hours={item.analysis_duration_hours}
-                  last_checked_price={item.last_checked_price}
-                  last_checked_at={item.last_checked_at}
-                  isSelected={selectedItems.has(item.id)}
-                  onSelect={() => onSelect(item.id)}
-                />
-              ))}
+            <TableBody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {localHistory.length > 0 ? (
+                localHistory.map((item) => (
+                  <HistoryRow
+                    key={item.id}
+                    {...item}
+                    analysis_duration_hours={item.analysis_duration_hours}
+                    last_checked_price={item.last_checked_price}
+                    last_checked_at={item.last_checked_at}
+                    isSelected={selectedItems.has(item.id)}
+                    onSelect={() => onSelect(item.id)}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={13} className="text-center py-8 text-muted-foreground">
+                    لا توجد بيانات في سجل البحث
+                  </td>
+                </tr>
+              )}
             </TableBody>
           </Table>
         </div>

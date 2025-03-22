@@ -57,53 +57,53 @@ export const HistoryRow = ({
   });
 
   return (
-    <TableRow className="text-xs text-center">
+    <TableRow className="text-xs hover:bg-muted/30 transition-colors border-b border-slate-100 dark:border-slate-800 group">
       <CheckboxCell isSelected={isSelected} onSelect={onSelect} />
-      <TableCell className="text-center p-2 w-36"><DateCell date={date} /></TableCell>
-      <TableCell className="text-center p-2 w-28">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors"><DateCell date={date} /></TableCell>
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <AnalysisTypeCell 
           analysisType={displayAnalysisType} 
           pattern={analysis.pattern}
           activation_type={analysis.activation_type}
         />
       </TableCell>
-      <TableCell className="text-center p-2 w-16"><SymbolCell symbol={symbol} /></TableCell>
-      <TableCell className="text-center p-2 w-20"><TimeframeCell timeframe={timeframe} /></TableCell>
-      <TableCell className="text-center p-2 w-16"><DirectionCell direction={analysis.direction} /></TableCell>
-      <TableCell className="text-center p-2 w-16"><CurrentPriceCell price={currentPrice} /></TableCell>
-      <TableCell className="text-center p-2 w-20">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors font-semibold"><SymbolCell symbol={symbol} /></TableCell>
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors"><TimeframeCell timeframe={timeframe} /></TableCell>
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors"><DirectionCell direction={analysis.direction} /></TableCell>
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors"><CurrentPriceCell price={currentPrice} /></TableCell>
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <StopLossCell 
           value={analysis.stopLoss} 
           isHit={false}
         />
       </TableCell>
-      <TableCell className="text-center p-2 w-24">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <TargetsListCell 
           targets={fixedTargets} 
           isTargetHit={false}
         />
       </TableCell>
-      <TableCell className="text-center p-2 w-24">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <BestEntryPointCell 
           price={bestEntryPoint.price}
           reason={bestEntryPoint.reason}
         />
       </TableCell>
-      <TableCell className="text-center p-2 w-20">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <ExpiryTimerCell 
           createdAt={date} 
           analysisId={id} 
           durationHours={analysis_duration_hours}
         />
       </TableCell>
-      <TableCell className="text-center p-2 w-24">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <LastCheckedCell 
           price={last_checked_price}
           timestamp={last_checked_at} 
           itemId={id}
         />
       </TableCell>
-      <TableCell className="text-center p-2 w-16">
+      <TableCell className="text-center p-2.5 group-hover:bg-muted/10 transition-colors">
         <MarketStatusCell itemId={id} />
       </TableCell>
     </TableRow>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatRelativeTime } from "../utils/timeUtils";
+import { Clock } from "lucide-react";
 
 interface LastCheckedCellProps {
   price?: number;
@@ -48,16 +49,17 @@ export const LastCheckedCell = ({ price, timestamp, itemId }: LastCheckedCellPro
   }, [itemId]);
   
   if (!price || !formattedTime) {
-    return <span className="text-muted-foreground text-[10px]">لم يتم الفحص</span>;
+    return <span className="text-muted-foreground text-[10px] rounded-md bg-slate-50 dark:bg-slate-900/50 p-1.5 inline-block">لم يتم الفحص</span>;
   }
   
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="text-xs cursor-help">
-            <div>{price}</div>
-            <div className="text-muted-foreground text-[10px]">
+          <div className="text-xs cursor-help rounded-md bg-slate-50 dark:bg-slate-900/50 p-1.5">
+            <div className="font-medium">{price}</div>
+            <div className="text-muted-foreground text-[10px] flex items-center justify-center gap-1 mt-1">
+              <Clock className="h-3 w-3" />
               {formattedTime}
             </div>
           </div>

@@ -28,12 +28,16 @@ export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className={`px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center w-14 ${marketStatus.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`px-2 py-1.5 rounded-md text-xs inline-flex items-center justify-center w-16 font-medium ${
+              marketStatus.isOpen 
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+            } transition-colors`}>
               {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{marketStatus.isOpen ? 'السوق مفتوح حالياً (لوحظت حركة سعر خلال آخر 5 دقائق)' : 'السوق مغلق حالياً (لم تتغير الأسعار منذ أكثر من 5 دقائق)'}</p>
+            <p className="text-sm">{marketStatus.isOpen ? 'السوق مفتوح حالياً (لوحظت حركة سعر خلال آخر 5 دقائق)' : 'السوق مغلق حالياً (لم تتغير الأسعار منذ أكثر من 5 دقائق)'}</p>
             <p className="text-xs mt-1">آخر تحديث: {lastUpdate}</p>
             {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
           </TooltipContent>
