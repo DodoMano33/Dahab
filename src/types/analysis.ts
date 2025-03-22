@@ -1,4 +1,3 @@
-
 export type AnalysisType = 
   | "سكالبينج" 
   | "ذكي" 
@@ -45,7 +44,6 @@ export interface AnalysisData {
     price: number;
     reason: string;
   };
-  entryPoint?: number | string; // Added for backward compatibility
   targets?: {
     price: number;
     expectedTime: Date;
