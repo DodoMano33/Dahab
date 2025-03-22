@@ -33,11 +33,11 @@ Deno.serve(async (req) => {
       throw functionError
     }
 
-    // جدولة الفحص التلقائي
+    // جدولة الفحص التلقائي كل 30 ثانية بدلاً من 5 دقائق
     const { error: scheduleError } = await supabase.sql`
       SELECT cron.schedule(
-        'auto-check-analyses-every-5-minutes',
-        '*/5 * * * *',  -- تشغيل كل 5 دقائق
+        'auto-check-analyses-every-30-seconds',
+        '*/30 * * * * *',  -- تشغيل كل 30 ثانية
         $$
         SELECT
           net.http_post(
@@ -54,11 +54,11 @@ Deno.serve(async (req) => {
       throw scheduleError
     }
 
-    console.log('Scheduled auto-check every 5 minutes successfully')
+    console.log('Scheduled auto-check every 30 seconds successfully')
     
     return new Response(
       JSON.stringify({ 
-        message: 'Scheduled auto-check every 5 minutes successfully',
+        message: 'Scheduled auto-check every 30 seconds successfully',
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
