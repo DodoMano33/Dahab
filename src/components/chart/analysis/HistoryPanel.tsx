@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useNavigate } from "react-router-dom";
-import { List, FileHistory, Loader2 } from "lucide-react";
+import { List, History, BarChart, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface HistoryPanelProps {
@@ -34,7 +33,6 @@ export const HistoryPanel = ({
     }
   };
 
-  // Convert to async function
   const handleManualCheck = async (id: string = '') => {
     if (onManualCheck) {
       try {
@@ -56,7 +54,7 @@ export const HistoryPanel = ({
         onClick={handleOpenHistory}
         className="w-full justify-start"
       >
-        <FileHistory className="h-4 w-4 mr-2" />
+        <History className="h-4 w-4 mr-2" />
         سجل التحليلات
         {analysisCount > 0 && (
           <span className="ml-auto bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">
@@ -82,9 +80,9 @@ export const HistoryPanel = ({
           className="w-full justify-start"
         >
           {isCheckLoading ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Clock className="h-4 w-4 mr-2 animate-spin" />
           ) : (
-            <FileHistory className="h-4 w-4 mr-2" />
+            <History className="h-4 w-4 mr-2" />
           )}
           فحص التحليلات
           {lastCheckTime && (

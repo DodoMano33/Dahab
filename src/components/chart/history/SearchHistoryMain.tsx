@@ -21,7 +21,14 @@ export const SearchHistoryMain = ({
   refreshHistory
 }: SearchHistoryMainProps) => {
   const handleSelectAll = (checked: boolean) => {
-    // This logic will be handled in HistoryContent
+    // This will be handled in SearchHistoryContent and passed to HistoryContent
+    if (checked) {
+      // Select all items
+      history.forEach(item => onSelect(item.id));
+    } else {
+      // Deselect all items
+      [...selectedItems].forEach(id => onSelect(id));
+    }
   };
 
   return (
