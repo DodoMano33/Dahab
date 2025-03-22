@@ -39,12 +39,12 @@ Deno.serve(async (req) => {
     
     for (const symbol of SUPPORTED_SYMBOLS) {
       try {
-        console.log(`محاولة جلب سعر ${symbol}...`);
+        console.log(`محاولة جلب سعر ${symbol} من CFI...`);
         // جلب السعر الحالي
         const price = await fetchPrice(symbol);
         
         if (price !== null) {
-          console.log(`تم جلب سعر ${symbol}: ${price}`);
+          console.log(`تم جلب سعر ${symbol} من CFI: ${price}`);
           
           // تخزين السعر في قاعدة البيانات
           const { data, error } = await supabase
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
             results.push({ symbol, success: true, price });
           }
         } else {
-          console.error(`فشل في جلب سعر ${symbol}`);
+          console.error(`فشل في جلب سعر ${symbol} من CFI`);
           results.push({ symbol, success: false, error: "سعر غير متاح" });
         }
       } catch (error: any) {
