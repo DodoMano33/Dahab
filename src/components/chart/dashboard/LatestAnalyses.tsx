@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 interface LatestAnalysesProps {
   userId: string;
@@ -68,7 +70,7 @@ export function LatestAnalyses({ userId }: LatestAnalysesProps) {
                 <div className="flex justify-between">
                   <h4 className="font-medium">{analysis.symbol}</h4>
                   <span className="text-sm text-muted-foreground">
-                    {new Date(analysis.created_at).toLocaleDateString('ar-SA')}
+                    {format(new Date(analysis.created_at), 'yyyy/MM/dd HH:mm', { locale: ar })}
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-1">
