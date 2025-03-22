@@ -12,58 +12,46 @@ export const mapToAnalysisType = (analysisType: string): string => {
   // Normalize the input
   const normalizedType = analysisType.toLowerCase().replace(/_/g, '').trim();
   
-  // Make sure to match exactly what's expected in the database
-  if (normalizedType.includes('نمطي') || normalizedType.includes('pattern')) return "نمطي";
-  if (normalizedType.includes('تقلبات') || normalizedType.includes('wave')) return "تقلبات";
-  if (normalizedType.includes('جان') || normalizedType.includes('gann')) return "جان";
-  if (normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtlesoup') || normalizedType.includes('turtle')) return "الحساء السلحفائي";
-  if (normalizedType.includes('نظريةالسوق') || normalizedType.includes('ict')) return "نظرية السوق";
-  if (normalizedType.includes('نظريةهيكلالسوق') || normalizedType.includes('smc')) return "نظرية هيكل السوق";
-  if (normalizedType.includes('مضاربة') || normalizedType.includes('scalping') || normalizedType.includes('سكالبينج')) return "مضاربة";
-  if (normalizedType.includes('حركةالسعر') || normalizedType.includes('priceaction')) return "حركة السعر";
-  if (normalizedType.includes('ذكي') || normalizedType.includes('smart')) return "ذكي";
+  // توحيد الأنواع وفقًا للقائمة المطلوبة (16 نوع)
+  if (normalizedType.includes('pattern') || normalizedType.includes('نمطي')) return "نمطي";
+  if (normalizedType.includes('waves') || normalizedType.includes('تقلبات')) return "تقلبات";
+  if (normalizedType.includes('gann') || normalizedType.includes('جان')) return "جان";
+  if (normalizedType.includes('turtle') || normalizedType.includes('turtlesoup') || normalizedType.includes('الحساءالسلحفائي')) return "الحساء السلحفائي";
+  if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) return "نظرية السوق";
+  if (normalizedType.includes('smc') || normalizedType.includes('هيكلالسوق')) return "نظرية هيكل السوق";
+  if (normalizedType.includes('scalping') || normalizedType.includes('سكالبينج') || normalizedType.includes('مضاربة')) return "مضاربة";
+  if (normalizedType.includes('priceaction') || normalizedType.includes('حركةالسعر')) return "حركة السعر";
   
-  // Map the new analysis types
-  if (normalizedType.includes('شبكاتعصبيةمتكررة') || normalizedType.includes('rnn')) return "شبكات عصبية متكررة";
-  if (normalizedType.includes('شبكاتعصبية') || normalizedType.includes('neural')) return "شبكات عصبية";
-  if (normalizedType.includes('تصفيقزمني') || normalizedType.includes('timecluster')) return "تصفيق زمني"; 
-  if (normalizedType.includes('تباينمتعدد') || normalizedType.includes('multivariance')) return "تباين متعدد العوامل"; 
-  if (normalizedType.includes('شمعاتمركبة') || normalizedType.includes('composite')) return "شمعات مركبة"; 
-  if (normalizedType.includes('تحليلسلوكي') || normalizedType.includes('behavioral')) return "تحليل سلوكي";
+  // أنواع التحليل المتقدمة
+  if (normalizedType.includes('neuralnetwork') || normalizedType.includes('شبكاتعصبية')) return "شبكات عصبية";
+  if (normalizedType.includes('rnn') || normalizedType.includes('شبكاتعصبيةمتكررة')) return "شبكات عصبية متكررة";
+  if (normalizedType.includes('timecluster') || normalizedType.includes('تصفيقزمني')) return "تصفيق زمني";
+  if (normalizedType.includes('multivariance') || normalizedType.includes('تباينمتعدد')) return "تباين متعدد العوامل";
+  if (normalizedType.includes('composite') || normalizedType.includes('شمعاتمركبة')) return "شمعات مركبة";
+  if (normalizedType.includes('behavioral') || normalizedType.includes('سلوكي')) return "تحليل سلوكي";
   
-  // Fibonacci advanced analysis - check advanced first
-  if (normalizedType.includes('فيبوناتشيمتقدم') || normalizedType.includes('تحليلفيبوناتشيمتقدم') || 
-     normalizedType.includes('fibonacciadvanced') || normalizedType.includes('advancedfibonacci') ||
-     normalizedType.includes('fibonacci_advanced')) {
-    return "فيبوناتشي متقدم";
-  }
+  // فيبوناتشي المتقدم (ضع هذا قبل فيبوناتشي العادي)
+  if (normalizedType.includes('fibonacciadvanced') || normalizedType.includes('فيبوناتشيمتقدم')) return "فيبوناتشي متقدم";
   
-  if (normalizedType.includes('فيبوناتشي') || normalizedType.includes('fibonacci')) {
-    return "فيبوناتشي";
-  }
+  // فيبوناتشي العادي
+  if (normalizedType.includes('fibonacci') || normalizedType.includes('فيبوناتشي')) return "فيبوناتشي";
   
-  if (normalizedType.includes('يومي') || normalizedType.includes('daily')) {
-    return "يومي";
-  }
+  // التحليل العادي
+  if (normalizedType.includes('normal') || normalizedType.includes('عادي')) return "عادي";
   
-  if (normalizedType.includes('normal') || normalizedType.includes('عادي')) {
-    return "عادي";
-  }
-  
-  // أطبع النوع غير المعروف للتشخيص
-  console.log(`Unknown analysis type: "${analysisType}", normalized: "${normalizedType}", original type: ${typeof analysisType}`);
+  console.log(`نوع غير معروف: "${analysisType}", normalized: "${normalizedType}"`);
   
   // استخدم النوع الأصلي إذا كان مسموحًا به في قاعدة البيانات
-  return analysisType; 
+  return analysisType;
 };
 
-// Add the missing function for AnalysisPerformer
+// إعداد التكوين لأنواع التحليل
 export const mapAnalysisTypeToConfig = (analysisType: string) => {
   const normalizedType = analysisType ? analysisType.toLowerCase().replace(/_/g, '').trim() : '';
   
   return {
     isScalping: normalizedType.includes('scalping') || normalizedType.includes('مضاربة') || normalizedType.includes('سكالبينج'),
-    isSMC: normalizedType.includes('smc') || normalizedType.includes('نظريةهيكلالسوق'),
+    isSMC: normalizedType.includes('smc') || normalizedType.includes('هيكلالسوق'),
     isICT: normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق'),
     isTurtleSoup: normalizedType.includes('turtlesoup') || normalizedType.includes('الحساءالسلحفائي') || normalizedType.includes('turtle'),
     isGann: normalizedType.includes('gann') || normalizedType.includes('جان'),
@@ -75,12 +63,11 @@ export const mapAnalysisTypeToConfig = (analysisType: string) => {
     isTimeClustering: normalizedType.includes('timeclustering') || normalizedType.includes('تصفيقزمني'),
     isMultiVariance: normalizedType.includes('multivariance') || normalizedType.includes('تباينمتعدد'),
     isCompositeCandlestick: normalizedType.includes('compositecandlestick') || normalizedType.includes('شمعاتمركبة'),
-    isBehavioral: normalizedType.includes('behavioral') || normalizedType.includes('تحليلسلوكي'),
+    isBehavioral: normalizedType.includes('behavioral') || normalizedType.includes('سلوكي'),
     isFibonacci: (normalizedType.includes('fibonacci') && !normalizedType.includes('advanced')) || 
                 (normalizedType.includes('فيبوناتشي') && !normalizedType.includes('متقدم')),
     isFibonacciAdvanced: normalizedType.includes('fibonacciadvanced') || 
-                        normalizedType.includes('تحليلفيبوناتشيمتقدم') || 
                         normalizedType.includes('فيبوناتشيمتقدم') || 
-                        normalizedType.includes('fibonacci_advanced')
+                        (normalizedType.includes('fibonacci') && normalizedType.includes('advanced'))
   };
 };

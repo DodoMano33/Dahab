@@ -40,35 +40,28 @@ export const BackTestResultsDialog = ({
   } = useBacktestResultsState(completedAnalyses, refreshResults, refreshStats);
 
   useEffect(() => {
+    // فحص أنواع التحليل ومعالجتها عند تحميل النتائج
     if (completedAnalyses.length > 0) {
-      console.log("BackTestResultsDialog: Loaded analysis types:", 
-        completedAnalyses.slice(0, 20).map(a => a.analysis_type));
+      // جمع أنواع التحليل الفريدة للتحقق
+      const uniqueTypes = [...new Set(completedAnalyses.map(a => a.analysis_type))];
+      console.log("BackTestResultsDialog: Unique analysis types:", uniqueTypes);
       
-      console.log("BackTestResultsDialog: Unique analysis types:", 
-        [...new Set(completedAnalyses.map(a => a.analysis_type))]);
-        
-      console.log("BackTestResultsDialog: Analysis types with display names:", 
-        completedAnalyses.slice(0, 20).map(a => ({
-          id: a.id,
-          type: a.analysis_type,
-          display: getStrategyName(a.analysis_type)
-        })));
+      // التأكد من توحيد أنواع التحليل
+      const normalizedTypes = uniqueTypes.map(type => ({
+        original: type,
+        normalized: getStrategyName(type)
+      }));
+      
+      console.log("BackTestResultsDialog: Normalized analysis types:", normalizedTypes);
     }
     
+    // فحص أنواع الإحصائيات ومعالجتها عند تحميل الإحصائيات
     if (stats.length > 0) {
-      console.log("BackTestResultsDialog: Loaded stats types:", 
-        stats.map(s => s.type));
-      
-      console.log("BackTestResultsDialog: Unique stats types:", 
-        [...new Set(stats.map(s => s.type))]);
-      
-      console.log("BackTestResultsDialog: Stats types with display names:", 
+      console.log("BackTestResultsDialog: Stats types:", 
         stats.map(s => ({
           type: s.type,
           display: getStrategyName(s.type),
-          displayFromStat: s.display_name,
-          success: s.success,
-          fail: s.fail
+          displayFromStat: s.display_name
         })));
     }
   }, [completedAnalyses, stats]);

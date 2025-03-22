@@ -28,21 +28,21 @@ export const useSaveAnalysis = () => {
     onAnalysisComplete
   }: SaveAnalysisParams) => {
     try {
-      // طباعة نوع التحليل قبل المعالجة
+      // طباعة نوع التحليل قبل المعالجة للتشخيص
       console.log("Original analysis type before mapping:", analysisType);
       console.log("Analysis duration to be saved:", duration);
       
-      // تنظيف التخزين المؤقت قبل محاولة الحفظ
+      // تنظيف التخزين المؤقت
       await clearSearchHistoryCache();
       
-      // Fix for Fibonacci Advanced analysis
+      // التعامل مع أنواع تحليل فيبوناتشي المتقدم بشكل خاص
       if (analysisType === "fibonacci_advanced" || 
           analysisType.includes("fibonacci advanced") ||
           analysisType.includes("فيبوناتشي متقدم")) {
         console.log("Detected Fibonacci Advanced analysis, ensuring proper mapping");
       }
       
-      // Map the analysis type to a valid database enum value
+      // تخطيط نوع التحليل إلى القيمة المقبولة في قاعدة البيانات (16 نوع فقط)
       const mappedAnalysisType = mapToAnalysisType(analysisType);
       console.log("Mapped analysis type:", mappedAnalysisType);
       
@@ -51,13 +51,13 @@ export const useSaveAnalysis = () => {
         result.analysisResult.analysisType = mappedAnalysisType;
       }
       
-      // Update the analysis result's analysisType to the mapped value
+      // تحديث نوع التحليل في النتيجة ليكون من ضمن الأنواع المدعومة
       const analysisResultWithMappedType = {
         ...result.analysisResult,
         analysisType: mappedAnalysisType
       };
       
-      console.log("Final analysis result with type:", analysisResultWithMappedType);
+      console.log("Final analysis result with normalized type:", analysisResultWithMappedType);
       
       try {
         const savedData = await saveAnalysis({
@@ -88,8 +88,8 @@ export const useSaveAnalysis = () => {
           onAnalysisComplete(newHistoryEntry);
         }
         
-        // Show success toast with proper analysis type display
-        toast.success(`تم إكمال تحليل ${analysisType} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
+        // عرض رسالة نجاح مع نوع التحليل المتوافق
+        toast.success(`تم إكمال تحليل ${getStrategyName(mappedAnalysisType)} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
           duration: 5000,
         });
         
@@ -98,7 +98,7 @@ export const useSaveAnalysis = () => {
       } catch (dbError: any) {
         console.error("Database error saving analysis:", dbError);
         
-        // إذا كان الخطأ متعلقًا بمخطط البيانات، نحاول مسح التخزين المؤقت وإعادة المحاولة
+        // محاولة مسح التخزين المؤقت إذا كان هناك خطأ في المخطط
         if (dbError.message && dbError.message.includes('schema cache')) {
           console.log("Schema cache error detected, attempting to clear cache and retry");
           
@@ -137,7 +137,7 @@ export const useSaveAnalysis = () => {
           return retryData;
         }
         
-        // Provide more helpful error message for constraint violations
+        // تقديم رسالة خطأ مفيدة لانتهاكات القيود
         if (dbError.message && dbError.message.includes('search_history_analysis_type_check')) {
           toast.error(`نوع التحليل "${mappedAnalysisType}" غير مسموح به في قاعدة البيانات. يرجى التواصل مع المسؤول.`);
         } else {
@@ -155,3 +155,6 @@ export const useSaveAnalysis = () => {
 
   return { saveAnalysisResult };
 };
+
+// إضافة دالة getStrategyName من المسار الصحيح
+import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";

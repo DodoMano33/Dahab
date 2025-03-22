@@ -1,58 +1,85 @@
 
 // نقل دالة getStrategyName لتكون قبل استخدامها
 export const getStrategyName = (type: string): string => {
-  const strategyMap: Record<string, string> = {
-    normal: "التحليل العادي",
-    trend: "تحليل الاتجاه",
-    support_resistance: "الدعم والمقاومة",
-    oscillator: "المذبذبات",
-    candlestick: "الشموع اليابانية",
-    fibonacci: "فيبوناتشي",
-    fibonacci_advanced: "فيبوناتشي المتقدم",
-    gann: "تحليل جان",
-    waves: "تحليل الموجات",
-    price_action: "حركة السعر",
-    scalping: "سكالبينج",
-    smc: "تحليل تحكم السيولة",
-    ict: "تحليل ICT",
-    time_clustering: "تحليل تجمع الوقت",
-    pattern: "تحليل الأنماط",
-    multi_variance: "التباين المتعدد",
-    neural_network: "الشبكة العصبية",
-    behaviors: "تحليل السلوك",
-    turtle_soup: "تحليل Turtle Soup",
-    rnn: "شبكة RNN العصبية",
-    composite_candlesticks: "تحليل الشموع المركب",
-    // أية أنواع أخرى يمكن إضافتها هنا
-  };
-
-  // إذا وجد النوع، نرجع اسمه، وإلا نرجع النوع كما هو
-  return strategyMap[type] || type;
+  // توحيد الأنواع المختلفة لنفس التحليل
+  const normalizedType = type.toLowerCase().replace(/_/g, '').trim();
+  
+  // استخدام تخطيط موحد للأنواع
+  if (normalizedType.includes('normal') || normalizedType.includes('عادي')) {
+    return "التحليل العادي";
+  }
+  if (normalizedType.includes('scalping') || normalizedType.includes('سكالبينج') || normalizedType.includes('مضاربة')) {
+    return "مضاربة (Scalping)";
+  }
+  if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) {
+    return "ICT - نظرية السوق";
+  }
+  if (normalizedType.includes('smc') || normalizedType.includes('هيكلالسوق')) {
+    return "SMC - نظرية هيكل السوق";
+  }
+  if (normalizedType.includes('turtle') || normalizedType.includes('turtlesoup') || normalizedType.includes('الحساءالسلحفائي')) {
+    return "Turtle Soup تحليل";
+  }
+  if (normalizedType.includes('gann') || normalizedType.includes('جان')) {
+    return "تحليل جان (Gann)";
+  }
+  if (normalizedType.includes('waves') || normalizedType.includes('تقلبات')) {
+    return "تحليل الموجات";
+  }
+  if (normalizedType.includes('pattern') || normalizedType.includes('نمطي')) {
+    return "تحليل الأنماط";
+  }
+  if (normalizedType.includes('priceaction') || normalizedType.includes('حركةالسعر')) {
+    return "حركة السعر";
+  }
+  if (normalizedType.includes('fibonacciadvanced') || normalizedType.includes('فيبوناتشيمتقدم')) {
+    return "تحليل فيبوناتشي متقدم";
+  }
+  if (normalizedType.includes('fibonacci') || normalizedType.includes('فيبوناتشي')) {
+    return "فيبوناتشي";
+  }
+  if (normalizedType.includes('neuralnetwork') || normalizedType.includes('شبكاتعصبية')) {
+    return "شبكات عصبية";
+  }
+  if (normalizedType.includes('rnn') || normalizedType.includes('شبكاتعصبيةمتكررة')) {
+    return "شبكة RNN العصبية";
+  }
+  if (normalizedType.includes('timecluster') || normalizedType.includes('تصفيقزمني')) {
+    return "تحليل تجمع الوقت";
+  }
+  if (normalizedType.includes('multivariance') || normalizedType.includes('تباينمتعدد')) {
+    return "تباين متعدد العوامل";
+  }
+  if (normalizedType.includes('composite') || normalizedType.includes('شمعاتمركبة')) {
+    return "تحليل الشموع المركب";
+  }
+  if (normalizedType.includes('behavioral') || normalizedType.includes('سلوكي')) {
+    return "تحليل السلوك";
+  }
+  
+  // إذا لم يتطابق مع أي من الأنواع المعروفة، نعرض النوع كما هو
+  console.log(`نوع غير معروف: ${type}`);
+  return type;
 };
 
-// قائمة أنواع التحليل الرئيسية
+// قائمة أنواع التحليل الرئيسية - فقط 16 نوع كما في المتطلبات
 export const mainAnalysisTypes = [
-  "normal",
-  "trend",
-  "support_resistance",
-  "oscillator",
-  "candlestick",
-  "fibonacci",
-  "fibonacci_advanced",
-  "gann",
-  "waves",
-  "price_action",
-  "scalping",
-  "smc",
-  "ict",
-  "time_clustering",
-  "pattern",
-  "multi_variance",
-  "neural_network",
-  "behaviors",
-  "turtle_soup",
-  "rnn",
-  "composite_candlesticks"
+  "normal", // التحليل العادي
+  "scalping", // مضاربة
+  "ict", // نظرية السوق
+  "smc", // نظرية هيكل السوق
+  "turtle_soup", // الحساء السلحفائي
+  "gann", // جان
+  "waves", // تقلبات (الموجات)
+  "pattern", // نمطي (الأنماط)
+  "price_action", // حركة السعر
+  "fibonacci", // فيبوناتشي
+  "fibonacci_advanced", // تحليل فيبوناتشي متقدم
+  "neural_network", // شبكات عصبية
+  "rnn", // شبكات عصبية متكررة
+  "time_clustering", // تصفيق زمني
+  "multi_variance", // تباين متعدد العوامل
+  "composite_candlestick" // شمعات مركبة
 ];
 
 // قائمة أنواع التحليل مع أسماء العرض
@@ -64,50 +91,43 @@ export const analysisTypesWithDisplayNames = mainAnalysisTypes.map(type => ({
 // الأنواع المتاحة للتحليل السريع
 export const quickAnalysisTypes = [
   { value: "normal", label: "التحليل العادي" },
-  { value: "trend", label: "تحليل الاتجاه" },
-  { value: "support_resistance", label: "الدعم والمقاومة" },
-  { value: "fibonacci", label: "فيبوناتشي" },
   { value: "price_action", label: "حركة السعر" },
-  { value: "pattern", label: "تحليل الأنماط" }
+  { value: "pattern", label: "تحليل الأنماط" },
+  { value: "fibonacci", label: "فيبوناتشي" },
+  { value: "scalping", label: "مضاربة (Scalping)" },
+  { value: "smc", label: "SMC - نظرية هيكل السوق" }
 ];
 
 // مجموعات التحليل
 export const analysisGroups = [
   {
     title: "التحليلات الأساسية",
-    types: ["normal", "trend", "support_resistance", "oscillator"]
+    types: ["normal", "pattern", "price_action"]
   },
   {
-    title: "تحليلات الشموع والأنماط",
-    types: ["candlestick", "pattern", "composite_candlesticks"]
+    title: "تحليلات متخصصة",
+    types: ["scalping", "ict", "smc", "gann"]
   },
   {
-    title: "تحليلات فيبوناتشي وجان",
-    types: ["fibonacci", "fibonacci_advanced", "gann"]
-  },
-  {
-    title: "تحليلات الموجات والسعر",
-    types: ["waves", "price_action", "smc", "ict"]
+    title: "تحليلات فيبوناتشي والموجات",
+    types: ["fibonacci", "fibonacci_advanced", "waves", "turtle_soup"]
   },
   {
     title: "تحليلات متقدمة",
-    types: [
-      "scalping", 
-      "time_clustering", 
-      "multi_variance", 
-      "neural_network", 
-      "behaviors",
-      "turtle_soup",
-      "rnn"
-    ]
+    types: ["neural_network", "rnn", "time_clustering", "multi_variance", "composite_candlestick"]
   }
 ];
 
 // دالة للحصول على مجموعة التحليل التي ينتمي إليها نوع معين
 export const getAnalysisGroup = (type: string): string => {
+  const normalizedType = type.toLowerCase().replace(/_/g, '').trim();
+  
   for (const group of analysisGroups) {
-    if (group.types.includes(type)) {
-      return group.title;
+    for (const groupType of group.types) {
+      const normalizedGroupType = groupType.toLowerCase().replace(/_/g, '').trim();
+      if (normalizedType.includes(normalizedGroupType)) {
+        return group.title;
+      }
     }
   }
   return "أخرى";

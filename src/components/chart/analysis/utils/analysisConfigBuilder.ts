@@ -24,14 +24,14 @@ export const detectAnalysisType = (
   isFibonacciAdvanced: boolean = false
 ): AnalysisType => {
   if (isAI) return "ذكي";
-  if (isScalping) return "سكالبينج";
-  if (isSMC) return "SMC";
-  if (isICT) return "ICT";
-  if (isTurtleSoup) return "Turtle Soup";
-  if (isGann) return "Gann";
-  if (isWaves) return "Waves";
-  if (isPatternAnalysis) return "Patterns";
-  if (isPriceAction) return "Price Action";
+  if (isScalping) return "مضاربة";
+  if (isSMC) return "نظرية هيكل السوق";
+  if (isICT) return "نظرية السوق";
+  if (isTurtleSoup) return "الحساء السلحفائي";
+  if (isGann) return "جان";
+  if (isWaves) return "تقلبات";
+  if (isPatternAnalysis) return "نمطي";
+  if (isPriceAction) return "حركة السعر";
   if (isFibonacci) return "فيبوناتشي";
   if (isFibonacciAdvanced) return "فيبوناتشي متقدم";
   if (isNeuralNetwork) return "شبكات عصبية";

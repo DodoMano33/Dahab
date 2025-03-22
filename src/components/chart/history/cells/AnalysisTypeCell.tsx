@@ -16,13 +16,13 @@ export const AnalysisTypeCell = ({
   pattern, 
   activation_type = 'يدوي' 
 }: AnalysisTypeCellProps) => {
-  // Get display name using helper function
+  // التأكد من الحصول على اسم العرض الصحيح لنوع التحليل
   const displayName = getStrategyName(analysisType);
   
-  // Get background color class from utility
+  // الحصول على لون الخلفية المناسب
   const bgColorClass = getAnalysisTypeBackgroundColor(analysisType);
   
-  // Get activation type class from utility
+  // الحصول على فئة CSS لنوع التفعيل
   const activationTypeClass = getActivationTypeClassName(activation_type);
 
   return (

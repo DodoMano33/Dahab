@@ -1,4 +1,3 @@
-
 export type AnalysisType = 
   | "سكالبينج" 
   | "ذكي" 
@@ -16,7 +15,7 @@ export type AnalysisType =
   | "شمعات مركبة" 
   | "تحليل سلوكي" 
   | "فيبوناتشي"
-  | "فيبوناتشي متقدم"  // Updated this line
+  | "فيبوناتشي متقدم"
   | "عادي"
   | "نمطي"
   | "تقلبات"
@@ -55,7 +54,7 @@ export interface AnalysisData {
   }[];
   activation_type?: "تلقائي" | "يدوي";
   analysisType: AnalysisType;
-  analysis_duration_hours?: number; // Added this property to fix the TypeScript errors
+  analysis_duration_hours?: number;
 }
 
 export interface SearchHistoryItem {

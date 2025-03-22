@@ -27,6 +27,7 @@ interface AnalysisType {
   label: string;
 }
 
+// تحديث قائمة أنواع التحليل لتكون 16 نوع فقط كما في المتطلبات
 const analysisTypes: AnalysisType[] = [
   { value: "normal", label: "تحديد الكل" },
   { value: "scalping", label: "مضاربة (Scalping)" },

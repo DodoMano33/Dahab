@@ -28,10 +28,10 @@ export const useBacktestStats = () => {
 
       console.log('Fetched backtest stats raw data:', results);
       
-      // جمع نتائج الاستعلام في قاموس لسهولة البحث
+      // إنشاء قاموس لجميع أنواع التحليل المدعومة (16 نوع) مع قيم أولية صفرية
       const statsMap: Record<string, AnalysisStats> = {};
       
-      // إعداد قاموس بجميع أنواع التحليل المتاحة (بقيم صفرية)
+      // إعداد قاموس بالأنواع الـ 16 المطلوبة
       mainAnalysisTypes.forEach(type => {
         const displayName = getStrategyName(type);
         statsMap[type] = {
@@ -42,28 +42,39 @@ export const useBacktestStats = () => {
         };
       });
       
-      // معالجة النتائج من قاعدة البيانات (إذا كانت موجودة)
+      // معالجة النتائج من قاعدة البيانات
       if (results && Array.isArray(results)) {
         results.forEach((stat: any) => {
-          // التأكد من وجود نوع صالح
           if (!stat.type) {
             console.warn('Found stat without type:', stat);
             stat.type = 'normal';
           }
           
-          const displayName = getStrategyName(stat.type);
-          console.log(`Processing stat: ${stat.type} -> ${displayName}`);
+          // توحيد أنواع التحليل للأنواع الـ 16 المطلوبة
+          const normalizedType = stat.type.toLowerCase().replace(/_/g, '').trim();
+          let matchedType = 'normal'; // افتراضي
           
           // البحث عن أقرب مطابقة في قائمة أنواع التحليل الرئيسية
-          let matchedType = stat.type;
           for (const mainType of mainAnalysisTypes) {
-            if (
-              mainType.toLowerCase() === stat.type.toLowerCase() ||
-              getStrategyName(mainType) === displayName
-            ) {
+            const normalizedMainType = mainType.toLowerCase().replace(/_/g, '').trim();
+            if (normalizedType.includes(normalizedMainType) || 
+                getStrategyName(mainType).toLowerCase().includes(normalizedType)) {
               matchedType = mainType;
               break;
             }
+          }
+          
+          // التعامل مع حالات خاصة
+          if (normalizedType.includes('smc') || normalizedType.includes('هيكلالسوق')) {
+            matchedType = 'smc';
+          } else if (normalizedType.includes('ict') || normalizedType.includes('نظريةالسوق')) {
+            matchedType = 'ict';
+          } else if (normalizedType.includes('turtle') || normalizedType.includes('الحساءالسلحفائي')) {
+            matchedType = 'turtle_soup';
+          } else if (normalizedType.includes('fibon') && normalizedType.includes('adv')) {
+            matchedType = 'fibonacci_advanced';
+          } else if (normalizedType.includes('fibon')) {
+            matchedType = 'fibonacci';
           }
           
           // تحديث الإحصائيات
@@ -71,13 +82,9 @@ export const useBacktestStats = () => {
             statsMap[matchedType].success += stat.success || 0;
             statsMap[matchedType].fail += stat.fail || 0;
           } else {
-            // إذا لم يتم العثور على مطابقة، نضيف النوع كما هو
-            statsMap[stat.type] = {
-              type: stat.type,
-              success: stat.success || 0,
-              fail: stat.fail || 0,
-              display_name: displayName
-            };
+            // إذا لم يتم العثور على مطابقة، نضيف للنوع الافتراضي
+            statsMap['normal'].success += stat.success || 0;
+            statsMap['normal'].fail += stat.fail || 0;
           }
         });
       }
@@ -86,7 +93,7 @@ export const useBacktestStats = () => {
       const processedStats = Object.values(statsMap);
       
       console.log('Processed backtest stats:', processedStats);
-      console.log('Unique analysis types:', [...new Set(processedStats.map(s => s.type))]);
+      console.log('Unique analysis types after processing:', [...new Set(processedStats.map(s => s.type))]);
       console.log('Total types count:', processedStats.length);
       
       setStats(processedStats);
