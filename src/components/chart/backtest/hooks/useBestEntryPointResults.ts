@@ -3,27 +3,24 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 
 export const useBestEntryPointResults = () => {
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
   const [currentTradingViewPrice, setCurrentTradingViewPrice] = useState<number | null>(null);
+  const [totalProfitLoss, setTotalProfitLoss] = useState(0);
 
   // استمع لتحديثات السعر من TradingView
   useEffect(() => {
     const handleTradingViewPriceUpdate = (event: MessageEvent) => {
-      try {
-        if (event.data && event.data.name === 'price-update' && event.data.price) {
-          console.log('TradingView price updated:', event.data.price);
-          setCurrentTradingViewPrice(event.data.price);
-        }
-      } catch (error) {
-        console.error('Error handling TradingView price update:', error);
+      if (event.data && event.data.name === 'price-update' && event.data.price) {
+        console.log('TradingView price updated:', event.data.price);
+        setCurrentTradingViewPrice(event.data.price);
       }
     };
 
@@ -45,26 +42,61 @@ export const useBestEntryPointResults = () => {
         .order('result_timestamp', { ascending: false });
 
       if (error) {
-        console.error('Error fetching best entry point results:', error);
-        toast.error('حدث خطأ أثناء جلب نتائج أفضل نقاط الدخول');
+        console.error('Error fetching results:', error);
+        toast.error('حدث خطأ أثناء جلب النتائج');
         return;
       }
 
-      console.log(`Fetched ${data?.length} best entry point results`);
-      
-      // Process results to ensure direction is properly set
+      // Process results and calculate profit/loss based on direction
       const processedResults = data?.map(result => {
-        // Make sure direction is logged for debugging
-        if (result.direction) {
-          console.log(`Result ${result.id} has direction: ${result.direction}`);
+        // احتساب قيمة الربح أو الخسارة بناءً على الاتجاه
+        if (result.entry_point_price !== null && result.entry_point_price !== undefined) {
+          const closePrice = result.is_success ? result.target_price : result.stop_loss;
+          
+          if (closePrice !== null && closePrice !== undefined) {
+            if (result.direction === 'up' || result.direction === 'صاعد') {
+              if (result.is_success) {
+                // اتجاه صاعد وتحقق الهدف: سعر الإغلاق - سعر الدخول (إيجابي)
+                result.profit_loss = Number(closePrice) - Number(result.entry_point_price);
+              } else {
+                // اتجاه صاعد ووصل لوقف الخسارة: سعر الدخول - سعر الإغلاق (سلبي)
+                result.profit_loss = Number(result.entry_point_price) - Number(closePrice);
+              }
+            } else if (result.direction === 'down' || result.direction === 'هابط') {
+              if (result.is_success) {
+                // اتجاه هابط وتحقق الهدف: سعر الدخول - سعر الإغلاق (إيجابي)
+                result.profit_loss = Number(result.entry_point_price) - Number(closePrice);
+              } else {
+                // اتجاه هابط ووصل لوقف الخسارة: سعر الإغلاق - سعر الدخول (سلبي)
+                result.profit_loss = Number(closePrice) - Number(result.entry_point_price);
+              }
+            } else {
+              console.warn(`Result with unknown direction: ${result.direction}`);
+            }
+          }
         }
+        
         return result;
       }) || [];
       
+      // Calculate total profit/loss
+      let total = 0;
+      processedResults.forEach(result => {
+        if (result.profit_loss !== null && result.profit_loss !== undefined) {
+          const profitLossValue = Number(result.profit_loss);
+          // إذا كانت النتيجة ناجحة، نضيف قيمة الربح (موجبة بالفعل)
+          // إذا كانت النتيجة فاشلة، نضيف قيمة الخسارة (سالبة بالفعل)
+          total += profitLossValue;
+        }
+      });
+
+      // If we're on page 0, reset everything, otherwise add to existing data
       if (pageNumber === 0) {
         setResults(processedResults);
+        setTotalProfitLoss(total);
       } else {
         setResults(prev => [...prev, ...processedResults]);
+        setTotalProfitLoss(prev => prev + total);
       }
 
       setHasMore((count || 0) > (start + PAGE_SIZE));
@@ -91,20 +123,18 @@ export const useBestEntryPointResults = () => {
   }, []);
 
   const handleSelectItem = (id: string) => {
-    setSelectedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedItems(newSelected);
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = results.map(item => item.id);
+      const allIds = results.map(result => result.id);
       setSelectedItems(new Set(allIds));
     } else {
       setSelectedItems(new Set());
@@ -113,33 +143,28 @@ export const useBestEntryPointResults = () => {
 
   const handleDeleteSelected = async () => {
     if (selectedItems.size === 0) {
-      toast.error('الرجاء تحديد عناصر للحذف');
+      toast.error("الرجاء تحديد عناصر للحذف");
       return;
     }
 
     try {
       setIsDeleting(true);
-      const selectedIds = Array.from(selectedItems);
+      const selectedArray = Array.from(selectedItems);
       
-      // حذف العناصر المحددة واحدًا تلو الآخر
-      for (const id of selectedIds) {
-        const { error } = await supabase
-          .from('best_entry_point_results')
-          .delete()
-          .eq('id', id);
-          
-        if (error) {
-          console.error(`Error deleting entry point result ${id}:`, error);
-          toast.error('حدث خطأ أثناء حذف بعض النتائج');
-        }
+      const { error } = await supabase
+        .from('best_entry_point_results')
+        .delete()
+        .in('id', selectedArray);
+
+      if (error) {
+        throw error;
       }
-      
-      setSelectedItems(new Set());
-      toast.success('تم حذف العناصر المحددة بنجاح');
+
+      toast.success("تم حذف العناصر المحددة بنجاح");
       await refresh();
     } catch (error) {
-      console.error('Error deleting selected items:', error);
-      toast.error('حدث خطأ أثناء حذف العناصر المحددة');
+      console.error('Error deleting items:', error);
+      toast.error("حدث خطأ أثناء حذف العناصر");
     } finally {
       setIsDeleting(false);
     }
@@ -160,6 +185,7 @@ export const useBestEntryPointResults = () => {
     handleSelectAll,
     handleDeleteSelected,
     isDeleting,
-    currentTradingViewPrice
+    currentTradingViewPrice,
+    totalProfitLoss
   };
 };

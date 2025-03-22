@@ -26,7 +26,8 @@ export const BestEntryPointResultsDialog = ({
     handleSelectAll,
     handleDeleteSelected,
     isDeleting,
-    currentTradingViewPrice
+    currentTradingViewPrice,
+    totalProfitLoss
   } = useBestEntryPointResults();
 
   useEffect(() => {
@@ -46,6 +47,8 @@ export const BestEntryPointResultsDialog = ({
           selectedItemsCount={selectedItems.size}
           isDeleting={isDeleting}
           useEntryPoint={true}
+          totalProfitLoss={totalProfitLoss}
+          currentTradingViewPrice={currentTradingViewPrice}
         />
         
         <div className="flex-1 overflow-auto p-6">

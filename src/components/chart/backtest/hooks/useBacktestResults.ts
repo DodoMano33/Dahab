@@ -60,10 +60,31 @@ export const useBacktestResults = () => {
           result.analysis_type = 'normal';
         }
         
-        // Make sure profit_loss is correctly formatted
-        if (result.profit_loss !== null && result.profit_loss !== undefined) {
-          // Store the absolute value - we'll format it with the sign later based on is_success
-          result.profit_loss = Math.abs(Number(result.profit_loss));
+        // احتساب قيمة الربح أو الخسارة بناءً على الاتجاه
+        if (result.entry_price !== null && result.entry_price !== undefined) {
+          const closePrice = result.is_success ? result.target_price : result.stop_loss;
+          
+          if (closePrice !== null && closePrice !== undefined) {
+            if (result.direction === 'up' || result.direction === 'صاعد') {
+              if (result.is_success) {
+                // اتجاه صاعد وتحقق الهدف: سعر الإغلاق - سعر الدخول (إيجابي)
+                result.profit_loss = Number(closePrice) - Number(result.entry_price);
+              } else {
+                // اتجاه صاعد ووصل لوقف الخسارة: سعر الدخول - سعر الإغلاق (سلبي)
+                result.profit_loss = Number(result.entry_price) - Number(closePrice);
+              }
+            } else if (result.direction === 'down' || result.direction === 'هابط') {
+              if (result.is_success) {
+                // اتجاه هابط وتحقق الهدف: سعر الدخول - سعر الإغلاق (إيجابي)
+                result.profit_loss = Number(result.entry_price) - Number(closePrice);
+              } else {
+                // اتجاه هابط ووصل لوقف الخسارة: سعر الإغلاق - سعر الدخول (سلبي)
+                result.profit_loss = Number(closePrice) - Number(result.entry_price);
+              }
+            } else {
+              console.warn(`Result with unknown direction: ${result.direction}`);
+            }
+          }
         }
 
         // Make sure direction is set properly for DirectionIndicator
@@ -89,11 +110,10 @@ export const useBacktestResults = () => {
       let total = 0;
       processedResults.forEach(result => {
         if (result.profit_loss !== null && result.profit_loss !== undefined) {
-          if (result.is_success) {
-            total += Number(result.profit_loss);
-          } else {
-            total -= Number(result.profit_loss);
-          }
+          const profitLossValue = Number(result.profit_loss);
+          // إذا كانت النتيجة ناجحة، نضيف قيمة الربح (موجبة بالفعل)
+          // إذا كانت النتيجة فاشلة، نضيف قيمة الخسارة (سالبة بالفعل)
+          total += profitLossValue;
         }
       });
       

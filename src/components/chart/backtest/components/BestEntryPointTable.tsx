@@ -113,8 +113,10 @@ export const BestEntryPointTable = ({
               {result.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="w-32 text-center">{result.analysis_duration || '0 ساعة'}</div>
-            <div className={`w-28 text-center font-medium ${result.is_success ? 'text-success' : 'text-destructive'}`}>
-              {result.profit_loss !== null ? formatNumber(result.profit_loss) : 'N/A'}
+            <div className={`w-28 text-center font-medium ${Number(result.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
+              {result.profit_loss !== null && result.profit_loss !== undefined 
+                ? formatNumber(result.profit_loss) 
+                : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>
             <div className="w-28 text-center">{formatNumber(result.entry_point_price)}</div>

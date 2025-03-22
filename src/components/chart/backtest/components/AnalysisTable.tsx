@@ -117,8 +117,10 @@ export const AnalysisTable = ({
               {analysis.is_success ? 'ناجح' : 'فاشل'}
             </div>
             <div className="w-32 text-center truncate">{analysis.analysis_duration || '0 ساعة'}</div>
-            <div className={`w-28 text-center font-medium ${analysis.is_success ? 'text-success' : 'text-destructive'}`}>
-              {analysis.profit_loss !== null ? formatNumber(analysis.profit_loss) : 'N/A'}
+            <div className={`w-28 text-center font-medium ${Number(analysis.profit_loss) >= 0 ? 'text-success' : 'text-destructive'}`}>
+              {analysis.profit_loss !== null && analysis.profit_loss !== undefined 
+                ? formatNumber(analysis.profit_loss) 
+                : 'N/A'}
             </div>
             <div className="w-28 text-center">{formatNumber(analysis.entry_price)}</div>
             <div className="w-28 text-center">

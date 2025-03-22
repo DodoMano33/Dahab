@@ -1,18 +1,14 @@
 
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { X, RefreshCw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Copy, X, Scroll, RotateCcw, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface BackTestHeaderProps {
   initialAnalysesCount: number;
   onClose: () => void;
-  onRefresh: () => Promise<void>;
-  onDeleteSelected: () => Promise<void>;
+  onRefresh: () => void;
+  onDeleteSelected: () => void;
   selectedItemsCount: number;
   isDeleting: boolean;
   useEntryPoint?: boolean;
@@ -31,103 +27,57 @@ export const BackTestHeader = ({
   totalProfitLoss = 0,
   currentTradingViewPrice = null
 }: BackTestHeaderProps) => {
-  const [analysesCount, setAnalysesCount] = useState(initialAnalysesCount);
-  const { user } = useAuth();
-
-  // دالة لتنسيق إجمالي الربح/الخسارة
-  const formatTotalProfitLoss = (total: number) => {
-    return total >= 0 ? `+${total.toFixed(3)}` : `${total.toFixed(3)}`;
-  };
-
-  useEffect(() => {
-    setAnalysesCount(initialAnalysesCount);
-
-    const channel = supabase
-      .channel('backtest_results_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'backtest_results',
-          filter: user ? `user_id=eq.${user.id}` : undefined
-        },
-        async () => {
-          const { count } = await supabase
-            .from('backtest_results')
-            .select('*', { count: 'exact', head: true });
-          
-          setAnalysesCount(count || 0);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [initialAnalysesCount, user]);
-
-  const handleRefresh = async () => {
-    await onRefresh();
-    toast.success("تم تحديث النتائج بنجاح");
-  };
-
+  // تنسيق الرقم لعرضه بنقطتين عشريتين
+  const formattedProfitLoss = totalProfitLoss ? totalProfitLoss.toFixed(4) : "0.00";
+  const isProfitable = totalProfitLoss >= 0;
+  
   return (
-    <DialogHeader className="sticky top-0 z-50 bg-background p-6 border-b">
-      <div className="flex items-center justify-between">
-        <DialogTitle className="text-xl font-bold text-primary flex items-center gap-2">
-          <Scroll className="h-5 w-5" />
-          {useEntryPoint ? "نتائج الباك تست (أفضل نقطة دخول)" : "نتائج الباك تست"}
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="mr-2">
-              {analysesCount} تحليل
+    <DialogHeader className="p-4 border-b flex flex-row items-center justify-between">
+      <div className="flex items-center gap-2">
+        <DialogTitle>
+          {useEntryPoint ? "نتائج أفضل نقاط الدخول" : "نتائج الباك تست"} 
+          {initialAnalysesCount > 0 && (
+            <Badge className="mr-2 bg-primary/10 text-primary hover:bg-primary/20" variant="secondary">
+              {initialAnalysesCount}
             </Badge>
-            {analysesCount > 0 && (
-              <Badge variant={totalProfitLoss >= 0 ? "success" : "destructive"} className="font-bold">
-                {formatTotalProfitLoss(totalProfitLoss)}
-              </Badge>
-            )}
-            {currentTradingViewPrice !== null && (
-              <Badge variant="outline" className="ml-2 font-mono">
-                السعر الحالي: {currentTradingViewPrice.toFixed(3)}
-              </Badge>
-            )}
-          </div>
+          )}
         </DialogTitle>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
+        
+        {selectedItemsCount > 0 && (
+          <Badge className="bg-primary/10 text-primary hover:bg-primary/20" variant="secondary">
+            تم تحديد {selectedItemsCount}
+          </Badge>
+        )}
+        
+        <Badge 
+          className={`${isProfitable ? 'bg-success/10 text-success hover:bg-success/20' : 'bg-destructive/10 text-destructive hover:bg-destructive/20'}`} 
+          variant="secondary"
+        >
+          الربح/الخسارة: {formattedProfitLoss}
+        </Badge>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        {selectedItemsCount > 0 && (
+          <Button 
+            variant="destructive" 
+            size="sm" 
             onClick={onDeleteSelected}
-            className="text-destructive hover:text-destructive/90"
-            disabled={selectedItemsCount === 0 || isDeleting}
+            disabled={isDeleting}
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-4 w-4 mr-1" />
+            حذف المحدد
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleRefresh}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <RotateCcw className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <Copy className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
+        )}
+        
+        <Button variant="ghost" size="sm" onClick={onRefresh}>
+          <RefreshCw className="h-4 w-4 mr-1" />
+          تحديث
+        </Button>
+        
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </Button>
       </div>
     </DialogHeader>
   );
