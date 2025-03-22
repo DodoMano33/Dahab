@@ -8,7 +8,7 @@ import { fetchPrice } from '../update-real-time-prices/priceService.ts';
 const SUPPORTED_SYMBOLS = ['XAUUSD'];
 
 // مدة التحديث بالدقائق
-const UPDATE_INTERVAL_MINUTES = 5;
+const UPDATE_INTERVAL_MINUTES = 0.5;
 
 Deno.serve(async (req) => {
   // التعامل مع طلبات CORS المسبقة
@@ -74,12 +74,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // جدولة الوظيفة للعمل كل خمس دقائق
+    // جدولة الوظيفة للعمل كل 30 ثانية
     try {
       const { error: scheduleError } = await supabase.sql`
         SELECT cron.schedule(
-          'update-prices-every-five-minutes',
-          '*/5 * * * *',
+          'update-prices-every-thirty-seconds',
+          '*/30 * * * * *', -- every 30 seconds
           $cron$
           SELECT net.http_post(
             url:='${supabaseUrl}/functions/v1/scheduled-price-update',

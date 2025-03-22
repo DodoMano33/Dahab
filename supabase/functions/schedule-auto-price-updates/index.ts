@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
 
 // مدة التحديث بالدقائق
-const UPDATE_INTERVAL_MINUTES = 5;
+const UPDATE_INTERVAL_MINUTES = 0.5;
 
 Deno.serve(async (req) => {
   // التعامل مع طلبات CORS المسبقة
@@ -35,11 +35,11 @@ Deno.serve(async (req) => {
       // استمر في التنفيذ حتى لو فشلت هذه الخطوة
     }
 
-    // جدولة تحديث الأسعار كل خمس دقائق
+    // جدولة تحديث الأسعار كل 30 ثانية (0.5 دقيقة)
     const { error: scheduleError } = await supabase.sql`
       SELECT cron.schedule(
-        'update-prices-every-five-minutes',
-        '*/5 * * * *',
+        'update-prices-every-thirty-seconds',
+        '*/30 * * * * *', -- every 30 seconds
         $cron$
         SELECT net.http_post(
           url:='${supabaseUrl}/functions/v1/scheduled-price-update',
