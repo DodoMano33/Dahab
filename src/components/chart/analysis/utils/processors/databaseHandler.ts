@@ -46,7 +46,7 @@ export const saveAnalysisToDatabase = async (
     
     // بناء كائن البيانات للحفظ
     const analysisData = {
-      user_id: userId,
+      user_id: userId || (await supabase.auth.getUser()).data.user?.id,
       symbol: symbol.toUpperCase(),
       current_price: result.analysisResult.currentPrice,
       analysis_type: analysisType,

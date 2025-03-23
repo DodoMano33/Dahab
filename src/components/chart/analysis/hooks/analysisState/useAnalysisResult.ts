@@ -4,6 +4,7 @@ import { AnalysisData, AnalysisType, SearchHistoryItem } from "@/types/analysis"
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 import { saveAnalysisToDatabase } from "@/components/chart/analysis/utils/processors/databaseHandler";
 import { dispatchAnalysisSuccessEvent } from "@/hooks/analysis-checker/events/analysisEvents";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Define the AnalysisResult interface
 export interface AnalysisResult {
@@ -17,6 +18,8 @@ export interface AnalysisResult {
  * هوك لمعالجة نتيجة التحليل
  */
 export function useAnalysisResult() {
+  const { user } = useAuth();
+  
   const handleAnalysisResult = async (
     result: AnalysisResult,
     symbol: string,
@@ -48,10 +51,16 @@ export function useAnalysisResult() {
       await clearSearchHistoryCache();
 
       // حفظ التحليل في قاعدة البيانات
-      const savedData = await saveAnalysisToDatabase({
-        analysisResult: analysis,
-        duration: durationHours.toString()
-      }, symbolName, analysis.timeframe || '', analysis.analysisType, '');
+      const savedData = await saveAnalysisToDatabase(
+        {
+          analysisResult: analysis,
+          duration: durationHours.toString()
+        }, 
+        symbolName, 
+        analysis.timeframe || '', 
+        analysis.analysisType, 
+        user?.id || ''
+      );
 
       // إرسال إشعار لتحديث سجل البحث
       if (savedData && savedData.success) {
