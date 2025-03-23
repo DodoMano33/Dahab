@@ -1,29 +1,90 @@
 
-// وظيفة حساب متوسط المدى الحقيقي (ATR)
-export const calculateATR = (prices: number[], period: number = 14): number => {
-  // في النسخة المبسطة، نستخدم نطاق الأسعار كبديل للـ ATR
-  const ranges = [];
-  for (let i = 1; i < prices.length; i++) {
-    ranges.push(Math.abs(prices[i] - prices[i - 1]));
+import { BollingerBands, ATR } from "technicalindicators";
+import { PriceData } from "./types";
+import { prepareDataForIndicators } from "./dataPrep";
+
+/**
+ * حساب نسبة التقلب باستخدام Bollinger Bands
+ * @param prices بيانات الأسعار
+ * @param period فترة الحساب
+ * @returns قيمة التقلب (نسبة مئوية)
+ */
+export const calculateVolatility = (
+  prices: number[] | PriceData[],
+  period: number = 20
+): number => {
+  try {
+    // التحقق من نوع البيانات
+    if (prices.length === 0) {
+      return 0;
+    }
+
+    let closePrices: number[];
+    
+    // إذا كانت البيانات من نوع PriceData
+    if (typeof prices[0] === 'object' && 'close' in prices[0]) {
+      const data = prepareDataForIndicators(prices as PriceData[]);
+      closePrices = data.close;
+    } else {
+      closePrices = prices as number[];
+    }
+    
+    // استخدام مؤشر Bollinger Bands لحساب التقلب
+    const bollingerResult = BollingerBands.calculate({
+      period,
+      values: closePrices,
+      stdDev: 2
+    });
+    
+    if (bollingerResult.length === 0) {
+      return 0;
+    }
+    
+    // آخر قيمة من نتائج البولينجر
+    const lastBollinger = bollingerResult[bollingerResult.length - 1];
+    
+    // حساب التقلب كنسبة من المسافة بين الحد العلوي والسفلي إلى المتوسط
+    const currentPrice = closePrices[closePrices.length - 1];
+    const volatility = (lastBollinger.upper - lastBollinger.lower) / currentPrice;
+    
+    return parseFloat((volatility * 100).toFixed(2)); // إرجاع القيمة كنسبة مئوية
+  } catch (error) {
+    console.error("خطأ في حساب التقلب:", error);
+    return 0;
   }
-  
-  // حساب متوسط النطاقات
-  const sum = ranges.slice(-period).reduce((a, b) => a + b, 0);
-  return sum / Math.min(period, ranges.length);
 };
 
-// حساب تقلب الأسعار (Volatility)
-export const calculateVolatility = (prices: number[], period: number = 14): number => {
-  // حساب التغيرات اليومية كنسبة مئوية
-  const changes = [];
-  for (let i = 1; i < prices.length; i++) {
-    const change = Math.abs((prices[i] - prices[i - 1]) / prices[i - 1]);
-    changes.push(change);
+/**
+ * حساب مؤشر المدى الحقيقي المتوسط (ATR)
+ * @param data بيانات الأسعار
+ * @param period فترة الحساب
+ * @returns قيمة مؤشر ATR
+ */
+export const calculateATR = (
+  data: PriceData[],
+  period: number = 14
+): number => {
+  try {
+    if (data.length < period + 1) {
+      return 0;
+    }
+    
+    const input = {
+      high: data.map(d => d.high),
+      low: data.map(d => d.low),
+      close: data.map(d => d.close),
+      period
+    };
+    
+    const atrResult = ATR.calculate(input);
+    
+    if (atrResult.length === 0) {
+      return 0;
+    }
+    
+    return atrResult[atrResult.length - 1];
+  } catch (error) {
+    console.error("خطأ في حساب مؤشر ATR:", error);
+    return 0;
   }
-  
-  // حساب متوسط التغيرات للفترة المحددة
-  const recentChanges = changes.slice(-period);
-  const avg = recentChanges.reduce((a, b) => a + b, 0) / recentChanges.length;
-  
-  return avg;
 };
