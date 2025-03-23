@@ -65,7 +65,7 @@ export const processChartAnalysis = async (input: AnalysisInput): Promise<Analys
       analysisType: analysisType as AnalysisType,
       direction: "محايد",
       pattern: "قيد التحليل",
-      confidence: 0,
+      confidence_score: 0,
       timeframe: timeframe,
       bestEntryPoint: {
         price: providedPrice,
