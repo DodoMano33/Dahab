@@ -1,4 +1,3 @@
-
 import { useState, useEffect, lazy, Suspense, memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -10,15 +9,8 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام مسار نسبي واضح
-const ChartAnalyzer = lazy(() => {
-  console.log("Loading ChartAnalyzer component");
-  return import("../components/ChartAnalyzer").catch(error => {
-    console.error("Error loading ChartAnalyzer:", error);
-    throw error;
-  });
-});
-
+// استخدام استيراد بسيط بدلاً من الاستيراد الديناميكي
+import ChartAnalyzer from "../components/ChartAnalyzer";
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء
@@ -107,41 +99,41 @@ function Index() {
       
       {/* Main Content */}
       <main className="container mx-auto py-6 px-4">
-        <Suspense fallback={<div className="flex items-center justify-center py-20">جاري تحميل المحتوى...</div>}>
-          <Routes>
-            <Route 
-              path="/" 
-              element={
-                isLoggedIn 
-                  ? <ChartAnalyzer /> 
-                  : <Navigate to="/login" state={{ from: location }} replace />
-              } 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                isLoggedIn 
-                  ? <UserDashboard /> 
-                  : <Navigate to="/login" state={{ from: location }} replace />
-              } 
-            />
-            <Route 
-              path="/login" 
-              element={
-                isLoggedIn
-                  ? <Navigate to="/" replace />
-                  : (
-                    <div className="flex flex-col items-center justify-center py-12">
-                      <h2 className="text-2xl font-bold mb-8">مرحباً بك في منصة تحليل الأسواق المالية</h2>
-                      <Button onClick={() => setShowAuthModal(true)}>
-                        تسجيل الدخول للمتابعة
-                      </Button>
-                    </div>
-                  )
-              } 
-            />
-          </Routes>
-        </Suspense>
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              isLoggedIn 
+                ? <ChartAnalyzer /> 
+                : <Navigate to="/login" state={{ from: location }} replace />
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              isLoggedIn 
+                ? <Suspense fallback={<div className="flex items-center justify-center py-20">جاري تحميل المحتوى...</div>}>
+                    <UserDashboard />
+                  </Suspense>
+                : <Navigate to="/login" state={{ from: location }} replace />
+            } 
+          />
+          <Route 
+            path="/login" 
+            element={
+              isLoggedIn
+                ? <Navigate to="/" replace />
+                : (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <h2 className="text-2xl font-bold mb-8">مرحباً بك في منصة تحليل الأسواق المالية</h2>
+                    <Button onClick={() => setShowAuthModal(true)}>
+                      تسجيل الدخول للمتابعة
+                    </Button>
+                  </div>
+                )
+            } 
+          />
+        </Routes>
       </main>
       
       {/* Auth Modal */}

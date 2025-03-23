@@ -9,9 +9,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
 
-/**
- * Main component for analyzing financial charts
- */
 function ChartAnalyzer() {
   console.log("ChartAnalyzer component rendering");
   
@@ -152,5 +149,4 @@ function ChartAnalyzer() {
   );
 }
 
-// صريح للتصدير الافتراضي
 export default ChartAnalyzer;

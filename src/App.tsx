@@ -1,11 +1,11 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { clearSupabaseCache, clearSearchHistoryCache } from './utils/supabaseCache';
 import { Toaster } from "sonner";
 import Index from "./pages/Index";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { lazy, Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnboardingDialog } from "./components/ui/onboarding/OnboardingDialog";
 import "./App.css";
@@ -21,14 +21,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-// مكون انتظار التحميل
-const LoadingFallback = () => (
-  <div className="h-screen w-full flex flex-col items-center justify-center">
-    <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-    <div className="text-lg text-muted-foreground">جاري التحميل...</div>
-  </div>
-);
 
 function App() {
   // منطق التحميل المسبق للصور الشائعة الاستخدام
@@ -85,10 +77,8 @@ function App() {
               visibleToasts={5}
               duration={5000}
             />
-            <Suspense fallback={<LoadingFallback />}>
-              <Index />
-              <OnboardingDialog />
-            </Suspense>
+            <Index />
+            <OnboardingDialog />
           </Router>
         </AuthProvider>
       </QueryClientProvider>
