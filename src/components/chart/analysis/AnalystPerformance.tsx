@@ -215,7 +215,7 @@ export function AnalystPerformance() {
                       <Progress 
                         value={selectedCategory === 'stopLossRate'
                           ? (1 - performance.stopLossRate) * 100
-                          : (performance[selectedCategory as keyof AnalysisPerformance] as number) * 100} 
+                          : Number(performance[selectedCategory as keyof AnalysisPerformance]) * 100} 
                         className="h-2"
                       />
                     </div>
