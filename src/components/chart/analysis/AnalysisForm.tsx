@@ -1,8 +1,8 @@
-
 import { ChartInput } from "../ChartInput";
 import { useAnalysisSubmit } from "./hooks/useAnalysisSubmit";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useState } from "react";
+import { detectAnalysisType } from "./utils/analysisConfigBuilder";
 
 interface AnalysisFormProps {
   onAnalysis: (item: SearchHistoryItem) => void;
@@ -48,7 +48,7 @@ export const AnalysisForm = ({
     duration?: string
   ) => {
     // Determine the analysis type based on the boolean flags
-    const analysisType = determineAnalysisType(
+    const analysisType = determineLocalAnalysisType(
       isScalping, isAI, isSMC, isICT, isTurtleSoup, isGann, isWaves, 
       isPatternAnalysis, isPriceAction, isNeuralNetwork, isRNN, 
       isTimeClustering, isMultiVariance, isCompositeCandlestick, 
@@ -151,8 +151,8 @@ export const AnalysisForm = ({
   );
 };
 
-// Helper function to determine the analysis type
-function determineAnalysisType(
+// Helper function to determine the analysis type - renamed to avoid conflicts
+function determineLocalAnalysisType(
   isScalping?: boolean,
   isAI?: boolean,
   isSMC?: boolean,

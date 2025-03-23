@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AnalysisData } from "@/types/analysis";
 import { useAnalysisProcessing } from "./hooks/useAnalysisProcessing";
@@ -5,6 +6,8 @@ import { useTradingViewPrice } from "./hooks/useTradingViewPrice";
 import { useSymbolState } from "./hooks/useSymbolState";
 import { useAnalysisState } from "./hooks/useAnalysisState";
 import { validateAnalysisInput } from "./utils/processors/inputValidator";
+import { detectAnalysisType } from "./utils/analysisConfigBuilder";
+import { getChartImage } from "./utils/chartImageHelper";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -55,11 +58,10 @@ export const useAnalysisHandler = () => {
         symbol: upperSymbol,
         timeframe,
         providedPrice: finalPrice as number,
-        analysisType: determineAnalysisType(
-          isScalping, isAI, isSMC, isICT, isTurtleSoup, isGann, isWaves,
-          isPatternAnalysis, isPriceAction, isNeuralNetwork, isRNN,
-          isTimeClustering, isMultiVariance, isCompositeCandlestick,
-          isBehavioral, isFibonacci, isFibonacciAdvanced
+        analysisType: detectAnalysisType(
+          isPatternAnalysis, isWaves, isGann, isTurtleSoup, isICT, isSMC, isAI, isScalping,
+          isPriceAction, isNeuralNetwork, isRNN, isTimeClustering, isMultiVariance,
+          isCompositeCandlestick, isBehavioral, isFibonacci, isFibonacciAdvanced
         ),
         selectedTypes: selectedTypes || [],
         isAI, isSMC, isICT, isTurtleSoup, isGann, isWaves,
@@ -110,6 +112,6 @@ export const useAnalysisHandler = () => {
   };
 };
 
-// Export helper functions to keep the main hook smaller
-export { determineAnalysisType } from "./utils/analysisConfigBuilder";
+// Export the correct function names
+export { detectAnalysisType } from "./utils/analysisConfigBuilder";
 export { getChartImage } from "./utils/chartImageHelper";
