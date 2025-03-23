@@ -1,11 +1,12 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { getTimeframeMultipliers } from "@/utils/technicalAnalysis/timeframeMultipliers";
 import { getExpectedTime } from "@/utils/technicalAnalysis";
 import { 
   detectTrend, 
-  calculateSupportResistance, 
-  calculateFibonacciLevels 
-} from "@/utils/technicalAnalysis";
+  calculateSupportResistance 
+} from "@/utils/technicalAnalysis/indicators/PriceData";
+import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/calculations";
 import {
   calculateSMCStopLoss,
   calculateSMCTargets,
@@ -23,18 +24,19 @@ export const analyzeSMCChart = async (
   console.log("بدء تحليل SMC للرمز:", timeframe, "بسعر حالي:", currentPrice);
   console.log(`باستخدام ${historicalPrices.length} نقطة بيانات تاريخية`);
   
-  // استخدام البيانات التاريخية الحقيقية إذا كانت متوفرة، وإلا استخدام بيانات محاكاة
+  // استخدام البيانات التاريخية إذا كانت متوفرة، وإلا استخدام بيانات محاكاة
   const prices = historicalPrices.length > 0 ? 
     historicalPrices : 
     generateSimulatedPrices(currentPrice);
   
-  // استخدام المؤشرات لتحليل البيانات
+  // تحليل اتجاه السعر باستخدام البيانات الحقيقية
   const direction = detectTrend(prices);
+  console.log("الاتجاه المكتشف من البيانات:", direction);
   
-  // حساب الدعم والمقاومة
+  // حساب الدعم والمقاومة من البيانات الحقيقية
   const { support, resistance } = calculateSupportResistance(prices);
   
-  // استخدام حسابات SMC المخصصة
+  // استخدام حسابات SMC المخصصة لاحتساب وقف الخسارة
   const stopLoss = calculateSMCStopLoss(
     currentPrice, 
     direction, 
@@ -43,16 +45,10 @@ export const analyzeSMCChart = async (
     timeframe
   );
   
-  // حساب مستويات فيبوناتشي
-  const highPrice = Math.max(...prices.slice(-50));
-  const lowPrice = Math.min(...prices.slice(-50));
-  const fibLevels = calculateFibonacciLevels(
-    highPrice, 
-    lowPrice, 
-    direction
-  );
+  // حساب مستويات فيبوناتشي - نتأكد من استخدام دالة قيم فيبوناتشي من calculations
+  const fibLevels = calculateFibonacciLevels(resistance, support);
   
-  // حساب الأهداف المبنية على السعر باستخدام حسابات SMC
+  // حساب المستهدفات
   const smcTargetPrices = calculateSMCTargets(
     currentPrice, 
     direction, 
@@ -102,20 +98,42 @@ export const analyzeSMCChart = async (
   return analysisResult;
 };
 
-// دالة مساعدة لتوليد بيانات محاكاة إذا لم تتوفر بيانات حقيقية
+// دالة مساعدة لتوليد بيانات محاكاة أكثر واقعية إذا لم تتوفر بيانات حقيقية
 const generateSimulatedPrices = (currentPrice: number): number[] => {
   const simulatedPrices: number[] = [];
   const volatility = 0.015; // نسبة التقلب
+  let trend = Math.random() > 0.5 ? 1 : -1; // اتجاه عشوائي
+  let momentum = 0; // الزخم
   
   // توليد 200 سعر تاريخي للمحاكاة
   for (let i = 0; i < 200; i++) {
     if (i === 0) {
-      simulatedPrices.push(currentPrice * (1 - volatility));
+      simulatedPrices.push(currentPrice * (1 - volatility * trend));
     } else {
-      const change = (Math.random() - 0.5) * volatility * 2;
+      // إضافة عامل الزخم للحصول على حركة أكثر واقعية
+      momentum = momentum * 0.9 + (Math.random() - 0.5) * volatility * 2;
+      
+      // تغيير الاتجاه أحيانًا
+      if (Math.random() < 0.05) {
+        trend = -trend;
+      }
+      
+      // حساب السعر الجديد
+      const change = momentum + trend * volatility * 0.2;
       simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
     }
+    
+    // إضافة بعض القيم المتكررة لإنشاء مستويات دعم/مقاومة
+    if (i > 50 && i % 20 === 0) {
+      const supportLevel = simulatedPrices[i - 1] * (1 - volatility * 0.5);
+      for (let j = 0; j < 5; j++) {
+        simulatedPrices.push(supportLevel * (1 + (Math.random() - 0.5) * 0.001));
+      }
+      i += 5;
+    }
   }
+  
+  // إضافة السعر الحالي في النهاية
   simulatedPrices.push(currentPrice);
   
   return simulatedPrices;

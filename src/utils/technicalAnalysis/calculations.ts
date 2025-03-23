@@ -19,21 +19,27 @@ export const calculateTargets = (
   resistance: number, 
   timeframe: string
 ) => {
-  const range = resistance - support;
+  const range = Math.abs(resistance - support);
   const targets = [];
   const multipliers = getTimeframeMultipliers(timeframe);
   
+  // تغيير حساب الأهداف ليعتمد بشكل صحيح على الاتجاه
   if (direction === "صاعد") {
-    targets.push(currentPrice + (range * multipliers[0]));
-    targets.push(currentPrice + (range * multipliers[1]));
-    targets.push(currentPrice + (range * multipliers[2]));
+    // للاتجاه الصاعد، نحسب أهدافًا بأسعار أعلى من السعر الحالي
+    const baseDifference = Math.max(resistance - currentPrice, range * 0.2);
+    targets.push(currentPrice + (baseDifference * multipliers[0]));
+    targets.push(currentPrice + (baseDifference * multipliers[1]));
+    targets.push(currentPrice + (baseDifference * multipliers[2]));
   } else {
-    targets.push(currentPrice - (range * multipliers[0]));
-    targets.push(currentPrice - (range * multipliers[1]));
-    targets.push(currentPrice - (range * multipliers[2]));
+    // للاتجاه الهابط، نحسب أهدافًا بأسعار أقل من السعر الحالي
+    const baseDifference = Math.max(currentPrice - support, range * 0.2);
+    targets.push(currentPrice - (baseDifference * multipliers[0]));
+    targets.push(currentPrice - (baseDifference * multipliers[1]));
+    targets.push(currentPrice - (baseDifference * multipliers[2]));
   }
   
-  return targets;
+  // تقريب القيم لتجنب الأرقام العشرية الطويلة
+  return targets.map(target => Number(target.toFixed(2)));
 };
 
 export const calculateStopLoss = (
@@ -43,12 +49,20 @@ export const calculateStopLoss = (
   resistance: number, 
   timeframe: string
 ) => {
-  const range = resistance - support;
+  const range = Math.abs(resistance - support);
   const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
-  return direction === "صاعد" ? 
-    currentPrice - (range * stopLossMultiplier) : 
-    currentPrice + (range * stopLossMultiplier);
+  let stopLoss;
+  
+  if (direction === "صاعد") {
+    // للاتجاه الصاعد، نضع وقف الخسارة أسفل مستوى الدعم
+    stopLoss = Math.min(support, currentPrice - (range * stopLossMultiplier));
+  } else {
+    // للاتجاه الهابط، نضع وقف الخسارة أعلى مستوى المقاومة
+    stopLoss = Math.max(resistance, currentPrice + (range * stopLossMultiplier));
+  }
+  
+  return Number(stopLoss.toFixed(2));
 };
 
 export const calculateSupportResistance = (
@@ -57,19 +71,63 @@ export const calculateSupportResistance = (
   direction: string, 
   timeframe: string
 ) => {
-  const sortedPrices = [...prices].sort((a, b) => a - b);
-  const priceIndex = sortedPrices.findIndex(p => p >= currentPrice);
-  
-  const rangeMultiplier = getRangeMultiplier(timeframe);
-  const range = Math.floor(sortedPrices.length * rangeMultiplier);
-  
-  const nearestLower = sortedPrices.slice(Math.max(0, priceIndex - range), priceIndex);
-  const nearestHigher = sortedPrices.slice(priceIndex, Math.min(priceIndex + range, sortedPrices.length));
-  
-  const support = Math.min(...nearestLower);
-  const resistance = Math.max(...nearestHigher);
+  // التأكد من وجود قيم سعرية كافية للتحليل
+  if (!prices || prices.length < 2) {
+    // في حالة عدم وجود بيانات كافية، نستخدم قيم افتراضية حول السعر الحالي
+    const variation = 0.02; // تغيير بنسبة 2%
+    return {
+      support: Number((currentPrice * (1 - variation)).toFixed(2)),
+      resistance: Number((currentPrice * (1 + variation)).toFixed(2))
+    };
+  }
 
-  return { support, resistance };
+  // ترتيب الأسعار تصاعدياً
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+  
+  // تحديد نطاق البحث عن الدعم والمقاومة
+  const rangeMultiplier = getRangeMultiplier(timeframe);
+  
+  // البحث عن مستويات دعم/مقاومة واضحة (مناطق تكرر فيها السعر)
+  const pricesMap = new Map<number, number>();
+  for (const price of prices) {
+    // تقريب الأسعار لتحديد المستويات
+    const roundedPrice = Math.round(price * 20) / 20;
+    pricesMap.set(roundedPrice, (pricesMap.get(roundedPrice) || 0) + 1);
+  }
+  
+  // تحويل الخريطة إلى مصفوفة وترتيبها حسب التكرار
+  const pricePoints = [...pricesMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(entry => entry[0]);
+  
+  let support, resistance;
+  
+  if (direction === "صاعد") {
+    // في الاتجاه الصاعد، نبحث عن دعم أقل من السعر الحالي ومقاومة أعلى منه
+    const supportCandidates = pricePoints.filter(p => p < currentPrice);
+    const resistanceCandidates = pricePoints.filter(p => p > currentPrice);
+    
+    support = supportCandidates.length ? supportCandidates[0] : sortedPrices[0];
+    resistance = resistanceCandidates.length ? resistanceCandidates[0] : sortedPrices[sortedPrices.length - 1];
+  } else {
+    // في الاتجاه الهابط، نعتبر المستويات التي كانت دعمًا أصبحت مقاومة والعكس
+    const supportCandidates = pricePoints.filter(p => p < currentPrice);
+    const resistanceCandidates = pricePoints.filter(p => p > currentPrice);
+    
+    support = supportCandidates.length ? Math.max(...supportCandidates.slice(0, 2)) : sortedPrices[0];
+    resistance = resistanceCandidates.length ? Math.min(...resistanceCandidates.slice(0, 2)) : sortedPrices[sortedPrices.length - 1];
+  }
+  
+  // تأكد من أن الدعم والمقاومة منطقيان بالنسبة للسعر الحالي
+  if (Math.abs(support - currentPrice) / currentPrice < 0.005) {
+    support = Number((currentPrice * 0.99).toFixed(2));
+  }
+  
+  if (Math.abs(resistance - currentPrice) / currentPrice < 0.005) {
+    resistance = Number((currentPrice * 1.01).toFixed(2));
+  }
+
+  return { support: Number(support.toFixed(2)), resistance: Number(resistance.toFixed(2)) };
 };
 
 export const calculateBestEntryPoint = (
@@ -80,25 +138,108 @@ export const calculateBestEntryPoint = (
   fibLevels: { level: number; price: number }[],
   timeframe: string
 ): { price: number; reason: string } => {
-  const range = resistance - support;
-  const entryMultiplier = getStopLossMultiplier(timeframe);
+  let entryPrice, reason;
   
   if (direction === "صاعد") {
-    const entryPrice = currentPrice - (range * entryMultiplier);
+    // للاتجاه الصاعد، أفضل نقطة دخول قريبة من مستوى الدعم أو مستوى فيبوناتشي 0.382
+    const fibEntry = fibLevels.find(fib => fib.level === 0.382);
+    const potentialEntries = [];
+    
+    // إضافة مستوى الدعم + 1-2% كنقطة دخول محتملة
+    potentialEntries.push({
+      price: Number((support * 1.01).toFixed(2)),
+      reason: `نقطة دخول بالقرب من مستوى الدعم ${support.toFixed(2)}`
+    });
+    
+    // إضافة مستوى فيبوناتشي إذا وجد
+    if (fibEntry) {
+      potentialEntries.push({
+        price: fibEntry.price,
+        reason: `نقطة دخول عند مستوى فيبوناتشي ${fibEntry.level}`
+      });
+    }
+    
+    // إضافة نقطة الدخول الحالية إذا كانت في اتجاه صاعد وقريبة من الدعم
+    if (currentPrice < (support + resistance) / 2) {
+      potentialEntries.push({
+        price: currentPrice,
+        reason: `الدخول بالسعر الحالي مناسب للاتجاه الصاعد`
+      });
+    }
+    
+    // اختيار أفضل نقطة دخول (الأقرب للدعم في الاتجاه الصاعد)
+    potentialEntries.sort((a, b) => a.price - b.price);
+    const entry = potentialEntries[0];
+    
     return {
-      price: Number(entryPrice.toFixed(2)),
-      reason: `نقطة دخول محسوبة على الإطار الزمني ${getTimeframeLabel(timeframe)} مع اتجاه صاعد`
+      price: entry.price,
+      reason: `${entry.reason} على الإطار الزمني ${getTimeframeLabel(timeframe)}`
     };
   } else {
-    const entryPrice = currentPrice + (range * entryMultiplier);
+    // للاتجاه الهابط، أفضل نقطة دخول قريبة من مستوى المقاومة أو مستوى فيبوناتشي 0.618
+    const fibEntry = fibLevels.find(fib => fib.level === 0.618);
+    const potentialEntries = [];
+    
+    // إضافة مستوى المقاومة - 1-2% كنقطة دخول محتملة
+    potentialEntries.push({
+      price: Number((resistance * 0.99).toFixed(2)),
+      reason: `نقطة دخول بالقرب من مستوى المقاومة ${resistance.toFixed(2)}`
+    });
+    
+    // إضافة مستوى فيبوناتشي إذا وجد
+    if (fibEntry) {
+      potentialEntries.push({
+        price: fibEntry.price,
+        reason: `نقطة دخول عند مستوى فيبوناتشي ${fibEntry.level}`
+      });
+    }
+    
+    // إضافة نقطة الدخول الحالية إذا كانت في اتجاه هابط وقريبة من المقاومة
+    if (currentPrice > (support + resistance) / 2) {
+      potentialEntries.push({
+        price: currentPrice,
+        reason: `الدخول بالسعر الحالي مناسب للاتجاه الهابط`
+      });
+    }
+    
+    // اختيار أفضل نقطة دخول (الأقرب للمقاومة في الاتجاه الهابط)
+    potentialEntries.sort((a, b) => b.price - a.price);
+    const entry = potentialEntries[0];
+    
     return {
-      price: Number(entryPrice.toFixed(2)),
-      reason: `نقطة دخول محسوبة على الإطار الزمني ${getTimeframeLabel(timeframe)} مع اتجاه هابط`
+      price: entry.price,
+      reason: `${entry.reason} على الإطار الزمني ${getTimeframeLabel(timeframe)}`
     };
   }
 };
 
 export const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
-  const isUptrend = prices[prices.length - 1] > prices[0];
-  return isUptrend ? "صاعد" : "هابط";
+  if (!prices || prices.length < 2) {
+    // قيمة افتراضية في حالة عدم وجود بيانات كافية
+    return Math.random() > 0.5 ? "صاعد" : "هابط";
+  }
+  
+  // تقسيم البيانات إلى النصف الأول والنصف الثاني
+  const midPoint = Math.floor(prices.length / 2);
+  const firstHalf = prices.slice(0, midPoint);
+  const secondHalf = prices.slice(midPoint);
+  
+  // حساب متوسط كل نصف
+  const firstAvg = firstHalf.reduce((sum, price) => sum + price, 0) / firstHalf.length;
+  const secondAvg = secondHalf.reduce((sum, price) => sum + price, 0) / secondHalf.length;
+  
+  // تحديد الاتجاه بناءً على مقارنة المتوسطات
+  const lastPrice = prices[prices.length - 1];
+  const firstPrice = prices[0];
+  
+  // استخدام كل من متوسط النصفين ومقارنة أول وآخر سعر لتحديد الاتجاه بدقة أكبر
+  if (secondAvg > firstAvg && lastPrice > firstPrice) {
+    return "صاعد";
+  } else if (secondAvg < firstAvg && lastPrice < firstPrice) {
+    return "هابط";
+  } else if (lastPrice > firstPrice) {
+    return "صاعد";
+  } else {
+    return "هابط";
+  }
 };
