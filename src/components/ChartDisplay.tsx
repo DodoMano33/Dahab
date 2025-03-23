@@ -1,7 +1,6 @@
-import { Canvas } from "./Canvas";
-import { AnalysisResult } from "./AnalysisResult";
+
+import { ChartDisplay as EnhancedChartDisplay } from "./chart/display/ChartDisplay";
 import { AnalysisData } from "@/types/analysis";
-import { Badge } from "@/components/ui/badge";
 
 interface ChartDisplayProps {
   image: string | null;
@@ -22,31 +21,14 @@ export const ChartDisplay = ({
 }: ChartDisplayProps) => {
   console.log("ChartDisplay - Analysis Data:", analysis);
 
-  if (!image && !analysis && !isAnalyzing) return null;
-
   return (
-    <div className="space-y-8">
-      {image && (
-        <div className="bg-white rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
-              تحليل الشارت {symbol && `(${symbol})`}
-            </h2>
-            {currentAnalysis && (
-              <Badge variant="outline" className="text-sm">
-                نوع التحليل: {currentAnalysis}
-              </Badge>
-            )}
-          </div>
-          <Canvas image={image} analysis={analysis!} onClose={onClose} />
-        </div>
-      )}
-
-      {(analysis || isAnalyzing) && (
-        <div className="bg-white rounded-lg p-4">
-          <AnalysisResult analysis={analysis!} isLoading={isAnalyzing} />
-        </div>
-      )}
-    </div>
+    <EnhancedChartDisplay
+      image={image}
+      analysis={analysis}
+      isAnalyzing={isAnalyzing}
+      onClose={onClose}
+      symbol={symbol}
+      currentAnalysis={currentAnalysis}
+    />
   );
 };

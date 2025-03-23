@@ -1,4 +1,5 @@
-import { ChartDisplay } from "../../ChartDisplay";
+
+import { ChartDisplay } from "../display/ChartDisplay";
 import { AnalysisData } from "@/types/analysis";
 
 interface AnalysisDisplayProps {
