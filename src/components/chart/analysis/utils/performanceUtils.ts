@@ -46,7 +46,16 @@ export const calculateProgressValue = (
   selectedCategory: string
 ): number => {
   if (selectedCategory === 'stopLossRate') {
-    return (1 - performance.stopLossRate) * 100;
+    // Make sure to convert to a number before performing arithmetic
+    return (1 - (performance.stopLossRate as number)) * 100;
   }
-  return (performance[selectedCategory] as number) * 100;
+  
+  // Type assertion to ensure we're working with a number before multiplication
+  const value = performance[selectedCategory];
+  if (typeof value === 'number') {
+    return value * 100;
+  }
+  
+  // Default case if value is not a number
+  return 0;
 };
