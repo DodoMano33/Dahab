@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Card,
@@ -66,7 +65,6 @@ export function AnalystPerformance() {
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('directionAccuracy');
 
-  // جلب بيانات الأداء لجميع أنواع التحليل
   const fetchAllPerformance = async () => {
     setLoading(true);
     try {
@@ -77,10 +75,8 @@ export function AnalystPerformance() {
       );
       
       const results = await Promise.all(performancePromises);
-      // تصفية النتائج لإزالة القيم الفارغة
       const filteredResults = results.filter(result => result !== null) as AnalysisPerformance[];
       
-      // ترتيب النتائج حسب النتيجة الإجمالية
       filteredResults.sort((a, b) => b.overallScore - a.overallScore);
       
       setPerformances(filteredResults);
@@ -95,12 +91,10 @@ export function AnalystPerformance() {
     fetchAllPerformance();
   }, []);
 
-  // تحويل النسبة المئوية من عدد عشري إلى نسبة مئوية
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(1)}%`;
   };
 
-  // تحويل الساعات إلى تنسيق مناسب
   const formatTime = (hours: number) => {
     if (hours < 1) {
       return `${Math.round(hours * 60)} دقيقة`;
@@ -111,22 +105,18 @@ export function AnalystPerformance() {
     }
   };
 
-  // تحديد تصنيف النسب
   const getRatingClass = (value: number, metric: string) => {
     if (metric === 'stopLossRate') {
-      // للمقاييس التي يكون فيها القيمة المنخفضة أفضل
       if (value < 0.2) return 'text-green-600';
       if (value < 0.4) return 'text-yellow-600';
       return 'text-red-600';
     } else {
-      // للمقاييس التي يكون فيها القيمة العالية أفضل
       if (value > 0.7) return 'text-green-600';
       if (value > 0.5) return 'text-yellow-600';
       return 'text-red-600';
     }
   };
 
-  // الحصول على اسم التحليل المعروض
   const getDisplayName = (type: string) => {
     const found = analysisTypes.find(t => t.id === type);
     return found ? found.name : type;
@@ -215,7 +205,7 @@ export function AnalystPerformance() {
                       <Progress 
                         value={selectedCategory === 'stopLossRate'
                           ? (1 - performance.stopLossRate) * 100
-                          : Number(performance[selectedCategory as keyof AnalysisPerformance]) * 100} 
+                          : ((performance[selectedCategory as keyof AnalysisPerformance] as unknown) as number) * 100} 
                         className="h-2"
                       />
                     </div>
