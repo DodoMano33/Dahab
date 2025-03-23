@@ -149,4 +149,5 @@ function ChartAnalyzer() {
   );
 }
 
+// تصدير المكون بشكل افتراضي
 export default ChartAnalyzer;

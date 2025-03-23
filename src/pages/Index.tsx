@@ -1,3 +1,4 @@
+
 import { useState, useEffect, lazy, Suspense, memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -9,8 +10,8 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام استيراد بسيط بدلاً من الاستيراد الديناميكي
-import ChartAnalyzer from "../components/ChartAnalyzer";
+// استخدام استيراد ثابت بدلاً من الاستيراد الديناميكي
+import ChartAnalyzer from "@/components/ChartAnalyzer";
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء

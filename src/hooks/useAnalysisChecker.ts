@@ -1,6 +1,6 @@
 
 import { useAnalysisChecker } from './analysis-checker';
 
-// ضمان وجود تصدير افتراضي
+// تصدير المكون بكلا الطريقتين لضمان التوافق
 export { useAnalysisChecker };
 export default useAnalysisChecker;

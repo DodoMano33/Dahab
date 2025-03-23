@@ -10,7 +10,7 @@ export const useBackTest = () => {
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
   // إضافة المتغيرات المفقودة التي تم استخدامها في BacktestCheckButton
   const [retryCount, setRetryCount] = useState(0);
-  const [diagnostics, setDiagnostics] = useState([]);
+  const [diagnostics, setDiagnostics] = useState<any[]>([]);
 
   const cancelCurrentRequest = useCallback(() => {
     console.log("Cancelling current request - this is a stub function");
