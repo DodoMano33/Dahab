@@ -2,6 +2,15 @@
 import { fetchPriceFromMetalPriceApi } from './metalPriceApi.ts';
 
 /**
+ * التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+ */
+const isMarketClosed = (): boolean => {
+  const day = new Date().getDay();
+  // 0 = الأحد، 6 = السبت
+  return day === 0 || day === 6;
+};
+
+/**
  * جلب سعر الذهب الحالي فقط (XAUUSD) من Metal Price API
  * حسب سعر شركة CFI
  */
@@ -11,6 +20,12 @@ export async function fetchPrice(symbol: string): Promise<number | null> {
     if (symbol.toUpperCase() !== 'XAUUSD') {
       console.log(`الرمز ${symbol} غير مدعوم. استخدام XAUUSD.`);
       symbol = 'XAUUSD';
+    }
+    
+    // التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+    if (isMarketClosed()) {
+      console.log('السوق مغلقة اليوم (السبت أو الأحد). تخطي استدعاء Metal Price API.');
+      return null;
     }
     
     console.log("محاولة جلب سعر الذهب من CFI عبر Metal Price API...");

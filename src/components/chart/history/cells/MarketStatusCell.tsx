@@ -1,48 +1,51 @@
 
-import { TableCell } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useMarketStatus } from "../hooks/useMarketStatus";
-import { useEffect, useState } from "react";
+import { useMarketStatus } from "@/hooks/useMarketStatus";
+import { Badge } from "@/components/ui/badge";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
-interface MarketStatusCellProps {
-  itemId: string;
-}
+export const MarketStatusCell = () => {
+  const { isOpen, isWeekend, nextOpeningTime } = useMarketStatus();
 
-export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
-  const marketStatus = useMarketStatus(itemId);
-  const [lastUpdate, setLastUpdate] = useState<string>("الآن");
-
-  // تحديث آخر وقت للتحديث
-  useEffect(() => {
-    setLastUpdate("الآن");
+  const formatNextOpeningTime = () => {
+    if (!nextOpeningTime) return null;
     
-    const interval = setInterval(() => {
-      setLastUpdate("منذ قليل");
-    }, 30 * 1000); // بعد 30 ثانية
-    
-    return () => clearInterval(interval);
-  }, [marketStatus.isOpen]);
+    return new Intl.DateTimeFormat('ar', {
+      weekday: 'long',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(nextOpeningTime);
+  };
 
   return (
-    <TableCell className="w-16 p-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={`px-2 py-1.5 rounded-md text-xs inline-flex items-center justify-center w-16 font-medium ${
-              marketStatus.isOpen 
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-            } transition-colors`}>
-              {marketStatus.isOpen ? 'مفتوح' : 'مغلق'}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div>
+            <Badge 
+              className="text-xs" 
+              variant={isOpen ? "default" : "destructive"}
+            >
+              {isOpen ? "مفتوح" : "مغلق"}
+            </Badge>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent className="bg-white dark:bg-slate-900 p-2 text-sm">
+          {isWeekend ? (
+            <div>
+              <p>السوق مغلقة خلال عطلة نهاية الأسبوع (السبت والأحد)</p>
+              {nextOpeningTime && (
+                <p className="mt-1">سيتم إعادة فتح السوق: {formatNextOpeningTime()}</p>
+              )}
             </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">{marketStatus.isOpen ? 'السوق مفتوح حالياً (لوحظت حركة سعر خلال آخر 5 دقائق)' : 'السوق مغلق حالياً (لم تتغير الأسعار منذ أكثر من 5 دقائق)'}</p>
-            <p className="text-xs mt-1">آخر تحديث: {lastUpdate}</p>
-            {marketStatus.serverTime && <p className="text-xs mt-1">وقت الخادم: {marketStatus.serverTime}</p>}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </TableCell>
+          ) : (
+            <p>
+              {isOpen 
+                ? "السوق مفتوحة الآن" 
+                : "السوق مغلقة حالياً"}
+            </p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };

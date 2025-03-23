@@ -10,6 +10,15 @@ const SUPPORTED_SYMBOLS = ['XAUUSD'];
 // مدة التحديث بالدقائق
 const UPDATE_INTERVAL_MINUTES = 0.5;
 
+/**
+ * التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+ */
+const isMarketClosed = (): boolean => {
+  const day = new Date().getDay();
+  // 0 = الأحد، 6 = السبت
+  return day === 0 || day === 6;
+};
+
 Deno.serve(async (req) => {
   // التعامل مع طلبات CORS المسبقة
   if (req.method === 'OPTIONS') {
@@ -18,6 +27,19 @@ Deno.serve(async (req) => {
 
   try {
     console.log(`بدء تحديث الأسعار المجدول (كل ${UPDATE_INTERVAL_MINUTES} دقائق)...`);
+    
+    // التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+    if (isMarketClosed()) {
+      console.log('السوق مغلقة اليوم (السبت أو الأحد). تخطي تحديث الأسعار.');
+      return new Response(
+        JSON.stringify({
+          message: 'تم تخطي تحديث الأسعار لأن السوق مغلقة اليوم (السبت أو الأحد)',
+          updated_at: new Date().toISOString(),
+          market_closed: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     // التحقق من بيانات الاعتماد
     const supabaseUrl = Deno.env.get('SUPABASE_URL');

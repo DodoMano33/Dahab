@@ -1,7 +1,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { rateLimit } from "./rateLimit";
-import { getStoredPrice } from "./helpers";
+import { getStoredPrice, isMarketClosed } from "./helpers";
 import { fetchPriceFromMetalPriceApi } from "./metalPriceApi";
 import { PriceResponse } from "./types";
 
@@ -34,6 +34,21 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
       }
       
       console.log('لم يتم العثور على سعر مخزن للذهب من CFI.');
+      return null;
+    }
+    
+    // التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+    if (isMarketClosed()) {
+      console.log('السوق مغلقة اليوم (السبت أو الأحد). استخدام السعر المخزن بدلاً من الاتصال بـ API.');
+      
+      // استخدام السعر المخزن إذا كانت السوق مغلقة
+      const storedPrice = await getStoredPrice('XAUUSD');
+      if (storedPrice !== null) {
+        console.log(`استخدام سعر الذهب المخزن خلال إغلاق السوق: ${storedPrice}`);
+        return storedPrice;
+      }
+      
+      console.log('لم يتم العثور على سعر مخزن للذهب أثناء إغلاق السوق.');
       return null;
     }
     

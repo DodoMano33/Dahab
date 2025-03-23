@@ -6,11 +6,30 @@ interface PriceResponse {
 }
 
 /**
+ * التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+ */
+const isMarketClosed = (): boolean => {
+  const day = new Date().getDay();
+  // 0 = الأحد، 6 = السبت
+  return day === 0 || day === 6;
+};
+
+/**
  * جلب سعر المعادن من Metal Price API
  * يستخدم XAU/USD فقط للذهب (CFI)
  */
 export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<PriceResponse> => {
   try {
+    // التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
+    if (isMarketClosed()) {
+      console.log('السوق مغلقة اليوم (السبت أو الأحد). تخطي استدعاء Metal Price API.');
+      return { 
+        success: false, 
+        price: null,
+        message: 'السوق مغلقة اليوم (السبت أو الأحد)' 
+      };
+    }
+    
     // تنسيق الرمز للاستخدام مع API
     const symbolToUse = symbol.toUpperCase();
     

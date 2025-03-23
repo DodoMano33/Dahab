@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -65,4 +64,14 @@ export const normalizePreciousMetalSymbol = (symbol: string): string => {
   }
   
   return upperSymbol;
+};
+
+/**
+ * التحقق مما إذا كانت السوق مفتوحة بناءً على يوم الأسبوع
+ * السوق مغلقة في يومي السبت والأحد
+ */
+export const isMarketClosed = (): boolean => {
+  const day = new Date().getDay();
+  // 0 = الأحد، 6 = السبت
+  return day === 0 || day === 6;
 };
