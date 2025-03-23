@@ -33,9 +33,10 @@ export function useHistoryActions() {
     }
   };
 
-  const addToSearchHistory = (item: SearchHistoryItem, setHistory: (history: SearchHistoryItem[]) => void) => {
+  // تحديث دالة إضافة عنصر إلى سجل البحث
+  const addToSearchHistory = (item: SearchHistoryItem, setHistory: React.Dispatch<React.SetStateAction<SearchHistoryItem[]>>) => {
     console.log("إضافة عنصر جديد إلى سجل البحث:", item);
-    setHistory((prev: SearchHistoryItem[]) => [item, ...prev]);
+    setHistory(prev => [item, ...prev]);
   };
 
   return {
