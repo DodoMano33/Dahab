@@ -1,34 +1,64 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useCurrentPrice } from '@/hooks/current-price';
 import { Card } from '@/components/ui/card';
 import { useSearchHistory } from '../hooks/search-history';
+import { toast } from 'sonner';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface PriceLevelData {
   price: number | null;
   label: string;
+  id?: string; // إضافة معرف للتحليل
 }
 
 export const PriceLevelsDisplay = () => {
   const { currentPrice } = useCurrentPrice();
   const { searchHistory } = useSearchHistory();
+  const prevPriceRef = useRef<number | null>(null);
   
   const [bullishTarget, setBullishTarget] = useState<PriceLevelData>({ price: null, label: 'هدف صعودي' });
   const [bullishStopLoss, setBullishStopLoss] = useState<PriceLevelData>({ price: null, label: 'وقف خسارة صعودي' });
   const [bearishTarget, setBearishTarget] = useState<PriceLevelData>({ price: null, label: 'هدف هبوطي' });
   const [bearishStopLoss, setBearishStopLoss] = useState<PriceLevelData>({ price: null, label: 'وقف خسارة هبوطي' });
+  const [priceDirection, setPriceDirection] = useState<'up' | 'down' | null>(null);
+  
+  // مراقبة تغيرات السعر وتحديث اتجاه السعر
+  useEffect(() => {
+    if (currentPrice !== null && prevPriceRef.current !== null) {
+      if (currentPrice > prevPriceRef.current) {
+        setPriceDirection('up');
+      } else if (currentPrice < prevPriceRef.current) {
+        setPriceDirection('down');
+      }
+    }
+    
+    // تحديث السعر السابق
+    prevPriceRef.current = currentPrice;
+  }, [currentPrice]);
+  
+  // إعادة تعيين اتجاه السعر بعد فترة قصيرة
+  useEffect(() => {
+    if (priceDirection) {
+      const timer = setTimeout(() => {
+        setPriceDirection(null);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [priceDirection]);
   
   // تحديث المستويات بناءً على سجل البحث
   useEffect(() => {
     if (!searchHistory || !searchHistory.length) return;
     
-    // الحصول على التحليلات الصعودية والهبوطية
+    // الحصول على التحليلات الصعودية والهبوطية غير المنتهية
     const bullishAnalyses = searchHistory.filter(item => 
-      item.analysis?.direction === 'صاعد' && !item.stopLossHit && !item.targetHit
+      item.analysis?.direction === 'صاعد' && !item.stopLossHit && !item.targetHit && !item.result_timestamp
     );
     
     const bearishAnalyses = searchHistory.filter(item => 
-      item.analysis?.direction === 'هابط' && !item.stopLossHit && !item.targetHit
+      item.analysis?.direction === 'هابط' && !item.stopLossHit && !item.targetHit && !item.result_timestamp
     );
     
     // البحث عن أقرب هدف صعودي
@@ -45,9 +75,14 @@ export const PriceLevelsDisplay = () => {
         return aTarget - bTarget;
       });
       
-      const closestBullishTarget = sortedBullishByTarget[0]?.analysis?.targets?.[0]?.price || null;
+      const closestBullish = sortedBullishByTarget[0];
+      const closestBullishTarget = closestBullish?.analysis?.targets?.[0]?.price || null;
       if (closestBullishTarget) {
-        setBullishTarget({ price: closestBullishTarget, label: 'هدف صعودي' });
+        setBullishTarget({ 
+          price: closestBullishTarget, 
+          label: 'هدف صعودي',
+          id: closestBullish.id
+        });
       }
       
       // البحث عن أقرب وقف خسارة صعودي
@@ -59,9 +94,14 @@ export const PriceLevelsDisplay = () => {
         return bStopLoss - aStopLoss;
       });
       
-      const closestBullishStopLoss = sortedBullishByStopLoss[0]?.analysis?.stopLoss || null;
+      const closestBullishStopLossAnalysis = sortedBullishByStopLoss[0];
+      const closestBullishStopLoss = closestBullishStopLossAnalysis?.analysis?.stopLoss || null;
       if (closestBullishStopLoss) {
-        setBullishStopLoss({ price: closestBullishStopLoss, label: 'وقف خسارة صعودي' });
+        setBullishStopLoss({ 
+          price: closestBullishStopLoss, 
+          label: 'وقف خسارة صعودي',
+          id: closestBullishStopLossAnalysis.id
+        });
       }
     }
     
@@ -79,9 +119,14 @@ export const PriceLevelsDisplay = () => {
         return bTarget - aTarget; // للهبوطي نريد القيمة الأصغر
       });
       
-      const closestBearishTarget = sortedBearishByTarget[0]?.analysis?.targets?.[0]?.price || null;
+      const closestBearish = sortedBearishByTarget[0];
+      const closestBearishTarget = closestBearish?.analysis?.targets?.[0]?.price || null;
       if (closestBearishTarget) {
-        setBearishTarget({ price: closestBearishTarget, label: 'هدف هبوطي' });
+        setBearishTarget({ 
+          price: closestBearishTarget, 
+          label: 'هدف هبوطي',
+          id: closestBearish.id 
+        });
       }
       
       // البحث عن أقرب وقف خسارة هبوطي
@@ -93,40 +138,103 @@ export const PriceLevelsDisplay = () => {
         return aStopLoss - bStopLoss;
       });
       
-      const closestBearishStopLoss = sortedBearishByStopLoss[0]?.analysis?.stopLoss || null;
+      const closestBearishStopLossAnalysis = sortedBearishByStopLoss[0];
+      const closestBearishStopLoss = closestBearishStopLossAnalysis?.analysis?.stopLoss || null;
       if (closestBearishStopLoss) {
-        setBearishStopLoss({ price: closestBearishStopLoss, label: 'وقف خسارة هبوطي' });
+        setBearishStopLoss({ 
+          price: closestBearishStopLoss, 
+          label: 'وقف خسارة هبوطي',
+          id: closestBearishStopLossAnalysis.id 
+        });
       }
     }
-    
-    // التحقق من تجاوز السعر للأهداف ووقف الخسارة
-    if (currentPrice) {
-      // تحقق الأهداف الصعودية
-      if (bullishTarget.price !== null && currentPrice >= bullishTarget.price) {
-        console.log("تم تحقيق الهدف الصعودي:", bullishTarget.price);
-        // يمكن تنفيذ منطق إضافي هنا مثل تحديث الهدف التالي
-      }
-      
-      // تحقق وقف الخسارة الصعودي
-      if (bullishStopLoss.price !== null && currentPrice <= bullishStopLoss.price) {
-        console.log("تم تفعيل وقف الخسارة الصعودي:", bullishStopLoss.price);
-        // يمكن تنفيذ منطق إضافي هنا
-      }
-      
-      // تحقق الأهداف الهبوطية
-      if (bearishTarget.price !== null && currentPrice <= bearishTarget.price) {
-        console.log("تم تحقيق الهدف الهبوطي:", bearishTarget.price);
-        // يمكن تنفيذ منطق إضافي هنا
-      }
-      
-      // تحقق وقف الخسارة الهبوطي
-      if (bearishStopLoss.price !== null && currentPrice >= bearishStopLoss.price) {
-        console.log("تم تفعيل وقف الخسارة الهبوطي:", bearishStopLoss.price);
-        // يمكن تنفيذ منطق إضافي هنا
-      }
-    }
-    
   }, [searchHistory, currentPrice]);
+  
+  // التحقق من تجاوز السعر للأهداف ووقف الخسارة
+  useEffect(() => {
+    if (!currentPrice) return;
+    
+    // تحقق الأهداف الصعودية
+    if (bullishTarget.price !== null && bullishTarget.id && currentPrice >= bullishTarget.price) {
+      console.log("تم تحقيق الهدف الصعودي:", bullishTarget.price);
+      
+      // عرض إشعار توست
+      toast.success(
+        <div className="flex flex-col items-end gap-1 text-right">
+          <div className="font-bold">تم تحقيق الهدف الصعودي</div>
+          <div>السعر: {bullishTarget.price}</div>
+        </div>, 
+        {
+          position: "top-center",
+          duration: 4000,
+        }
+      );
+      
+      // تحديث التحليل في قاعدة البيانات (يمكن إضافة هذه الميزة لاحقًا)
+      setBullishTarget({ price: null, label: 'هدف صعودي' });
+    }
+    
+    // تحقق وقف الخسارة الصعودي
+    if (bullishStopLoss.price !== null && bullishStopLoss.id && currentPrice <= bullishStopLoss.price) {
+      console.log("تم تفعيل وقف الخسارة الصعودي:", bullishStopLoss.price);
+      
+      // عرض إشعار توست
+      toast.error(
+        <div className="flex flex-col items-end gap-1 text-right">
+          <div className="font-bold">تم تفعيل وقف الخسارة الصعودي</div>
+          <div>السعر: {bullishStopLoss.price}</div>
+        </div>, 
+        {
+          position: "top-center",
+          duration: 4000,
+        }
+      );
+      
+      // تحديث التحليل في قاعدة البيانات (يمكن إضافة هذه الميزة لاحقًا)
+      setBullishStopLoss({ price: null, label: 'وقف خسارة صعودي' });
+    }
+    
+    // تحقق الأهداف الهبوطية
+    if (bearishTarget.price !== null && bearishTarget.id && currentPrice <= bearishTarget.price) {
+      console.log("تم تحقيق الهدف الهبوطي:", bearishTarget.price);
+      
+      // عرض إشعار توست
+      toast.success(
+        <div className="flex flex-col items-end gap-1 text-right">
+          <div className="font-bold">تم تحقيق الهدف الهبوطي</div>
+          <div>السعر: {bearishTarget.price}</div>
+        </div>, 
+        {
+          position: "top-center",
+          duration: 4000,
+        }
+      );
+      
+      // تحديث التحليل في قاعدة البيانات (يمكن إضافة هذه الميزة لاحقًا)
+      setBearishTarget({ price: null, label: 'هدف هبوطي' });
+    }
+    
+    // تحقق وقف الخسارة الهبوطي
+    if (bearishStopLoss.price !== null && bearishStopLoss.id && currentPrice >= bearishStopLoss.price) {
+      console.log("تم تفعيل وقف الخسارة الهبوطي:", bearishStopLoss.price);
+      
+      // عرض إشعار توست
+      toast.error(
+        <div className="flex flex-col items-end gap-1 text-right">
+          <div className="font-bold">تم تفعيل وقف الخسارة الهبوطي</div>
+          <div>السعر: {bearishStopLoss.price}</div>
+        </div>, 
+        {
+          position: "top-center",
+          duration: 4000,
+        }
+      );
+      
+      // تحديث التحليل في قاعدة البيانات (يمكن إضافة هذه الميزة لاحقًا)
+      setBearishStopLoss({ price: null, label: 'وقف خسارة هبوطي' });
+    }
+    
+  }, [currentPrice, bullishTarget, bullishStopLoss, bearishTarget, bearishStopLoss]);
   
   // تنسيق الرقم لعرض 2 أرقام عشرية
   const formatPrice = (price: number | null) => {
@@ -134,14 +242,28 @@ export const PriceLevelsDisplay = () => {
     return price.toFixed(2);
   };
   
+  // دالة لتحديد لون خلفية السعر الحالي بناء على اتجاه السعر
+  const getPriceBackgroundColor = () => {
+    if (priceDirection === 'up') {
+      return 'bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 border-green-300 dark:border-green-700';
+    } else if (priceDirection === 'down') {
+      return 'bg-gradient-to-r from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30 border-red-300 dark:border-red-700';
+    }
+    return 'bg-slate-200 dark:bg-slate-700';
+  };
+  
   return (
     <Card className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 shadow-md">
       <div className="space-y-3">
-        {/* السعر الحالي */}
+        {/* السعر الحالي مع تأثير بصري */}
         <div className="text-center mb-4">
           <h3 className="text-lg font-semibold mb-1">السعر الحالي</h3>
-          <div className="text-2xl font-bold bg-slate-200 dark:bg-slate-700 rounded-md py-1 px-3 inline-block">
-            {currentPrice ? formatPrice(currentPrice) : "جاري التحميل..."}
+          <div className={`text-2xl font-bold rounded-md py-1.5 px-4 inline-flex items-center gap-1.5 transition-all duration-500 border ${getPriceBackgroundColor()}`}>
+            {priceDirection === 'up' && <ArrowUp className="h-4 w-4 text-green-600 dark:text-green-400 animate-pulse" />}
+            {priceDirection === 'down' && <ArrowDown className="h-4 w-4 text-red-600 dark:text-red-400 animate-pulse" />}
+            <span className={priceDirection === 'up' ? 'text-green-700 dark:text-green-400' : priceDirection === 'down' ? 'text-red-700 dark:text-red-400' : ''}>
+              {currentPrice ? formatPrice(currentPrice) : "جاري التحميل..."}
+            </span>
           </div>
         </div>
         
@@ -151,7 +273,7 @@ export const PriceLevelsDisplay = () => {
           <div className="space-y-2">
             {/* هدف صعودي */}
             <div 
-              className="p-2 rounded-md bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900" 
+              className="p-2 rounded-md bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900 transition-all duration-300 hover:shadow-md hover:scale-[1.02]" 
               style={{ boxShadow: "0 0 10px rgba(34, 197, 94, 0.2)" }}
             >
               <div className="text-sm text-muted-foreground mb-1">{bullishTarget.label}</div>
@@ -160,7 +282,7 @@ export const PriceLevelsDisplay = () => {
             
             {/* وقف خسارة صعودي */}
             <div 
-              className="p-2 rounded-md bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900" 
+              className="p-2 rounded-md bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900 transition-all duration-300 hover:shadow-md hover:scale-[1.02]" 
               style={{ boxShadow: "0 0 10px rgba(239, 68, 68, 0.2)" }}
             >
               <div className="text-sm text-muted-foreground mb-1">{bullishStopLoss.label}</div>
@@ -172,7 +294,7 @@ export const PriceLevelsDisplay = () => {
           <div className="space-y-2">
             {/* هدف هبوطي */}
             <div 
-              className="p-2 rounded-md bg-green-100 border border-green-300 dark:bg-green-800/20 dark:border-green-800" 
+              className="p-2 rounded-md bg-green-100 border border-green-300 dark:bg-green-800/20 dark:border-green-800 transition-all duration-300 hover:shadow-md hover:scale-[1.02]" 
               style={{ boxShadow: "0 0 10px rgba(34, 197, 94, 0.15)" }}
             >
               <div className="text-sm text-muted-foreground mb-1">{bearishTarget.label}</div>
@@ -181,7 +303,7 @@ export const PriceLevelsDisplay = () => {
             
             {/* وقف خسارة هبوطي */}
             <div 
-              className="p-2 rounded-md bg-red-100 border border-red-300 dark:bg-red-800/20 dark:border-red-800" 
+              className="p-2 rounded-md bg-red-100 border border-red-300 dark:bg-red-800/20 dark:border-red-800 transition-all duration-300 hover:shadow-md hover:scale-[1.02]" 
               style={{ boxShadow: "0 0 10px rgba(239, 68, 68, 0.15)" }}
             >
               <div className="text-sm text-muted-foreground mb-1">{bearishStopLoss.label}</div>

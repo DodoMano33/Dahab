@@ -7,6 +7,7 @@ import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
 import { PriceLevelsDisplay } from "../PriceLevelsDisplay";
+import { Toaster } from "sonner";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -46,6 +47,8 @@ export const AnalysisTabContent = ({
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
+      <Toaster position="top-center" expand={true} richColors closeButton />
+      
       {/* معلومات سريعة */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
