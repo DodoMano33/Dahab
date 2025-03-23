@@ -42,7 +42,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
               </span>
               <span className={`font-bold ${getRatingClass(
                 selectedCategory === 'stopLossRate' 
-                  ? 1 - performance[selectedCategory as keyof AnalysisPerformance] as number
+                  ? 1 - (performance[selectedCategory as keyof AnalysisPerformance] as number)
                   : performance[selectedCategory as keyof AnalysisPerformance] as number,
                 selectedCategory
               )}`}>
