@@ -91,6 +91,84 @@ export const calculateVolatility = (prices: number[]): number => {
   return Math.sqrt(variance) / mean; // معامل الاختلاف (التقلب النسبي)
 };
 
+// حساب التوزيع السعري - دالة جديدة
+export const calculatePriceDistribution = (prices: number[]): { clusters: {price: number, count: number}[], mode: number } => {
+  if (!prices || prices.length < 5) {
+    return { clusters: [], mode: prices?.[prices.length - 1] || 0 };
+  }
+  
+  // تجميع الأسعار في فئات (تقريبية)
+  const clusters: {[price: string]: number} = {};
+  let maxCount = 0;
+  let mode = 0;
+  
+  // تقريب الأسعار لتجميعها
+  prices.forEach(price => {
+    // تقريب السعر لأقرب 0.5%
+    const normalized = Math.round(price * 200) / 200;
+    const key = normalized.toFixed(3);
+    
+    if (!clusters[key]) {
+      clusters[key] = 0;
+    }
+    
+    clusters[key]++;
+    
+    if (clusters[key] > maxCount) {
+      maxCount = clusters[key];
+      mode = normalized;
+    }
+  });
+  
+  // تحويل التجميع إلى مصفوفة
+  const clusterArray = Object.entries(clusters).map(([price, count]) => ({
+    price: parseFloat(price),
+    count
+  })).sort((a, b) => a.price - b.price);
+  
+  return {
+    clusters: clusterArray,
+    mode
+  };
+};
+
+// تحليل انعكاسات السعر - دالة جديدة
+export const analyzeReversals = (prices: number[], threshold: number = 0.01): {points: number[], strength: number} => {
+  if (!prices || prices.length < 10) {
+    return { points: [], strength: 0 };
+  }
+  
+  const reversalPoints: number[] = [];
+  let totalStrength = 0;
+  
+  // البحث عن نقاط الانعكاس الهامة
+  for (let i = 5; i < prices.length - 5; i++) {
+    const before = prices.slice(i-5, i);
+    const after = prices.slice(i, i+5);
+    
+    const beforeTrend = detectTrend(before);
+    const afterTrend = detectTrend(after);
+    
+    // تحديد الانعكاس إذا تغير الاتجاه
+    if (beforeTrend !== afterTrend && beforeTrend !== "محايد" && afterTrend !== "محايد") {
+      const strength = Math.abs(Math.max(...after) - Math.min(...before)) / Math.min(...before);
+      
+      if (strength > threshold) {
+        reversalPoints.push(prices[i]);
+        totalStrength += strength;
+      }
+    }
+  }
+  
+  // حساب متوسط قوة نقاط الانعكاس
+  const averageStrength = reversalPoints.length > 0 ? totalStrength / reversalPoints.length : 0;
+  
+  return {
+    points: reversalPoints,
+    strength: averageStrength
+  };
+};
+
 // وظائف إضافية لدعم التحليل الفني
 export interface PriceDataPoint {
   timestamp: number;

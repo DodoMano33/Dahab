@@ -9,39 +9,31 @@ export const analyzeWavesChart = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string,
-  duration?: number
+  duration: number = 36,
+  historicalPrices: number[] = []
 ): Promise<AnalysisData> => {
   console.log("بدء تحليل Waves للرمز:", timeframe);
-  console.log("مدة التحليل المحددة:", duration || 36, "ساعات");
+  console.log("مدة التحليل المحددة:", duration, "ساعات");
+  console.log(`باستخدام ${historicalPrices.length} نقطة بيانات تاريخية`);
 
-  // محاكاة بيانات الأسعار التاريخية (في التطبيق الحقيقي ستأتي من API)
-  const simulatedPrices: number[] = [];
-  const volatility = 0.01; // نسبة التقلب
-  
-  // توليد 200 سعر تاريخي للمحاكاة
-  for (let i = 0; i < 200; i++) {
-    if (i === 0) {
-      simulatedPrices.push(currentPrice * (1 - volatility));
-    } else {
-      const change = (Math.random() - 0.5) * volatility * 2;
-      simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
-    }
-  }
-  simulatedPrices.push(currentPrice);
+  // استخدام البيانات التاريخية إذا كانت متوفرة
+  const prices = historicalPrices.length > 0 ? 
+    historicalPrices : 
+    generateSimulatedPrices(currentPrice);
 
   // تعديل النطاق بناءً على الإطار الزمني
   const multipliers = getTimeframeMultipliers(timeframe);
   const stopLossMultiplier = getStopLossMultiplier(timeframe);
   
   // استخدام البيانات لتحديد الاتجاه
-  const direction = detectTrend(simulatedPrices);
+  const direction = detectTrend(prices);
   
   // حساب الدعم والمقاومة
-  const { support, resistance } = calculateSupportResistance(simulatedPrices);
+  const { support, resistance } = calculateSupportResistance(prices);
   
   // تحديد أعلى وأدنى سعر للفترة السابقة
-  const highPrice = Math.max(...simulatedPrices.slice(-50));
-  const lowPrice = Math.min(...simulatedPrices.slice(-50));
+  const highPrice = Math.max(...prices.slice(-50));
+  const lowPrice = Math.min(...prices.slice(-50));
   
   // حساب وقف الخسارة
   const stopLoss = direction === "صاعد" 
@@ -79,9 +71,28 @@ export const analyzeWavesChart = async (
     targets,
     bestEntryPoint: bestEntry,
     analysisType: "تقلبات",
-    analysis_duration_hours: duration || 36 // استخدام مدة التحليل المقدمة أو الافتراضية
+    analysis_duration_hours: duration
   };
 
   console.log("نتائج تحليل Waves:", analysisResult);
   return analysisResult;
+};
+
+// دالة مساعدة لتوليد بيانات محاكاة إذا لم تتوفر بيانات حقيقية
+const generateSimulatedPrices = (currentPrice: number): number[] => {
+  const simulatedPrices: number[] = [];
+  const volatility = 0.01; // نسبة التقلب
+  
+  // توليد 200 سعر تاريخي للمحاكاة
+  for (let i = 0; i < 200; i++) {
+    if (i === 0) {
+      simulatedPrices.push(currentPrice * (1 - volatility));
+    } else {
+      const change = (Math.random() - 0.5) * volatility * 2;
+      simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
+    }
+  }
+  simulatedPrices.push(currentPrice);
+  
+  return simulatedPrices;
 };

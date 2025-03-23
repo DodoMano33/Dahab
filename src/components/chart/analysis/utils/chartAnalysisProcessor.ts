@@ -1,44 +1,112 @@
 
 import { AnalysisData } from "@/types/analysis"; 
 import { supabase } from "@/lib/supabase";
+import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
+import { detectTrend, calculateSupportResistance, calculateFibonacciLevels } from "@/utils/technicalAnalysis/indicators/PriceData";
+import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
+import { analyzeWavesChart } from "@/components/chart/analysis/wavesAnalysis";
+import { analyzePriceAction } from "@/components/chart/analysis/priceActionAnalysis";
+import { analyzeBehavioral } from "@/components/chart/analysis/behavioralAnalysis";
 
-// This is a mock function to process chart analysis based on input
+// معالجة تحليل الشارت بناءً على المدخلات
 export const processChartAnalysis = async (input: any) => {
-  console.log("Processing chart analysis with input:", input);
+  console.log("معالجة تحليل الشارت باستخدام المدخلات:", input);
 
   try {
-    // Construct analysis result
+    // جلب بيانات الأسعار التاريخية الحقيقية
+    const historicalPrices = await fetchHistoricalPrices(input.symbol, input.timeframe);
+    console.log(`تم جلب ${historicalPrices.length} من نقاط بيانات الأسعار التاريخية`);
+
+    // تحديد نوع التحليل المطلوب
+    let analysisResult: AnalysisData;
+    
+    switch(input.analysisType.toLowerCase()) {
+      case "نظرية هيكل السوق":
+      case "smc":
+        analysisResult = await analyzeSMCChart(
+          input.chartImage, 
+          input.providedPrice, 
+          input.timeframe, 
+          parseInt(input.duration || "36"),
+          historicalPrices
+        );
+        break;
+      
+      case "تقلبات":
+      case "waves":
+        analysisResult = await analyzeWavesChart(
+          input.chartImage, 
+          input.providedPrice, 
+          input.timeframe, 
+          parseInt(input.duration || "36"),
+          historicalPrices
+        );
+        break;
+      
+      case "price action":
+      case "حركة السعر":
+        analysisResult = await analyzePriceAction(
+          input.chartImage, 
+          input.providedPrice, 
+          input.timeframe,
+          historicalPrices
+        );
+        break;
+      
+      case "behavioral":
+      case "تحليل سلوكي":
+        analysisResult = await analyzeBehavioral(
+          input.chartImage, 
+          input.providedPrice, 
+          input.timeframe,
+          historicalPrices
+        );
+        break;
+      
+      default:
+        // التحليل الافتراضي - تحليل أساسي
+        const trend = detectTrend(historicalPrices);
+        const { support, resistance } = calculateSupportResistance(historicalPrices);
+        const fibLevels = calculateFibonacciLevels(support, resistance, trend);
+        
+        analysisResult = {
+          pattern: "تحليل أساسي",
+          direction: trend,
+          currentPrice: input.providedPrice || 0,
+          support: support,
+          resistance: resistance,
+          stopLoss: trend === "صاعد" ? support * 0.995 : resistance * 1.005,
+          targets: [
+            { price: trend === "صاعد" ? resistance : support, expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+            { price: trend === "صاعد" ? resistance * 1.01 : support * 0.99, expectedTime: new Date(Date.now() + 48 * 60 * 60 * 1000) }
+          ],
+          bestEntryPoint: {
+            price: trend === "صاعد" ? input.providedPrice * 0.995 : input.providedPrice * 1.005,
+            reason: "نقطة دخول مناسبة بناءً على التحليل الأساسي"
+          },
+          analysisType: input.analysisType || "تحليل أساسي"
+        };
+    }
+
+    // إضافة معلومات المدة إلى التحليل
+    analysisResult.analysis_duration_hours = parseInt(input.duration || "36");
+
+    // بناء النتيجة النهائية
     const result = {
-      analysisResult: {
-        pattern: "Test Pattern",
-        direction: "صاعد" as "صاعد" | "هابط" | "محايد",
-        currentPrice: input.providedPrice || 0,
-        support: (input.providedPrice || 0) * 0.95,
-        resistance: (input.providedPrice || 0) * 1.05,
-        stopLoss: (input.providedPrice || 0) * 0.97,
-        targets: [
-          { price: (input.providedPrice || 0) * 1.02, expectedTime: new Date() },
-          { price: (input.providedPrice || 0) * 1.05, expectedTime: new Date() }
-        ],
-        bestEntryPoint: {
-          price: (input.providedPrice || 0) * 0.99,
-          reason: "مستوى دخول جيد"
-        },
-        analysisType: input.analysisType || "Unknown"
-      },
-      duration: input.duration || 8,
+      analysisResult,
+      duration: parseInt(input.duration || "36"),
       symbol: input.symbol || "",
       currentPrice: input.providedPrice || 0
     };
 
     return result;
   } catch (error) {
-    console.error("Error processing chart analysis:", error);
+    console.error("خطأ في معالجة تحليل الشارت:", error);
     throw error;
   }
 };
 
-// This function saves analysis to the database
+// حفظ التحليل في قاعدة البيانات
 export const saveAnalysisToDatabase = async (
   symbol: string,
   analysisType: string,
@@ -47,7 +115,7 @@ export const saveAnalysisToDatabase = async (
   duration: number = 8
 ) => {
   try {
-    console.log("Saving analysis to database:", {
+    console.log("حفظ التحليل في قاعدة البيانات:", {
       symbol,
       analysisType,
       currentPrice,
@@ -67,14 +135,14 @@ export const saveAnalysisToDatabase = async (
     ]);
 
     if (error) {
-      console.error("Error saving analysis to database:", error);
+      console.error("خطأ في حفظ التحليل في قاعدة البيانات:", error);
       throw error;
     }
 
-    console.log("Analysis saved successfully:", data);
+    console.log("تم حفظ التحليل بنجاح:", data);
     return data;
   } catch (error) {
-    console.error("Error in saveAnalysisToDatabase:", error);
+    console.error("خطأ في saveAnalysisToDatabase:", error);
     throw error;
   }
 };

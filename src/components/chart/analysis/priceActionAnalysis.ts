@@ -6,9 +6,11 @@ import { detectTrend, calculateSupportResistance } from "@/utils/technicalAnalys
 export const analyzePriceAction = async (
   chartImage: string,
   currentPrice: number,
-  timeframe: string = "1d"
+  timeframe: string = "1d",
+  historicalPrices: number[] = []
 ): Promise<AnalysisData> => {
   console.log("بدء تحليل حركة السعر - البيانات المستلمة:", { chartImage, currentPrice, timeframe });
+  console.log(`باستخدام ${historicalPrices.length} نقطة بيانات تاريخية`);
   
   try {
     if (!currentPrice || isNaN(currentPrice)) {
@@ -21,27 +23,17 @@ export const analyzePriceAction = async (
       throw new Error("لم يتم استلام صورة الشارت");
     }
 
-    // محاكاة بيانات الأسعار التاريخية (في التطبيق الحقيقي ستأتي من API)
-    const simulatedPrices: number[] = [];
-    const volatility = 0.01; // نسبة التقلب
-    
-    // توليد 200 سعر تاريخي للمحاكاة
-    for (let i = 0; i < 200; i++) {
-      if (i === 0) {
-        simulatedPrices.push(currentPrice * (1 - volatility));
-      } else {
-        const change = (Math.random() - 0.5) * volatility * 2;
-        simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
-      }
-    }
-    simulatedPrices.push(currentPrice);
+    // استخدام البيانات التاريخية إذا كانت متوفرة
+    const prices = historicalPrices.length > 0 ? 
+      historicalPrices : 
+      generateSimulatedPrices(currentPrice);
 
     // تحليل اتجاه السعر
-    const trend = detectTrend(simulatedPrices);
+    const trend = detectTrend(prices);
     console.log("تم اكتشاف الاتجاه:", trend);
 
     // حساب مستويات الدعم والمقاومة
-    const { support, resistance } = calculateSupportResistance(simulatedPrices);
+    const { support, resistance } = calculateSupportResistance(prices);
     
     // حساب وقف الخسارة المناسب
     const stopLoss = calculateStopLoss(currentPrice, trend);
@@ -104,3 +96,22 @@ function calculateStopLoss(currentPrice: number, trend: "صاعد" | "هابط" 
     ? Math.round((currentPrice * 0.97) * 100) / 100
     : Math.round((currentPrice * 1.03) * 100) / 100;
 }
+
+// دالة مساعدة لتوليد بيانات محاكاة إذا لم تتوفر بيانات حقيقية
+const generateSimulatedPrices = (currentPrice: number): number[] => {
+  const simulatedPrices: number[] = [];
+  const volatility = 0.01; // نسبة التقلب
+  
+  // توليد 200 سعر تاريخي للمحاكاة
+  for (let i = 0; i < 200; i++) {
+    if (i === 0) {
+      simulatedPrices.push(currentPrice * (1 - volatility));
+    } else {
+      const change = (Math.random() - 0.5) * volatility * 2;
+      simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
+    }
+  }
+  simulatedPrices.push(currentPrice);
+  
+  return simulatedPrices;
+};
