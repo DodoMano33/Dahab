@@ -6,6 +6,7 @@ import { buildAnalysisConfig } from "./utils/analysisConfigBuilder";
 import { processChartAnalysis } from "./utils/chartAnalysisProcessor";
 import { showErrorToast } from "./utils/toastUtils";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
+import { toast } from "sonner";
 
 export const useAnalysisHandler = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -103,7 +104,7 @@ export const useAnalysisHandler = () => {
       setCurrentSymbol(upperSymbol);
       
       // Build configuration
-      const { analysisType, options } = buildAnalysisConfig(
+      const { analysisType } = buildAnalysisConfig(
         isScalping,
         isAI,
         isSMC,
@@ -125,12 +126,30 @@ export const useAnalysisHandler = () => {
       
       setCurrentAnalysis(analysisType);
       
-      // Process the chart analysis with duration
-      console.log("Calling processChartAnalysis with duration:", duration);
+      let chartImage = image;
       
-      // إنشاء صورة من TradingView للتحليل
-      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number);
-      setImage(chartImage);
+      // إذا لم تكن صورة الشارت محملة بالفعل، إنشاء صورة
+      if (!chartImage) {
+        try {
+          // إنشاء صورة من TradingView للتحليل
+          chartImage = await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number);
+          setImage(chartImage);
+          console.log("تم إنشاء صورة الشارت تلقائياً");
+        } catch (error) {
+          console.error("فشل في إنشاء صورة الشارت:", error);
+          toast.warning("جاري التحليل بدون صورة الشارت. قد تكون النتائج أقل دقة.");
+          // إنشاء صورة افتراضية للشارت
+          chartImage = `data:image/svg+xml;base64,${btoa(`
+            <svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100%" height="100%" fill="#f5f5f5"/>
+              <text x="50%" y="50%" font-family="Arial" font-size="20" text-anchor="middle" fill="#666">
+                تحليل ${upperSymbol} على الإطار الزمني ${timeframe}
+              </text>
+            </svg>
+          `)}`;
+          setImage(chartImage);
+        }
+      }
       
       // استدعاء معالج التحليل
       const result = await processChartAnalysis({
@@ -138,12 +157,25 @@ export const useAnalysisHandler = () => {
         timeframe,
         providedPrice: finalPrice as number,
         analysisType,
-        // Use the provided selectedTypes if available, otherwise build them from the flags
         selectedTypes: selectedTypes || [],
         isAI,
-        options,
+        isSMC,
+        isICT,
+        isTurtleSoup,
+        isGann,
+        isWaves,
+        isPatternAnalysis,
+        isPriceAction,
+        isNeuralNetwork,
+        isRNN,
+        isTimeClustering,
+        isMultiVariance,
+        isCompositeCandlestick,
+        isBehavioral,
+        isFibonacci,
+        isFibonacciAdvanced,
         duration,
-        chartImage // إرسال صورة الشارت للتحليل
+        chartImage
       });
       
       console.log("Analysis result returned with duration:", result.duration);

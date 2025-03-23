@@ -1,23 +1,23 @@
 
 import { AnalysisData, AnalysisType } from "@/types/analysis";
-import { executeBasicAnalysis } from "../ml/basicMLAnalysis";
-import { executeAdvancedAnalysis } from "../ml/advancedMLAnalysis";
-import { processMultiVarianceAnalysis } from "../multiVarianceAnalysis";
-import { processICTAnalysis } from "../ictAnalysis";
-import { processSMCAnalysis } from "../smcAnalysis";
-import { processTurtleSoupAnalysis } from "../turtleSoupAnalysis";
-import { processGannAnalysis } from "../gannAnalysis";
-import { processPatternAnalysis } from "../patternAnalysis";
-import { processWavesAnalysis } from "../wavesAnalysis";
-import { processPriceActionAnalysis } from "../priceActionAnalysis";
-import { processTimeClusteringAnalysis } from "../timeClusteringAnalysis";
-import { processNeuralNetworkAnalysis } from "../neuralNetworkAnalysis";
-import { processRNNAnalysis } from "../rnnAnalysis";
-import { processCompositeCandlestickAnalysis } from "../compositeCandlestickAnalysis";
-import { processBehavioralAnalysis } from "../behavioralAnalysis";
-import { processScalpingAnalysis } from "../scalpingAnalysis";
-import { processFibonacciAnalysis } from "../fibonacciAnalysis";
-import { processFibonacciAdvancedAnalysis } from "../fibonacciAdvancedAnalysis";
+import { analyzeMLChart as executeBasicAnalysis } from "../ml/basicMLAnalysis";
+import { advancedNeuralNetworkAnalysis as executeAdvancedAnalysis } from "../ml/advancedMLAnalysis";
+import { analyzeMultiVariance as processMultiVarianceAnalysis } from "../multiVarianceAnalysis";
+import { analyzeICTChart as processICTAnalysis } from "../ictAnalysis";
+import { analyzeSMCChart as processSMCAnalysis } from "../smcAnalysis";
+import { analyzeTurtleSoupChart as processTurtleSoupAnalysis } from "../turtleSoupAnalysis";
+import { analyzeGannChart as processGannAnalysis } from "../gannAnalysis";
+import { analyzePattern as processPatternAnalysis } from "../patternAnalysis";
+import { analyzeWavesChart as processWavesAnalysis } from "../wavesAnalysis";
+import { analyzePriceAction as processPriceActionAnalysis } from "../priceActionAnalysis";
+import { analyzeTimeClustering as processTimeClusteringAnalysis } from "../timeClusteringAnalysis";
+import { analyzeNeuralNetworkChart as processNeuralNetworkAnalysis } from "../neuralNetworkAnalysis";
+import { analyzeRNN as processRNNAnalysis } from "../rnnAnalysis";
+import { analyzeCompositeCandlestick as processCompositeCandlestickAnalysis } from "../compositeCandlestickAnalysis";
+import { analyzeBehavioral as processBehavioralAnalysis } from "../behavioralAnalysis";
+import { analyzeScalpingChart as processScalpingAnalysis } from "../scalpingAnalysis";
+import { analyzeFibonacciChart as processFibonacciAnalysis } from "../fibonacciAnalysis";
+import { analyzeFibonacciAdvancedChart as processFibonacciAdvancedAnalysis } from "../fibonacciAdvancedAnalysis";
 import { supabase } from "@/lib/supabase";
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 
@@ -62,20 +62,20 @@ export const processChartAnalysis = async (input: AnalysisInput): Promise<Analys
     
     // إنشاء كائن نتائج التحليل الأساسي
     const baseResult: AnalysisData = {
-      analysisType,
+      analysisType: analysisType as AnalysisType,
       direction: "محايد",
       pattern: "قيد التحليل",
       confidence: 0,
       timeframe: timeframe,
       bestEntryPoint: {
         price: providedPrice,
-        time: new Date().toISOString()
+        reason: `تم التحليل في ${new Date().toISOString()}`
       },
       stopLoss: providedPrice * 0.99,
       targets: [
         {
           price: providedPrice * 1.01,
-          expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          expectedTime: new Date(Date.now() + 24 * 60 * 60 * 1000)
         }
       ],
       currentPrice: providedPrice,
@@ -88,75 +88,75 @@ export const processChartAnalysis = async (input: AnalysisInput): Promise<Analys
     switch (analysisType.toLowerCase()) {
       case "smart":
       case "ذكي":
-        analysisResult = await executeAdvancedAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await executeAdvancedAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "scalping":
       case "سكالبينج":
       case "مضاربة":
-        analysisResult = await processScalpingAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processScalpingAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "smc":
-        analysisResult = await processSMCAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processSMCAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "ict":
-        analysisResult = await processICTAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processICTAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "turtle soup":
       case "الحساء السلحفائي":
-        analysisResult = await processTurtleSoupAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processTurtleSoupAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "gann":
       case "جان":
-        analysisResult = await processGannAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processGannAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "waves":
       case "موجات":
-        analysisResult = await processWavesAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processWavesAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "patterns":
       case "أنماط":
       case "نمطي":
-        analysisResult = await processPatternAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processPatternAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "price action":
       case "حركة السعر":
-        analysisResult = await processPriceActionAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processPriceActionAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "neural network":
       case "شبكات عصبية":
-        analysisResult = await processNeuralNetworkAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processNeuralNetworkAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "rnn":
       case "شبكات عصبية متكررة":
-        analysisResult = await processRNNAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processRNNAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "time clustering":
       case "تصفيق زمني":
-        analysisResult = await processTimeClusteringAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processTimeClusteringAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "multi variance":
       case "تباين متعدد العوامل":
-        analysisResult = await processMultiVarianceAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processMultiVarianceAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "composite candlestick":
       case "شمعات مركبة":
-        analysisResult = await processCompositeCandlestickAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processCompositeCandlestickAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "behavioral":
       case "تحليل سلوكي":
-        analysisResult = await processBehavioralAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processBehavioralAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "fibonacci":
       case "فيبوناتشي":
-        analysisResult = await processFibonacciAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processFibonacciAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       case "fibonacci_advanced":
       case "fibonacci advanced":
       case "فيبوناتشي متقدم":
-        analysisResult = await processFibonacciAdvancedAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await processFibonacciAdvancedAnalysis(chartImage || "", providedPrice, timeframe);
         break;
       default:
-        analysisResult = await executeBasicAnalysis(providedPrice, symbol, timeframe, chartImage);
+        analysisResult = await executeBasicAnalysis(chartImage || "", providedPrice, timeframe);
     }
 
     // التأكد من تضمين كل البيانات المطلوبة
