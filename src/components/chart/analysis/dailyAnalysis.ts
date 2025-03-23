@@ -1,11 +1,13 @@
 
 import { AnalysisData } from "@/types/analysis";
 import {
-  calculations
-} from "@/utils/technicalAnalysis";
-import {
+  calculateTargets,
+  calculateStopLoss,
+  calculateSupportResistance,
+  calculateFibonacciLevels,
+  calculateBestEntryPoint,
   detectTrend
-} from "@/utils/technicalAnalysis";
+} from "@/utils/technicalAnalysis/calculations";
 import { addDays } from "date-fns";
 
 export const analyzeDailyChart = async (
@@ -36,20 +38,20 @@ export const analyzeDailyChart = async (
       console.log("الأسعار المكتشفة للتحليل اليومي:", prices);
 
       const direction = detectTrend(prices) as "صاعد" | "هابط";
-      const { support, resistance } = calculations.calculateSupportResistance(prices, currentPrice, direction, timeframe);
-      const stopLoss = calculations.calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
+      const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
+      const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
       
       // حساب مستويات فيبوناتشي باستخدام الوظيفة من وحدة الحسابات
-      const fibLevels = calculations.calculateFibonacciLevels(resistance, support);
+      const fibLevels = calculateFibonacciLevels(resistance, support);
       
       const fibonacciLevels = fibLevels.map(level => ({ 
         level: level.level, 
         price: level.price 
       }));
       
-      const targetPrices = calculations.calculateTargets(currentPrice, direction, support, resistance, timeframe);
+      const targetPrices = calculateTargets(currentPrice, direction, support, resistance, timeframe);
 
-      const bestEntryPoint = calculations.calculateBestEntryPoint(
+      const bestEntryPoint = calculateBestEntryPoint(
         currentPrice,
         direction,
         support,

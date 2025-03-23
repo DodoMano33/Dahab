@@ -58,3 +58,23 @@ export const getExpectedTime = (timeframe: string, targetIndex: number): Date =>
   return now;
 };
 
+/**
+ * تحويل الإطار الزمني إلى تسمية مقروءة
+ */
+export const getTimeframeLabel = (timeframe: string): string => {
+  const lowerTimeframe = timeframe.toLowerCase();
+  
+  if (lowerTimeframe.includes("m")) {
+    const minutes = parseInt(lowerTimeframe) || 1;
+    return `${minutes} دقيقة`;
+  } else if (lowerTimeframe.includes("h")) {
+    const hours = parseInt(lowerTimeframe) || 1;
+    return hours === 1 ? "ساعة" : `${hours} ساعات`;
+  } else if (lowerTimeframe.includes("d") || lowerTimeframe === "daily" || lowerTimeframe === "يومي") {
+    return "يومي";
+  } else if (lowerTimeframe.includes("w") || lowerTimeframe === "weekly" || lowerTimeframe === "أسبوعي") {
+    return "أسبوعي";
+  } else {
+    return timeframe; // الإرجاع كما هو إذا لم يتم التعرف عليه
+  }
+};

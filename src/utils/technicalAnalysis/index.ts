@@ -1,4 +1,3 @@
-
 /**
  * ملف التصدير الرئيسي لوحدة التحليل الفني
  * يجمع جميع وظائف التحليل الفني من كافة الملفات
@@ -13,6 +12,7 @@ export * from './analysisExecutor';
 export * from './predictors/trendReversalPredictor';
 export * from './predictors/patternAnalysisEnhanced';
 export * from './predictors/multiTimeframePredictor';
+export * from './calculations'; // Export the calculations module
 
 /**
  * حساب نقطة وقف الخسارة المثالية بناءً على نوع التحليل والإطار الزمني والسعر
@@ -174,4 +174,3 @@ export const calculateOptimalTargets = (
     );
   }
 };
-
