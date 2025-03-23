@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import {
   calculateFibonacciLevels,
@@ -40,12 +39,13 @@ export const analyzeDailyChart = async (
       const direction = detectTrend(prices) as "صاعد" | "هابط";
       const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
       const stopLoss = calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
-      const fibLevelsObj = calculateFibonacciLevels(resistance, support);
-      const fibLevels = fibLevelsObj.allLevels ? fibLevelsObj.allLevels : 
-                         fibLevelsObj.retracementLevels.map(level => ({ 
-                           level: level.level, 
-                           price: level.price 
-                         }));
+      const fibLevels = calculateFibonacciLevels(resistance, support);
+      
+      const fibonacciLevels = fibLevels.map(level => ({ 
+        level: level.level, 
+        price: level.price 
+      }));
+      
       const targetPrices = calculateTargets(currentPrice, direction, support, resistance, timeframe);
 
       const bestEntryPoint = calculateBestEntryPoint(
@@ -53,7 +53,7 @@ export const analyzeDailyChart = async (
         direction,
         support,
         resistance,
-        fibLevels,
+        fibonacciLevels,
         timeframe
       );
 
@@ -61,7 +61,6 @@ export const analyzeDailyChart = async (
         "نموذج صعودي مستمر" : 
         "نموذج هبوطي مستمر";
 
-      // Create targets with proper dates
       const targets = targetPrices.map((price, index) => ({
         price,
         expectedTime: addDays(new Date(), (index + 1) * 2)
@@ -75,7 +74,7 @@ export const analyzeDailyChart = async (
         resistance,
         stopLoss,
         targets,
-        fibonacciLevels: fibLevels,
+        fibonacciLevels,
         bestEntryPoint,
         analysisType: "Patterns"
       };

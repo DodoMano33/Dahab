@@ -1,103 +1,86 @@
 
 /**
- * مؤشرات تحديد الاتجاه
- * توفر وظائف لتحليل اتجاه السوق باستخدام مؤشرات مختلفة
+ * وحدة مؤشرات اتجاه السعر
+ * مجموعة من الدوال المتخصصة في اكتشاف وتحليل اتجاهات الأسعار
  */
 
 /**
- * تحديد اتجاه السعر باستخدام نظرية الاتجاه البسيطة
- * @param prices - مصفوفة الأسعار التاريخية
- * @param period - فترة المراقبة لتحديد الاتجاه (افتراضي: 14)
- * @returns الاتجاه المحدد: "صاعد" أو "هابط" أو "محايد"
+ * تحديد اتجاه السعر العام باستخدام المتوسطات المتحركة
+ * @param prices مصفوفة الأسعار التاريخية
+ * @param shortPeriod فترة المتوسط القصير (افتراضياً 10)
+ * @param longPeriod فترة المتوسط الطويل (افتراضياً 30)
+ * @returns اتجاه السعر (صاعد، هابط، محايد)
  */
-export function detectTrend(
-  prices: number[],
-  period: number = 14
-): "صاعد" | "هابط" | "محايد" {
-  if (prices.length < period + 1) {
-    return "محايد"; // بيانات غير كافية
-  }
-  
-  // أخذ بيانات الفترة المحددة فقط
-  const recentPrices = prices.slice(-period - 1);
-  
-  // حساب متوسط الأسعار في بداية ونهاية الفترة
-  const startAverage = (recentPrices[0] + recentPrices[1] + recentPrices[2]) / 3;
-  const endAverage = (recentPrices[recentPrices.length - 3] + recentPrices[recentPrices.length - 2] + recentPrices[recentPrices.length - 1]) / 3;
-  
-  // حساب نسبة التغير
-  const changePercent = (endAverage - startAverage) / startAverage;
-  
-  // تصنيف الاتجاه بناءً على نسبة التغير
-  if (changePercent > 0.01) {
-    return "صاعد";
-  } else if (changePercent < -0.01) {
-    return "هابط";
-  } else {
-    return "محايد";
-  }
-}
-
-/**
- * تحديد اتجاه السعر باستخدام المتوسطات المتحركة
- * @param prices - مصفوفة الأسعار التاريخية
- * @param shortPeriod - فترة المتوسط المتحرك القصير (افتراضي: 10)
- * @param longPeriod - فترة المتوسط المتحرك الطويل (افتراضي: 50)
- * @returns الاتجاه المحدد: "صاعد" أو "هابط" أو "محايد"
- */
-export function detectTrendWithMA(
+export const detectTrend = (
   prices: number[],
   shortPeriod: number = 10,
-  longPeriod: number = 50
-): "صاعد" | "هابط" | "محايد" {
-  if (prices.length < longPeriod) {
-    return "محايد"; // بيانات غير كافية
+  longPeriod: number = 30
+): "صاعد" | "هابط" | "محايد" => {
+  if (!prices || prices.length < longPeriod) {
+    const firstPrice = prices[0] || 0;
+    const lastPrice = prices[prices.length - 1] || 0;
+    
+    // في حالة عدم توفر بيانات كافية، نقارن أول وآخر سعر فقط
+    if (lastPrice > firstPrice * 1.01) {
+      return "صاعد";
+    } else if (lastPrice < firstPrice * 0.99) {
+      return "هابط";
+    } else {
+      return "محايد";
+    }
   }
   
-  // حساب المتوسط المتحرك القصير
-  const shortMA = calculateSMA(prices, shortPeriod);
+  // حساب المتوسطات المتحركة البسيطة
+  const shortSMA = calculateSMA(prices, shortPeriod);
+  const longSMA = calculateSMA(prices, longPeriod);
   
-  // حساب المتوسط المتحرك الطويل
-  const longMA = calculateSMA(prices, longPeriod);
+  // فحص تقاطع المتوسطات
+  const lastShortSMA = shortSMA[shortSMA.length - 1];
+  const lastLongSMA = longSMA[longSMA.length - 1];
+  const prevShortSMA = shortSMA[shortSMA.length - 2];
+  const prevLongSMA = longSMA[longSMA.length - 2];
   
-  // تحقق من حجم المصفوفات
-  if (shortMA.length === 0 || longMA.length === 0) {
-    return "محايد";
+  // تحديد الاتجاه بناءً على موقع المتوسطات وحركتها
+  if (lastShortSMA > lastLongSMA) {
+    if (prevShortSMA <= prevLongSMA) {
+      return "صاعد"; // تقاطع صعودي جديد
+    }
+    return "صاعد"; // استمرار الاتجاه الصاعد
+  } else if (lastShortSMA < lastLongSMA) {
+    if (prevShortSMA >= prevLongSMA) {
+      return "هابط"; // تقاطع هبوطي جديد
+    }
+    return "هابط"; // استمرار الاتجاه الهابط
   }
   
-  // مقارنة آخر قيمة من كل متوسط متحرك
-  const lastShortMA = shortMA[shortMA.length - 1];
-  const lastLongMA = longMA[longMA.length - 1];
+  // فحص ميل الأسعار الأخيرة إذا كانت المتوسطات متساوية
+  const recentPrices = prices.slice(-shortPeriod);
+  const priceChange = (recentPrices[recentPrices.length - 1] - recentPrices[0]) / recentPrices[0];
   
-  // مقارنة التغيير في المتوسط المتحرك القصير
-  const shortMATrend = shortMA[shortMA.length - 1] > shortMA[shortMA.length - 2] ? "صاعد" : "هابط";
-  
-  // تحديد الاتجاه النهائي
-  if (lastShortMA > lastLongMA && shortMATrend === "صاعد") {
-    return "صاعد"; // المتوسط المتحرك القصير فوق الطويل واتجاه تصاعدي
-  } else if (lastShortMA < lastLongMA && shortMATrend === "هابط") {
-    return "هابط"; // المتوسط المتحرك القصير تحت الطويل واتجاه هبوطي
-  } else {
-    return "محايد"; // إشارات مختلطة
+  if (priceChange > 0.005) {
+    return "صاعد";
+  } else if (priceChange < -0.005) {
+    return "هابط";
   }
-}
+  
+  return "محايد";
+};
 
 /**
- * حساب المتوسط المتحرك البسيط
- * @param prices - مصفوفة الأسعار
- * @param period - فترة المتوسط المتحرك
- * @returns مصفوفة من قيم المتوسط المتحرك
+ * حساب المتوسط المتحرك البسيط (SMA)
+ * @param prices بيانات الأسعار
+ * @param period فترة الحساب
+ * @returns مصفوفة بقيم المتوسط المتحرك
  */
-export function calculateSMA(
+const calculateSMA = (
   prices: number[],
   period: number
-): number[] {
+): number[] => {
   if (prices.length < period) {
-    return [];
+    return prices;
   }
   
   const sma: number[] = [];
-  
   for (let i = period - 1; i < prices.length; i++) {
     let sum = 0;
     for (let j = 0; j < period; j++) {
@@ -107,83 +90,119 @@ export function calculateSMA(
   }
   
   return sma;
-}
+};
 
 /**
- * تحديد اتجاه السعر باستخدام مزيج من المؤشرات
- * @param prices - مصفوفة الأسعار التاريخية
- * @returns الاتجاه المحدد مع درجة الثقة
+ * تحديد قوة الاتجاه الحالي
+ * @param prices مصفوفة الأسعار التاريخية
+ * @param period فترة الحساب
+ * @returns قوة الاتجاه (0-100)
  */
-export function detectTrendWithConfidence(
-  prices: number[]
-): { trend: "صاعد" | "هابط" | "محايد", confidence: number } {
-  if (prices.length < 50) {
-    return { trend: "محايد", confidence: 0.5 };
+export const calculateTrendStrength = (
+  prices: number[],
+  period: number = 14
+): number => {
+  if (prices.length < period) {
+    return 50;
   }
   
-  // تطبيق عدة مؤشرات لتحديد الاتجاه
-  const simpleTrend = detectTrend(prices);
-  const maTrend = detectTrendWithMA(prices);
+  // حساب عدد الشموع الصاعدة والهابطة
+  let upCandles = 0;
+  let downCandles = 0;
   
-  // حساب RSI لتأكيد الاتجاه
-  const recentPrices = prices.slice(-14);
-  const upMoves: number[] = [];
-  const downMoves: number[] = [];
-  
-  for (let i = 1; i < recentPrices.length; i++) {
-    const change = recentPrices[i] - recentPrices[i - 1];
-    if (change > 0) {
-      upMoves.push(change);
-      downMoves.push(0);
-    } else {
-      upMoves.push(0);
-      downMoves.push(Math.abs(change));
+  for (let i = prices.length - period; i < prices.length; i++) {
+    if (i > 0) {
+      if (prices[i] > prices[i - 1]) {
+        upCandles++;
+      } else if (prices[i] < prices[i - 1]) {
+        downCandles++;
+      }
     }
   }
   
-  const avgUp = upMoves.reduce((sum, val) => sum + val, 0) / upMoves.length;
-  const avgDown = downMoves.reduce((sum, val) => sum + val, 0) / downMoves.length;
-  
-  const rs = avgUp / (avgDown === 0 ? 0.001 : avgDown);
-  const rsi = 100 - (100 / (1 + rs));
-  
-  // تحديد اتجاه RSI
-  let rsiTrend: "صاعد" | "هابط" | "محايد";
-  if (rsi > 60) {
-    rsiTrend = "صاعد";
-  } else if (rsi < 40) {
-    rsiTrend = "هابط";
-  } else {
-    rsiTrend = "محايد";
+  // حساب قوة الاتجاه من 0 إلى 100
+  const totalCandles = upCandles + downCandles;
+  if (totalCandles === 0) {
+    return 50;
   }
   
-  // حساب عدد المؤشرات التي تتفق على اتجاه معين
-  const trendCounts = {
-    "صاعد": 0,
-    "هابط": 0,
-    "محايد": 0
-  };
+  const direction = detectTrend(prices);
+  const ratio = direction === "صاعد" ? 
+    upCandles / totalCandles : 
+    downCandles / totalCandles;
   
-  trendCounts[simpleTrend]++;
-  trendCounts[maTrend]++;
-  trendCounts[rsiTrend]++;
-  
-  // تحديد الاتجاه الأكثر تأييداً
-  let finalTrend: "صاعد" | "هابط" | "محايد" = "محايد";
-  let maxCount = trendCounts["محايد"];
-  
-  if (trendCounts["صاعد"] > maxCount) {
-    maxCount = trendCounts["صاعد"];
-    finalTrend = "صاعد";
+  return Math.round(ratio * 100);
+};
+
+/**
+ * اكتشاف انعكاس الاتجاه المحتمل
+ * @param prices مصفوفة الأسعار التاريخية
+ * @returns حالة الانعكاس وقوته
+ */
+export const detectTrendReversal = (
+  prices: number[]
+): { isReversal: boolean; strength: number; potentialDirection: "صاعد" | "هابط" | "محايد" } => {
+  if (prices.length < 20) {
+    return { isReversal: false, strength: 0, potentialDirection: "محايد" };
   }
   
-  if (trendCounts["هابط"] > maxCount) {
-    maxCount = trendCounts["هابط"];
-    finalTrend = "هابط";
+  // تحديد الاتجاه الحالي
+  const currentTrend = detectTrend(prices);
+  
+  // حساب المتوسطات المتحركة
+  const shortSMA = calculateSMA(prices, 5);
+  const mediumSMA = calculateSMA(prices, 10);
+  const longSMA = calculateSMA(prices, 20);
+  
+  // فحص تقاطع المتوسطات
+  const lastShortSMA = shortSMA[shortSMA.length - 1];
+  const lastMediumSMA = mediumSMA[mediumSMA.length - 1];
+  const lastLongSMA = longSMA[longSMA.length - 1];
+  
+  // فحص تباطؤ الاتجاه (المتوسط القصير يقترب من المتوسط الطويل)
+  let isReversal = false;
+  let strength = 0;
+  let potentialDirection: "صاعد" | "هابط" | "محايد" = "محايد";
+  
+  // فحص الفجوة بين المتوسطات
+  const gapPercent = Math.abs((lastShortSMA - lastLongSMA) / lastLongSMA);
+  
+  if (currentTrend === "صاعد") {
+    if (lastShortSMA < lastMediumSMA) {
+      isReversal = true;
+      potentialDirection = "هابط";
+      strength = Math.min(Math.round((1 - gapPercent) * 100), 100);
+    }
+  } else if (currentTrend === "هابط") {
+    if (lastShortSMA > lastMediumSMA) {
+      isReversal = true;
+      potentialDirection = "صاعد";
+      strength = Math.min(Math.round((1 - gapPercent) * 100), 100);
+    }
   }
   
-  // حساب الثقة بناءً على مدى اتفاق المؤشرات
-  const confidence = maxCount / 3;
+  return { isReversal, strength, potentialDirection };
+};
+
+/**
+ * تحديد الاتجاه والثقة معًا
+ * @param prices مصفوفة الأسعار التاريخية
+ * @returns الاتجاه ومستوى الثقة
+ */
+export const analyzeTrendWithConfidence = (
+  prices: number[]
+): { direction: "صاعد" | "هابط" | "محايد"; confidence: number } => {
+  const trend = detectTrend(prices);
+  const trendStrength = calculateTrendStrength(prices);
+  const reversal = detectTrendReversal(prices);
   
-  return { trend: finalTrend, confidence };
-}
+  // تعديل الثقة بناءً على قوة الاتجاه ووجود انعكاس محتمل
+  let confidence = trendStrength / 100;
+  
+  // إذا كان هناك احتمال انعكاس، خفض مستوى الثقة
+  if (reversal.isReversal && reversal.potentialDirection !== trend) {
+    confidence *= (1 - reversal.strength / 100);
+  }
+  
+  return { direction: trend, confidence };
+};

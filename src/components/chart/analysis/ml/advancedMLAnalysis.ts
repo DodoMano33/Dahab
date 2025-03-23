@@ -1,409 +1,459 @@
 
-/**
- * وحدة خوارزميات التعلم الآلي المتقدمة للتحليل الفني
- * تتضمن خوارزميات متطورة للتنبؤ بحركات السعر واكتشاف الأنماط
- */
 import { AnalysisData } from "@/types/analysis";
 import { 
-  predictFuturePrice, 
-  predictFutureSupportResistance
-} from "@/utils/technicalAnalysis/mlPrediction";
-import { getExpectedTime } from "@/utils/technicalAnalysis";
+  calculateSupportResistance, 
+  detectTrend 
+} from "@/utils/technicalAnalysis/indicators/PriceData";
 import { 
-  calculateTargets, 
-  calculateStopLoss, 
-  calculateBestEntryPoint 
-} from "@/utils/technicalAnalysis/priceAnalysis";
-import { generateSimulatedPrices } from "./simulatedData";
-import { detectTrendReversalPoints } from "@/utils/technicalAnalysis/indicators/reversalDetection";
-import { calculateVolatilityIndex } from "@/utils/technicalAnalysis/indicators/volatility";
+  predictFuturePrice, 
+  predictFutureSupportResistance,
+  multiTimeframeAnalysis
+} from "@/utils/technicalAnalysis/mlPrediction";
+import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
+import { addDays, addHours } from "date-fns";
 
 /**
- * تحليل الشارت باستخدام خوارزمية شبكة عصبية متقدمة
- * @param chartImage - صورة الشارت
- * @param currentPrice - السعر الحالي
- * @param timeframe - الإطار الزمني
- * @param historicalPrices - البيانات التاريخية للأسعار
- * @returns نتائج التحليل
+ * تحليل الرسم البياني باستخدام شبكات عصبية متقدمة
+ * يقوم هذا التحليل بمحاكاة استخدام شبكة عصبية عميقة لفهم الأنماط
  */
-export const analyzeAdvancedNeuralNetwork = async (
+export const advancedNeuralNetworkAnalysis = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string,
   historicalPrices: number[] = []
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل الشبكة العصبية المتقدمة للرمز:", timeframe);
+  console.log("بدء تحليل الشبكات العصبية المتقدم للسعر الحالي:", currentPrice);
   
-  // التأكد من وجود بيانات كافية
-  if (historicalPrices.length < 30) {
-    console.warn("البيانات التاريخية غير كافية للتحليل المتقدم، مطلوب 30 نقطة على الأقل");
-    historicalPrices = generateSimulatedPrices(currentPrice, 100, 0.015); // زيادة دقة البيانات المولدة
-  }
-
-  // تحليل نقاط الانعكاس المحتملة
-  const reversalPoints = detectTrendReversalPoints(historicalPrices);
-  console.log("نقاط الانعكاس المحتملة:", reversalPoints);
+  // استخدام البيانات التاريخية الحقيقية أو توليد بيانات محاكاة
+  const prices = historicalPrices.length > 10 
+    ? historicalPrices 
+    : generateSimulatedPrices(currentPrice, 0.01, 200);
   
-  // حساب مؤشر التقلب للتنبؤ بتقلبات السوق
-  const volatilityIndex = calculateVolatilityIndex(historicalPrices);
-  console.log("مؤشر التقلب:", volatilityIndex);
+  // استخدام خوارزميات التعلم الآلي للتنبؤ باتجاه السعر
+  const prediction = predictFuturePrice(prices, timeframe, currentPrice);
+  console.log("نتائج التنبؤ:", prediction);
   
-  // استخدام خوارزمية التعلم الآلي المتقدمة مع تعديل المعلمات للحصول على نتائج أفضل
-  const prediction = predictFuturePrice(historicalPrices, timeframe, currentPrice, 3); // التنبؤ لمدة أطول (3 وحدات زمنية)
-  prediction.confidence = Math.max(prediction.confidence, 0.1 + (1 - volatilityIndex) * 0.8); // تعديل الثقة بناءً على التقلب
-  console.log("نتائج التنبؤ المتقدم:", prediction);
-
-  // التنبؤ بمستويات الدعم والمقاومة المستقبلية مع الأخذ في الاعتبار نقاط الانعكاس
-  const levelsPredict = predictFutureSupportResistance(historicalPrices, currentPrice);
+  // تحديد الدعم والمقاومة المستقبلية
+  const { futureSupport, futureResistance } = predictFutureSupportResistance(prices, currentPrice);
   
-  // تعديل مستويات الدعم والمقاومة استنادًا إلى نقاط الانعكاس
-  let support = levelsPredict.futureSupport;
-  let resistance = levelsPredict.futureResistance;
+  // تحديد الاتجاه واستخدام نتائج التنبؤ
+  const direction = prediction.predictedDirection;
   
-  // إذا كانت هناك نقطة انعكاس قريبة من السعر الحالي، استخدمها لتعديل مستويات الدعم/المقاومة
-  if (reversalPoints.length > 0) {
-    const closestReversal = reversalPoints.reduce((prev, curr) => 
-      Math.abs(curr - currentPrice) < Math.abs(prev - currentPrice) ? curr : prev, reversalPoints[0]);
-    
-    if (closestReversal < currentPrice) {
-      // نقطة الانعكاس تحت السعر الحالي - قد تكون دعمًا أقوى
-      support = (support + closestReversal) / 2;
-    } else {
-      // نقطة الانعكاس فوق السعر الحالي - قد تكون مقاومة أقوى
-      resistance = (resistance + closestReversal) / 2;
+  // حساب نسبة المخاطرة المناسبة استنادًا على التقلب المحسوب
+  const volatility = calculateVolatility(prices);
+  const riskPercent = Math.min(Math.max(volatility * 100, 1), 3); // نسبة مخاطرة بين 1-3%
+  
+  // حساب وقف الخسارة بناءً على نسبة المخاطرة
+  const stopLoss = direction === "صاعد"
+    ? currentPrice * (1 - riskPercent / 100)
+    : currentPrice * (1 + riskPercent / 100);
+  
+  // حساب مستويات فيبوناتشي
+  const fibLevels = calculateFibonacciLevels(futureResistance, futureSupport);
+  
+  // تحديد نقاط المستهدفة المتوقعة
+  const target1Multiplier = direction === "صاعد" ? 1.5 : 0.5;
+  const target2Multiplier = direction === "صاعد" ? 2.2 : 0.3;
+  
+  const priceMove = Math.abs(currentPrice - stopLoss);
+  const targets = [
+    {
+      price: direction === "صاعد"
+        ? currentPrice + (priceMove * target1Multiplier)
+        : currentPrice - (priceMove * target1Multiplier),
+      expectedTime: addDays(new Date(), getTimeFrameDays(timeframe, 1))
+    },
+    {
+      price: direction === "صاعد"
+        ? currentPrice + (priceMove * target2Multiplier)
+        : currentPrice - (priceMove * target2Multiplier),
+      expectedTime: addDays(new Date(), getTimeFrameDays(timeframe, 2))
     }
-  }
-  
-  console.log("مستويات الدعم والمقاومة المعدلة:", { support, resistance });
-
-  // حساب وقف الخسارة مع هامش أمان إضافي استنادًا إلى مؤشر التقلب
-  const volatilityFactor = 1 + volatilityIndex * 0.5; // زيادة هامش الأمان عند ارتفاع التقلب
-  const stopLoss = calculateStopLoss(
-    currentPrice, 
-    prediction.predictedDirection, 
-    support, 
-    resistance, 
-    timeframe,
-    volatilityFactor
-  );
-
-  // حساب الأهداف مع الأخذ في الاعتبار نقاط المقاومة والدعم الرئيسية
-  const targetPrices = calculateTargets(
-    currentPrice, 
-    prediction.predictedDirection, 
-    support, 
-    resistance, 
-    timeframe,
-    volatilityIndex < 0.3 ? 1.2 : 1.0 // تعديل مضاعف الهدف بناءً على التقلب
-  );
-
-  // إنشاء أهداف مع أوقات متوقعة مع تعديل استنادًا إلى مؤشر التقلب
-  const targetTimeMultiplier = 1 + volatilityIndex; // أوقات أطول عند ارتفاع التقلب
-  const targets = targetPrices.map((price, index) => ({
-    price,
-    expectedTime: getExpectedTime(timeframe, index, targetTimeMultiplier)
-  }));
-
-  // إنشاء مستويات فيبوناتشي محسنة بين الدعم والمقاومة
-  const fibLevels = [
-    { level: 0.236, price: resistance - (resistance - support) * 0.236 },
-    { level: 0.382, price: resistance - (resistance - support) * 0.382 },
-    { level: 0.5, price: (support + resistance) / 2 },
-    { level: 0.618, price: resistance - (resistance - support) * 0.618 },
-    { level: 0.786, price: resistance - (resistance - support) * 0.786 }
   ];
-
-  // حساب نقطة الدخول المثالية بناءً على التحليل المتقدم
-  const bestEntry = calculateBestEntryPoint(
-    currentPrice, 
-    prediction.predictedDirection, 
-    support, 
-    resistance, 
-    fibLevels,
-    timeframe
-  );
-
-  // إضافة معلومات الثقة وتعديلها بناءً على التقلب والخوارزمية
-  bestEntry.reason = `${bestEntry.reason} (ثقة: ${Math.round(prediction.confidence * 100)}%، تقلب: ${Math.round(volatilityIndex * 100)}%)`;
-
-  // بناء كائن التحليل النهائي
+  
+  // تحديد أفضل نقطة دخول
+  const bestEntryPoint = {
+    price: direction === "صاعد"
+      ? Math.max(currentPrice * 0.995, futureSupport)
+      : Math.min(currentPrice * 1.005, futureResistance),
+    reason: `نقطة دخول محسوبة باستخدام خوارزمية الشبكات العصبية المتقدمة (ثقة: ${(prediction.confidence * 100).toFixed(1)}%)`
+  };
+  
+  // بناء نتيجة التحليل
   const analysisResult: AnalysisData = {
-    pattern: `نموذج شبكة عصبية متقدمة - ${prediction.algorithm}`,
-    direction: prediction.predictedDirection,
+    pattern: `تحليل شبكات عصبية متقدمة (${direction})`,
+    direction,
     currentPrice,
-    support,
-    resistance,
+    support: futureSupport,
+    resistance: futureResistance,
     stopLoss,
     targets,
-    bestEntryPoint: bestEntry,
+    bestEntryPoint,
     fibonacciLevels: fibLevels,
-    analysisType: "شبكات عصبية",
+    analysisType: "تعلم آلي",
     activation_type: "تلقائي"
   };
-
-  console.log("نتائج تحليل الشبكة العصبية المتقدمة:", analysisResult);
+  
+  console.log("نتائج تحليل الشبكات العصبية المتقدمة:", analysisResult);
   return analysisResult;
 };
 
 /**
- * تحليل الشارت باستخدام نماذج التعلم العميق
- * @param chartImage - صورة الشارت
- * @param currentPrice - السعر الحالي
- * @param timeframe - الإطار الزمني
- * @param historicalPrices - البيانات التاريخية للأسعار
- * @returns نتائج التحليل
+ * تحليل التعلم العميق - Deep Learning Analysis
+ * يستخدم تقنيات محاكاة للتعلم العميق للتنبؤ بحركة السعر
  */
-export const analyzeDeepLearning = async (
+export const deepLearningAnalysis = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string,
   historicalPrices: number[] = []
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل التعلم العميق للرمز:", timeframe);
+  console.log("بدء تحليل التعلم العميق للسعر الحالي:", currentPrice);
   
-  // التأكد من وجود بيانات كافية
-  if (historicalPrices.length < 50) {
-    console.warn("البيانات التاريخية غير كافية للتعلم العميق، مطلوب 50 نقطة على الأقل");
-    historicalPrices = generateSimulatedPrices(currentPrice, 150, 0.02); // زيادة عدد نقاط البيانات والتقلب
-  }
-
-  // محاكاة استخدام نموذج التعلم العميق للتنبؤ
-  // في التطبيق الحقيقي، هنا سيتم استدعاء النموذج المدرب مسبقًا
-  const trendStrength = Math.random(); // محاكاة قوة الاتجاه (0-1)
-  const recentTrend = historicalPrices.slice(-10).reduce((acc, price, i, arr) => {
-    return i > 0 ? acc + (price > arr[i-1] ? 1 : -1) : acc;
-  }, 0) / 9; // متوسط اتجاه آخر 10 نقاط (-1 إلى 1)
+  // استخدام البيانات التاريخية الحقيقية أو توليد بيانات محاكاة بأنماط أكثر تعقيدًا
+  const prices = historicalPrices.length > 10 
+    ? historicalPrices 
+    : generatePatternPrices(currentPrice, timeframe);
   
-  // تحديد الاتجاه المتوقع بناءً على قوة الاتجاه والاتجاه الأخير
-  let predictedDirection: "صاعد" | "هابط" | "محايد";
-  if (recentTrend > 0.3 && trendStrength > 0.6) {
-    predictedDirection = "صاعد";
-  } else if (recentTrend < -0.3 && trendStrength > 0.6) {
-    predictedDirection = "هابط";
+  // تحليل متعدد الأطر الزمنية
+  const timeframes = timeframe === "1d" 
+    ? ["4h", "1d", "1w"] 
+    : ["1h", "4h", "1d"];
+  
+  // توليد بيانات مختلفة لكل إطار زمني
+  const historicalPricesMap: { [key: string]: number[] } = {};
+  timeframes.forEach(tf => {
+    historicalPricesMap[tf] = generatePatternPrices(currentPrice, tf);
+  });
+  
+  // تنفيذ تحليل متعدد الأطر الزمنية
+  const mtfAnalysis = multiTimeframeAnalysis(historicalPricesMap, currentPrice, timeframes);
+  console.log("نتائج تحليل الأطر الزمنية المتعددة:", mtfAnalysis);
+  
+  // تحديد الاتجاه استنادًا إلى التحليل المتعدد
+  const direction = mtfAnalysis.overallDirection;
+  
+  // تحليل الدعم والمقاومة استنادًا إلى بيانات الإطار الزمني الحالي
+  const { support, resistance } = calculateSupportResistance(prices);
+  
+  // حساب نسبة المخاطرة المناسبة استنادًا على التقلب المحسوب والثقة في التنبؤ
+  const volatility = calculateVolatility(prices);
+  const confidenceAdjustment = mtfAnalysis.confidence * 0.8; // تعديل المخاطرة بناءً على الثقة
+  const riskPercent = Math.min(Math.max(volatility * 100 * (1.5 - confidenceAdjustment), 1), 4);
+  
+  // حساب وقف الخسارة
+  const stopLoss = direction === "صاعد"
+    ? currentPrice * (1 - riskPercent / 100)
+    : currentPrice * (1 + riskPercent / 100);
+  
+  // تحديد المستهدفات بناءً على نقاط التحول المتوقعة من التحليل
+  const targets = [];
+  const timeMultipliers = [1, 2, 3]; // مضاعفات الوقت للأهداف
+  
+  if (direction === "صاعد") {
+    const movementRange = Math.abs(mtfAnalysis.compositeTarget - currentPrice);
+    targets.push({
+      price: currentPrice + (movementRange * 0.5),
+      expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * timeMultipliers[0])
+    });
+    targets.push({
+      price: mtfAnalysis.compositeTarget,
+      expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * timeMultipliers[1])
+    });
+    targets.push({
+      price: currentPrice + (movementRange * 1.5),
+      expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * timeMultipliers[2])
+    });
   } else {
-    predictedDirection = "محايد";
+    const movementRange = Math.abs(currentPrice - mtfAnalysis.compositeTarget);
+    targets.push({
+      price: currentPrice - (movementRange * 0.5),
+      expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * timeMultipliers[0])
+    });
+    targets.push({
+      price: mtfAnalysis.compositeTarget,
+      expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * timeMultipliers[1])
+    });
+    targets.push({
+      price: currentPrice - (movementRange * 1.5),
+      expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * timeMultipliers[2])
+    });
   }
   
-  // تحديد مستويات الدعم والمقاومة من خلال التعلم العميق
-  const priceRange = Math.max(...historicalPrices) - Math.min(...historicalPrices);
-  const supportDeviation = (0.05 + Math.random() * 0.05) * priceRange;
-  const resistanceDeviation = (0.05 + Math.random() * 0.05) * priceRange;
+  // تحديد أفضل نقطة دخول
+  const bestEntryPoint = {
+    price: direction === "صاعد"
+      ? Math.max(currentPrice * 0.995, currentPrice - (Math.abs(stopLoss - currentPrice) * 0.3))
+      : Math.min(currentPrice * 1.005, currentPrice + (Math.abs(stopLoss - currentPrice) * 0.3)),
+    reason: `نقطة دخول مثالية بتحليل التعلم العميق (تطابق الأطر الزمنية: ${(mtfAnalysis.timeframeSyncScore * 100).toFixed(0)}%)`
+  };
   
-  const support = predictedDirection === "هابط" 
-    ? currentPrice * 0.98 - supportDeviation
-    : currentPrice * 0.99 - supportDeviation;
-  
-  const resistance = predictedDirection === "صاعد"
-    ? currentPrice * 1.02 + resistanceDeviation
-    : currentPrice * 1.01 + resistanceDeviation;
-
-  // حساب وقف الخسارة بهامش أمان مناسب
-  const stopLoss = predictedDirection === "صاعد"
-    ? support * 0.995
-    : resistance * 1.005;
-
-  // تحديد الأهداف السعرية استنادًا إلى الاتجاه المتوقع
-  const targetMultiplier = predictedDirection === "صاعد" ? 1 : -1;
-  const targetPrices = [
-    currentPrice * (1 + 0.02 * targetMultiplier),
-    currentPrice * (1 + 0.04 * targetMultiplier),
-    currentPrice * (1 + 0.07 * targetMultiplier)
-  ];
-
-  // إضافة توقيت متوقع لكل هدف
-  const targets = targetPrices.map((price, index) => ({
-    price,
-    expectedTime: getExpectedTime(timeframe, index, 1.2) // معامل 1.2 لإضافة هامش زمني إضافي
-  }));
-
-  // إنشاء مستويات فيبوناتشي من الدعم إلى المقاومة
-  const fibLevels = [
-    { level: 0.236, price: support + (resistance - support) * 0.236 },
-    { level: 0.382, price: support + (resistance - support) * 0.382 },
-    { level: 0.5, price: (support + resistance) / 2 },
-    { level: 0.618, price: support + (resistance - support) * 0.618 },
-    { level: 0.786, price: support + (resistance - support) * 0.786 }
-  ];
-
-  // تحديد نقطة الدخول المثالية
-  let bestEntryPrice: number;
-  let entryReason: string;
-  
-  if (predictedDirection === "صاعد") {
-    bestEntryPrice = fibLevels[1].price; // مستوى 0.382
-    entryReason = "نقطة دخول مثالية على مستوى فيبوناتشي 0.382 مع إشارات صعود من التعلم العميق";
-  } else if (predictedDirection === "هابط") {
-    bestEntryPrice = fibLevels[3].price; // مستوى 0.618
-    entryReason = "نقطة دخول مثالية على مستوى فيبوناتشي 0.618 مع إشارات هبوط من التعلم العميق";
-  } else {
-    bestEntryPrice = currentPrice;
-    entryReason = "نقطة دخول محايدة بانتظار إشارة اتجاه قوية";
-  }
-
-  // بناء كائن التحليل النهائي
+  // بناء نتيجة التحليل
   const analysisResult: AnalysisData = {
-    pattern: "نموذج التعلم العميق - تنبؤ متقدم",
-    direction: predictedDirection,
+    pattern: `تحليل التعلم العميق (${direction})`,
+    direction,
     currentPrice,
     support,
     resistance,
     stopLoss,
-    targets,
-    bestEntryPoint: {
-      price: bestEntryPrice,
-      reason: entryReason
-    },
-    fibonacciLevels: fibLevels,
-    analysisType: "شبكات عصبية",
+    targets: targets.slice(0, 2), // استخدام أول هدفين فقط
+    bestEntryPoint,
+    analysisType: "تعلم آلي",
     activation_type: "تلقائي"
   };
-
+  
   console.log("نتائج تحليل التعلم العميق:", analysisResult);
   return analysisResult;
 };
 
 /**
- * تحليل متعدد النماذج - يجمع بين عدة نماذج تعلم آلي
- * @param chartImage - صورة الشارت
- * @param currentPrice - السعر الحالي
- * @param timeframe - الإطار الزمني
- * @param historicalPrices - البيانات التاريخية للأسعار
- * @returns نتائج التحليل
+ * تحليل نماذج المجموعات (Ensemble Models)
+ * يستخدم مجموعة من الخوارزميات المختلفة ويدمج نتائجها
  */
-export const analyzeEnsembleModels = async (
+export const ensembleModelsAnalysis = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string,
   historicalPrices: number[] = []
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل النماذج المجمعة للرمز:", timeframe);
+  console.log("بدء تحليل نماذج المجموعات للسعر الحالي:", currentPrice);
   
-  // التأكد من وجود بيانات كافية
-  if (historicalPrices.length < 30) {
-    console.warn("البيانات التاريخية غير كافية للنماذج المجمعة، مطلوب 30 نقطة على الأقل");
-    historicalPrices = generateSimulatedPrices(currentPrice, 120, 0.018);
-  }
-
-  // تنفيذ عدة نماذج مختلفة وتجميع نتائجها
-  const basicModel = await predictFuturePrice(historicalPrices, timeframe, currentPrice);
-  const advancedModel = {
-    predictedPrice: currentPrice * (1 + (Math.random() * 0.04 - 0.02)),
-    predictedDirection: Math.random() > 0.5 ? "صاعد" : "هابط",
-    confidence: 0.7 + Math.random() * 0.2,
-    algorithm: "نموذج التعلم العميق"
-  };
+  // استخدام البيانات التاريخية الحقيقية أو توليد بيانات محاكاة
+  const prices = historicalPrices.length > 10 
+    ? historicalPrices 
+    : generateCyclePatternPrices(currentPrice, 200);
   
-  // نموذج ثالث (مثال)
-  const thirdModel = {
-    predictedPrice: currentPrice * (1 + (Math.random() * 0.05 - 0.025)),
-    predictedDirection: Math.random() > 0.6 ? "صاعد" : "هابط",
-    confidence: 0.6 + Math.random() * 0.3,
-    algorithm: "نموذج التعلم الاستنتاجي"
-  };
+  // تنفيذ عدة خوارزميات مختلفة
+  const standardPrediction = predictFuturePrice(prices, timeframe, currentPrice);
   
-  console.log("نتائج النماذج المتعددة:", { basicModel, advancedModel, thirdModel });
+  // توليد بيانات إضافية بأنماط مختلفة
+  const volatilePrices = generateSimulatedPrices(currentPrice, 0.02, 200);
+  const patternPrices = generatePatternPrices(currentPrice, timeframe);
+  const cyclePrices = generateCyclePatternPrices(currentPrice, 200);
   
-  // تصويت الاتجاه (التصويت المرجح بالثقة)
-  const directionVotes = {
-    "صاعد": 0,
-    "هابط": 0,
-    "محايد": 0
-  };
+  // تنفيذ تنبؤات مختلفة باستخدام مجموعات البيانات المختلفة
+  const volatilePrediction = predictFuturePrice(volatilePrices, timeframe, currentPrice);
+  const patternPrediction = predictFuturePrice(patternPrices, timeframe, currentPrice);
+  const cyclePrediction = predictFuturePrice(cyclePrices, timeframe, currentPrice);
   
-  // تجميع أصوات النماذج المختلفة مع ترجيح بناءً على مستوى الثقة
-  if (basicModel.predictedDirection === "صاعد") directionVotes["صاعد"] += basicModel.confidence;
-  else if (basicModel.predictedDirection === "هابط") directionVotes["هابط"] += basicModel.confidence;
-  else directionVotes["محايد"] += basicModel.confidence;
-  
-  if (advancedModel.predictedDirection === "صاعد") directionVotes["صاعد"] += advancedModel.confidence;
-  else if (advancedModel.predictedDirection === "هابط") directionVotes["هابط"] += advancedModel.confidence;
-  else directionVotes["محايد"] += advancedModel.confidence;
-  
-  if (thirdModel.predictedDirection === "صاعد") directionVotes["صاعد"] += thirdModel.confidence;
-  else if (thirdModel.predictedDirection === "هابط") directionVotes["هابط"] += thirdModel.confidence;
-  else directionVotes["محايد"] += thirdModel.confidence;
-  
-  // تحديد الاتجاه الأكثر ترجيحًا
-  let finalDirection: "صاعد" | "هابط" | "محايد" = "محايد";
-  let maxVotes = directionVotes["محايد"];
-  
-  if (directionVotes["صاعد"] > maxVotes) {
-    maxVotes = directionVotes["صاعد"];
-    finalDirection = "صاعد";
-  }
-  
-  if (directionVotes["هابط"] > maxVotes) {
-    maxVotes = directionVotes["هابط"];
-    finalDirection = "هابط";
-  }
-  
-  // حساب مستوى الثقة الإجمالي
-  const totalConfidence = directionVotes["صاعد"] + directionVotes["هابط"] + directionVotes["محايد"];
-  const consensusConfidence = maxVotes / totalConfidence;
-  
-  console.log("نتيجة التصويت:", finalDirection, "بثقة:", consensusConfidence);
-  
-  // التنبؤ بمستويات الدعم والمقاومة
-  const levelsPredict = predictFutureSupportResistance(historicalPrices, currentPrice);
-  
-  // حساب وقف الخسارة بناءً على الاتجاه المتوقع
-  const stopLoss = calculateStopLoss(
-    currentPrice, 
-    finalDirection, 
-    levelsPredict.futureSupport, 
-    levelsPredict.futureResistance, 
-    timeframe
-  );
-  
-  // حساب الأهداف
-  const targetPrices = calculateTargets(
-    currentPrice, 
-    finalDirection, 
-    levelsPredict.futureSupport, 
-    levelsPredict.futureResistance, 
-    timeframe
-  );
-  
-  // إنشاء أهداف مع أوقات متوقعة
-  const targets = targetPrices.map((price, index) => ({
-    price,
-    expectedTime: getExpectedTime(timeframe, index)
-  }));
-  
-  // حساب نقطة الدخول المثالية
-  const fibLevels = [
-    { level: 0.382, price: levelsPredict.futureResistance - (levelsPredict.futureResistance - levelsPredict.futureSupport) * 0.382 },
-    { level: 0.5, price: (levelsPredict.futureSupport + levelsPredict.futureResistance) / 2 },
-    { level: 0.618, price: levelsPredict.futureResistance - (levelsPredict.futureResistance - levelsPredict.futureSupport) * 0.618 }
+  // دمج النتائج مع ترجيح بناءً على الثقة
+  const predictions = [
+    { prediction: standardPrediction, weight: standardPrediction.confidence * 1.0 },
+    { prediction: volatilePrediction, weight: volatilePrediction.confidence * 0.8 },
+    { prediction: patternPrediction, weight: patternPrediction.confidence * 1.2 },
+    { prediction: cyclePrediction, weight: cyclePrediction.confidence * 1.0 }
   ];
   
-  const bestEntry = calculateBestEntryPoint(
-    currentPrice, 
-    finalDirection, 
-    levelsPredict.futureSupport, 
-    levelsPredict.futureResistance, 
-    fibLevels,
-    timeframe
+  // حساب الاتجاه المرجح
+  let upVotes = 0;
+  let downVotes = 0;
+  let totalWeight = 0;
+  let weightedPriceSum = 0;
+  
+  predictions.forEach(p => {
+    if (p.prediction.predictedDirection === "صاعد") {
+      upVotes += p.weight;
+    } else if (p.prediction.predictedDirection === "هابط") {
+      downVotes += p.weight;
+    }
+    totalWeight += p.weight;
+    weightedPriceSum += p.prediction.predictedPrice * p.weight;
+  });
+  
+  const direction = upVotes > downVotes ? "صاعد" : "هابط";
+  const ensemblePredictedPrice = weightedPriceSum / totalWeight;
+  const ensembleConfidence = Math.min(
+    Math.max(Math.abs(upVotes - downVotes) / totalWeight, 0.55),
+    0.95
   );
   
-  // إضافة معلومات الثقة وتوافق النماذج إلى سبب نقطة الدخول
-  bestEntry.reason = `${bestEntry.reason} (توافق النماذج: ${Math.round(consensusConfidence * 100)}%)`;
+  // تحديد الدعم والمقاومة باستخدام مزيج من التنبؤات
+  const { support, resistance } = calculateSupportResistance(prices);
   
-  // بناء كائن التحليل النهائي
+  // حساب وقف الخسارة استنادًا إلى التقلب والثقة
+  const volatility = Math.max(
+    calculateVolatility(prices),
+    calculateVolatility(volatilePrices),
+    calculateVolatility(patternPrices)
+  );
+  
+  const adjustedVolatility = volatility * (1.0 + (1.0 - ensembleConfidence));
+  const stopLossPercent = Math.min(Math.max(adjustedVolatility * 100, 1.5), 4.0);
+  
+  const stopLoss = direction === "صاعد"
+    ? currentPrice * (1 - stopLossPercent / 100)
+    : currentPrice * (1 + stopLossPercent / 100);
+  
+  // تحديد المستهدفات
+  const priceMove = Math.abs(ensemblePredictedPrice - currentPrice);
+  const targetRatios = [0.6, 1.0, 1.5]; // نسب المستهدفات
+  
+  const targets = targetRatios.map((ratio, index) => ({
+    price: direction === "صاعد"
+      ? currentPrice + (priceMove * ratio)
+      : currentPrice - (priceMove * ratio),
+    expectedTime: addHours(new Date(), getTimeframeHours(timeframe) * (index + 1) * 2)
+  }));
+  
+  // تحديد أفضل نقطة دخول
+  const bestEntryPointOffset = Math.abs(stopLoss - currentPrice) * 0.25;
+  const bestEntryPoint = {
+    price: direction === "صاعد"
+      ? currentPrice - bestEntryPointOffset
+      : currentPrice + bestEntryPointOffset,
+    reason: `نقطة دخول مثالية من تحليل نماذج المجموعات (ثقة: ${(ensembleConfidence * 100).toFixed(0)}%)`
+  };
+  
+  // بناء نتيجة التحليل
   const analysisResult: AnalysisData = {
-    pattern: "تجميع نماذج متعددة - " + 
-              [basicModel.algorithm, advancedModel.algorithm, thirdModel.algorithm].join(', '),
-    direction: finalDirection,
+    pattern: `تحليل نماذج المجموعات (${direction})`,
+    direction,
     currentPrice,
-    support: levelsPredict.futureSupport,
-    resistance: levelsPredict.futureResistance,
+    support,
+    resistance,
     stopLoss,
-    targets,
-    bestEntryPoint: bestEntry,
-    analysisType: "شبكات عصبية",
+    targets: targets.slice(0, 2), // استخدام أول هدفين فقط
+    bestEntryPoint,
+    analysisType: "تعلم آلي",
     activation_type: "تلقائي"
   };
   
-  console.log("نتائج تحليل النماذج المجمعة:", analysisResult);
+  console.log("نتائج تحليل نماذج المجموعات:", analysisResult);
   return analysisResult;
 };
+
+// دوال مساعدة
+
+// حساب عدد الأيام بناءً على الإطار الزمني
+function getTimeFrameDays(timeframe: string, multiplier: number = 1): number {
+  switch (timeframe) {
+    case "1m": case "5m": case "15m": case "30m": return 1 * multiplier;
+    case "1h": case "2h": case "4h": return 2 * multiplier;
+    case "1d": return 5 * multiplier;
+    case "1w": return 14 * multiplier;
+    default: return 3 * multiplier;
+  }
+}
+
+// حساب عدد الساعات بناءً على الإطار الزمني
+function getTimeframeHours(timeframe: string): number {
+  switch (timeframe) {
+    case "1m": return 2;
+    case "5m": return 6;
+    case "15m": return 10;
+    case "30m": return 20;
+    case "1h": return 24;
+    case "4h": return 48;
+    case "1d": return 120;
+    case "1w": return 240;
+    default: return 24;
+  }
+}
+
+// حساب التقلب من سلسلة أسعار
+function calculateVolatility(prices: number[]): number {
+  if (prices.length < 3) return 0.02;
+  
+  let sum = 0;
+  for (let i = 1; i < prices.length; i++) {
+    const percentChange = Math.abs((prices[i] - prices[i-1]) / prices[i-1]);
+    sum += percentChange;
+  }
+  
+  return sum / (prices.length - 1);
+}
+
+// توليد بيانات أسعار محاكاة
+function generateSimulatedPrices(
+  currentPrice: number, 
+  volatility: number = 0.01, 
+  length: number = 100
+): number[] {
+  const prices: number[] = [];
+  let price = currentPrice * (1 - Math.random() * 0.05);
+  
+  for (let i = 0; i < length; i++) {
+    const change = (Math.random() - 0.5) * 2 * volatility;
+    price *= (1 + change);
+    prices.push(price);
+  }
+  
+  // تأكد من أن آخر سعر هو السعر الحالي
+  prices[prices.length - 1] = currentPrice;
+  return prices;
+}
+
+// توليد بيانات أسعار مع أنماط محددة
+function generatePatternPrices(currentPrice: number, timeframe: string): number[] {
+  const prices: number[] = [];
+  const length = 200;
+  let price = currentPrice * 0.9;
+  
+  // تحديد نوع النمط بناءً على الإطار الزمني
+  const patternType = Math.floor(Math.random() * 4);
+  
+  switch (patternType) {
+    case 0: // نمط اتجاه صاعد
+      for (let i = 0; i < length; i++) {
+        const progress = i / length;
+        const randomness = (Math.random() - 0.5) * 0.02;
+        const trendComponent = progress * 0.15; // مكون الاتجاه الصاعد
+        price = currentPrice * (0.9 + trendComponent + randomness);
+        prices.push(price);
+      }
+      break;
+    
+    case 1: // نمط اتجاه هابط
+      for (let i = 0; i < length; i++) {
+        const progress = i / length;
+        const randomness = (Math.random() - 0.5) * 0.02;
+        const trendComponent = progress * 0.15; // مكون الاتجاه الهابط
+        price = currentPrice * (1.1 - trendComponent + randomness);
+        prices.push(price);
+      }
+      break;
+    
+    case 2: // نمط قناة جانبية
+      for (let i = 0; i < length; i++) {
+        const randomness = (Math.random() - 0.5) * 0.05;
+        price = currentPrice * (0.95 + randomness);
+        prices.push(price);
+      }
+      break;
+    
+    case 3: // نمط تذبذب واسع
+      for (let i = 0; i < length; i++) {
+        const cycle = Math.sin(i / 20) * 0.05;
+        const randomness = (Math.random() - 0.5) * 0.02;
+        price = currentPrice * (0.95 + cycle + randomness);
+        prices.push(price);
+      }
+      break;
+  }
+  
+  // تأكد من أن آخر سعر هو السعر الحالي
+  prices[prices.length - 1] = currentPrice;
+  return prices;
+}
+
+// توليد بيانات أسعار مع دورات واضحة
+function generateCyclePatternPrices(currentPrice: number, length: number = 200): number[] {
+  const prices: number[] = [];
+  
+  // تحديد عدد الدورات
+  const cycles = 3 + Math.floor(Math.random() * 3);
+  const amplitude = 0.05 + Math.random() * 0.05; // سعة التذبذب
+  
+  for (let i = 0; i < length; i++) {
+    const cycleComponent = Math.sin(i / length * Math.PI * 2 * cycles) * amplitude;
+    const trendComponent = (i / length - 0.5) * 0.05 * (Math.random() > 0.5 ? 1 : -1);
+    const randomness = (Math.random() - 0.5) * 0.01;
+    
+    const price = currentPrice * (1 + cycleComponent + trendComponent + randomness);
+    prices.push(price);
+  }
+  
+  // تأكد من أن آخر سعر هو السعر الحالي
+  prices[prices.length - 1] = currentPrice;
+  return prices;
+}

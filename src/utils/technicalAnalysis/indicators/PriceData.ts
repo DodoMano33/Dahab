@@ -1,63 +1,149 @@
 
-import {
-  calculateSupportResistance as calculateSR
-} from "../indicators";
-import { calculateFibonacciLevels as calculateFibLevels } from "./fibonacci";
-import { calculateVolatility as calculateVolatilityIndicator } from "./volatility";
-import { TrendDirection } from "./types";
-
-// استيراد مؤشرات تحليل الاتجاه والتقلب
-import { detectTrend as detectTrendFromIndicators } from "./trendIndicators";
+/**
+ * وحدة تحليل بيانات الأسعار
+ * تتضمن دوال لاستخراج معلومات مفيدة من سلاسل الأسعار
+ */
 
 /**
- * اكتشاف اتجاه السعر من البيانات التاريخية
- * @param prices بيانات الأسعار التاريخية
- * @param period فترة الحساب
- * @returns اتجاه السعر (صاعد، هابط، محايد)
+ * تحديد اتجاه السعر بناءً على بيانات تاريخية
+ * @param prices سلسلة أسعار تاريخية
+ * @param period فترة الحساب (اختياري)
+ * @returns نوع الاتجاه: صاعد، هابط، أو محايد
  */
 export const detectTrend = (
-  prices: number[], 
+  prices: number[],
   period: number = 14
-): TrendDirection => {
-  // استخدام مؤشرات الاتجاه للكشف عن الاتجاه
-  return detectTrendFromIndicators(prices, period);
+): "صاعد" | "هابط" | "محايد" => {
+  if (!prices || prices.length < 2) {
+    return "محايد";
+  }
+  
+  // استخدام فترة أقصر إذا كانت البيانات غير كافية
+  const actualPeriod = Math.min(period, prices.length);
+  
+  // استخدام البيانات الأخيرة فقط
+  const recentPrices = prices.slice(-actualPeriod);
+  
+  // حساب المتوسط المتحرك البسيط
+  const sma = calculateSMA(recentPrices, Math.floor(actualPeriod / 2));
+  
+  // تحديد الاتجاه بناءً على آخر سعر والمتوسط المتحرك
+  const lastPrice = recentPrices[recentPrices.length - 1];
+  const lastSMA = sma[sma.length - 1];
+  
+  if (lastPrice > lastSMA * 1.005) {
+    return "صاعد";
+  } else if (lastPrice < lastSMA * 0.995) {
+    return "هابط";
+  } else {
+    // تحديد الاتجاه بناءً على ميل الأسعار
+    const priceChange = lastPrice - recentPrices[0];
+    if (priceChange > lastPrice * 0.01) {
+      return "صاعد";
+    } else if (priceChange < -lastPrice * 0.01) {
+      return "هابط";
+    }
+  }
+  
+  return "محايد";
 };
 
 /**
- * حساب مستويات الدعم والمقاومة
+ * حساب الدعم والمقاومة بناءً على بيانات الأسعار
  * @param prices بيانات الأسعار التاريخية
+ * @param currentPrice السعر الحالي
+ * @param direction اتجاه السعر
+ * @param timeframe الإطار الزمني
  * @returns مستويات الدعم والمقاومة
  */
 export const calculateSupportResistance = (
-  prices: number[]
-): { support: number, resistance: number } => {
-  return calculateSR(prices);
+  prices: number[],
+  currentPrice?: number,
+  direction?: "صاعد" | "هابط" | "محايد",
+  timeframe?: string
+): { support: number; resistance: number } => {
+  if (!prices || prices.length === 0) {
+    return { support: 0, resistance: 0 };
+  }
+  
+  // ترتيب الأسعار تصاعدياً
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+  
+  // تحديد أدنى سعر كدعم وأعلى سعر كمقاومة
+  let support = sortedPrices[0];
+  let resistance = sortedPrices[sortedPrices.length - 1];
+  
+  // إذا تم تحديد السعر الحالي، نحاول العثور على أقرب مستويات دعم ومقاومة
+  if (currentPrice) {
+    const priceIndex = sortedPrices.findIndex(p => p >= currentPrice);
+    
+    if (priceIndex > 0) {
+      support = sortedPrices[Math.max(0, priceIndex - 1)];
+    }
+    
+    if (priceIndex < sortedPrices.length - 1) {
+      resistance = sortedPrices[Math.min(sortedPrices.length - 1, priceIndex + 1)];
+    }
+  }
+  
+  return { support, resistance };
 };
 
 /**
- * حساب مستويات فيبوناتشي
- * @param support مستوى الدعم
- * @param resistance مستوى المقاومة
- * @param direction اتجاه السوق
- * @returns مستويات فيبوناتشي
- */
-export const calculateFibonacciLevels = (
-  support: number, 
-  resistance: number, 
-  direction: TrendDirection = "صاعد"
-): { level: number; price: number }[] => {
-  return calculateFibLevels(resistance, support, direction);
-};
-
-/**
- * حساب نسبة التقلب
+ * حساب تقلب السعر على مدى فترة زمنية معينة
  * @param prices بيانات الأسعار التاريخية
- * @param period فترة الحساب
- * @returns نسبة التقلب (نسبة مئوية)
+ * @param period فترة الحساب (اختياري، الافتراضي 14)
+ * @returns نسبة التقلب (0-1)
  */
 export const calculateVolatility = (
-  prices: number[], 
-  period: number = 20
+  prices: number[],
+  period: number = 14
 ): number => {
-  return calculateVolatilityIndicator(prices, period);
+  if (!prices || prices.length < 2) {
+    return 0.01; // قيمة افتراضية للتقلب
+  }
+  
+  // استخدام فترة أقصر إذا كانت البيانات غير كافية
+  const actualPeriod = Math.min(period, prices.length - 1);
+  
+  // حساب التغييرات اليومية كنسبة مئوية
+  const dailyChanges: number[] = [];
+  for (let i = 1; i < prices.length; i++) {
+    const percentChange = Math.abs((prices[i] - prices[i-1]) / prices[i-1]);
+    dailyChanges.push(percentChange);
+  }
+  
+  // استخدام البيانات الأخيرة فقط
+  const recentChanges = dailyChanges.slice(-actualPeriod);
+  
+  // حساب متوسط التغييرات
+  const avgChange = recentChanges.reduce((sum, change) => sum + change, 0) / recentChanges.length;
+  
+  return avgChange;
+};
+
+/**
+ * حساب المتوسط المتحرك البسيط (SMA)
+ * @param prices بيانات الأسعار
+ * @param period فترة الحساب
+ * @returns مصفوفة بقيم المتوسط المتحرك
+ */
+export const calculateSMA = (
+  prices: number[],
+  period: number
+): number[] => {
+  if (prices.length < period) {
+    return prices;
+  }
+  
+  const sma: number[] = [];
+  for (let i = period - 1; i < prices.length; i++) {
+    let sum = 0;
+    for (let j = 0; j < period; j++) {
+      sum += prices[i - j];
+    }
+    sma.push(sum / period);
+  }
+  
+  return sma;
 };
