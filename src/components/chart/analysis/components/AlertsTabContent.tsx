@@ -19,7 +19,7 @@ export const AlertsTabContent: React.FC<AlertsTabContentProps> = ({
         إنشاء وإدارة التنبيهات لنقاط الدخول والخروج ووقف الخسارة والأهداف.
       </p>
       
-      <AlertsManager />
+      <AlertsManager onCreateAlerts={onCreateAlerts} />
       
       {onCreateAlerts && (
         <div className="flex justify-end">
