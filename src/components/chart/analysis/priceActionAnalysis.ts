@@ -153,7 +153,7 @@ export const analyzePriceAction = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "price-action",
+    analysisType: "حركة السعر",
     analysis_duration_hours: duration || 36
   };
   

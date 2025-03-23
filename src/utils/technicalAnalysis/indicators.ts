@@ -34,10 +34,12 @@ export const detectTrend = (prices: number[], period: number = 14): "صاعد" |
 
     // حساب MACD
     const macdResult = MACD.calculate({
+      values: prices,
       fastPeriod: 12,
       slowPeriod: 26,
       signalPeriod: 9,
-      values: prices
+      SimpleMAOscillator: false,
+      SimpleMASignal: false
     });
     const lastMACD = macdResult[macdResult.length - 1];
 

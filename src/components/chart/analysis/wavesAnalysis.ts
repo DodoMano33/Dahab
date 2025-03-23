@@ -20,10 +20,12 @@ const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
   
   // استخدام MACD للتأكيد
   const macdResult = MACD.calculate({
+    values: prices,
     fastPeriod: 12,
     slowPeriod: 26,
     signalPeriod: 9,
-    values: prices
+    SimpleMAOscillator: false,
+    SimpleMASignal: false
   });
   
   const lastMACD = macdResult[macdResult.length - 1];
@@ -155,7 +157,7 @@ export const analyzeWavesChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "Waves",
+    analysisType: "تقلبات",
     analysis_duration_hours: duration || 36 // استخدام مدة التحليل المقدمة أو الافتراضية
   };
 

@@ -53,7 +53,7 @@ export const analyzeSMCChart = async (
   const { support, resistance } = calculateSupportResistance(simulatedPrices);
   
   // حساب وقف الخسارة المثالي
-  const stopLoss = calculateOptimalStopLoss(simulatedPrices, direction as "صاعد" | "هابط");
+  const stopLoss = calculateOptimalStopLoss(simulatedPrices, direction as "صاعد" | "هابط" | "محايد");
   
   // حساب مستويات فيبوناتشي
   const highPrice = Math.max(...simulatedPrices.slice(-50));
@@ -135,7 +135,7 @@ export const analyzeSMCChart = async (
     stopLoss,
     targets,
     bestEntryPoint: bestEntry,
-    analysisType: "SMC",
+    analysisType: "نظرية هيكل السوق",
     analysis_duration_hours: duration || 36
   };
   
