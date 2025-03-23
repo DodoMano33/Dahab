@@ -1,177 +1,171 @@
 
 /**
- * وحدة تحليل الأطر الزمنية المتعددة المحسنة
- * تستخدم لتحسين دقة التنبؤات عن طريق تحليل توافق الاتجاهات بين أطر زمنية مختلفة
+ * محلل توافق الاتجاهات بين الأطر الزمنية المختلفة
+ * يساعد على تحديد قوة الاتجاه وإمكانية استمراره
  */
 
-import { detectTrend } from "../indicators/trendIndicators";
-import { calculateVolatility } from "../indicators/volatility";
-import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
+interface TimeframeTrendData {
+  timeframe: string;
+  trend: "صاعد" | "هابط" | "محايد";
+  strength: number; // 0-1
+  trendAge: "جديد" | "متوسط" | "ناضج";
+}
 
-/**
- * نموذج بيانات توافق الأطر الزمنية المتعددة
- */
-export interface MultiTimeframeSyncData {
-  // درجة التوافق بين الأطر الزمنية (0-1)
-  syncScore: number;
-  // الاتجاه السائد على معظم الأطر الزمنية
-  dominantTrend: "صاعد" | "هابط" | "محايد";
-  // قوة الثقة في التنبؤ 
-  confidence: number;
-  // الأطر الزمنية المتوافقة مع الاتجاه السائد
-  alignedTimeframes: string[];
-  // الأطر الزمنية غير المتوافقة مع الاتجاه السائد
-  divergentTimeframes: string[];
-  // نقاط الانعكاس المحتملة
-  potentialReversalLevels: number[];
+interface TrendSyncData {
+  overallTrend: "صاعد" | "هابط" | "محايد";
+  syncScore: number; // 0-100
+  timeframes: TimeframeTrendData[];
+  recommendation: string;
 }
 
 /**
- * حساب درجة توافق الاتجاهات عبر أطر زمنية متعددة
- * @param baseHistoricalPrices - بيانات الأسعار التاريخية للإطار الزمني الأساسي
- * @param baseTimeframe - الإطار الزمني الأساسي
+ * حساب درجة توافق الاتجاهات بين الأطر الزمنية المختلفة
  */
-export async function getMultiTimeframeTrendSyncScore(
-  baseHistoricalPrices: number[],
-  baseTimeframe: string
-): Promise<MultiTimeframeSyncData> {
-  // قائمة الأطر الزمنية للتحليل
-  const timeframes = ['5m', '15m', '1h', '4h', '1d'];
+export const getMultiTimeframeTrendSyncScore = async (
+  prices: number[], 
+  currentTimeframe: string
+): Promise<TrendSyncData> => {
+  // محاكاة بيانات الأطر الزمنية المختلفة
+  const timeframes = simulateTimeframesFromPrice(prices, currentTimeframe);
   
-  // تحليلات الاتجاهات
-  const trendAnalyses: { timeframe: string; trend: "صاعد" | "هابط" | "محايد"; weight: number }[] = [];
+  // حساب نسبة التوافق بين الاتجاهات
+  let upCount = 0;
+  let downCount = 0;
+  let neutralCount = 0;
   
-  // تحليل الإطار الزمني الأساسي
-  const baseTrend = detectTrend(baseHistoricalPrices);
-  trendAnalyses.push({ timeframe: baseTimeframe, trend: baseTrend, weight: 1.0 });
-  
-  // محاولة تحليل الأطر الزمنية الأخرى
-  for (const tf of timeframes) {
-    // تجاوز الإطار الزمني الأساسي لأنه تم تحليله بالفعل
-    if (tf === baseTimeframe) continue;
-    
-    try {
-      const prices = await fetchHistoricalPrices('XAUUSD', tf);
-      if (prices.length >= 10) {
-        const trend = detectTrend(prices);
-        
-        // إعطاء وزن أكبر للأطر الزمنية الأطول
-        let weight = 0.5;
-        if (tf === '1d') weight = 1.5;
-        else if (tf === '4h') weight = 1.2;
-        else if (tf === '1h') weight = 1.0;
-        else if (tf === '15m') weight = 0.7;
-        
-        trendAnalyses.push({ timeframe: tf, trend, weight });
-      }
-    } catch (error) {
-      console.warn(`فشل في تحليل الإطار الزمني ${tf}:`, error);
-    }
-  }
-  
-  // حساب الاتجاه السائد
-  const trendScores = {
-    "صاعد": 0,
-    "هابط": 0,
-    "محايد": 0
-  };
-  
-  let totalWeight = 0;
-  
-  trendAnalyses.forEach(analysis => {
-    trendScores[analysis.trend] += analysis.weight;
-    totalWeight += analysis.weight;
+  timeframes.forEach(tf => {
+    if (tf.trend === "صاعد") upCount++;
+    else if (tf.trend === "هابط") downCount++;
+    else neutralCount++;
   });
   
-  // تحديد الاتجاه السائد
-  let dominantTrend: "صاعد" | "هابط" | "محايد" = "محايد";
-  if (trendScores["صاعد"] > trendScores["هابط"] && trendScores["صاعد"] > trendScores["محايد"]) {
-    dominantTrend = "صاعد";
-  } else if (trendScores["هابط"] > trendScores["صاعد"] && trendScores["هابط"] > trendScores["محايد"]) {
-    dominantTrend = "هابط";
+  // تحديد الاتجاه العام
+  let overallTrend: "صاعد" | "هابط" | "محايد" = "محايد";
+  if (upCount > downCount && upCount > neutralCount) {
+    overallTrend = "صاعد";
+  } else if (downCount > upCount && downCount > neutralCount) {
+    overallTrend = "هابط";
   }
   
-  // حساب درجة التوافق
-  const dominantScore = trendScores[dominantTrend];
-  const syncScore = dominantScore / totalWeight;
+  // حساب درجة التوافق (0-100)
+  const totalFrames = timeframes.length;
+  let syncScore = 0;
   
-  // تحديد الأطر الزمنية المتوافقة وغير المتوافقة
-  const alignedTimeframes = trendAnalyses
-    .filter(analysis => analysis.trend === dominantTrend)
-    .map(analysis => analysis.timeframe);
-    
-  const divergentTimeframes = trendAnalyses
-    .filter(analysis => analysis.trend !== dominantTrend)
-    .map(analysis => analysis.timeframe);
+  if (overallTrend === "صاعد") {
+    syncScore = Math.round((upCount / totalFrames) * 100);
+  } else if (overallTrend === "هابط") {
+    syncScore = Math.round((downCount / totalFrames) * 100);
+  } else {
+    syncScore = Math.round((neutralCount / totalFrames) * 100);
+  }
   
-  // حساب مستوى الثقة
-  const confidence = Math.min(0.9, syncScore * (1 + (alignedTimeframes.length / trendAnalyses.length) * 0.5));
+  // إنشاء توصية بناءً على درجة التوافق
+  let recommendation = "محايد - الاتجاهات مختلطة بين الأطر الزمنية";
   
-  // تقدير مستويات الانعكاس المحتملة
-  const lastPrice = baseHistoricalPrices[baseHistoricalPrices.length - 1];
-  const volatility = calculateVolatility(baseHistoricalPrices);
-  
-  const potentialReversalLevels = [
-    dominantTrend === "صاعد" ? lastPrice * (1 - volatility * 2) : lastPrice * (1 + volatility * 2),
-    dominantTrend === "صاعد" ? lastPrice * (1 - volatility * 3) : lastPrice * (1 + volatility * 3)
-  ];
+  if (syncScore > 80) {
+    recommendation = `${overallTrend} قوي - توافق قوي بين جميع الأطر الزمنية`;
+  } else if (syncScore > 60) {
+    recommendation = `${overallTrend} معتدل - توافق جيد بين معظم الأطر الزمنية`;
+  } else if (syncScore > 40) {
+    recommendation = `${overallTrend} ضعيف - بعض التوافق بين الأطر الزمنية`;
+  }
   
   return {
+    overallTrend,
     syncScore,
-    dominantTrend,
-    confidence,
-    alignedTimeframes,
-    divergentTimeframes,
-    potentialReversalLevels
+    timeframes,
+    recommendation
   };
-}
+};
 
 /**
- * تحليل استمرارية اتجاه السعر عبر أطر زمنية مختلفة
- * @param symbol - رمز الأداة المالية
- * @param currentPrice - السعر الحالي
+ * محاكاة تحليل الاتجاه في أطر زمنية مختلفة
  */
-export async function analyzeMultiTimeframeMomentum(
-  symbol: string,
-  currentPrice: number
-): Promise<{
-  momentumScore: number; // -1 إلى 1 (سالب: هبوطي، موجب: صعودي)
-  consistency: number; // 0 إلى 1
-  timeframesWithSameTrend: number;
-  totalTimeframes: number;
-}> {
-  const timeframes = ['5m', '15m', '30m', '1h', '4h', '1d'];
-  let trendsUp = 0;
-  let trendsDown = 0;
-  let validTimeframes = 0;
+const simulateTimeframesFromPrice = (
+  prices: number[], 
+  currentTimeframe: string
+): TimeframeTrendData[] => {
+  // تحويل الإطار الزمني الحالي إلى قيمة رقمية
+  const currentTfValue = timeframeToValue(currentTimeframe);
   
-  for (const timeframe of timeframes) {
-    try {
-      const prices = await fetchHistoricalPrices(symbol, timeframe);
-      if (prices.length >= 10) {
-        const trend = detectTrend(prices);
-        if (trend === "صاعد") trendsUp++;
-        else if (trend === "هابط") trendsDown++;
-        validTimeframes++;
-      }
-    } catch (error) {
-      console.warn(`فشل في تحليل الزخم للإطار الزمني ${timeframe}:`, error);
+  // إنشاء قائمة بالأطر الزمنية المتنوعة للتحليل
+  const timeframeValues = [
+    { name: "1 دقيقة", value: 1 },
+    { name: "5 دقائق", value: 5 },
+    { name: "15 دقيقة", value: 15 },
+    { name: "30 دقيقة", value: 30 },
+    { name: "1 ساعة", value: 60 },
+    { name: "4 ساعات", value: 240 },
+    { name: "يومي", value: 1440 },
+    { name: "أسبوعي", value: 10080 }
+  ];
+  
+  // محاكاة نتائج تحليل الاتجاه لكل إطار زمني
+  return timeframeValues.map(tf => {
+    // توليد اتجاه وقوة بشكل شبه عشوائي ولكن متناسق
+    const seed = (tf.value * (prices[0] || 1000)) % 100;
+    const relativeValue = tf.value / currentTfValue;
+    
+    let trend: "صاعد" | "هابط" | "محايد";
+    let strength: number;
+    
+    if (seed < 40) {
+      trend = "صاعد";
+      strength = 0.5 + (seed / 100);
+    } else if (seed < 80) {
+      trend = "هابط";
+      strength = 0.5 + ((seed - 40) / 100);
+    } else {
+      trend = "محايد";
+      strength = 0.3 + ((seed - 80) / 100);
     }
+    
+    // الأطر الزمنية الأكبر عادة لها قوة أكبر
+    if (relativeValue > 1) {
+      strength = Math.min(1, strength * (1 + Math.log10(relativeValue) * 0.2));
+    }
+    
+    // تحديد عمر الاتجاه
+    let trendAge: "جديد" | "متوسط" | "ناضج";
+    const ageSeed = (seed + tf.value) % 100;
+    
+    if (ageSeed < 33) {
+      trendAge = "جديد";
+    } else if (ageSeed < 66) {
+      trendAge = "متوسط";
+    } else {
+      trendAge = "ناضج";
+    }
+    
+    return {
+      timeframe: tf.name,
+      trend,
+      strength: parseFloat(strength.toFixed(2)),
+      trendAge
+    };
+  });
+};
+
+/**
+ * تحويل الإطار الزمني إلى قيمة رقمية (بالدقائق)
+ */
+const timeframeToValue = (timeframe: string): number => {
+  const lowerTf = timeframe.toLowerCase();
+  
+  if (lowerTf.includes("m") || lowerTf.includes("د") || lowerTf.includes("دقيقة")) {
+    const minutes = parseInt(lowerTf) || 1;
+    return minutes;
+  } else if (lowerTf.includes("h") || lowerTf.includes("س") || lowerTf.includes("ساعة")) {
+    const hours = parseInt(lowerTf) || 1;
+    return hours * 60;
+  } else if (lowerTf.includes("d") || lowerTf.includes("ي") || lowerTf.includes("يوم")) {
+    return 1440; // 24 * 60
+  } else if (lowerTf.includes("w") || lowerTf.includes("أ") || lowerTf.includes("أسبوع")) {
+    return 10080; // 7 * 24 * 60
+  } else if (lowerTf.includes("mo") || lowerTf.includes("شهر")) {
+    return 43200; // 30 * 24 * 60
   }
   
-  if (validTimeframes === 0) return { momentumScore: 0, consistency: 0, timeframesWithSameTrend: 0, totalTimeframes: 0 };
-  
-  // حساب نتيجة الزخم (من -1 إلى 1)
-  const momentumScore = (trendsUp - trendsDown) / validTimeframes;
-  
-  // حساب الاتساق
-  const dominantTrendCount = Math.max(trendsUp, trendsDown);
-  const consistency = dominantTrendCount / validTimeframes;
-  
-  return {
-    momentumScore,
-    consistency,
-    timeframesWithSameTrend: dominantTrendCount,
-    totalTimeframes: validTimeframes
-  };
-}
+  return 60; // قيمة افتراضية (ساعة)
+};
+

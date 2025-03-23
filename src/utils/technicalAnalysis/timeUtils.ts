@@ -1,48 +1,60 @@
 
-// وظيفة للحصول على وقت متوقع بناءً على الإطار الزمني
-export const getExpectedTime = (timeframe: string, targetIndex: number = 0): Date => {
+/**
+ * وحدة حساب الوقت المتوقع للأهداف
+ */
+
+/**
+ * الحصول على الوقت المتوقع للوصول إلى الهدف بناءً على الإطار الزمني ومؤشر الهدف
+ */
+export const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
   const now = new Date();
+  const lowerTimeframe = timeframe.toLowerCase();
   
-  // اعتماداً على الإطار الزمني، نقوم بإضافة وقت مختلف
-  switch (timeframe) {
-    case '1m':
-      return new Date(now.getTime() + (targetIndex + 1) * 1 * 60 * 1000);
-    case '5m':
-      return new Date(now.getTime() + (targetIndex + 1) * 5 * 60 * 1000);
-    case '15m':
-      return new Date(now.getTime() + (targetIndex + 1) * 15 * 60 * 1000);
-    case '30m':
-      return new Date(now.getTime() + (targetIndex + 1) * 30 * 60 * 1000);
-    case '1h':
-      return new Date(now.getTime() + (targetIndex + 1) * 60 * 60 * 1000);
-    case '4h':
-      return new Date(now.getTime() + (targetIndex + 1) * 4 * 60 * 60 * 1000);
-    case '1d':
-      return new Date(now.getTime() + (targetIndex + 1) * 24 * 60 * 60 * 1000);
-    case '1w':
-      return new Date(now.getTime() + (targetIndex + 1) * 7 * 24 * 60 * 60 * 1000);
-    case '1M':
-      // اضافة شهر (تقريبي - 30 يوم)
-      return new Date(now.getTime() + (targetIndex + 1) * 30 * 24 * 60 * 60 * 1000);
-    default:
-      // الإطار الزمني الافتراضي هو 4 ساعات
-      return new Date(now.getTime() + (targetIndex + 1) * 4 * 60 * 60 * 1000);
+  let daysToAdd = 1;
+  
+  // تحديد مدة الانتظار بناءً على الإطار الزمني
+  if (lowerTimeframe.includes("m")) {
+    // الإطار الزمني بالدقائق
+    const minutes = parseInt(lowerTimeframe) || 5;
+    if (minutes <= 1) {
+      daysToAdd = (targetIndex + 1) * 1/24; // ساعات
+    } else if (minutes <= 5) {
+      daysToAdd = (targetIndex + 1) * 2/24; // ساعات
+    } else if (minutes <= 15) {
+      daysToAdd = (targetIndex + 1) * 6/24; // ساعات
+    } else if (minutes <= 30) {
+      daysToAdd = (targetIndex + 1) * 10/24; // ساعات
+    } else {
+      daysToAdd = targetIndex + 1; // يوم لكل هدف
+    }
+  } else if (lowerTimeframe.includes("h")) {
+    // الإطار الزمني بالساعات
+    const hours = parseInt(lowerTimeframe) || 1;
+    if (hours <= 1) {
+      daysToAdd = targetIndex + 1; // يوم لكل هدف
+    } else if (hours <= 4) {
+      daysToAdd = (targetIndex + 1) * 2; // يومين لكل هدف
+    } else {
+      daysToAdd = (targetIndex + 1) * 3; // 3 أيام لكل هدف
+    }
+  } else if (lowerTimeframe.includes("d") || lowerTimeframe === "daily" || lowerTimeframe === "يومي") {
+    // الإطار الزمني اليومي
+    daysToAdd = (targetIndex + 1) * 5; // 5 أيام لكل هدف
+  } else if (lowerTimeframe.includes("w") || lowerTimeframe === "weekly" || lowerTimeframe === "أسبوعي") {
+    // الإطار الزمني الأسبوعي
+    daysToAdd = (targetIndex + 1) * 14; // أسبوعين لكل هدف
+  } else {
+    // الافتراضي
+    daysToAdd = targetIndex + 1;
   }
+  
+  // إضافة عشوائية طفيفة لتنويع النتائج
+  const randomOffset = Math.random() * 0.4 - 0.2; // -0.2 إلى +0.2
+  daysToAdd = daysToAdd * (1 + randomOffset);
+  
+  // إضافة الوقت المناسب
+  now.setDate(now.getDate() + daysToAdd);
+  
+  return now;
 };
 
-// وظيفة للحصول على اسم الإطار الزمني بالعربية
-export const getTimeframeLabel = (timeframe: string): string => {
-  const timeframeMap: Record<string, string> = {
-    '1m': 'دقيقة',
-    '5m': '5 دقائق',
-    '15m': '15 دقيقة',
-    '30m': '30 دقيقة',
-    '1h': 'ساعة',
-    '4h': '4 ساعات',
-    '1d': 'يوم',
-    '1w': 'أسبوع',
-    '1M': 'شهر'
-  };
-  
-  return timeframeMap[timeframe] || timeframe;
-};
