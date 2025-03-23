@@ -10,11 +10,8 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام lazy مع اسم الملف الكامل مع التأكد من وجود تصدير افتراضي
-const ChartAnalyzer = lazy(() => {
-  console.log("Lazy loading ChartAnalyzer component");
-  return import("@/components/ChartAnalyzer");
-});
+// Simplify the dynamic imports to avoid any complexity
+const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء

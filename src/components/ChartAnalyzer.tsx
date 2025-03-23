@@ -3,12 +3,13 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
 import { ChartDisplay } from "./chart/ChartDisplay";
-import { useSearchHistory } from "@/components/hooks/search-history";
+import { useSearchHistory } from "./hooks/search-history";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
 
+// Simple component with clear export
 export function ChartAnalyzer() {
   console.log("ChartAnalyzer component initialized");
   
@@ -145,4 +146,5 @@ export function ChartAnalyzer() {
   );
 }
 
+// Make sure we have a proper default export
 export default ChartAnalyzer;
