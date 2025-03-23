@@ -1,6 +1,5 @@
-
 import { useState, useEffect, lazy, Suspense, memo } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { ModeToggle } from "@/components/ui/mode-toggle";
@@ -89,16 +88,14 @@ function Index() {
             <Button 
               variant={activePage === 'analysis' ? "default" : "ghost"} 
               onClick={() => setActivePage('analysis')}
-              asChild
             >
-              <a href="/">التحليل</a>
+              <Link to="/" className="w-full h-full flex items-center justify-center">التحليل</Link>
             </Button>
             <Button 
               variant={activePage === 'dashboard' ? "default" : "ghost"} 
               onClick={() => setActivePage('dashboard')}
-              asChild
             >
-              <a href="/dashboard">لوحة المعلومات</a>
+              <Link to="/dashboard" className="w-full h-full flex items-center justify-center">لوحة المعلومات</Link>
             </Button>
           </div>
         </div>

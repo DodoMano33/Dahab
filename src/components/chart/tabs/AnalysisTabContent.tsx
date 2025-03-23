@@ -44,6 +44,9 @@ export const AnalysisTabContent = ({
   setIsHistoryOpen,
   onAnalysisComplete,
   chartDisplayComponent,
+  onManualCheck,
+  isCheckLoading,
+  lastCheckTime
 }: AnalysisTabContentProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
@@ -93,8 +96,12 @@ export const AnalysisTabContent = ({
       {/* Manual Analysis Display */}
       {chartDisplayComponent}
       
-      {/* فقط عرض زر فحص التحليلات بدون وظيفة */}
-      <BacktestCheckButton />
+      {/* فقط عرض زر فحص التحليلات */}
+      <BacktestCheckButton 
+        onCheck={onManualCheck}
+        isLoading={isCheckLoading}
+        lastCheckTime={lastCheckTime}
+      />
     </div>
   );
 };
