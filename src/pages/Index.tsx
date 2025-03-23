@@ -10,7 +10,7 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// تعديل استيراد ChartAnalyzer لاستخدام default export - مهم جدًا
+// Correct the import statement to properly use the default export
 const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
