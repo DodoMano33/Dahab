@@ -6,7 +6,7 @@ import { AnalysisForm } from "../analysis/AnalysisForm";
 import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
-import { PriceLevelsDisplay } from "../PriceLevelsDisplay";
+import { PriceLevelsDisplay } from "../price-levels/PriceLevelsDisplay";
 import { Toaster } from "sonner";
 
 interface AnalysisTabContentProps {
