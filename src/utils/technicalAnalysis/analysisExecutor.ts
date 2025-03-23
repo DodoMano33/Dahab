@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -58,84 +57,84 @@ export const executeSpecificAnalysis = async (
       case "مضاربة":
       case "سكالبينج":
         console.log("Executing Scalping analysis");
-        return await analyzeScalpingChart(chartImage, currentPrice, timeframe, historicalPrices);
+        return await analyzeScalpingChart(chartImage, currentPrice, timeframe);
         
       case "smc":
       case "نظريةهيكلالسوق":
         console.log("Executing SMC analysis");
-        return await analyzeSMCChart(chartImage, currentPrice, timeframe, analysisTypeVariance.timeframe);
+        return await analyzeSMCChart(chartImage, currentPrice, timeframe);
         
       case "ict":
       case "نظريةالسوق":
         console.log("Executing ICT analysis");
-        return await analyzeICTChart(chartImage, currentPrice, timeframe, historicalPrices);
+        return await analyzeICTChart(chartImage, currentPrice, timeframe);
         
       case "turtlesoup":
       case "turtle":
       case "الحساءالسلحفائي":
         console.log("Executing Turtle Soup analysis");
-        return await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe, analysisTypeVariance.directionBias);
+        return await analyzeTurtleSoupChart(chartImage, currentPrice, timeframe);
         
       case "gann":
       case "جان":
         console.log("Executing Gann analysis");
-        return await analyzeGannChart(chartImage, currentPrice, timeframe, analysisTypeVariance.volatility);
+        return await analyzeGannChart(chartImage, currentPrice, timeframe);
         
       case "waves":
       case "تقلبات":
         console.log("Executing Waves analysis");
-        return await analyzeWavesChart(chartImage, currentPrice, timeframe, analysisTypeVariance.priceRange);
+        return await analyzeWavesChart(chartImage, currentPrice, timeframe);
         
       case "patterns":
       case "pattern":
       case "نمطي":
         console.log("Executing Pattern analysis");
-        return await analyzePattern(chartImage, currentPrice, timeframe, analysisTypeVariance.patternIndex);
+        return await analyzePattern(chartImage, currentPrice, timeframe);
         
       case "priceaction":
       case "حركةالسعر":
         console.log("Executing Price Action analysis");
-        return await analyzePriceAction(chartImage, currentPrice, timeframe, historicalPrices);
+        return await analyzePriceAction(chartImage, currentPrice, timeframe);
         
       case "neuralnetworks":
       case "شبكاتعصبية":
         console.log("Executing Neural Networks analysis");
-        return await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe, analysisTypeVariance.confidence);
+        return await analyzeNeuralNetworkChart(chartImage, currentPrice, timeframe);
         
       case "rnn":
       case "شبكاتعصبيةمتكررة":
         console.log("Executing RNN analysis");
-        return await analyzeRNN(chartImage, currentPrice, timeframe, analysisTypeVariance.directionBias);
+        return await analyzeRNN(chartImage, currentPrice, timeframe);
         
       case "timeclustering":
       case "تصفيقزمني":
         console.log("Executing Time Clustering analysis");
-        return await analyzeTimeClustering(chartImage, currentPrice, timeframe, analysisTypeVariance.timeframe);
+        return await analyzeTimeClustering(chartImage, currentPrice, timeframe);
         
       case "multivariance":
       case "تباينمتعددالعوامل":
         console.log("Executing Multi Variance analysis");
-        return await analyzeMultiVariance(chartImage, currentPrice, timeframe, analysisTypeVariance.volatility);
+        return await analyzeMultiVariance(chartImage, currentPrice, timeframe);
         
       case "compositecandlestick":
       case "شمعاتمركبة":
         console.log("Executing Composite Candlestick analysis");
-        return await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe, analysisTypeVariance.patternIndex);
+        return await analyzeCompositeCandlestick(chartImage, currentPrice, timeframe);
         
       case "behavioral":
       case "تحليلسلوكي":
         console.log("Executing Behavioral analysis");
-        return await analyzeBehavioral(chartImage, currentPrice, timeframe, analysisTypeVariance.sentimentBias);
+        return await analyzeBehavioral(chartImage, currentPrice, timeframe);
         
       case "fibonacciadvanced":
       case "تحليلفيبوناتشيمتقدم":
         console.log("Executing Fibonacci Advanced analysis");
-        return await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe, analysisTypeVariance.fibLevels);
+        return await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         
       case "fibonacci":
       case "فيبوناتشي":
         console.log("Executing Fibonacci analysis");
-        return await analyzeFibonacciChart(chartImage, currentPrice, timeframe, analysisTypeVariance.fibLevels);
+        return await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         
       case "ml":
       case "تعلمآلي":
