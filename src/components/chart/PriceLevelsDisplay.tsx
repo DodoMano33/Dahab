@@ -31,6 +31,9 @@ export const PriceLevelsDisplay = () => {
       item.analysis?.direction === 'هابط' && !item.stopLossHit && !item.targetHit
     );
     
+    console.log("تحليلات صعودية:", bullishAnalyses.length);
+    console.log("تحليلات هبوطية:", bearishAnalyses.length);
+    
     // البحث عن أقرب هدف صعودي
     if (bullishAnalyses.length > 0) {
       // ترتيب التحليلات حسب الهدف الأول (الأقرب للسعر الحالي)
@@ -67,10 +70,14 @@ export const PriceLevelsDisplay = () => {
     
     // البحث عن أقرب هدف هبوطي
     if (bearishAnalyses.length > 0) {
+      console.log("معالجة التحليلات الهبوطية:", bearishAnalyses);
+      
       // ترتيب التحليلات حسب الهدف الأول (الأقرب للسعر الحالي)
       const sortedBearishByTarget = [...bearishAnalyses].sort((a, b) => {
         const aTarget = a.analysis?.targets?.[0]?.price || 0;
         const bTarget = b.analysis?.targets?.[0]?.price || 0;
+        
+        console.log(`مقارنة أهداف هبوطية: a=${aTarget}, b=${bTarget}`);
         
         // نريد الهدف الأقرب للسعر الحالي (الأصغر فارقًا)
         if (currentPrice) {
@@ -80,6 +87,8 @@ export const PriceLevelsDisplay = () => {
       });
       
       const closestBearishTarget = sortedBearishByTarget[0]?.analysis?.targets?.[0]?.price || null;
+      console.log("أقرب هدف هبوطي:", closestBearishTarget);
+      
       if (closestBearishTarget) {
         setBearishTarget({ price: closestBearishTarget, label: 'هدف هبوطي' });
       }
@@ -172,20 +181,20 @@ export const PriceLevelsDisplay = () => {
           <div className="space-y-2">
             {/* هدف هبوطي */}
             <div 
-              className="p-2 rounded-md bg-green-100 border border-green-300 dark:bg-green-800/20 dark:border-green-800" 
-              style={{ boxShadow: "0 0 10px rgba(34, 197, 94, 0.15)" }}
+              className="p-2 rounded-md bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900" 
+              style={{ boxShadow: "0 0 10px rgba(34, 197, 94, 0.2)" }}
             >
               <div className="text-sm text-muted-foreground mb-1">{bearishTarget.label}</div>
-              <div className="font-semibold text-green-800 dark:text-green-300">{formatPrice(bearishTarget.price)}</div>
+              <div className="font-semibold text-green-700 dark:text-green-400">{formatPrice(bearishTarget.price)}</div>
             </div>
             
             {/* وقف خسارة هبوطي */}
             <div 
-              className="p-2 rounded-md bg-red-100 border border-red-300 dark:bg-red-800/20 dark:border-red-800" 
-              style={{ boxShadow: "0 0 10px rgba(239, 68, 68, 0.15)" }}
+              className="p-2 rounded-md bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900" 
+              style={{ boxShadow: "0 0 10px rgba(239, 68, 68, 0.2)" }}
             >
               <div className="text-sm text-muted-foreground mb-1">{bearishStopLoss.label}</div>
-              <div className="font-semibold text-red-800 dark:text-red-300">{formatPrice(bearishStopLoss.price)}</div>
+              <div className="font-semibold text-red-700 dark:text-red-400">{formatPrice(bearishStopLoss.price)}</div>
             </div>
           </div>
         </div>
