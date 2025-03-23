@@ -82,8 +82,8 @@ function ChartAnalyzer() {
   const handleAnalysisComplete = useCallback((newItem: SearchHistoryItem) => {
     console.log("New analysis completed, adding to history:", newItem);
     addToSearchHistory(newItem);
-    setIsHistoryOpen(true);
-  }, [addToSearchHistory, setIsHistoryOpen]);
+    // تم إزالة فتح سجل البحث تلقائيًا من هنا
+  }, [addToSearchHistory]);
 
   useEffect(() => {
     console.log("Setting up interval to invalidate searchHistory query");

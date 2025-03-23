@@ -114,6 +114,7 @@ export const AutoAnalysis = ({
           console.log("Auto analysis result:", result);
           if (result && onAnalysisComplete) {
             onAnalysisComplete(result);
+            // قمنا بإزالة فتح سجل البحث تلقائيًا هنا
           }
         }
       });
