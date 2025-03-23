@@ -1,15 +1,14 @@
-
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
-import { ChartDisplay } from "./chart/ChartDisplay";
+import { ChartDisplay } from "./ChartDisplay";
 import { useSearchHistory } from "./hooks/search-history";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
 
-const ChartAnalyzer = () => {
+export const ChartAnalyzer = () => {
   const {
     isAnalyzing,
     image,

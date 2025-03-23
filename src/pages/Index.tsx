@@ -1,5 +1,6 @@
+
 import { useState, useEffect, lazy, Suspense, memo } from "react";
-import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { ModeToggle } from "@/components/ui/mode-toggle";
@@ -10,9 +11,11 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
+// تعديل استيراد ChartAnalyzer لاستخدام default export
 const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
+// استخدام مكون memo لتحسين الأداء
 const Header = memo(({ 
   isLoggedIn, 
   user, 
@@ -54,13 +57,15 @@ function Index() {
   const location = useLocation();
   const { isLoggedIn, user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { triggerManualCheck } = useBackTest();
+  const { triggerManualCheck } = useBackTest(); // Keep this import but don't use the functionality
   const [activePage, setActivePage] = useState<'analysis' | 'dashboard'>('analysis');
 
+  // Keep this function but make it do nothing
   const handleManualCheck = () => {
     console.log("تم إيقاف وظيفة فحص التحليلات");
   };
   
+  // استخدام useEffect لمعالجة تغيير المسار
   useEffect(() => {
     if (location.pathname === '/dashboard') {
       setActivePage('dashboard');
@@ -71,6 +76,7 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
       <Header 
         isLoggedIn={isLoggedIn}
         user={user}
@@ -83,19 +89,22 @@ function Index() {
             <Button 
               variant={activePage === 'analysis' ? "default" : "ghost"} 
               onClick={() => setActivePage('analysis')}
+              asChild
             >
-              <Link to="/" className="w-full h-full flex items-center justify-center">التحليل</Link>
+              <a href="/">التحليل</a>
             </Button>
             <Button 
               variant={activePage === 'dashboard' ? "default" : "ghost"} 
               onClick={() => setActivePage('dashboard')}
+              asChild
             >
-              <Link to="/dashboard" className="w-full h-full flex items-center justify-center">لوحة المعلومات</Link>
+              <a href="/dashboard">لوحة المعلومات</a>
             </Button>
           </div>
         </div>
       )}
       
+      {/* Main Content */}
       <main className="container mx-auto py-6 px-4">
         <Suspense fallback={<div className="flex items-center justify-center py-20">جاري تحميل المحتوى...</div>}>
           <Routes>
@@ -134,11 +143,13 @@ function Index() {
         </Suspense>
       </main>
       
+      {/* Auth Modal */}
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
       
+      {/* Onboarding Dialog */}
       <OnboardingDialog />
     </div>
   );
