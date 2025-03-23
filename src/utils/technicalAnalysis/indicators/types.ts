@@ -44,5 +44,4 @@ export interface IndicatorResult {
   date?: Date | string;
 }
 
-// تصدير نوع PriceData من هذا الملف
-export { PriceData } from "./types";
+// حذف التصدير المتعارض هنا

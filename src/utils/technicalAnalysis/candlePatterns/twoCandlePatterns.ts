@@ -1,5 +1,5 @@
 
-import { PriceData } from '../indicators/PriceData';
+import { PriceData } from '../indicators/types';
 
 // وظيفة للتحقق من نمط الابتلاع الصاعد
 export const isBullishEngulfing = (candles: PriceData[]): boolean => {

@@ -1,5 +1,5 @@
 
-import { PriceData } from '../indicators/PriceData';
+import { PriceData } from '../indicators/types';
 import { PatternResult } from './types';
 import { isDoji, isHammer, isInvertedHammer } from './singleCandlePatterns';
 import { 

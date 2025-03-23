@@ -1,5 +1,5 @@
 
-import { PriceData } from '../indicators/PriceData';
+import { PriceData } from '../indicators/types';
 
 // أنواع أنماط الشموع المدعومة
 export type CandlePatternType = 
