@@ -5,6 +5,7 @@ import { AnalysisTable } from "./AnalysisTable";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { getStrategyName } from "@/utils/technicalAnalysis/analysisTypeMap";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ResultsContentProps {
   completedAnalyses: any[];
@@ -33,6 +34,8 @@ export const ResultsContent: React.FC<ResultsContentProps> = ({
   isLoadingResults,
   loadMore
 }) => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="flex-1 overflow-hidden">
       <div className="h-full overflow-y-auto">
@@ -48,15 +51,17 @@ export const ResultsContent: React.FC<ResultsContentProps> = ({
             </>
           )}
           
-          <div className="overflow-x-auto">
-            <AnalysisTable
-              analyses={completedAnalyses}
-              selectedItems={selectedItems}
-              onSelectAll={onSelectAll}
-              onSelect={onSelect}
-              totalProfitLoss={totalProfitLoss}
-              currentTradingViewPrice={currentTradingViewPrice}
-            />
+          <div className={`overflow-x-auto ${isMobile ? 'touch-pan-x' : ''}`}>
+            <div className={isMobile ? 'min-w-[800px]' : ''}>
+              <AnalysisTable
+                analyses={completedAnalyses}
+                selectedItems={selectedItems}
+                onSelectAll={onSelectAll}
+                onSelect={onSelect}
+                totalProfitLoss={totalProfitLoss}
+                currentTradingViewPrice={currentTradingViewPrice}
+              />
+            </div>
             
             {hasMore && (
               <div className="flex justify-center mt-4">

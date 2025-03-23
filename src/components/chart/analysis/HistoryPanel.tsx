@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { SearchHistory } from "../SearchHistory";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HistoryPanelProps {
   showHistory: boolean;
@@ -15,6 +17,7 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
     to: undefined
   });
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSelect = (id: string) => {
     setSelectedItems(prev => {
@@ -31,7 +34,7 @@ export const HistoryPanel = ({ showHistory, onClose }: HistoryPanelProps) => {
   if (!showHistory) return null;
 
   return (
-    <div className="relative bg-white rounded-lg shadow-lg p-6 mt-4">
+    <div className={`relative bg-white rounded-lg shadow-lg ${isMobile ? 'p-2 mt-2' : 'p-6 mt-4'}`}>
       <Button
         variant="ghost"
         size="icon"

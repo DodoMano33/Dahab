@@ -9,6 +9,7 @@ import { SearchHistoryItem } from "@/types/analysis";
 import { Button } from "@/components/ui/button";
 import { Copy, Download, RefreshCw } from "lucide-react";
 import { ExportAnalysis } from "./ExportAnalysis";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const HistoryDialog = ({
   isRefreshing = false
 }: HistoryDialogProps) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const isMobile = useIsMobile();
   
   const validHistory = history.filter(item => item && item.symbol && typeof item.symbol === 'string' && item.currentPrice && item.analysis);
   
@@ -65,27 +67,31 @@ export const HistoryDialog = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="max-w-[98vw] w-[1400px] p-4 h-[90vh] flex flex-col overflow-hidden" dir="rtl">
-        <div className="flex items-center justify-between mb-2">
+      <DialogContent 
+        className={`${isMobile ? 'w-[100vw] max-w-none p-1 h-[95vh]' : 'max-w-[98vw] w-[1400px] p-4 h-[90vh]'} 
+        flex flex-col overflow-hidden`} 
+        dir="rtl"
+      >
+        <div className={`flex ${isMobile ? 'flex-col' : 'items-center'} justify-between mb-2`}>
           <SearchHistoryHeader initialCount={validHistory.length} />
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isMobile ? 'mt-2' : ''}`}>
             <ExportAnalysis selectedItems={selectedHistoryItems} />
             
             {refreshHistory && (
               <Button 
                 variant="outline" 
-                size="sm" 
+                size={isMobile ? "xs" : "sm"}
                 onClick={refreshHistory}
                 disabled={isRefreshing}
-                className="mr-2"
+                className={isMobile ? "p-1.5" : "mr-2"}
               >
-                <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
-                تحديث
+                <RefreshCw className={`h-4 w-4 ${isMobile ? '' : 'mr-1'} ${isRefreshing ? 'animate-spin' : ''}`} />
+                {!isMobile && "تحديث"}
               </Button>
             )}
           </div>
         </div>
-        <div className="flex justify-end p-2 mb-2 border-b">
+        <div className={`flex justify-end ${isMobile ? 'py-1' : 'p-2'} mb-2 border-b`}>
           <HistoryActions 
             selectedItems={selectedItems} 
             onDelete={handleDeleteSelected} 

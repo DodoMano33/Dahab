@@ -6,6 +6,7 @@ import { HistoryRow } from "./HistoryRow";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface HistoryContentProps {
   history: Array<{
@@ -40,6 +41,7 @@ export const HistoryContent = ({
     "No history items");
   
   const [localHistory, setLocalHistory] = useState(history);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     console.log("History prop updated, updating local history");
@@ -171,35 +173,37 @@ export const HistoryContent = ({
   return (
     <div className="relative w-full h-full bg-white dark:bg-gray-950 rounded-md shadow-sm border border-slate-200 dark:border-slate-800">
       <ScrollArea className="h-full overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table className="w-full min-w-max">
-            <HistoryTableHeader 
-              showCheckbox={true} 
-              onSelectAll={handleSelectAll}
-              isAllSelected={localHistory.length > 0 && selectedItems.size === localHistory.length}
-            />
-            <TableBody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {localHistory.length > 0 ? (
-                localHistory.map((item) => (
-                  <HistoryRow
-                    key={item.id}
-                    {...item}
-                    analysis_duration_hours={item.analysis_duration_hours}
-                    last_checked_price={item.last_checked_price}
-                    last_checked_at={item.last_checked_at}
-                    isSelected={selectedItems.has(item.id)}
-                    onSelect={() => onSelect(item.id)}
-                  />
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={13} className="text-center py-8 text-muted-foreground">
-                    لا توجد بيانات في سجل البحث
-                  </td>
-                </tr>
-              )}
-            </TableBody>
-          </Table>
+        <div className={`overflow-x-auto ${isMobile ? 'touch-pan-x' : ''}`}>
+          <div className={`min-w-[800px] ${isMobile ? 'pr-6' : ''}`}>
+            <Table className="w-full">
+              <HistoryTableHeader 
+                showCheckbox={true} 
+                onSelectAll={handleSelectAll}
+                isAllSelected={localHistory.length > 0 && selectedItems.size === localHistory.length}
+              />
+              <TableBody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {localHistory.length > 0 ? (
+                  localHistory.map((item) => (
+                    <HistoryRow
+                      key={item.id}
+                      {...item}
+                      analysis_duration_hours={item.analysis_duration_hours}
+                      last_checked_price={item.last_checked_price}
+                      last_checked_at={item.last_checked_at}
+                      isSelected={selectedItems.has(item.id)}
+                      onSelect={() => onSelect(item.id)}
+                    />
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={13} className="text-center py-8 text-muted-foreground">
+                      لا توجد بيانات في سجل البحث
+                    </td>
+                  </tr>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </ScrollArea>
     </div>

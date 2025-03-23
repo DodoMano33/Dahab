@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LatestAnalysesProps {
   userId: string;
@@ -13,6 +14,7 @@ interface LatestAnalysesProps {
 export function LatestAnalyses({ userId }: LatestAnalysesProps) {
   const [analyses, setAnalyses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchLatestAnalyses = async () => {
@@ -61,29 +63,31 @@ export function LatestAnalyses({ userId }: LatestAnalysesProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className={`space-y-4 ${isMobile ? 'overflow-x-auto touch-pan-x' : ''}`}>
           {analyses.length === 0 ? (
             <p className="text-center text-muted-foreground">لا توجد تحليلات حديثة</p>
           ) : (
-            analyses.map((analysis) => (
-              <div key={analysis.id} className="border rounded-lg p-3">
-                <div className="flex justify-between">
-                  <h4 className="font-medium">{analysis.symbol}</h4>
-                  <span className="text-sm text-muted-foreground flex flex-col items-end">
-                    <span>{format(new Date(analysis.created_at), 'yyyy/MM/dd', { locale: ar })}</span>
-                    <span className="font-medium">{format(new Date(analysis.created_at), 'HH:mm', { locale: ar })}</span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-sm">{analysis.analysis_type} - {analysis.timeframe}</span>
-                  <div className="flex items-center">
-                    <span className={`text-sm ${analysis.target_hit ? 'text-green-500' : ''}`}>
-                      {analysis.analysis.direction}
+            <div className={isMobile ? 'min-w-[300px]' : ''}>
+              {analyses.map((analysis) => (
+                <div key={analysis.id} className="border rounded-lg p-3 mb-3">
+                  <div className="flex justify-between">
+                    <h4 className="font-medium">{analysis.symbol}</h4>
+                    <span className="text-sm text-muted-foreground flex flex-col items-end">
+                      <span>{format(new Date(analysis.created_at), 'yyyy/MM/dd', { locale: ar })}</span>
+                      <span className="font-medium">{format(new Date(analysis.created_at), 'HH:mm', { locale: ar })}</span>
                     </span>
                   </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-sm">{analysis.analysis_type} - {analysis.timeframe}</span>
+                    <div className="flex items-center">
+                      <span className={`text-sm ${analysis.target_hit ? 'text-green-500' : ''}`}>
+                        {analysis.analysis.direction}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </CardContent>

@@ -44,4 +44,21 @@ const ScrollBar = React.forwardRef<
 ))
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
-export { ScrollArea, ScrollBar }
+// تصدير افقي للتمرير بسهولة على الجوال
+const ScrollAreaHorizontal = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
+>(({ className, children, ...props }, ref) => (
+  <ScrollArea
+    ref={ref}
+    className={cn("overflow-hidden", className)}
+    {...props}
+  >
+    <div className="overflow-x-auto w-full touch-pan-x">
+      {children}
+    </div>
+  </ScrollArea>
+))
+ScrollAreaHorizontal.displayName = "ScrollAreaHorizontal"
+
+export { ScrollArea, ScrollBar, ScrollAreaHorizontal }

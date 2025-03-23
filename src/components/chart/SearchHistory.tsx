@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { SearchHistoryHeader } from "./history/SearchHistoryHeader";
 import { SearchHistoryToolbar } from "./history/SearchHistoryToolbar";
 import { SearchHistoryMain } from "./history/SearchHistoryMain";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SearchHistoryProps {
   isOpen: boolean;
@@ -29,13 +30,18 @@ export const SearchHistory = ({
   validHistory,
   handleSelect,
 }: SearchHistoryProps) => {
+  const isMobile = useIsMobile();
+  
   const handleBulkDelete = () => {
     selectedItems.forEach(id => onDelete(id));
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden" dir="rtl">
+      <DialogContent 
+        className={`${isMobile ? 'max-w-[100vw] h-[95vh]' : 'max-w-4xl h-[85vh]'} flex flex-col p-0 overflow-hidden`} 
+        dir="rtl"
+      >
         <div className="sticky top-0 z-50 bg-background border-b">
           <SearchHistoryHeader initialCount={validHistory.length} />
           <SearchHistoryToolbar
