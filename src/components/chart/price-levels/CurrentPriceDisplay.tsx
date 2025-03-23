@@ -1,9 +1,10 @@
 
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import { PriceDirection } from './types';
 
 interface CurrentPriceDisplayProps {
   currentPrice: number | null;
-  priceDirection: 'up' | 'down' | null;
+  priceDirection: PriceDirection;
   formatPrice: (price: number | null) => string;
   getPriceBackgroundColor: () => string;
 }
