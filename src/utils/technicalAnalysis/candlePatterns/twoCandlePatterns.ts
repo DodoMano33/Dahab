@@ -72,3 +72,42 @@ export const isBearishHarami = (candles: PriceData[]): boolean => {
     current.low > previous.low // قاع الشمعة الحالية أكبر من قاع السابقة
   );
 };
+
+// نمط خط الاختراق الصاعد (Piercing Line)
+export const isPiercingLine = (candles: PriceData[]): boolean => {
+  if (candles.length < 2) return false;
+  
+  const current = candles[candles.length - 1];
+  const previous = candles[candles.length - 2];
+  
+  const previousBodySize = Math.abs(previous.close - previous.open);
+  const penetration = (previous.open - current.close) / previousBodySize;
+  
+  // شرط نمط خط الاختراق: الشمعة السابقة هبوطية، والحالية صعودية تخترق السابقة بمقدار 50% على الأقل
+  return (
+    previous.close < previous.open && // الشمعة السابقة هبوطية
+    current.close > current.open && // الشمعة الحالية صعودية
+    current.open < previous.close && // فتح الشمعة الحالية أقل من إغلاق السابقة
+    current.close > (previous.open + previous.close) / 2 && // إغلاق الشمعة الحالية أعلى من 50% من جسم السابقة
+    current.close < previous.open // إغلاق الشمعة الحالية ما زال أقل من فتح السابقة
+  );
+};
+
+// نمط السحابة الداكنة (Dark Cloud Cover)
+export const isDarkCloudCover = (candles: PriceData[]): boolean => {
+  if (candles.length < 2) return false;
+  
+  const current = candles[candles.length - 1];
+  const previous = candles[candles.length - 2];
+  
+  const previousBodySize = Math.abs(previous.close - previous.open);
+  
+  // شرط نمط السحابة الداكنة: الشمعة السابقة صعودية، والحالية هبوطية تخترق السابقة من الأعلى بمقدار 50% على الأقل
+  return (
+    previous.close > previous.open && // الشمعة السابقة صعودية
+    current.close < current.open && // الشمعة الحالية هبوطية
+    current.open > previous.close && // فتح الشمعة الحالية أعلى من إغلاق السابقة
+    current.close < (previous.open + previous.close) / 2 && // إغلاق الشمعة الحالية أقل من 50% من جسم السابقة
+    current.close > previous.open // إغلاق الشمعة الحالية ما زال أعلى من فتح السابقة
+  );
+};

@@ -14,7 +14,13 @@ export type CandlePatternType =
   | 'MorningStar'
   | 'ShootingStar'
   | 'ThreeWhiteSoldiers'
-  | 'ThreeBlackCrows';
+  | 'ThreeBlackCrows'
+  | 'PiercingLine'
+  | 'DarkCloudCover'
+  | 'SpinningTop'
+  | 'Marubozu'
+  | 'DragonFlyDoji'
+  | 'GravestoneDoji';
 
 export type PatternResult = {
   pattern: CandlePatternType;

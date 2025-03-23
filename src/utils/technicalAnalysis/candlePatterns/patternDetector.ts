@@ -1,11 +1,19 @@
 
 import { PriceData } from '../indicators/types';
 import { PatternResult } from './types';
-import { isDoji, isHammer, isInvertedHammer } from './singleCandlePatterns';
+import { 
+  isDoji, isHammer, isInvertedHammer, isShootingStar, 
+  isDragonFlyDoji, isGravestoneDoji, isSpinningTop, isMarubozu 
+} from './singleCandlePatterns';
 import { 
   isBullishEngulfing, isBearishEngulfing, 
-  isBullishHarami, isBearishHarami 
+  isBullishHarami, isBearishHarami,
+  isPiercingLine, isDarkCloudCover
 } from './twoCandlePatterns';
+import {
+  isEveningStar, isMorningStar,
+  isThreeWhiteSoldiers, isThreeBlackCrows
+} from './threeCandlePatterns';
 
 // الوظيفة الرئيسية للكشف عن أنماط الشموع
 export const detectCandlePatterns = (data: PriceData[]): PatternResult[] => {
@@ -16,6 +24,7 @@ export const detectCandlePatterns = (data: PriceData[]): PatternResult[] => {
   const patterns: PatternResult[] = [];
   const lastCandle = data[data.length - 1];
   const lastTwoCandles = data.slice(-2);
+  const lastThreeCandles = data.slice(-3);
   
   // التحقق من الأنماط المختلفة
   
@@ -44,6 +53,52 @@ export const detectCandlePatterns = (data: PriceData[]): PatternResult[] => {
       signal: 'صاعد',
       confidence: 0.65,
       description: 'شمعة مطرقة مقلوبة قد تشير إلى انعكاس صعودي محتمل'
+    });
+  }
+  
+  if (isShootingStar(lastCandle)) {
+    patterns.push({
+      pattern: 'ShootingStar',
+      signal: 'هابط',
+      confidence: 0.7,
+      description: 'نمط النجمة الساقطة يشير إلى احتمال انعكاس هبوطي بعد صعود'
+    });
+  }
+  
+  if (isDragonFlyDoji(lastCandle)) {
+    patterns.push({
+      pattern: 'DragonFlyDoji',
+      signal: 'صاعد',
+      confidence: 0.65,
+      description: 'دوجي دراجون فلاي يشير غالبًا إلى انعكاس صعودي محتمل'
+    });
+  }
+  
+  if (isGravestoneDoji(lastCandle)) {
+    patterns.push({
+      pattern: 'GravestoneDoji',
+      signal: 'هابط',
+      confidence: 0.65,
+      description: 'دوجي جريفستون يشير غالبًا إلى انعكاس هبوطي محتمل'
+    });
+  }
+  
+  if (isSpinningTop(lastCandle)) {
+    patterns.push({
+      pattern: 'SpinningTop',
+      signal: 'محايد',
+      confidence: 0.5,
+      description: 'شمعة رأس المغزل تشير إلى التردد في السوق وعدم اليقين'
+    });
+  }
+  
+  if (isMarubozu(lastCandle)) {
+    const signal = lastCandle.close > lastCandle.open ? 'صاعد' : 'هابط';
+    patterns.push({
+      pattern: 'Marubozu',
+      signal,
+      confidence: 0.75,
+      description: `شمعة ماروبوزو ${signal === 'صاعد' ? 'صعودية' : 'هبوطية'} تشير إلى سيطرة قوية للمشترين${signal === 'صاعد' ? '' : '/البائعين'}`
     });
   }
   
@@ -84,7 +139,60 @@ export const detectCandlePatterns = (data: PriceData[]): PatternResult[] => {
     });
   }
   
-  // إضافة المزيد من الأنماط حسب الحاجة
+  if (isPiercingLine(lastTwoCandles)) {
+    patterns.push({
+      pattern: 'PiercingLine',
+      signal: 'صاعد',
+      confidence: 0.75,
+      description: 'نمط خط الاختراق يشير إلى انعكاس صعودي محتمل بعد اتجاه هابط'
+    });
+  }
+  
+  if (isDarkCloudCover(lastTwoCandles)) {
+    patterns.push({
+      pattern: 'DarkCloudCover',
+      signal: 'هابط',
+      confidence: 0.75,
+      description: 'نمط السحابة الداكنة يشير إلى انعكاس هبوطي محتمل بعد اتجاه صاعد'
+    });
+  }
+  
+  // أنماط الثلاث شموع
+  if (isEveningStar(lastThreeCandles)) {
+    patterns.push({
+      pattern: 'EveningStar',
+      signal: 'هابط',
+      confidence: 0.85,
+      description: 'نمط نجمة المساء يشير إلى انعكاس هبوطي قوي بعد اتجاه صاعد'
+    });
+  }
+  
+  if (isMorningStar(lastThreeCandles)) {
+    patterns.push({
+      pattern: 'MorningStar',
+      signal: 'صاعد',
+      confidence: 0.85,
+      description: 'نمط نجمة الصباح يشير إلى انعكاس صعودي قوي بعد اتجاه هابط'
+    });
+  }
+  
+  if (isThreeWhiteSoldiers(lastThreeCandles)) {
+    patterns.push({
+      pattern: 'ThreeWhiteSoldiers',
+      signal: 'صاعد',
+      confidence: 0.9,
+      description: 'نمط ثلاثة جنود بيض يشير إلى استمرار قوي للاتجاه الصاعد'
+    });
+  }
+  
+  if (isThreeBlackCrows(lastThreeCandles)) {
+    patterns.push({
+      pattern: 'ThreeBlackCrows',
+      signal: 'هابط',
+      confidence: 0.9,
+      description: 'نمط ثلاثة غربان سود يشير إلى استمرار قوي للاتجاه الهابط'
+    });
+  }
   
   return patterns;
 };
