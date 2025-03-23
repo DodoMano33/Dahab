@@ -82,6 +82,36 @@ const predictPriceWithLinearRegression = (prices: number[], daysAhead: number = 
 };
 
 /**
+ * تنفيذ خوارزمية ARIMA مبسطة للتنبؤ
+ * نسخة مبسطة من نموذج ARIMA للتنبؤ بالأسعار
+ * @param prices - مصفوفة الأسعار التاريخية
+ * @param daysAhead - عدد الأيام للتنبؤ في المستقبل
+ * @returns السعر المتوقع
+ */
+const predictPriceWithARIMA = (prices: number[], daysAhead: number = 1): number => {
+  if (prices.length < 30) {
+    return prices[prices.length - 1];
+  }
+  
+  // حساب الفروق من الدرجة الأولى
+  const differences: number[] = [];
+  for (let i = 1; i < prices.length; i++) {
+    differences.push(prices[i] - prices[i-1]);
+  }
+  
+  // حساب متوسط الفروق
+  const meanDifference = differences.reduce((sum, diff) => sum + diff, 0) / differences.length;
+  
+  // التنبؤ باستخدام المتوسط المتحرك للفروق
+  let prediction = prices[prices.length - 1];
+  for (let i = 0; i < daysAhead; i++) {
+    prediction += meanDifference;
+  }
+  
+  return prediction;
+};
+
+/**
  * التنبؤ باتجاه السعر والسعر المستقبلي باستخدام مجموعة من الخوارزميات
  * @param historicalPrices - مصفوفة الأسعار التاريخية
  * @param timeframe - الإطار الزمني المستخدم
@@ -118,8 +148,27 @@ export const predictFuturePrice = (
   // التنبؤ باستخدام الانحدار الخطي
   const lrPrediction = predictPriceWithLinearRegression(historicalPrices, daysAhead);
   
-  // استخدام متوسط التنبؤات
-  const finalPrediction = (maPrediction + lrPrediction) / 2;
+  // التنبؤ باستخدام ARIMA مبسطة
+  const arimaPrediction = predictPriceWithARIMA(historicalPrices, daysAhead);
+  
+  // استخدام متوسط التنبؤات المرجح
+  // إعطاء وزن أكبر للانحدار الخطي في الأطر الزمنية الأطول
+  let lrWeight = 1.0;
+  if (timeframe.includes('1d') || timeframe.includes('1w')) {
+    lrWeight = 1.5;
+  }
+  
+  // إعطاء وزن أكبر لـ ARIMA في الأطر القصيرة
+  let arimaWeight = 1.0;
+  if (timeframe.includes('1h') || timeframe.includes('5m')) {
+    arimaWeight = 1.5;
+  }
+  
+  const finalPrediction = (
+    maPrediction + 
+    lrPrediction * lrWeight + 
+    arimaPrediction * arimaWeight
+  ) / (2 + lrWeight + arimaWeight);
   
   // حساب مستوى الثقة
   const confidence = estimatePredictionConfidence(historicalPrices);
@@ -139,7 +188,7 @@ export const predictFuturePrice = (
     predictedPrice: Number(finalPrediction.toFixed(2)),
     predictedDirection,
     confidence,
-    algorithm: "متوسط خوارزميات متعددة (المتوسط المتحرك، الانحدار الخطي)"
+    algorithm: "مزيج من المتوسط المتحرك، الانحدار الخطي، وARIMA"
   };
 };
 
