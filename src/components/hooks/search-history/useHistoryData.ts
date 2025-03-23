@@ -32,7 +32,7 @@ export function useHistoryData() {
       setSearchHistory(data);
     } catch (error) {
       console.error("Error fetching search history:", error);
-      toast.error("تعذر جلب سجل البحث، سيتم إعادة المحاولة لاحقًا");
+      toast.error("تعذر جلب سجل البحث، سيتم إعادة المحاولة لاحقًا", { duration: 1000 });
     } finally {
       setIsRefreshing(false);
     }

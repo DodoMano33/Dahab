@@ -96,7 +96,7 @@ export function useFetchHistory() {
       return formattedHistory;
     } catch (error) {
       console.error("خطأ في جلب سجل البحث:", error);
-      toast.error("حدث خطأ أثناء جلب سجل البحث");
+      toast.error("حدث خطأ أثناء جلب سجل البحث", { duration: 1000 });
       return [];
     } finally {
       setIsRefreshing(false);

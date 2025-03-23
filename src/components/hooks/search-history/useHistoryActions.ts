@@ -25,20 +25,20 @@ export function useHistoryActions() {
         // تحقق من نوع الخطأ للتعامل معه بشكل أفضل
         if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
           console.error("خطأ في الاتصال بالشبكة:", error);
-          toast.error("تعذر الاتصال بقاعدة البيانات، يرجى التحقق من اتصالك بالإنترنت");
+          toast.error("تعذر الاتصال بقاعدة البيانات، يرجى التحقق من اتصالك بالإنترنت", { duration: 1000 });
         } else {
           console.error("خطأ في حذف العنصر:", error);
-          toast.error("حدث خطأ أثناء حذف العنصر");
+          toast.error("حدث خطأ أثناء حذف العنصر", { duration: 1000 });
         }
         return false;
       }
 
-      toast.success("تم حذف العنصر بنجاح");
+      toast.success("تم حذف العنصر بنجاح", { duration: 1000 });
       console.log("تم حذف العنصر بنجاح:", id);
       return true;
     } catch (error) {
       console.error("خطأ في handleDeleteHistoryItem:", error);
-      toast.error("حدث خطأ أثناء حذف العنصر");
+      toast.error("حدث خطأ أثناء حذف العنصر", { duration: 1000 });
       return false;
     }
   };

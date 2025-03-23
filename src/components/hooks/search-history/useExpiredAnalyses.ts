@@ -50,7 +50,7 @@ export function useExpiredAnalyses(searchHistory: SearchHistoryItem[], updateHis
         console.log(`تم حذف ${expiredItems.length} تحليل منتهي بنجاح`);
         
         if (expiredItems.length > 0) {
-          toast.info(`تم حذف ${expiredItems.length} تحليل منتهي`);
+          toast.info(`تم حذف ${expiredItems.length} تحليل منتهي`, { duration: 1000 });
         }
       }
     } catch (error) {
