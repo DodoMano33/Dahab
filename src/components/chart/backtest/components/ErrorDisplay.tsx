@@ -29,6 +29,8 @@ export const ErrorDisplay = ({
         return 'تعذر الوصول للخادم - تحقق من اتصالك بالإنترنت';
       } else if (errorDetails.includes('Edge Function')) {
         return 'تعذر الاتصال بخدمة فحص التحليلات - حاول مرة أخرى لاحقًا';
+      } else if (errorDetails.includes('timeout') || errorDetails.includes('انتهت مهلة')) {
+        return 'انتهت مهلة الاتصال بالخادم - يرجى المحاولة مرة أخرى';
       }
       return errorDetails;
     }
@@ -46,7 +48,7 @@ export const ErrorDisplay = ({
   const handleRetry = () => {
     // إطلاق حدث لإعادة المحاولة يدويًا
     window.dispatchEvent(new CustomEvent('manual-check-analyses'));
-    toast.info('جارٍ إعادة المحاولة...', { duration: 1000 });
+    toast.info('جارٍ إعادة المحاولة...', { duration: 3000 });
   };
   
   return (
@@ -57,7 +59,7 @@ export const ErrorDisplay = ({
           <span>حدث خطأ في الاتصال: {getErrorMessage()}</span>
           <button 
             onClick={handleRetry}
-            className="text-blue-500 hover:underline text-xs ml-2"
+            className="text-blue-500 hover:underline text-xs ml-2 px-2 py-1 rounded border border-blue-200 hover:bg-blue-50"
           >
             إعادة المحاولة
           </button>
@@ -66,8 +68,8 @@ export const ErrorDisplay = ({
       
       <div className="flex items-center text-xs mt-1 gap-1 text-blue-600 cursor-pointer hover:underline" 
            onClick={() => toast.info('معلومات تشخيصية', {
-             description: Object.entries(diagnosticInfo).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n'),
-             duration: 1000
+             description: Object.entries(diagnosticInfo || {}).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n'),
+             duration: 5000
            })}>
         <AlertTriangle size={14} />
         <span>عرض معلومات تشخيصية</span>

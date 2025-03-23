@@ -41,38 +41,22 @@ export const fetchAnalysesWithCurrentPrice = async (
     // إضافة إشارة إلغاء من AbortController
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 20000); // زيادة وقت الانتظار إلى 20 ثانية
+    }, 30000); // زيادة وقت الانتظار إلى 30 ثانية
     
     try {
-      // استخدام fetch مباشرة بدلاً من supabase.functions.invoke
-      const url = 'https://nhvkviofvefwbvditgxo.supabase.co/functions/v1/auto-check-analyses';
-      
-      const authSession = await supabase.auth.getSession();
-      const token = authSession.data?.session?.access_token;
-      
-      if (!token) {
-        throw new Error('لم يتم العثور على جلسة المستخدم');
-      }
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmt2aW9mdmVmd2J2ZGl0Z3hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzQ4MTcsImV4cCI6MjA1MTIxMDgxN30.TFOufP4Cg5A0Hev_2GNUbRFSW4GRxWzC1RKBYwFxB3U',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody),
+      // استخدام فنكشن invoke مباشرة بدلاً من الفيتش العادي
+      const { data, error } = await supabase.functions.invoke('auto-check-analyses', {
+        body: requestBody,
         signal: controller.signal
       });
       
       clearTimeout(timeout);
       
-      if (!response.ok) {
-        console.error(`خطأ في استجابة الخادم: ${response.status} ${response.statusText}`);
-        throw new Error(`خطأ في استجابة الخادم: ${response.status} ${response.statusText}`);
+      if (error) {
+        console.error(`خطأ في استجابة الخادم: ${error.message}`);
+        throw new Error(`خطأ في استجابة الخادم: ${error.message}`);
       }
       
-      const data = await response.json();
       console.log('تم استلام استجابة من auto-check-analyses:', data);
       return data;
     } catch (fetchError) {

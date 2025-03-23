@@ -35,13 +35,19 @@ export const useAnalysisChecker = ({
   // Register event listeners for manual checks
   useManualCheckEvents(handleManualCheck);
   
-  // Set up automated checking interval (30 seconds)
+  // Set up automated checking interval (زيادة الفترة إلى 60 ثانية للتقليل من الخطأ)
   useIntervalControl(() => {
     const price = currentPriceRef.current;
     
-    // Skip auto check if there was a recent error (within last 2 minutes)
-    if (lastErrorTime && (new Date().getTime() - lastErrorTime.getTime() < 120000)) {
+    // Skip auto check if there was a recent error (within last 5 minutes)
+    if (lastErrorTime && (new Date().getTime() - lastErrorTime.getTime() < 300000)) {
       console.log('Skipping auto check due to recent error');
+      return;
+    }
+    
+    // Skip auto check if there are too many consecutive errors
+    if (consecutiveErrors > 3) {
+      console.log('Skipping auto check due to too many consecutive errors', consecutiveErrors);
       return;
     }
     
@@ -52,7 +58,7 @@ export const useAnalysisChecker = ({
       console.warn('Auto check skipped, current price is null');
       checkAnalyses({ price: null, symbol });
     }
-  }, 30000, [symbol, currentPriceRef.current, lastErrorTime, consecutiveErrors]);
+  }, 60000, [symbol, currentPriceRef.current, lastErrorTime, consecutiveErrors]);
   
   // Clean up all resources on unmount (handled by the hooks internally)
   
@@ -60,6 +66,10 @@ export const useAnalysisChecker = ({
     isChecking,
     lastErrorTime,
     consecutiveErrors,
-    retryCount
+    retryCount,
+    manualCheck: handleManualCheck
   };
 };
+
+// تصدير افتراضي للتوافق
+export default useAnalysisChecker;

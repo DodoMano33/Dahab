@@ -17,7 +17,7 @@ export const handleRetryLogic = (
     retryCountRef.current++;
   }
   
-  const retryDelay = isManualCheck ? 2000 : 3000; // تأخير ثابت لتقليل الضغط على الشبكة
+  const retryDelay = isManualCheck ? 3000 : 5000; // زيادة التأخير لتقليل الضغط على الشبكة
   
   console.log(`${isManualCheck ? 'إعادة محاولة يدوية' : `محاولة ${retryCountRef.current}/${maxRetries}`} ستحدث خلال ${retryDelay}مللي ثانية`);
   
@@ -52,6 +52,15 @@ export const handleFetchError = (
   
   // إظهار رسالة للمستخدم في حالة الفحص اليدوي
   if (isManualCheck) {
-    toast.error(`فشل فحص التحليلات: ${fetchError instanceof Error ? fetchError.message : 'خطأ غير معروف'}`);
+    let errorMessage = fetchError instanceof Error ? fetchError.message : 'خطأ غير معروف';
+    
+    // تبسيط رسائل الخطأ للمستخدم
+    if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Failed to send')) {
+      errorMessage = 'تعذر الاتصال بالخادم - تحقق من اتصالك بالإنترنت';
+    } else if (errorMessage.includes('Unauthorized') || errorMessage.includes('auth')) {
+      errorMessage = 'خطأ في تسجيل الدخول - يرجى إعادة تسجيل الدخول';
+    }
+    
+    toast.error(`فشل فحص التحليلات: ${errorMessage}`, { duration: 3000 });
   }
 };

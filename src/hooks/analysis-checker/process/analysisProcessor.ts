@@ -52,7 +52,7 @@ export const useAnalysisProcessor = () => {
       // فحص المصادقة أولاً
       const { data: authSession } = await supabase.auth.getSession();
       if (!authSession.session) {
-        toast.error('يجب تسجيل الدخول لاستخدام هذه الميزة');
+        toast.error('يجب تسجيل الدخول لاستخدام هذه الميزة', { duration: 3000 });
         throw new Error('غير مسجل الدخول');
       }
       
@@ -77,7 +77,7 @@ export const useAnalysisProcessor = () => {
         dispatchAnalysisSuccessEvent(data);
         
         if (isManualCheck) {
-          toast.success('تم فحص التحليلات بنجاح');
+          toast.success('تم فحص التحليلات بنجاح', { duration: 3000 });
         }
         
         return data;
@@ -100,7 +100,7 @@ export const useAnalysisProcessor = () => {
           } else {
             // إظهار رسالة الخطأ للمستخدم
             if (isManualCheck) {
-              toast.error('حدث خطأ في المصادقة. يرجى تسجيل الخروج وإعادة الدخول.');
+              toast.error('حدث خطأ في المصادقة. يرجى تسجيل الخروج وإعادة الدخول.', { duration: 3000 });
             }
           }
         }
@@ -123,7 +123,7 @@ export const useAnalysisProcessor = () => {
         
         // إذا كان فحصًا يدويًا، أظهر رسالة للمستخدم
         if (isManualCheck) {
-          toast.error(`فشل فحص التحليلات: ${fetchError instanceof Error ? fetchError.message : 'خطأ غير معروف'}`);
+          toast.error(`فشل فحص التحليلات: ${fetchError instanceof Error ? fetchError.message : 'خطأ غير معروف'}`, { duration: 3000 });
         }
         
         throw fetchError;
@@ -138,7 +138,7 @@ export const useAnalysisProcessor = () => {
       
       // إظهار رسالة للمستخدم في حالة الفحص اليدوي
       if (isManualCheck) {
-        toast.error(`فشل فحص التحليلات: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+        toast.error(`فشل فحص التحليلات: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`, { duration: 3000 });
       }
       
       throw error;
