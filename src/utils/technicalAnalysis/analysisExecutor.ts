@@ -1,5 +1,3 @@
-
-
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -19,6 +17,8 @@ import { analyzeFibonacciChart } from "@/components/chart/analysis/fibonacciAnal
 import { analyzeFibonacciAdvancedChart } from "@/components/chart/analysis/fibonacciAdvancedAnalysis";
 import { analyzeDailyChart } from "@/components/chart/analysis/dailyAnalysis";
 import { getStrategyName } from "./analysisTypeMap";
+import { analyzeMLChart, analyzeMultiTimeframeML } from "@/components/chart/analysis/mlAnalysis";
+import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
 
 /**
  * Execute a specific analysis based on the given type
@@ -36,6 +36,20 @@ export const executeSpecificAnalysis = async (
   console.log(`Normalized type for analysis: ${normalizedType}`);
   
   try {
+    // جلب البيانات التاريخية للتحليل المتقدم
+    let historicalPrices: number[] = [];
+    if (normalizedType.includes('ml') || 
+        normalizedType.includes('تعلمآلي') || 
+        normalizedType.includes('شبكاتعصبية') ||
+        normalizedType.includes('متعددالأطر')) {
+      console.log("جلب البيانات التاريخية لتحليل التعلم الآلي");
+      try {
+        historicalPrices = await fetchHistoricalPrices('XAUUSD', timeframe);
+      } catch (error) {
+        console.error("خطأ في جلب البيانات التاريخية:", error);
+      }
+    }
+    
     switch (normalizedType) {
       case "scalping":
       case "مضاربة":
@@ -120,6 +134,31 @@ export const executeSpecificAnalysis = async (
         console.log("Executing Fibonacci analysis");
         return await analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         
+      case "ml":
+      case "تعلمآلي":
+      case "machinelearning":
+        console.log("Executing Machine Learning analysis");
+        return await analyzeMLChart(chartImage, currentPrice, timeframe, historicalPrices);
+      
+      case "multitimeframe":
+      case "متعددالأطر":
+      case "mtf":
+        console.log("Executing Multi-Timeframe ML analysis");
+        
+        // جلب بيانات تاريخية لعدة أطر زمنية
+        const timeframes = ["1h", "4h", "1d"];
+        const historicalPricesMap: { [timeframe: string]: number[] } = {};
+        
+        for (const tf of timeframes) {
+          try {
+            historicalPricesMap[tf] = await fetchHistoricalPrices('XAUUSD', tf);
+          } catch (error) {
+            console.error(`خطأ في جلب البيانات التاريخية للإطار الزمني ${tf}:`, error);
+          }
+        }
+        
+        return await analyzeMultiTimeframeML(chartImage, currentPrice, timeframe, historicalPricesMap);
+        
       case "daily":
       case "يومي":
         console.log("Executing Daily analysis");
@@ -160,4 +199,3 @@ export const executeMultipleAnalyses = async (
     return [];
   }
 };
-
