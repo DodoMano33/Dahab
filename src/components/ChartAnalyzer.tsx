@@ -146,5 +146,5 @@ export const ChartAnalyzer = () => {
   );
 };
 
-// استخدام default export للتوافق مع التحميل البطيء
+// إضافة export default للمكون ذاته
 export default ChartAnalyzer;

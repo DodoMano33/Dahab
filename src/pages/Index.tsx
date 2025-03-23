@@ -1,3 +1,4 @@
+
 import { useState, useEffect, lazy, Suspense, memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -10,8 +11,8 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام التحميل البطيء للمكونات الثقيلة
-const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer").then(module => ({ default: module.ChartAnalyzer })));
+// تعديل استيراد ChartAnalyzer لاستخدام default export
+const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء
