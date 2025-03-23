@@ -32,5 +32,5 @@ export const PRECIOUS_METALS = {
   'XAGUSD': { base: 'XAG', target: 'USD' }, // الفضة/دولار
 } as const;
 
-// إعدادات الاستطلاع - تم تغيير القيمة من 60000 (1 دقيقة) إلى 60000 (1 دقيقة) - لم يتغير
+// إعدادات الاستطلاع
 export const POLLING_INTERVAL = 60000; // 1 دقيقة بالمللي ثانية
