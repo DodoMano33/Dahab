@@ -60,5 +60,6 @@ export {
   getPatternStrengthByVolume
 } from './utils';
 
-// Re-export pattern detector
+// Re-export pattern detector and detector functions
 export * from './patternDetector';
+export * from './detectors';
