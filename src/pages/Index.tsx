@@ -5,13 +5,12 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, HelpCircle } from "lucide-react";
-import { useBackTest } from "@/components/hooks/useBackTest";
+import { RefreshCw } from "lucide-react";
 import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// تعديل استيراد ChartAnalyzer لاستخدام default export
+// تعديل استيراد ChartAnalyzer لاستخدام default export - مهم جدًا
 const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
@@ -57,14 +56,8 @@ function Index() {
   const location = useLocation();
   const { isLoggedIn, user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { triggerManualCheck } = useBackTest(); // Keep this import but don't use the functionality
   const [activePage, setActivePage] = useState<'analysis' | 'dashboard'>('analysis');
 
-  // Keep this function but make it do nothing
-  const handleManualCheck = () => {
-    console.log("تم إيقاف وظيفة فحص التحليلات");
-  };
-  
   // استخدام useEffect لمعالجة تغيير المسار
   useEffect(() => {
     if (location.pathname === '/dashboard') {

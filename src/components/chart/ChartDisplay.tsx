@@ -1,3 +1,4 @@
+
 import { Canvas } from "../Canvas";
 import { AnalysisResult } from "../AnalysisResult";
 import { AnalysisData } from "@/types/analysis";
@@ -20,7 +21,7 @@ export const ChartDisplay = ({
   symbol,
   currentAnalysis 
 }: ChartDisplayProps) => {
-  if (!image && !analysis) return null;
+  if (!image && !analysis && !isAnalyzing) return null;
 
   console.log("ChartDisplay - Analysis Data:", analysis); // إضافة سجل للتأكد من وصول البيانات
 
@@ -42,10 +43,10 @@ export const ChartDisplay = ({
         </div>
       )}
 
-      {analysis && (
+      {(analysis || isAnalyzing) && (
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
-          <AnalysisResult analysis={analysis} isLoading={isAnalyzing} />
+          <AnalysisResult analysis={analysis!} isLoading={isAnalyzing} />
         </div>
       )}
     </div>
