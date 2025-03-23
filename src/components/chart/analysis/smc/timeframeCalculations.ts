@@ -1,3 +1,4 @@
+
 export const getTimeframeStopLossMultiplier = (timeframe: string): number => {
   // نسب وقف الخسارة معدلة حسب استراتيجية SMC
   switch (timeframe) {

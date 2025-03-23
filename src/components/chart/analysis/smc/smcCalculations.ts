@@ -1,3 +1,4 @@
+
 import { getTimeframeMultipliers } from "@/utils/technicalAnalysis/timeframeMultipliers";
 
 export const calculateSMCStopLoss = (

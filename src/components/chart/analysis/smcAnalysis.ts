@@ -9,6 +9,12 @@ import {
   calculateFibonacciLevels
 } from "@/utils/technicalAnalysis/indicators";
 import { detectCandlePatterns, convertToPriceData } from "@/utils/technicalAnalysis/candlePatterns";
+import {
+  calculateSMCStopLoss,
+  calculateSMCTargets,
+  calculateSMCEntryPoint,
+  detectSMCPattern
+} from "./smc/smcCalculations";
 
 export const analyzeSMCChart = async (
   chartImage: string,
@@ -52,8 +58,14 @@ export const analyzeSMCChart = async (
   // حساب الدعم والمقاومة
   const { support, resistance } = calculateSupportResistance(simulatedPrices);
   
-  // حساب وقف الخسارة المثالي
-  const stopLoss = calculateOptimalStopLoss(simulatedPrices, direction as "صاعد" | "هابط" | "محايد");
+  // استخدام حسابات SMC المخصصة
+  const stopLoss = calculateSMCStopLoss(
+    currentPrice, 
+    direction as "صاعد" | "هابط" | "محايد", 
+    support, 
+    resistance, 
+    timeframe
+  );
   
   // حساب مستويات فيبوناتشي
   const highPrice = Math.max(...simulatedPrices.slice(-50));
@@ -64,62 +76,35 @@ export const analyzeSMCChart = async (
     direction as "صاعد" | "هابط" | "محايد"
   );
   
-  // تحديد أهداف السعر بناءً على مستويات فيبوناتشي
-  let targets = [];
+  // حساب الأهداف المبنية على السعر باستخدام حسابات SMC
+  const smcTargetPrices = calculateSMCTargets(
+    currentPrice, 
+    direction as "صاعد" | "هابط" | "محايد", 
+    support, 
+    resistance, 
+    timeframe
+  );
   
-  if (direction === "صاعد") {
-    // للاتجاه الصاعد، استخدم مستويات أعلى من السعر الحالي
-    const upLevels = fibLevels.filter(level => level.price > currentPrice).slice(0, 3);
-    
-    targets = upLevels.map((level, index) => ({
-      price: level.price,
-      expectedTime: getExpectedTime(timeframe, index)
-    }));
-  } else if (direction === "هابط") {
-    // للاتجاه الهابط، استخدم مستويات أقل من السعر الحالي
-    const downLevels = fibLevels.filter(level => level.price < currentPrice).slice(0, 3);
-    
-    targets = downLevels.map((level, index) => ({
-      price: level.price,
-      expectedTime: getExpectedTime(timeframe, index)
-    }));
-  } else {
-    // للاتجاه المحايد، استخدم مستويات حول السعر الحالي
-    targets = [
-      {
-        price: currentPrice * 1.02,
-        expectedTime: getExpectedTime(timeframe, 0)
-      },
-      {
-        price: currentPrice * 0.98,
-        expectedTime: getExpectedTime(timeframe, 1)
-      }
-    ];
-  }
+  // تحويل الأسعار إلى أهداف مع أوقات متوقعة
+  const targets = smcTargetPrices.map((price, index) => ({
+    price,
+    expectedTime: getExpectedTime(timeframe, index)
+  }));
   
-  // تأكد من أن لدينا على الأقل هدفًا واحدًا
-  if (targets.length === 0) {
-    const multipliers = getTimeframeMultipliers(timeframe);
-    targets = [
-      {
-        price: direction === "صاعد" ? currentPrice * (1 + multipliers[0]) : currentPrice * (1 - multipliers[0]),
-        expectedTime: getExpectedTime(timeframe, 0)
-      }
-    ];
-  }
+  // تحديد نقطة الدخول المثالية باستخدام حسابات SMC
+  const bestEntry = calculateSMCEntryPoint(
+    currentPrice, 
+    direction as "صاعد" | "هابط" | "محايد", 
+    support, 
+    resistance, 
+    timeframe
+  );
   
-  // تحديد نقطة الدخول المثالية
-  const bestEntry = {
-    price: direction === "صاعد" 
-      ? Math.min(currentPrice * 0.995, support * 1.005) 
-      : Math.max(currentPrice * 1.005, resistance * 0.995),
-    reason: direction === "صاعد"
-      ? "نقطة دخول بالقرب من مستوى الدعم مع هيكل سوق صاعد"
-      : "نقطة دخول بالقرب من مستوى المقاومة مع هيكل سوق هابط"
-  };
-  
-  // تحديد نمط السوق استنادًا إلى أنماط الشموع المكتشفة
-  let patternDescription = `هيكل سوق ${direction === "صاعد" ? "صاعد" : direction === "هابط" ? "هابط" : "محايد"}`;
+  // تحديد نمط السوق استنادًا إلى استراتيجية SMC
+  let patternDescription = detectSMCPattern(
+    direction as "صاعد" | "هابط" | "محايد",
+    timeframe
+  );
   
   if (patterns.length > 0) {
     const strongestPattern = patterns.sort((a, b) => b.confidence - a.confidence)[0];
@@ -128,7 +113,7 @@ export const analyzeSMCChart = async (
   
   const analysisResult: AnalysisData = {
     pattern: patternDescription,
-    direction: direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction,
+    direction: direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction as "صاعد" | "هابط" | "محايد",
     currentPrice,
     support,
     resistance,
