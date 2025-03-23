@@ -5,9 +5,9 @@ import {
   calculateTargets,
   calculateStopLoss,
   calculateSupportResistance,
-  detectTrend,
   calculateBestEntryPoint,
-} from "@/utils/technicalAnalysis";
+} from "@/utils/technicalAnalysis/calculations";
+import { detectTrend } from "@/utils/technicalAnalysis/indicators/trendIndicators";
 import { addDays } from "date-fns";
 
 export const analyzeDailyChart = async (

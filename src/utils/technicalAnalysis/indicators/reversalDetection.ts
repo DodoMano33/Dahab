@@ -1,194 +1,109 @@
 
 /**
- * وحدة اكتشاف نقاط الانعكاس في الاتجاه
- * تحتوي على خوارزميات للكشف عن نقاط الانعكاس المحتملة في الأسعار
+ * وحدة اكتشاف نقاط انعكاس الاتجاه
+ * تتضمن خوارزميات متخصصة للعثور على نقاط الانعكاس المحتملة في بيانات السعر
  */
-
-import { calculateSMA, calculateEMA, calculateRSI } from '../indicators';
-import { calculateVolatility } from './volatility';
 
 /**
- * اكتشاف نقاط الانعكاس المحتملة في الاتجاه
+ * اكتشاف نقاط انعكاس الاتجاه المحتملة
  * @param prices - مصفوفة الأسعار التاريخية
- * @param sensitivity - حساسية الكشف (بين 0 و 1، القيمة الافتراضية 0.5)
+ * @param threshold - عتبة الحساسية (افتراضي: 0.02 أو 2%)
  * @returns مصفوفة من الأسعار التي تمثل نقاط انعكاس محتملة
  */
-export function detectTrendReversalPoints(
+export const detectTrendReversalPoints = (
   prices: number[],
-  sensitivity: number = 0.5
-): number[] {
+  threshold: number = 0.02
+): number[] => {
   if (prices.length < 10) {
     return [];
   }
-
+  
   const reversalPoints: number[] = [];
-  const volatility = calculateVolatility(prices);
   
-  // حساب مؤشرات فنية تساعد في تحديد نقاط الانعكاس
-  const sma20 = calculateSMA(prices, 20);
-  const sma50 = calculateSMA(prices, 50);
-  const rsi = calculateRSI(prices);
-  
-  // الحد الأدنى للتغير الذي يعتبر انعكاسًا محتملاً (يتكيف مع التقلب)
-  const minChangeThreshold = volatility * 2 * (1 + sensitivity);
-  
-  for (let i = 20; i < prices.length - 1; i++) {
-    // البحث عن قمم وقيعان محتملة
-    const isPotentialTop = 
-      prices[i] > prices[i-1] && 
-      prices[i] > prices[i+1] && 
-      prices[i] > prices[i-2] && 
-      prices[i] > prices[i-3];
+  // البحث عن القمم والقيعان المحلية
+  for (let i = 3; i < prices.length - 3; i++) {
+    // قمة محلية محتملة
+    if (prices[i] > prices[i-1] && prices[i] > prices[i+1] && 
+        prices[i] > prices[i-2] && prices[i] > prices[i+2] && 
+        prices[i] > prices[i-3] && prices[i] > prices[i+3]) {
       
-    const isPotentialBottom = 
-      prices[i] < prices[i-1] && 
-      prices[i] < prices[i+1] && 
-      prices[i] < prices[i-2] && 
-      prices[i] < prices[i-3];
+      // حساب النسبة المئوية للانعكاس
+      const priorMove = (prices[i] - prices[i-3]) / prices[i-3];
+      const afterMove = (prices[i+3] - prices[i]) / prices[i];
+      
+      // تأكيد الانعكاس إذا كان هناك تغيير كبير في الاتجاه
+      if (priorMove > threshold && afterMove < -threshold) {
+        reversalPoints.push(prices[i]);
+      }
+    }
     
-    // استخدام RSI للتأكيد (ذروة شراء أو ذروة بيع)
-    const isRsiOverbought = rsi[i - 14] > 70; // تعديل الفهرس لمراعاة حساب RSI
-    const isRsiOversold = rsi[i - 14] < 30;
-    
-    // استخدام تقاطع المتوسطات المتحركة كمؤشر إضافي
-    const isSMACrossing = 
-      (i >= 50 && // تأكد من وجود بيانات كافية لـ SMA-50
-       ((sma20[i - 20] > sma50[i - 50] && sma20[i - 21] <= sma50[i - 51]) || // تقاطع صعودي
-        (sma20[i - 20] < sma50[i - 50] && sma20[i - 21] >= sma50[i - 51]))); // تقاطع هبوطي
-    
-    // تغير السعر الكبير كمؤشر إضافي
-    const priceChange = Math.abs(prices[i] - prices[i-5]) / prices[i-5];
-    const isSignificantChange = priceChange > minChangeThreshold;
-    
-    // الجمع بين المؤشرات لتحديد نقاط الانعكاس المحتملة
-    if ((isPotentialTop && isRsiOverbought) || 
-        (isPotentialBottom && isRsiOversold) || 
-        (isSMACrossing && isSignificantChange)) {
-      reversalPoints.push(prices[i]);
+    // قاع محلي محتمل
+    if (prices[i] < prices[i-1] && prices[i] < prices[i+1] && 
+        prices[i] < prices[i-2] && prices[i] < prices[i+2] && 
+        prices[i] < prices[i-3] && prices[i] < prices[i+3]) {
+      
+      // حساب النسبة المئوية للانعكاس
+      const priorMove = (prices[i-3] - prices[i]) / prices[i-3];
+      const afterMove = (prices[i] - prices[i+3]) / prices[i];
+      
+      // تأكيد الانعكاس إذا كان هناك تغيير كبير في الاتجاه
+      if (priorMove > threshold && afterMove < -threshold) {
+        reversalPoints.push(prices[i]);
+      }
     }
   }
   
   return reversalPoints;
-}
+};
 
 /**
- * اكتشاف قمم وقيعان السعر
- * @param prices - مصفوفة الأسعار التاريخية
- * @param lookbackPeriod - فترة النظر للخلف لتحديد القمم والقيعان
- * @returns كائن يحتوي على مصفوفتين: القمم والقيعان
+ * التحقق من وجود نموذج "ثلاثة جنود بيض" (Three White Soldiers)
+ * نموذج انعكاس صعودي
+ * @param prices - مصفوفة الأسعار
+ * @returns حالة وجود النموذج
  */
-export function detectPeaksAndTroughs(
-  prices: number[],
-  lookbackPeriod: number = 5
-): { peaks: number[], troughs: number[] } {
-  const peaks: number[] = [];
-  const troughs: number[] = [];
-  
-  // نحتاج على الأقل 2*lookbackPeriod+1 نقطة بيانات
-  if (prices.length < 2 * lookbackPeriod + 1) {
-    return { peaks, troughs };
+export const detectThreeWhiteSoldiers = (prices: number[]): boolean => {
+  if (prices.length < 6) {
+    return false;
   }
   
-  // البحث عن القمم والقيعان من خلال النظر إلى نقاط محددة قبل وبعد النقطة الحالية
-  for (let i = lookbackPeriod; i < prices.length - lookbackPeriod; i++) {
-    let isPeak = true;
-    let isTrough = true;
-    
-    // التحقق مما إذا كانت النقطة الحالية هي قمة
-    for (let j = i - lookbackPeriod; j < i; j++) {
-      if (prices[j] >= prices[i]) {
-        isPeak = false;
-        break;
-      }
-    }
-    
-    for (let j = i + 1; j <= i + lookbackPeriod; j++) {
-      if (prices[j] >= prices[i]) {
-        isPeak = false;
-        break;
-      }
-    }
-    
-    // التحقق مما إذا كانت النقطة الحالية هي قاع
-    for (let j = i - lookbackPeriod; j < i; j++) {
-      if (prices[j] <= prices[i]) {
-        isTrough = false;
-        break;
-      }
-    }
-    
-    for (let j = i + 1; j <= i + lookbackPeriod; j++) {
-      if (prices[j] <= prices[i]) {
-        isTrough = false;
-        break;
-      }
-    }
-    
-    if (isPeak) {
-      peaks.push(prices[i]);
-    }
-    
-    if (isTrough) {
-      troughs.push(prices[i]);
-    }
-  }
+  // أخذ آخر 6 أسعار
+  const recentPrices = prices.slice(-6);
   
-  return { peaks, troughs };
-}
+  // التحقق من وجود 3 شموع صاعدة متتالية بعد اتجاه هبوطي
+  const isDowntrendBefore = recentPrices[0] > recentPrices[2];
+  const candle1Up = recentPrices[3] > recentPrices[2];
+  const candle2Up = recentPrices[4] > recentPrices[3];
+  const candle3Up = recentPrices[5] > recentPrices[4];
+  
+  // التحقق من أن كل شمعة تفتح ضمن جسم الشمعة السابقة وتغلق أعلى
+  const progressiveHighs = recentPrices[5] > recentPrices[4] && recentPrices[4] > recentPrices[3];
+  
+  return isDowntrendBefore && candle1Up && candle2Up && candle3Up && progressiveHighs;
+};
 
 /**
- * تقييم قوة نقاط الانعكاس استنادًا إلى عدة مؤشرات
- * @param prices - مصفوفة الأسعار التاريخية
- * @param reversalPoints - نقاط الانعكاس المحتملة
- * @returns مصفوفة من نقاط الانعكاس مع تقييم قوتها
+ * التحقق من وجود نموذج "ثلاثة غربان سود" (Three Black Crows)
+ * نموذج انعكاس هبوطي
+ * @param prices - مصفوفة الأسعار
+ * @returns حالة وجود النموذج
  */
-export function evaluateReversalStrength(
-  prices: number[],
-  reversalPoints: number[]
-): { price: number, strength: number }[] {
-  return reversalPoints.map(point => {
-    // البحث عن موقع نقطة الانعكاس في مصفوفة الأسعار
-    const index = prices.findIndex(p => p === point);
-    
-    if (index === -1 || index < 14 || index >= prices.length - 1) {
-      return { price: point, strength: 0.5 }; // قيمة افتراضية إذا تعذر تقييم القوة
-    }
-    
-    // حساب RSI في نقطة الانعكاس
-    const rsi = calculateRSI(prices.slice(0, index + 1));
-    const rsiValue = rsi[rsi.length - 1];
-    
-    // حساب تقلب السعر قبل وبعد نقطة الانعكاس
-    const beforeVolatility = calculateVolatility(prices.slice(Math.max(0, index - 10), index));
-    const afterVolatility = calculateVolatility(prices.slice(index, Math.min(prices.length, index + 10)));
-    
-    // حساب التغير في السعر بعد نقطة الانعكاس
-    const priceChangeAfter = 
-      index < prices.length - 5 ? 
-      Math.abs(prices[index + 5] - point) / point : 
-      0;
-    
-    // تقييم القوة بناءً على مزيج من المؤشرات
-    let strength = 0.5; // قيمة أساسية
-    
-    // إضافة قوة استنادًا إلى قيمة RSI (كلما كانت القيمة أكثر تطرفًا، زادت قوة الانعكاس)
-    if (rsiValue > 80 || rsiValue < 20) {
-      strength += 0.3;
-    } else if (rsiValue > 70 || rsiValue < 30) {
-      strength += 0.2;
-    }
-    
-    // إضافة قوة استنادًا إلى التقلب (انخفاض التقلب بعد الانعكاس يشير إلى انعكاس قوي)
-    if (afterVolatility < beforeVolatility * 0.7) {
-      strength += 0.2;
-    }
-    
-    // إضافة قوة استنادًا إلى التغير في السعر بعد الانعكاس
-    if (priceChangeAfter > 0.02) {
-      strength += 0.2;
-    }
-    
-    // تحديد الحد الأقصى للقوة عند 1
-    return { price: point, strength: Math.min(1, strength) };
-  });
-}
+export const detectThreeBlackCrows = (prices: number[]): boolean => {
+  if (prices.length < 6) {
+    return false;
+  }
+  
+  // أخذ آخر 6 أسعار
+  const recentPrices = prices.slice(-6);
+  
+  // التحقق من وجود 3 شموع هابطة متتالية بعد اتجاه صعودي
+  const isUptrendBefore = recentPrices[0] < recentPrices[2];
+  const candle1Down = recentPrices[3] < recentPrices[2];
+  const candle2Down = recentPrices[4] < recentPrices[3];
+  const candle3Down = recentPrices[5] < recentPrices[4];
+  
+  // التحقق من أن كل شمعة تفتح ضمن جسم الشمعة السابقة وتغلق أدنى
+  const progressiveLows = recentPrices[5] < recentPrices[4] && recentPrices[4] < recentPrices[3];
+  
+  return isUptrendBefore && candle1Down && candle2Down && candle3Down && progressiveLows;
+};
