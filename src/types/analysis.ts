@@ -25,7 +25,9 @@ export type AnalysisType =
   | "نظرية هيكل السوق"
   | "يومي"
   | "مضاربة"
-  | "حركة السعر";
+  | "حركة السعر"
+  | "تعلم آلي"
+  | "تحليل متعدد الأطر الزمنية";
 
 export interface ImageData {
   height: number;
