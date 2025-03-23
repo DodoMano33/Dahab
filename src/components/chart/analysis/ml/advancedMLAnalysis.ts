@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { 
   calculateSupportResistance, 
@@ -133,7 +134,7 @@ export const deepLearningAnalysis = async (
   const direction = mtfAnalysis.overallDirection;
   
   // تحليل الدعم والمقاومة استنادًا إلى بيانات الإطار الزمني الحالي
-  const { support, resistance } = calculateSupportResistance(prices);
+  const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
   
   // حساب نسبة المخاطرة المناسبة استنادًا على التقلب المحسوب والثقة في التنبؤ
   const volatility = calculateVolatility(prices);
@@ -267,7 +268,7 @@ export const ensembleModelsAnalysis = async (
   );
   
   // تحديد الدعم والمقاومة باستخدام مزيج من التنبؤات
-  const { support, resistance } = calculateSupportResistance(prices);
+  const { support, resistance } = calculateSupportResistance(prices, currentPrice, direction, timeframe);
   
   // حساب وقف الخسارة استنادًا إلى التقلب والثقة
   const volatility = Math.max(

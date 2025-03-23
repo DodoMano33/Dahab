@@ -4,12 +4,7 @@ import { executeAnalysisBasedOnType } from "./processors/typeProcessor";
 import { createBaseAnalysisResult, mergeAnalysisResults } from "./processors/baseAnalysisBuilder";
 import { saveAnalysisToDatabase } from "./processors/databaseHandler";
 import { validateAnalysisInput, AnalysisInput } from "./processors/inputValidator";
-
-// تحديث تعريف النتيجة
-export interface AnalysisResult {
-  analysisResult: AnalysisData;
-  duration?: string;
-}
+import { AnalysisResult } from "@/components/chart/analysis/hooks/analysisState/useAnalysisResult";
 
 export const processChartAnalysis = async (input: AnalysisInput): Promise<AnalysisResult> => {
   try {
@@ -48,7 +43,9 @@ export const processChartAnalysis = async (input: AnalysisInput): Promise<Analys
     // إرجاع كائن النتيجة النهائي
     return {
       analysisResult,
-      duration: duration
+      duration: duration,
+      symbol: symbol,
+      currentPrice: providedPrice
     };
   } catch (error: any) {
     console.error("فشل في معالجة تحليل الشارت:", error);

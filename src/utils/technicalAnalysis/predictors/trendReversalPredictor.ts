@@ -4,11 +4,14 @@
  * هذا المحلل يحدد نقاط الانعكاس المحتملة في الاتجاه بناءً على البيانات التاريخية
  */
 
-interface TrendReversalData {
+export interface TrendReversalData {
   probability: number; // احتمالية الانعكاس 0-1
   expectedLevel: number; // المستوى المتوقع للانعكاس
   timeframe: string; // الإطار الزمني المتوقع للانعكاس
   direction: "صاعد" | "هابط"; // اتجاه الانعكاس المتوقع
+  isReversalLikely: boolean; // هل الانعكاس محتمل بشكل كبير
+  reversalProbability: number; // احتمالية الانعكاس من 0 إلى 1
+  warnings: string[]; // تحذيرات متعلقة بالانعكاس
 }
 
 /**
@@ -53,12 +56,31 @@ export const analyzeTrendReversalPoints = (
   } else {
     expectedLevel = currentPrice * (1 + volatility * 1.5);
   }
+
+  // تحديد ما إذا كان الانعكاس محتملًا بشكل كبير
+  const isReversalLikely = (currentTrend === "صاعد" && overboughtOversold > 0.8) || 
+                          (currentTrend === "هابط" && overboughtOversold < 0.2);
+  
+  // تحديد احتمالية الانعكاس
+  const reversalProbability = 1 - probability;
+
+  // إنشاء قائمة تحذيرات
+  const warnings: string[] = [];
+  if (isReversalLikely) {
+    warnings.push(`احتمال وجود انعكاس قريب في الاتجاه ${currentTrend}`);
+  }
+  if (volatility > 0.02) {
+    warnings.push("تقلب مرتفع قد يؤدي إلى حركة سعرية غير متوقعة");
+  }
   
   return {
     probability,
     expectedLevel,
     timeframe: determineTimeframeForReversal(historicalPrices),
-    direction: reversalDirection
+    direction: reversalDirection,
+    isReversalLikely,
+    reversalProbability,
+    warnings
   };
 };
 
@@ -153,4 +175,3 @@ const determineTimeframeForReversal = (prices: number[]): string => {
     return "بعيد (7-14 يوم)";
   }
 };
-

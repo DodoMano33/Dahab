@@ -1,10 +1,13 @@
+
 /**
  * ملف التصدير الرئيسي لوحدة التحليل الفني
  * يجمع جميع وظائف التحليل الفني من كافة الملفات
  */
 
 export * from './indicators/volatility';
-export * from './indicators/riskManagement';
+// Export risk management but rename the calculateStopLoss function to avoid conflicts
+import { calculateStopLoss as riskManagementStopLoss } from './indicators/riskManagement';
+export { riskManagementStopLoss };
 export * from './timeUtils';
 export * from './patternRecognition';
 export * from './analysisTypeMap';

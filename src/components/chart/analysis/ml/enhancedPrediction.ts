@@ -141,6 +141,7 @@ export async function performEnhancedMLAnalysis(
     targets,
     bestEntryPoint: bestEntry,
     analysisType: "تعلم آلي",
-    activation_type: "تلقائي"
+    activation_type: "تلقائي",
+    timeframe
   };
 }

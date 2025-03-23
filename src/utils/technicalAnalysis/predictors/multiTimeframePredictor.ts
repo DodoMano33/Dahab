@@ -11,11 +11,14 @@ interface TimeframeTrendData {
   trendAge: "جديد" | "متوسط" | "ناضج";
 }
 
-interface TrendSyncData {
+export interface TrendSyncData {
   overallTrend: "صاعد" | "هابط" | "محايد";
   syncScore: number; // 0-100
   timeframes: TimeframeTrendData[];
   recommendation: string;
+  dominantTrend: "صاعد" | "هابط" | "محايد";
+  confidence: number;
+  alignedTimeframes: string[];
 }
 
 /**
@@ -69,12 +72,44 @@ export const getMultiTimeframeTrendSyncScore = async (
   } else if (syncScore > 40) {
     recommendation = `${overallTrend} ضعيف - بعض التوافق بين الأطر الزمنية`;
   }
+
+  // الإطارات الزمنية المتوافقة
+  const alignedTimeframes = timeframes
+    .filter(tf => tf.trend === overallTrend)
+    .map(tf => tf.timeframe);
   
   return {
     overallTrend,
     syncScore,
     timeframes,
-    recommendation
+    recommendation,
+    dominantTrend: overallTrend,
+    confidence: syncScore / 100,
+    alignedTimeframes
+  };
+};
+
+/**
+ * تحليل الزخم متعدد الأطر الزمنية
+ */
+export const analyzeMultiTimeframeMomentum = async (
+  symbol: string,
+  currentPrice: number
+): Promise<{ momentumScore: number; direction: "صاعد" | "هابط" | "محايد" }> => {
+  // محاكاة نتائج تحليل الزخم
+  const randomValue = Math.random();
+  const momentumScore = (randomValue - 0.5) * 2; // نتيجة بين -1 و 1
+  
+  let direction: "صاعد" | "هابط" | "محايد" = "محايد";
+  if (momentumScore > 0.2) {
+    direction = "صاعد";
+  } else if (momentumScore < -0.2) {
+    direction = "هابط";
+  }
+  
+  return {
+    momentumScore,
+    direction
   };
 };
 
@@ -168,4 +203,3 @@ const timeframeToValue = (timeframe: string): number => {
   
   return 60; // قيمة افتراضية (ساعة)
 };
-

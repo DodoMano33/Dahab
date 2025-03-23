@@ -5,17 +5,20 @@ import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCac
 import { saveAnalysisToDatabase } from "@/components/chart/analysis/utils/processors/databaseHandler";
 import { dispatchAnalysisSuccessEvent } from "@/hooks/analysis-checker/events/analysisEvents";
 
+// Define the AnalysisResult interface
+export interface AnalysisResult {
+  analysisResult: AnalysisData | null;
+  duration?: string | number;
+  symbol?: string;
+  currentPrice?: number;
+}
+
 /**
  * هوك لمعالجة نتيجة التحليل
  */
 export function useAnalysisResult() {
   const handleAnalysisResult = async (
-    result: { 
-      analysisResult: AnalysisData | null; 
-      duration?: string | number;
-      symbol?: string;
-      currentPrice?: number;
-    },
+    result: AnalysisResult,
     symbol: string,
     currentPrice: number | null
   ) => {
