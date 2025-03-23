@@ -1,116 +1,96 @@
 
-import { calculateATR } from "./volatility";
-import { PriceData } from "./types";
+/**
+ * خدمات إدارة المخاطر وحسابات وقف الخسارة
+ */
+import { calculateVolatility } from './volatility';
 
 /**
- * حساب وقف الخسارة الأمثل باستخدام ATR
- * @param currentPrice السعر الحالي
- * @param direction اتجاه الصفقة
- * @param data بيانات الأسعار
- * @param multiplier مضاعف ATR
- * @returns سعر وقف الخسارة المحسوب
+ * حساب وقف الخسارة المناسب بناءً على التقلب السعري
+ * @param price - السعر الحالي
+ * @param direction - اتجاه الصفقة (صاعد/هابط)
+ * @param volatility - نسبة التقلب (اختياري)
+ * @param historicalPrices - سلسلة الأسعار التاريخية (اختياري)
+ * @returns سعر وقف الخسارة المناسب
  */
-export const calculateOptimalStopLoss = (
-  currentPrice: number,
-  direction: "صاعد" | "هابط" | "محايد",
-  data: PriceData[],
-  multiplier: number = 2
+export const calculateStopLoss = (
+  price: number,
+  direction: 'صاعد' | 'هابط',
+  support?: number,
+  resistance?: number,
+  timeframe?: string
 ): number => {
-  try {
-    // حساب ATR
-    const atr = calculateATR(data);
-    
-    // حساب وقف الخسارة بناءً على الاتجاه
-    if (direction === "صاعد") {
-      // للصفقات الشرائية، وقف الخسارة أقل من سعر الدخول
-      return parseFloat((currentPrice - (atr * multiplier)).toFixed(2));
-    } else {
-      // للصفقات البيعية، وقف الخسارة أعلى من سعر الدخول
-      return parseFloat((currentPrice + (atr * multiplier)).toFixed(2));
+  // إذا كان لدينا مستويات دعم ومقاومة، نستخدمها لحساب وقف الخسارة
+  if (support && resistance && direction === 'صاعد') {
+    // في الاتجاه الصاعد، نضع وقف الخسارة أسفل مستوى الدعم بشكل طفيف
+    return Number(support) * 0.995;
+  } else if (support && resistance && direction === 'هابط') {
+    // في الاتجاه الهابط، نضع وقف الخسارة فوق مستوى المقاومة بشكل طفيف
+    return Number(resistance) * 1.005;
+  }
+  
+  // ضبط نسبة وقف الخسارة بناءً على الإطار الزمني
+  let stopLossPercentage = 0.02; // افتراضي 2%
+  
+  if (timeframe) {
+    switch (timeframe.toLowerCase()) {
+      case '1m':
+      case '5m':
+        stopLossPercentage = 0.005; // 0.5% للإطارات الزمنية القصيرة جدًا
+        break;
+      case '15m':
+      case '30m':
+        stopLossPercentage = 0.01; // 1% للإطارات الزمنية القصيرة
+        break;
+      case '1h':
+      case '2h':
+        stopLossPercentage = 0.015; // 1.5% للإطارات الزمنية المتوسطة
+        break;
+      case '4h':
+      case 'daily':
+      case '1d':
+        stopLossPercentage = 0.025; // 2.5% للإطارات الزمنية الطويلة
+        break;
+      case 'weekly':
+      case '1w':
+        stopLossPercentage = 0.05; // 5% للإطارات الزمنية الأسبوعية
+        break;
+      default:
+        stopLossPercentage = 0.02; // 2% افتراضي
     }
-  } catch (error) {
-    console.error("خطأ في حساب وقف الخسارة الأمثل:", error);
-    
-    // العودة إلى حساب بديل في حالة حدوث خطأ
-    if (direction === "صاعد") {
-      return parseFloat((currentPrice * 0.97).toFixed(2)); // 3% أقل من السعر الحالي
-    } else {
-      return parseFloat((currentPrice * 1.03).toFixed(2)); // 3% أعلى من السعر الحالي
-    }
+  }
+  
+  // حساب سعر وقف الخسارة
+  if (direction === 'صاعد') {
+    return price * (1 - stopLossPercentage);
+  } else {
+    return price * (1 + stopLossPercentage);
   }
 };
 
 /**
- * حساب نسبة المخاطرة إلى العائد
- * @param entryPrice سعر الدخول
- * @param stopLoss سعر وقف الخسارة
- * @param target سعر الهدف
- * @returns نسبة المخاطرة إلى العائد
+ * حساب خطة إدارة المخاطر الشاملة
+ * @param price - السعر الحالي
+ * @param targets - أهداف الربح
+ * @param stopLoss - وقف الخسارة
+ * @returns خطة إدارة المخاطر المتكاملة
  */
-export const calculateRiskRewardRatio = (
-  entryPrice: number,
-  stopLoss: number,
-  target: number
-): number => {
-  try {
-    // التأكد من أن القيم صحيحة
-    if (isNaN(entryPrice) || isNaN(stopLoss) || isNaN(target)) {
-      console.warn("قيم غير صالحة لحساب نسبة المخاطرة إلى العائد", { entryPrice, stopLoss, target });
-      return 0;
-    }
-    
-    // حساب المخاطرة (الخسارة المحتملة)
-    const risk = Math.abs(entryPrice - stopLoss);
-    
-    // حساب العائد (الربح المحتمل)
-    const reward = Math.abs(target - entryPrice);
-    
-    // حساب النسبة
-    if (risk === 0) return 0; // تجنب القسمة على الصفر
-    
-    return parseFloat((reward / risk).toFixed(2));
-  } catch (error) {
-    console.error("خطأ في حساب نسبة المخاطرة إلى العائد:", error);
-    return 0;
-  }
-};
-
-/**
- * حساب الحجم المثالي للصفقة بناءً على إدارة المخاطر
- * @param accountBalance رصيد الحساب
- * @param riskPercentage نسبة المخاطرة المسموح بها (بالنسبة المئوية)
- * @param entryPrice سعر الدخول
- * @param stopLoss سعر وقف الخسارة
- * @returns الحجم المثالي للصفقة
- */
-export const calculateOptimalPositionSize = (
-  accountBalance: number,
-  riskPercentage: number,
-  entryPrice: number,
+export const createRiskManagementPlan = (
+  price: number,
+  targets: number[],
   stopLoss: number
-): number => {
-  try {
-    // التأكد من أن القيم صحيحة
-    if (isNaN(accountBalance) || isNaN(riskPercentage) || isNaN(entryPrice) || isNaN(stopLoss)) {
-      console.warn("قيم غير صالحة لحساب حجم الصفقة المثالي", { accountBalance, riskPercentage, entryPrice, stopLoss });
-      return 0;
-    }
-    
-    // حساب المبلغ المسموح بالمخاطرة به
-    const riskAmount = accountBalance * (riskPercentage / 100);
-    
-    // حساب الفرق بين سعر الدخول ووقف الخسارة
-    const priceDifference = Math.abs(entryPrice - stopLoss);
-    
-    // حساب نسبة الفرق
-    const percentageDifference = priceDifference / entryPrice;
-    
-    // حساب الحجم المثالي
-    const optimalSize = riskAmount / (entryPrice * percentageDifference);
-    
-    return parseFloat(optimalSize.toFixed(2));
-  } catch (error) {
-    console.error("خطأ في حساب حجم الصفقة المثالي:", error);
-    return 0;
-  }
+) => {
+  const direction = price < stopLoss ? 'هابط' : 'صاعد';
+  const riskAmount = Math.abs(price - stopLoss);
+  
+  const riskRewardRatios = targets.map(target => {
+    const rewardAmount = Math.abs(target - price);
+    return rewardAmount / riskAmount;
+  });
+  
+  return {
+    direction,
+    riskAmount,
+    riskRewardRatios,
+    averageRiskRewardRatio: riskRewardRatios.reduce((sum, ratio) => sum + ratio, 0) / riskRewardRatios.length
+  };
 };

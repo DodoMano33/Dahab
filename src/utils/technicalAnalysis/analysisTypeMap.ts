@@ -1,3 +1,4 @@
+
 /**
  * خريطة أنواع التحليل - ربط المعرّفات بأسماء العرض
  */
@@ -65,6 +66,31 @@ const strategyMap = new Map<string, string>([
   ['mtf', 'تحليل متعدد الأطر الزمنية'],
   ['متعددالأطر', 'تحليل متعدد الأطر الزمنية'],
 ]);
+
+/**
+ * الأنواع الرئيسية للتحليل المستخدمة في التطبيق
+ * تستخدم في واجهة المستخدم وفي عمليات التجميع الإحصائي
+ */
+export const mainAnalysisTypes = [
+  'scalping',
+  'smc',
+  'ict',
+  'turtlesoup',
+  'gann',
+  'waves',
+  'patterns',
+  'priceaction',
+  'neuralnetworks',
+  'rnn',
+  'timeclustering',
+  'multivariance',
+  'compositecandlestick',
+  'behavioral',
+  'fibonacci',
+  'fibonacciadvanced',
+  'ml',
+  'multitimeframe',
+];
 
 /**
  * الحصول على اسم العرض لنوع استراتيجية معين
