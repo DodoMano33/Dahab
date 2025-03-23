@@ -18,7 +18,7 @@ interface ChartAnalysisInput {
 }
 
 // تحديث نوع البيانات الناتجة ليشمل symbol و currentPrice
-interface ChartAnalysisResult {
+export interface ChartAnalysisResult {
   analysisResult: AnalysisData | null;
   duration?: string | number;
   symbol?: string;
@@ -120,8 +120,7 @@ export const saveAnalysisToDatabase = async (
   analysis_duration_hours: number = 8
 ) => {
   try {
-    const auth = useAuth();
-    const user = auth?.user;
+    const { user } = useAuth();
     
     if (!user) {
       console.error("لا يمكن حفظ التحليل: المستخدم غير مسجل الدخول");

@@ -1,101 +1,108 @@
 
 import { AnalysisData } from "@/types/analysis";
-import { getTimeframeMultipliers } from "@/utils/technicalAnalysis/timeframeMultipliers";
-import { getExpectedTime } from "@/utils/technicalAnalysis";
-import { 
-  detectTrend, 
-  calculateSupportResistance, 
-  calculateOptimalStopLoss,
-  calculateVolatility
-} from "@/utils/technicalAnalysis/indicators/PriceData";
+import { getExpectedTime } from "@/utils/technicalAnalysis/timeUtils";
 
 export const analyzePriceAction = async (
   chartImage: string,
   currentPrice: number,
-  timeframe: string,
-  duration?: number
+  timeframe: string = "1d"
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل حركة السعر للرمز:", timeframe, "بسعر حالي:", currentPrice);
+  console.log("بدء تحليل حركة السعر - البيانات المستلمة:", { chartImage, currentPrice, timeframe });
   
-  // محاكاة بيانات الأسعار التاريخية (في التطبيق الحقيقي ستأتي من API)
-  const simulatedPrices: number[] = [];
-  const volatility = 0.012; // نسبة التقلب
-  
-  // توليد بيانات محاكاة للتحليل
-  for (let i = 0; i < 100; i++) {
-    if (i === 0) {
-      simulatedPrices.push(currentPrice * (1 - volatility));
-    } else {
-      const change = (Math.random() - 0.5) * volatility * 2;
-      simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
+  try {
+    if (!currentPrice || isNaN(currentPrice)) {
+      console.error("خطأ: السعر الحالي غير صالح:", currentPrice);
+      throw new Error("السعر الحالي غير صالح");
     }
+
+    if (!chartImage) {
+      console.error("خطأ: لم يتم استلام صورة الشارت");
+      throw new Error("لم يتم استلام صورة الشارت");
+    }
+
+    // تحليل اتجاه السعر (تقديري)
+    const trend = detectTrend(chartImage);
+    console.log("تم اكتشاف الاتجاه:", trend);
+
+    // حساب مستويات الدعم والمقاومة
+    const support = calculateSupport(currentPrice, trend);
+    const resistance = calculateResistance(currentPrice, trend);
+    
+    // حساب وقف الخسارة المناسب
+    const stopLoss = calculateStopLoss(currentPrice, trend);
+    
+    // تحديد أفضل نقطة دخول
+    const bestEntryPoint = {
+      price: trend === "صاعد" ? support + (resistance - support) * 0.236 : resistance - (resistance - support) * 0.236,
+      reason: `أفضل نقطة دخول بناءً على تحليل حركة السعر والاتجاه ${trend}`
+    };
+    
+    // حساب مستويات المستهدفات
+    const targets = [
+      {
+        price: trend === "صاعد" 
+          ? currentPrice + (resistance - currentPrice) * 0.5
+          : currentPrice - (currentPrice - support) * 0.5,
+        expectedTime: getExpectedTime(timeframe, 1)
+      },
+      {
+        price: trend === "صاعد" ? resistance : support,
+        expectedTime: getExpectedTime(timeframe, 2)
+      }
+    ];
+
+    // إنشاء كائن نتيجة التحليل
+    const analysis: AnalysisData = {
+      pattern: "تحليل حركة السعر",
+      direction: trend,
+      currentPrice: currentPrice,
+      support: support,
+      resistance: resistance,
+      stopLoss: stopLoss,
+      bestEntryPoint: bestEntryPoint,
+      targets: targets,
+      fibonacciLevels: [
+        { level: 0.236, price: support + (resistance - support) * 0.236 },
+        { level: 0.382, price: support + (resistance - support) * 0.382 },
+        { level: 0.5, price: support + (resistance - support) * 0.5 },
+        { level: 0.618, price: support + (resistance - support) * 0.618 },
+        { level: 0.786, price: support + (resistance - support) * 0.786 }
+      ],
+      analysisType: "Price Action"
+    };
+
+    console.log("تم إكمال تحليل حركة السعر بنجاح:", analysis);
+    return analysis;
+
+  } catch (error) {
+    console.error("خطأ في تحليل حركة السعر:", error);
+    throw new Error(`فشل في تحليل حركة السعر: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
   }
-  simulatedPrices.push(currentPrice);
-  
-  // استخدام المؤشرات الفنية لتحليل البيانات
-  const direction = detectTrend(simulatedPrices);
-  
-  // حساب الدعم والمقاومة
-  const { support, resistance } = calculateSupportResistance(simulatedPrices);
-  
-  // حساب وقف الخسارة المثالي باستخدام مستويات التقلب
-  const actualVolatility = calculateVolatility(simulatedPrices, 14);
-  const stopLossPercent = Math.max(1, Math.min(3, actualVolatility * 100 * 2));
-  const stopLoss = direction === "صاعد" 
-    ? currentPrice * (1 - stopLossPercent / 100)
-    : currentPrice * (1 + stopLossPercent / 100);
-  
-  // تحديد مدى الأهداف باستخدام ضعف وقف الخسارة (نسبة المخاطرة إلى المكافأة 1:2)
-  const targetPercent = stopLossPercent * 2;
-  
-  // تحديد أهداف السعر
-  const targets = [
-    {
-      price: direction === "صاعد" 
-        ? currentPrice * (1 + targetPercent / 100)
-        : currentPrice * (1 - targetPercent / 100),
-      expectedTime: getExpectedTime(timeframe, 0)
-    },
-    {
-      price: direction === "صاعد"
-        ? currentPrice * (1 + targetPercent / 100 * 1.5)
-        : currentPrice * (1 - targetPercent / 100 * 1.5),
-      expectedTime: getExpectedTime(timeframe, 1)
-    },
-    {
-      price: direction === "صاعد"
-        ? currentPrice * (1 + targetPercent / 100 * 2)
-        : currentPrice * (1 - targetPercent / 100 * 2),
-      expectedTime: getExpectedTime(timeframe, 2)
-    }
-  ];
-  
-  // تحديد نقطة الدخول المثالية
-  const entryPrice = direction === "صاعد" 
-    ? currentPrice * 0.995 
-    : currentPrice * 1.005;
-  
-  const bestEntry = {
-    price: entryPrice,
-    reason: `نقطة دخول مثالية للاتجاه ${direction} على الإطار الزمني ${timeframe}`
-  };
-  
-  // تحديد وصف النمط
-  const patternDescription = `تحليل حركة السعر: اتجاه ${direction} على الإطار الزمني ${timeframe}`;
-  
-  const analysisResult: AnalysisData = {
-    pattern: patternDescription,
-    direction,
-    currentPrice,
-    support,
-    resistance,
-    stopLoss,
-    targets,
-    bestEntryPoint: bestEntry,
-    analysisType: "حركة السعر",
-    analysis_duration_hours: duration || 36
-  };
-  
-  console.log("نتائج تحليل حركة السعر:", analysisResult);
-  return analysisResult;
 };
+
+// وظيفة محاكاة لتحديد الاتجاه من صورة الشارت
+function detectTrend(chartImage: string): "صاعد" | "هابط" | "محايد" {
+  // سنقوم بإنشاء اتجاه عشوائي للمحاكاة
+  const trends: ["صاعد", "هابط", "محايد"] = ["صاعد", "هابط", "محايد"];
+  return trends[Math.floor(Math.random() * trends.length)];
+}
+
+// وظائف حساب الدعم والمقاومة
+function calculateSupport(currentPrice: number, trend: string): number {
+  return trend === "صاعد" 
+    ? Math.round((currentPrice * 0.98) * 100) / 100
+    : Math.round((currentPrice * 0.95) * 100) / 100;
+}
+
+function calculateResistance(currentPrice: number, trend: string): number {
+  return trend === "صاعد"
+    ? Math.round((currentPrice * 1.05) * 100) / 100
+    : Math.round((currentPrice * 1.02) * 100) / 100;
+}
+
+// وظيفة حساب وقف الخسارة
+function calculateStopLoss(currentPrice: number, trend: string): number {
+  return trend === "صاعد"
+    ? Math.round((currentPrice * 0.97) * 100) / 100
+    : Math.round((currentPrice * 1.03) * 100) / 100;
+}

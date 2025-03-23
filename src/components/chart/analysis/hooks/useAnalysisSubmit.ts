@@ -1,11 +1,19 @@
+
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { processChartAnalysis, saveAnalysisToDatabase } from "@/components/chart/analysis/utils/chartAnalysisProcessor";
 import { AnalysisData, AnalysisType } from "@/types/analysis";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePrice } from "@/hooks/usePrice";
-import { ChartAnalysisResult } from "@/types/chartAnalysis";
+import { useCurrentPrice } from "@/hooks/useCurrentPrice";
+import { useNavigate } from "react-router-dom";
+
+// Define the ChartAnalysisResult interface
+export interface ChartAnalysisResult {
+  analysisResult: AnalysisData | null;
+  duration?: string | number;
+  symbol?: string;
+  currentPrice?: number;
+}
 
 interface UseAnalysisSubmitProps {
   symbol: string;
@@ -13,9 +21,9 @@ interface UseAnalysisSubmitProps {
 
 export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const { currentPrice } = usePrice(symbol);
+  const { currentPrice } = useCurrentPrice();
 
   const onSubmit = useCallback(
     async (
@@ -44,7 +52,7 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
     ) => {
       if (!user) {
         toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة");
-        router.push("/login");
+        navigate("/login");
         return;
       }
 
@@ -112,7 +120,7 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
         setIsAnalyzing(false);
       }
     },
-    [router, symbol, user, currentPrice]
+    [navigate, symbol, user, currentPrice]
   );
 
   // نستخدم الخصائص التي أضفناها للنوع ChartAnalysisResult
@@ -123,26 +131,26 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
     }
 
     // يمكننا الآن استخدام symbol و currentPrice بأمان
-    const symbol = result.symbol || "";
-    const currentPrice = result.currentPrice || 0;
+    const symbolName = result.symbol || "";
+    const price = result.currentPrice || 0;
     const analysis = result.analysisResult;
 
-    // تصحيح نوع البيانات
+    // تحويل البيانات من string إلى number عند الحاجة
     const durationHours: number = 
       typeof result.duration === 'string' 
         ? parseInt(result.duration) 
         : (result.duration as number || 8);
 
     saveAnalysisToDatabase(
-      symbol,
+      symbolName,
       analysis.analysisType,
-      currentPrice,
+      price,
       analysis.analysisType,
       analysis,
       durationHours
     );
 
-    // تصحيح نوع البيانات
+    // تحويل البيانات من string إلى number عند الحاجة
     const analysisDuration: number = 
       typeof result.duration === 'string' 
         ? parseInt(result.duration) 
