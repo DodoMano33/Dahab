@@ -15,7 +15,15 @@ import { RetryIndicator } from "./components/RetryIndicator";
 import { TimeInfo } from "./components/TimeInfo";
 
 export const BacktestCheckButton = memo(() => {
-  const { triggerManualCheck, isLoading, lastCheckTime, retryCount, cancelCurrentRequest, diagnostics } = useBackTest();
+  const { 
+    triggerManualCheck, 
+    isLoading, 
+    lastCheckTime, 
+    retryCount, 
+    cancelCurrentRequest, 
+    diagnostics 
+  } = useBackTest();
+  
   const networkStatus = useNetworkStatus();
   const diagnosticInfo = useDiagnosticInfo();
   const { currentPrice, priceUpdateCount } = useCurrentPrice();

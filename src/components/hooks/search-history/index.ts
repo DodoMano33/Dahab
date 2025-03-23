@@ -37,5 +37,5 @@ export const useSearchHistory = (): UseSearchHistoryReturn => {
   };
 };
 
-// Adding a default export to support both named and default import styles
+// تصدير افتراضي لدعم كلا النمطين من الاستيراد
 export default useSearchHistory;

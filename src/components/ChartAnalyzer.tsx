@@ -13,7 +13,7 @@ import { useBackTest } from "./hooks/useBackTest";
  * Main component for analyzing financial charts
  */
 function ChartAnalyzer() {
-  console.log("ChartAnalyzer component initialized");
+  console.log("ChartAnalyzer component rendering");
   
   const {
     isAnalyzing,
@@ -152,5 +152,5 @@ function ChartAnalyzer() {
   );
 }
 
-// Explicit default export
+// صريح للتصدير الافتراضي
 export default ChartAnalyzer;

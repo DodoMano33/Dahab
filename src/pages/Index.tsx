@@ -10,11 +10,15 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// Define a simple import with explicit path
+// استخدام مسار نسبي واضح
 const ChartAnalyzer = lazy(() => {
   console.log("Loading ChartAnalyzer component");
-  return import("../components/ChartAnalyzer");
+  return import("../components/ChartAnalyzer").catch(error => {
+    console.error("Error loading ChartAnalyzer:", error);
+    throw error;
+  });
 });
+
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء
