@@ -145,7 +145,6 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
       symbolName,
       analysis.analysisType,
       price,
-      analysis.analysisType,
       analysis,
       durationHours
     );

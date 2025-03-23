@@ -1,6 +1,7 @@
 
 import { AnalysisData } from "@/types/analysis";
 import { getExpectedTime } from "@/utils/technicalAnalysis/timeUtils";
+import { detectTrend, calculateSupportResistance } from "@/utils/technicalAnalysis/indicators/PriceData";
 
 export const analyzePriceAction = async (
   chartImage: string,
@@ -20,13 +21,27 @@ export const analyzePriceAction = async (
       throw new Error("لم يتم استلام صورة الشارت");
     }
 
-    // تحليل اتجاه السعر (تقديري)
-    const trend = detectTrend(chartImage);
+    // محاكاة بيانات الأسعار التاريخية (في التطبيق الحقيقي ستأتي من API)
+    const simulatedPrices: number[] = [];
+    const volatility = 0.01; // نسبة التقلب
+    
+    // توليد 200 سعر تاريخي للمحاكاة
+    for (let i = 0; i < 200; i++) {
+      if (i === 0) {
+        simulatedPrices.push(currentPrice * (1 - volatility));
+      } else {
+        const change = (Math.random() - 0.5) * volatility * 2;
+        simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
+      }
+    }
+    simulatedPrices.push(currentPrice);
+
+    // تحليل اتجاه السعر
+    const trend = detectTrend(simulatedPrices);
     console.log("تم اكتشاف الاتجاه:", trend);
 
     // حساب مستويات الدعم والمقاومة
-    const support = calculateSupport(currentPrice, trend);
-    const resistance = calculateResistance(currentPrice, trend);
+    const { support, resistance } = calculateSupportResistance(simulatedPrices);
     
     // حساب وقف الخسارة المناسب
     const stopLoss = calculateStopLoss(currentPrice, trend);
@@ -51,6 +66,15 @@ export const analyzePriceAction = async (
       }
     ];
 
+    // إنشاء مستويات فيبوناتشي
+    const fibonacciLevels = [
+      { level: 0.236, price: support + (resistance - support) * 0.236 },
+      { level: 0.382, price: support + (resistance - support) * 0.382 },
+      { level: 0.5, price: support + (resistance - support) * 0.5 },
+      { level: 0.618, price: support + (resistance - support) * 0.618 },
+      { level: 0.786, price: support + (resistance - support) * 0.786 }
+    ];
+
     // إنشاء كائن نتيجة التحليل
     const analysis: AnalysisData = {
       pattern: "تحليل حركة السعر",
@@ -61,13 +85,7 @@ export const analyzePriceAction = async (
       stopLoss: stopLoss,
       bestEntryPoint: bestEntryPoint,
       targets: targets,
-      fibonacciLevels: [
-        { level: 0.236, price: support + (resistance - support) * 0.236 },
-        { level: 0.382, price: support + (resistance - support) * 0.382 },
-        { level: 0.5, price: support + (resistance - support) * 0.5 },
-        { level: 0.618, price: support + (resistance - support) * 0.618 },
-        { level: 0.786, price: support + (resistance - support) * 0.786 }
-      ],
+      fibonacciLevels: fibonacciLevels,
       analysisType: "Price Action"
     };
 
@@ -79,26 +97,6 @@ export const analyzePriceAction = async (
     throw new Error(`فشل في تحليل حركة السعر: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
   }
 };
-
-// وظيفة محاكاة لتحديد الاتجاه من صورة الشارت
-function detectTrend(chartImage: string): "صاعد" | "هابط" | "محايد" {
-  // سنقوم بإنشاء اتجاه عشوائي للمحاكاة
-  const trends: ["صاعد", "هابط", "محايد"] = ["صاعد", "هابط", "محايد"];
-  return trends[Math.floor(Math.random() * trends.length)];
-}
-
-// وظائف حساب الدعم والمقاومة
-function calculateSupport(currentPrice: number, trend: string): number {
-  return trend === "صاعد" 
-    ? Math.round((currentPrice * 0.98) * 100) / 100
-    : Math.round((currentPrice * 0.95) * 100) / 100;
-}
-
-function calculateResistance(currentPrice: number, trend: string): number {
-  return trend === "صاعد"
-    ? Math.round((currentPrice * 1.05) * 100) / 100
-    : Math.round((currentPrice * 1.02) * 100) / 100;
-}
 
 // وظيفة حساب وقف الخسارة
 function calculateStopLoss(currentPrice: number, trend: string): number {

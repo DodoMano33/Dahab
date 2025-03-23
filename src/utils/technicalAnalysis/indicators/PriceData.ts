@@ -101,3 +101,71 @@ export class PriceData {
     return new PriceData(data);
   }
 }
+
+// Add the missing functions that other files are importing
+
+export function detectTrend(prices: number[]): "صاعد" | "هابط" | "محايد" {
+  if (prices.length < 2) return "محايد";
+  
+  // Simple trend detection based on the last few prices
+  const recentPrices = prices.slice(-10);
+  const firstPrice = recentPrices[0];
+  const lastPrice = recentPrices[recentPrices.length - 1];
+  
+  if (lastPrice > firstPrice * 1.02) return "صاعد"; // 2% higher
+  if (lastPrice < firstPrice * 0.98) return "هابط"; // 2% lower
+  return "محايد";
+}
+
+export function calculateSupportResistance(prices: number[]): { support: number, resistance: number } {
+  if (!prices || prices.length === 0) {
+    return { support: 0, resistance: 0 };
+  }
+  
+  // Sort prices to find min and max
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+  const support = sortedPrices[0];
+  const resistance = sortedPrices[sortedPrices.length - 1];
+  
+  return { support, resistance };
+}
+
+export function calculateFibonacciLevels(highPrice: number, lowPrice: number, direction: "صاعد" | "هابط" | "محايد" = "صاعد"): { level: number; price: number }[] {
+  const difference = highPrice - lowPrice;
+  const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618];
+  
+  return levels.map(level => {
+    let price;
+    if (direction === "صاعد") {
+      price = lowPrice + (difference * level);
+    } else if (direction === "هابط") {
+      price = highPrice - (difference * level);
+    } else {
+      const midPrice = (highPrice + lowPrice) / 2;
+      price = midPrice + (difference * (level - 0.5));
+    }
+    
+    return { level, price: Number(price.toFixed(2)) };
+  });
+}
+
+export function calculateVolatility(prices: number[], period: number = 14): number {
+  if (prices.length < period) {
+    return 0;
+  }
+  
+  // Calculate price changes
+  const priceChanges = [];
+  for (let i = 1; i < prices.length; i++) {
+    priceChanges.push((prices[i] - prices[i-1]) / prices[i-1]);
+  }
+  
+  // Calculate standard deviation of price changes (volatility)
+  const recentChanges = priceChanges.slice(-period);
+  const mean = recentChanges.reduce((sum, change) => sum + change, 0) / period;
+  const squaredDiffs = recentChanges.map(change => Math.pow(change - mean, 2));
+  const variance = squaredDiffs.reduce((sum, diff) => sum + diff, 0) / period;
+  const volatility = Math.sqrt(variance);
+  
+  return volatility;
+}
