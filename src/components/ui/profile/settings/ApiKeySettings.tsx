@@ -40,10 +40,10 @@ export function ApiKeySettings({
         metalPriceApiKey: metalPriceApiKey
       });
       
-      toast.success("تم تحديث مفتاح API. اضغط على حفظ التغييرات لتأكيد التحديث");
+      toast.success("تم تحديث مفتاح API. اضغط على حفظ التغييرات لتأكيد التحديث", { duration: 1000 });
     } catch (error) {
       console.error("Error updating API key:", error);
-      toast.error("حدث خطأ أثناء تحديث مفتاح API");
+      toast.error("حدث خطأ أثناء تحديث مفتاح API", { duration: 1000 });
     } finally {
       setIsSaving(false);
     }

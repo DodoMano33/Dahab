@@ -27,7 +27,7 @@ export function useAnalysisResult() {
   ) => {
     try {
       if (!result || !result.analysisResult) {
-        toast.error("لم يتم الحصول على نتائج التحليل");
+        toast.error("لم يتم الحصول على نتائج التحليل", { duration: 1000 });
         return false;
       }
 
@@ -75,11 +75,11 @@ export function useAnalysisResult() {
       }
 
       // عرض رسالة النجاح
-      toast.success(`تم التحليل بنجاح. المدة: ${durationHours} ساعة.`);
+      toast.success(`تم التحليل بنجاح. المدة: ${durationHours} ساعة.`, { duration: 1000 });
       return true;
     } catch (error: any) {
       console.error("Error handling analysis result:", error);
-      toast.error(error.message || "حدث خطأ أثناء حفظ نتائج التحليل");
+      toast.error(error.message || "حدث خطأ أثناء حفظ نتائج التحليل", { duration: 1000 });
       return false;
     }
   };

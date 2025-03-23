@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,13 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     console.error('Authentication error:', error);
     
     if (error.message.includes('Invalid login credentials')) {
-      toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة', { duration: 500 });
+      toast.error('البريد الإلكتروني أو كلمة المرور غير صحيحة', { duration: 1000 });
     } else if (error.message.includes('Email not confirmed')) {
-      toast.error('البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني للحصول على رابط التأكيد', { duration: 500 });
+      toast.error('البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني للحصول على رابط التأكيد', { duration: 1000 });
     } else if (error.message.includes('Password should be at least 6 characters')) {
-      toast.error('يجب أن تكون كلمة المرور 6 أحرف على الأقل', { duration: 500 });
+      toast.error('يجب أن تكون كلمة المرور 6 أحرف على الأقل', { duration: 1000 });
     } else {
-      toast.error('حدث خطأ أثناء تسجيل الدخول', { duration: 500 });
+      toast.error('حدث خطأ أثناء تسجيل الدخول', { duration: 1000 });
     }
   };
 
@@ -38,11 +39,11 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 
         if (error) throw error;
 
-        toast.success('تم تسجيل الدخول بنجاح', { duration: 500 });
+        toast.success('تم تسجيل الدخول بنجاح', { duration: 1000 });
         onClose();
       } else {
         if (password.length < 6) {
-          toast.error('يجب أن تكون كلمة المرور 6 أحرف على الأقل', { duration: 500 });
+          toast.error('يجب أن تكون كلمة المرور 6 أحرف على الأقل', { duration: 1000 });
           return;
         }
 
@@ -57,9 +58,9 @@ export const AuthModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         if (error) throw error;
 
         if (data.user && data.user.identities && data.user.identities.length === 0) {
-          toast.error('البريد الإلكتروني مسجل بالفعل', { duration: 500 });
+          toast.error('البريد الإلكتروني مسجل بالفعل', { duration: 1000 });
         } else {
-          toast.success('تم إرسال رابط التأكيد إلى بريدك الإلكتروني', { duration: 500 });
+          toast.success('تم إرسال رابط التأكيد إلى بريدك الإلكتروني', { duration: 1000 });
           setIsLogin(true);
         }
       }

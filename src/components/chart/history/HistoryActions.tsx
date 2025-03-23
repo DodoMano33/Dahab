@@ -21,16 +21,16 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
       const selectedHistory = history.filter(item => selectedItems.has(item.id));
 
       if (selectedHistory.length === 0) {
-        toast.error("الرجاء تحديد عناصر للنسخ");
+        toast.error("الرجاء تحديد عناصر للنسخ", { duration: 1000 });
         return;
       }
 
       const shareText = selectedHistory.map(item => generateShareText(item)).join('\n\n---\n\n');
       await navigator.clipboard.writeText(shareText);
-      toast.success("تم نسخ المحتوى بنجاح");
+      toast.success("تم نسخ المحتوى بنجاح", { duration: 1000 });
     } catch (error) {
       console.error("خطأ في النسخ:", error);
-      toast.error("حدث خطأ أثناء نسخ المحتوى");
+      toast.error("حدث خطأ أثناء نسخ المحتوى", { duration: 1000 });
     }
   };
   
@@ -38,7 +38,7 @@ export const HistoryActions = ({ selectedItems, onDelete, history }: HistoryActi
     const selectedHistoryItems = history.filter(item => selectedItems.has(item.id));
     
     if (selectedHistoryItems.length !== 2) {
-      toast.error("الرجاء تحديد تحليلين فقط للمقارنة");
+      toast.error("الرجاء تحديد تحليلين فقط للمقارنة", { duration: 1000 });
       return;
     }
     

@@ -30,7 +30,7 @@ const setRateLimited = (limited: boolean): void => {
   isRateLimited = limited;
   if (limited) {
     rateLimitResetTime = Date.now();
-    toast.error("تم تجاوز حد معدل API - يرجى المحاولة لاحقًا");
+    toast.error("تم تجاوز حد معدل API - يرجى المحاولة لاحقًا", { duration: 1000 });
   }
 };
 

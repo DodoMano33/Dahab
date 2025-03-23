@@ -35,7 +35,7 @@ export const AutoAnalysis = ({
       try {
         stopAutoAnalysis();
         setIsAnalyzing(false);
-        toast.info("تم إيقاف التحليل التلقائي");
+        toast.info("تم إيقاف التحليل التلقائي", { duration: 1000 });
       } finally {
         setIsLoading(false);
       }
@@ -56,13 +56,13 @@ export const AutoAnalysis = ({
 
     // Validate inputs before proceeding
     if (selectedTimeframes.length === 0) {
-      toast.error("الرجاء اختيار إطار زمني واحد على الأقل");
+      toast.error("الرجاء اختيار إطار زمني واحد على الأقل", { duration: 1000 });
       setIsLoading(false);
       return;
     }
 
     if (selectedAnalysisTypes.length === 0) {
-      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل");
+      toast.error("الرجاء اختيار نوع تحليل واحد على الأقل", { duration: 1000 });
       setIsLoading(false);
       return;
     }
@@ -76,20 +76,20 @@ export const AutoAnalysis = ({
     console.log("Auto analysis inputs:", { symbol, currentPrice, duration });
 
     if (!symbol) {
-      toast.error("الرجاء إدخال رمز العملة أو الزوج");
+      toast.error("الرجاء إدخال رمز العملة أو الزوج", { duration: 1000 });
       setIsLoading(false);
       return;
     }
 
     if (!currentPrice || isNaN(currentPrice) || currentPrice <= 0) {
-      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح");
+      toast.error("الرجاء إدخال السعر الحالي بشكل صحيح", { duration: 1000 });
       setIsLoading(false);
       return;
     }
 
     const durationHours = Number(duration);
     if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
-      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة");
+      toast.error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة", { duration: 1000 });
       setIsLoading(false);
       return;
     }
@@ -100,7 +100,7 @@ export const AutoAnalysis = ({
 
     try {
       setIsAnalyzing(true);
-      toast.success("جاري بدء التحليل التلقائي...");
+      toast.success("جاري بدء التحليل التلقائي...", { duration: 1000 });
       
       await startAutoAnalysis({
         timeframes: selectedTimeframes,
@@ -120,7 +120,7 @@ export const AutoAnalysis = ({
       });
     } catch (error) {
       console.error("Error in auto analysis:", error);
-      toast.error("حدث خطأ أثناء التحليل التلقائي: " + (error instanceof Error ? error.message : "خطأ غير معروف"));
+      toast.error("حدث خطأ أثناء التحليل التلقائي: " + (error instanceof Error ? error.message : "خطأ غير معروف"), { duration: 1000 });
       setIsAnalyzing(false);
     } finally {
       setIsLoading(false);

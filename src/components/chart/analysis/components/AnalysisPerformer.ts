@@ -187,11 +187,11 @@ export const performAnalysis = async ({
         onAnalysisComplete(newHistoryEntry);
       }
 
-      toast.success(`تم إكمال تحليل ${mappedAnalysisType} على الإطار الزمني ${timeframe}`);
+      toast.success(`تم إكمال تحليل ${mappedAnalysisType} على الإطار الزمني ${timeframe}`, { duration: 1000 });
     }
   } catch (error) {
     console.error(`Error in ${analysisType} analysis on ${timeframe}:`, error);
-    toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`);
+    toast.error(`فشل في تحليل ${analysisType} على ${timeframe}`, { duration: 1000 });
     throw error;
   }
 };

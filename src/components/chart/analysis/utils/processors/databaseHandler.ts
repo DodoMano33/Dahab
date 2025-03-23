@@ -34,6 +34,7 @@ export const saveAnalysisToDatabase = async (
     // التحقق من أن النتيجة تحتوي على تحليل
     if (!result || !result.analysisResult) {
       console.error("لا توجد نتائج تحليل للحفظ");
+      toast.error("لا توجد نتائج تحليل للحفظ", { duration: 1000 });
       return { success: false, error: new Error("لا توجد نتائج تحليل للحفظ") };
     }
     
@@ -78,19 +79,20 @@ export const saveAnalysisToDatabase = async (
       
       if (error.message.includes('violates foreign key constraint "search_history_user_id_fkey"')) {
         console.error("خطأ في معرف المستخدم، تحقق من تسجيل الدخول");
-        toast.error("فشل في حفظ التحليل: خطأ في معرف المستخدم");
+        toast.error("فشل في حفظ التحليل: خطأ في معرف المستخدم", { duration: 1000 });
       } else {
-        toast.error("فشل في حفظ التحليل في قاعدة البيانات");
+        toast.error("فشل في حفظ التحليل في قاعدة البيانات", { duration: 1000 });
       }
       
       return { success: false, error };
     }
     
     console.log("تم حفظ التحليل بنجاح:", data);
+    toast.success("تم حفظ التحليل بنجاح", { duration: 1000 });
     return { success: true, id: data.id };
   } catch (error) {
     console.error("خطأ غير متوقع في حفظ التحليل:", error);
-    toast.error("حدث خطأ غير متوقع أثناء حفظ التحليل");
+    toast.error("حدث خطأ غير متوقع أثناء حفظ التحليل", { duration: 1000 });
     return { success: false, error };
   }
 };

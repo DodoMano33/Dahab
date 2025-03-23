@@ -23,9 +23,9 @@ export function AutoCheckSettings({
     setUserProfile({ ...userProfile, autoCheckEnabled: checked });
     
     if (checked) {
-      toast.success("تم تفعيل الفحص التلقائي");
+      toast.success("تم تفعيل الفحص التلقائي", { duration: 1000 });
     } else {
-      toast.info("تم إيقاف الفحص التلقائي");
+      toast.info("تم إيقاف الفحص التلقائي", { duration: 1000 });
     }
   };
 

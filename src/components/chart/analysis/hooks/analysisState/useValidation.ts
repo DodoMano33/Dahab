@@ -23,23 +23,23 @@ export function useValidation() {
     navigate
   }: ValidationProps): boolean => {
     if (!user) {
-      toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة");
+      toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة", { duration: 1000 });
       navigate("/login");
       return false;
     }
 
     if (!symbol) {
-      toast.error("الرجاء تحديد رمز المؤشر.");
+      toast.error("الرجاء تحديد رمز المؤشر.", { duration: 1000 });
       return false;
     }
 
     if (!timeframe) {
-      toast.error("الرجاء تحديد الإطار الزمني.");
+      toast.error("الرجاء تحديد الإطار الزمني.", { duration: 1000 });
       return false;
     }
 
     if (!analysisType && (!selectedTypes || selectedTypes.length === 0)) {
-      toast.error("الرجاء تحديد نوع التحليل.");
+      toast.error("الرجاء تحديد نوع التحليل.", { duration: 1000 });
       return false;
     }
 

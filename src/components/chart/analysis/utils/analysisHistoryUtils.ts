@@ -72,7 +72,7 @@ export const saveAnalysisToHistory = async (
       }
 
       console.log("Analysis saved successfully to history with duration:", finalDuration);
-      toast.success("تم حفظ نتائج التحليل في السجل");
+      toast.success("تم حفظ نتائج التحليل في السجل", { duration: 1000 });
       return data;
     } catch (firstError) {
       console.error("First attempt failed:", firstError);
@@ -91,7 +91,7 @@ export const saveAnalysisToHistory = async (
 
       if (error) {
         console.error("Error saving analysis to history (2nd attempt):", error);
-        toast.error("حدث خطأ أثناء حفظ التحليل في السجل");
+        toast.error("حدث خطأ أثناء حفظ التحليل في السجل", { duration: 1000 });
         throw error;
       }
 
@@ -100,12 +100,12 @@ export const saveAnalysisToHistory = async (
       }
 
       console.log("Analysis saved successfully to history (2nd attempt) with duration:", finalDuration);
-      toast.success("تم حفظ نتائج التحليل في السجل");
+      toast.success("تم حفظ نتائج التحليل في السجل", { duration: 1000 });
       return data;
     }
   } catch (error) {
     console.error("Error saving analysis to history:", error);
-    toast.error("حدث خطأ أثناء حفظ التحليل في السجل");
+    toast.error("حدث خطأ أثناء حفظ التحليل في السجل", { duration: 1000 });
     throw error;
   }
 };

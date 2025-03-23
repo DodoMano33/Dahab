@@ -46,7 +46,7 @@ export const ErrorDisplay = ({
   const handleRetry = () => {
     // إطلاق حدث لإعادة المحاولة يدويًا
     window.dispatchEvent(new CustomEvent('manual-check-analyses'));
-    toast.info('جارٍ إعادة المحاولة...');
+    toast.info('جارٍ إعادة المحاولة...', { duration: 1000 });
   };
   
   return (
@@ -66,7 +66,8 @@ export const ErrorDisplay = ({
       
       <div className="flex items-center text-xs mt-1 gap-1 text-blue-600 cursor-pointer hover:underline" 
            onClick={() => toast.info('معلومات تشخيصية', {
-             description: Object.entries(diagnosticInfo).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')
+             description: Object.entries(diagnosticInfo).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n'),
+             duration: 1000
            })}>
         <AlertTriangle size={14} />
         <span>عرض معلومات تشخيصية</span>

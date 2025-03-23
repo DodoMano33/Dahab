@@ -75,7 +75,7 @@ function App() {
               richColors
               expand
               visibleToasts={5}
-              duration={5000}
+              duration={1000}
             />
             <Index />
             <OnboardingDialog />

@@ -36,7 +36,7 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = true }: UsePriceUp
           detail: { price, symbol: 'XAUUSD' } 
         }));
         
-        toast.success(`تم تحديث السعر: ${price}`);
+        toast.success(`تم تحديث السعر: ${price}`, { duration: 1000 });
         setIsLoading(false);
         return;
       }
@@ -74,14 +74,14 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = true }: UsePriceUp
         }));
         
         const updateTime = new Date(priceData.updated_at).toLocaleTimeString();
-        toast.success(`تم تحديث السعر: ${priceData.price} (${updateTime})`);
+        toast.success(`تم تحديث السعر: ${priceData.price} (${updateTime})`, { duration: 1000 });
       } else {
         throw new Error("لا يوجد سعر متاح في قاعدة البيانات");
       }
     } catch (error: any) {
       console.error("خطأ في جلب السعر:", error);
       setErrorMessage("لم نتمكن من جلب السعر الحالي. يرجى المحاولة مرة أخرى أو إدخال السعر يدويًا");
-      toast.error("فشل في تحديث السعر: " + (error.message || "خطأ غير معروف"));
+      toast.error("فشل في تحديث السعر: " + (error.message || "خطأ غير معروف"), { duration: 1000 });
     } finally {
       setIsLoading(false);
     }

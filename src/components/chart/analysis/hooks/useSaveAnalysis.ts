@@ -90,7 +90,7 @@ export const useSaveAnalysis = () => {
         
         // عرض رسالة نجاح مع نوع التحليل المتوافق
         toast.success(`تم إكمال تحليل ${getStrategyName(mappedAnalysisType)} بنجاح على الإطار الزمني ${timeframe} | ${symbol} السعر: ${currentPrice}`, {
-          duration: 5000,
+          duration: 1000,
         });
         
         return savedData;
@@ -139,16 +139,16 @@ export const useSaveAnalysis = () => {
         
         // تقديم رسالة خطأ مفيدة لانتهاكات القيود
         if (dbError.message && dbError.message.includes('search_history_analysis_type_check')) {
-          toast.error(`نوع التحليل "${mappedAnalysisType}" غير مسموح به في قاعدة البيانات. يرجى التواصل مع المسؤول.`);
+          toast.error(`نوع التحليل "${mappedAnalysisType}" غير مسموح به في قاعدة البيانات. يرجى التواصل مع المسؤول.`, { duration: 1000 });
         } else {
-          toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات: " + (dbError.message || ''));
+          toast.error("حدث خطأ أثناء حفظ التحليل في قاعدة البيانات: " + (dbError.message || ''), { duration: 1000 });
         }
         
         throw dbError;
       }
     } catch (error: any) {
       console.error("Error saving analysis:", error);
-      toast.error("حدث خطأ أثناء حفظ التحليل: " + (error.message || ''));
+      toast.error("حدث خطأ أثناء حفظ التحليل: " + (error.message || ''), { duration: 1000 });
       throw error;
     }
   };
