@@ -8,6 +8,7 @@ import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useNavigate } from "react-router-dom";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
+import { dispatchAnalysisSuccessEvent } from "@/hooks/analysis-checker/events/analysisEvents";
 
 // Define the ChartAnalysisResult interface
 export interface ChartAnalysisResult {
@@ -178,13 +179,25 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
       await clearSearchHistoryCache();
 
       // حفظ التحليل في قاعدة البيانات
-      await saveAnalysisToDatabase(
+      const savedData = await saveAnalysisToDatabase(
         symbolName,
         analysis.analysisType,
         price,
         analysis,
         durationHours
       );
+
+      // إرسال إشعار لتحديث سجل البحث
+      if (savedData) {
+        dispatchAnalysisSuccessEvent({
+          timestamp: new Date().toISOString(),
+          checked: 1,
+          symbol: symbolName
+        });
+        
+        // إطلاق حدث تحديث السجل
+        window.dispatchEvent(new CustomEvent('refreshSearchHistory'));
+      }
 
       // عرض رسالة النجاح
       toast.success(`تم التحليل بنجاح. المدة: ${durationHours} ساعة.`);

@@ -55,7 +55,20 @@ export function useHistoryData() {
         )
         .subscribe();
 
+      // الاستماع للأحداث المخصصة
+      const handleRefresh = () => {
+        console.log('Refresh search history event received');
+        fetchSearchHistory();
+      };
+      
+      window.addEventListener('refreshSearchHistory', handleRefresh);
+      window.addEventListener('historyUpdated', handleRefresh);
+      window.addEventListener('analyses-checked', handleRefresh);
+
       return () => {
+        window.removeEventListener('refreshSearchHistory', handleRefresh);
+        window.removeEventListener('historyUpdated', handleRefresh);
+        window.removeEventListener('analyses-checked', handleRefresh);
         supabase.removeChannel(channel);
       };
     } else {

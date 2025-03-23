@@ -5,6 +5,7 @@ import { mapAnalysisTypeToConfig, mapToAnalysisType } from "../utils/analysisTyp
 import { SearchHistoryItem } from "@/types/analysis";
 import { AnalysisType } from "@/types/analysis";
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
+import { dispatchAnalysisSuccessEvent } from "@/hooks/analysis-checker/events/analysisEvents";
 
 interface AnalysisPerformerProps {
   symbol: string;
@@ -159,6 +160,16 @@ export const performAnalysis = async ({
       if (!savedData) {
         throw lastError || new Error("Failed to save analysis after multiple attempts");
       }
+
+      // إطلاق إشعار نجاح التحليل
+      dispatchAnalysisSuccessEvent({
+        timestamp: new Date().toISOString(),
+        checked: 1,
+        symbol: symbol
+      });
+      
+      // إطلاق حدث مخصص لتحديث سجل البحث
+      window.dispatchEvent(new CustomEvent('refreshSearchHistory'));
 
       if (onAnalysisComplete) {
         const newHistoryEntry: SearchHistoryItem = {

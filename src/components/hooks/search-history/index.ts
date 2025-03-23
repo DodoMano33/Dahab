@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useHistoryData } from "./useHistoryData";
 import { useExpiredAnalyses } from "./useExpiredAnalyses";
 import { UseSearchHistoryReturn } from "./types";
@@ -20,6 +20,20 @@ export const useSearchHistory = (): UseSearchHistoryReturn => {
   } = useHistoryData();
 
   const { checkAndDeleteExpiredAnalyses } = useExpiredAnalyses(searchHistory, setSearchHistory);
+
+  // الاستماع لأحداث تحديث التاريخ
+  useEffect(() => {
+    const handleHistoryUpdate = () => {
+      console.log("History update event received in useSearchHistory");
+      fetchSearchHistory();
+    };
+    
+    window.addEventListener('refreshSearchHistory', handleHistoryUpdate);
+    
+    return () => {
+      window.removeEventListener('refreshSearchHistory', handleHistoryUpdate);
+    };
+  }, [fetchSearchHistory]);
 
   const refreshSearchHistory = async () => {
     await fetchSearchHistory();
