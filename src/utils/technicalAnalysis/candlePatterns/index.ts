@@ -27,17 +27,8 @@ export {
   isTweezerBottom
 } from './twoCandlePatterns';
 
-export {
-  isEveningStar,
-  isMorningStar,
-  isThreeWhiteSoldiers,
-  isThreeBlackCrows,
-  isMorningDojiStar,
-  isEveningDojiStar,
-  isAbandonedBaby,
-  isRisingThreeMethods,
-  isFallingThreeMethods
-} from './threeCandlePatterns';
+// Export all three candle patterns from the new module structure
+export * from './threeCandlePatterns';
 
 // Re-export utilities, being careful with the isDoji conflict
 export {
