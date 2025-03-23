@@ -10,8 +10,8 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام مسار نسبي واضح بدون علامة @ مع تصريح استيراد مباشر
-const ChartAnalyzer = lazy(() => import("../components/ChartAnalyzer").then(module => ({ default: module.default })));
+// استخدام استيراد ديناميكي بسيط وموثوق
+const ChartAnalyzer = lazy(() => import("../components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء
