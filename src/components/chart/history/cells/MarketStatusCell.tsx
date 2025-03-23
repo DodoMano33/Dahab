@@ -3,7 +3,11 @@ import { useMarketStatus } from "@/hooks/useMarketStatus";
 import { Badge } from "@/components/ui/badge";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
-export const MarketStatusCell = () => {
+interface MarketStatusCellProps {
+  itemId?: string; // Add itemId prop
+}
+
+export const MarketStatusCell = ({ itemId }: MarketStatusCellProps) => {
   const { isOpen, isWeekend, nextOpeningTime } = useMarketStatus();
 
   const formatNextOpeningTime = () => {
