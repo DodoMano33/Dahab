@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { getExpectedTime } from "./technicalAnalysis";
 
@@ -115,20 +116,30 @@ export const patterns: PatternInfo[] = [
   }
 ];
 
-export const identifyPattern = (chartImage: string): PatternInfo => {
-  console.log("تحليل الصورة للتعرف على النمط:", chartImage);
+export const identifyPattern = (chartImage: string, patternIndex?: number): PatternInfo => {
+  console.log("تحليل الصورة للتعرف على النمط:", chartImage.substring(0, 20) + "...");
+  
+  // إذا تم تحديد مؤشر نمط، استخدمه مباشرة
+  if (patternIndex !== undefined && patternIndex >= 0 && patternIndex < patterns.length) {
+    console.log(`استخدام النمط المحدد بمؤشر ${patternIndex}: ${patterns[patternIndex].name}`);
+    return patterns[patternIndex];
+  }
+  
+  // اختيار نمط عشوائي
   const randomIndex = Math.floor(Math.random() * patterns.length);
+  console.log(`اختيار نمط عشوائي بمؤشر ${randomIndex}: ${patterns[randomIndex].name}`);
   return patterns[randomIndex];
 };
 
 export const analyzePatternWithPrice = (
   chartImage: string,
   currentPrice: number,
-  timeframe: string = "1d"
+  timeframe: string = "1d",
+  patternIndex?: number
 ): AnalysisData => {
   console.log("تحليل النمط مع السعر الحالي والإطار الزمني:", { currentPrice, timeframe });
   
-  const pattern = identifyPattern(chartImage);
+  const pattern = identifyPattern(chartImage, patternIndex);
   console.log("النمط المكتشف:", pattern);
 
   // تعديل النسب بناءً على الإطار الزمني
@@ -136,36 +147,109 @@ export const analyzePatternWithPrice = (
   const stopLossPercent = pattern.stopLossPercent * timeframeMultiplier;
   const targetPercent = pattern.targetPercent * timeframeMultiplier;
 
-  const support = Number((currentPrice * (1 - stopLossPercent / 100)).toFixed(2));
-  const resistance = Number((currentPrice * (1 + targetPercent / 100)).toFixed(2));
+  // حساب الدعم والمقاومة بناءً على اتجاه النمط
+  let support: number;
+  let resistance: number;
   
+  if (pattern.expectedMove === "صاعد") {
+    support = Number((currentPrice * (1 - stopLossPercent / 100)).toFixed(2));
+    resistance = Number((currentPrice * (1 + targetPercent / 100)).toFixed(2));
+  } else if (pattern.expectedMove === "هابط") {
+    support = Number((currentPrice * (1 - targetPercent / 100)).toFixed(2));
+    resistance = Number((currentPrice * (1 + stopLossPercent / 100)).toFixed(2));
+  } else {
+    // للاتجاه المحايد، نوزع المسافة بالتساوي
+    const rangePercent = (stopLossPercent + targetPercent) / 2;
+    support = Number((currentPrice * (1 - rangePercent / 100)).toFixed(2));
+    resistance = Number((currentPrice * (1 + rangePercent / 100)).toFixed(2));
+  }
+  
+  // حساب نقطة وقف الخسارة بشكل صحيح بناءً على اتجاه النمط
+  const stopLoss = pattern.expectedMove === "صاعد" 
+    ? support * 0.99 // أقل من الدعم للاتجاه الصاعد
+    : resistance * 1.01; // أعلى من المقاومة للاتجاه الهابط
+  
+  // حساب الأهداف بشكل متنوع بناءً على اتجاه النمط
+  let targets = [];
+  
+  if (pattern.expectedMove === "صاعد") {
+    targets = [
+      {
+        price: Number((currentPrice * (1 + (targetPercent / 3) / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 0)
+      },
+      {
+        price: Number((currentPrice * (1 + (targetPercent * 2/3) / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 1)
+      },
+      {
+        price: Number((currentPrice * (1 + targetPercent / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 2)
+      }
+    ];
+  } else if (pattern.expectedMove === "هابط") {
+    targets = [
+      {
+        price: Number((currentPrice * (1 - (targetPercent / 3) / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 0)
+      },
+      {
+        price: Number((currentPrice * (1 - (targetPercent * 2/3) / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 1)
+      },
+      {
+        price: Number((currentPrice * (1 - targetPercent / 100)).toFixed(2)),
+        expectedTime: getExpectedTime(timeframe, 2)
+      }
+    ];
+  } else {
+    // للاتجاه المحايد، هدف واحد لكل اتجاه
+    targets = [
+      {
+        price: resistance,
+        expectedTime: getExpectedTime(timeframe, 0)
+      },
+      {
+        price: support,
+        expectedTime: getExpectedTime(timeframe, 1)
+      }
+    ];
+  }
+  
+  // حساب أفضل نقطة دخول
+  const bestEntryPrice = pattern.expectedMove === "صاعد" 
+    ? Number((Math.max(currentPrice * 0.995, support * 1.01)).toFixed(2))
+    : Number((Math.min(currentPrice * 1.005, resistance * 0.99)).toFixed(2));
+  
+  // حساب مستويات فيبوناتشي بناءً على اتجاه النمط
+  const range = resistance - support;
+  const fibBase = pattern.expectedMove === "صاعد" ? support : resistance;
+  const fibMultiplier = pattern.expectedMove === "صاعد" ? 1 : -1;
+  
+  const fibonacciLevels = [
+    { level: 0.236, price: Number((fibBase + fibMultiplier * range * 0.236).toFixed(2)) },
+    { level: 0.382, price: Number((fibBase + fibMultiplier * range * 0.382).toFixed(2)) },
+    { level: 0.5, price: Number((fibBase + fibMultiplier * range * 0.5).toFixed(2)) },
+    { level: 0.618, price: Number((fibBase + fibMultiplier * range * 0.618).toFixed(2)) },
+    { level: 0.786, price: Number((fibBase + fibMultiplier * range * 0.786).toFixed(2)) }
+  ];
+  
+  // إنشاء كائن التحليل النهائي
   const analysis: AnalysisData = {
     pattern: `${pattern.arabicName} (${pattern.name})`,
     direction: pattern.expectedMove,
     currentPrice: currentPrice,
     support: support,
     resistance: resistance,
-    stopLoss: Number((currentPrice * (1 - stopLossPercent / 100)).toFixed(2)),
+    stopLoss: stopLoss,
     bestEntryPoint: {
-      price: pattern.expectedMove === "صاعد" ? support : resistance,
+      price: bestEntryPrice,
       reason: `أفضل نقطة دخول بناءً على نمط ${pattern.arabicName} مع موثوقية ${pattern.reliability}/10 على الإطار الزمني ${timeframe}`
     },
-    targets: [
-      {
-        price: Number((currentPrice * (1 + (targetPercent / 2) / 100)).toFixed(2)),
-        expectedTime: getExpectedTime(timeframe, 0)
-      },
-      {
-        price: Number((currentPrice * (1 + targetPercent / 100)).toFixed(2)),
-        expectedTime: getExpectedTime(timeframe, 1)
-      }
-    ],
-    fibonacciLevels: [
-      { level: 0.236, price: Number((currentPrice * 1.0236).toFixed(2)) },
-      { level: 0.382, price: Number((currentPrice * 1.0382).toFixed(2)) },
-      { level: 0.618, price: Number((currentPrice * 1.0618).toFixed(2)) }
-    ],
-    analysisType: "Patterns"
+    targets: targets,
+    fibonacciLevels: fibonacciLevels,
+    analysisType: "نمطي",
+    timeframe: timeframe
   };
 
   console.log("نتائج التحليل:", analysis);
