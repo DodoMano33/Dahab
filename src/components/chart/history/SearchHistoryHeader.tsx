@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import { AnalysisCountBadge } from "../analysis/components/AnalysisCountBadge";
 
 interface SearchHistoryHeaderProps {
   initialCount?: number;

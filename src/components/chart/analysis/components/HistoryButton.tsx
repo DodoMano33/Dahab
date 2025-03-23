@@ -29,6 +29,8 @@ export const HistoryButton = ({
   useEffect(() => {
     setCount(initialCount);
 
+    if (!user) return;
+
     const channel = supabase
       .channel(`${table}_changes`)
       .on(
@@ -37,13 +39,14 @@ export const HistoryButton = ({
           event: '*',
           schema: 'public',
           table: table,
-          filter: user ? `user_id=eq.${user.id}` : undefined
+          filter: `user_id=eq.${user.id}`
         },
         async () => {
+          // تحديث العدد عند أي تغيير
           const { count: newCount } = await supabase
             .from(table)
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id);
+            .eq('user_id', user.id);
           
           setCount(newCount || 0);
         }

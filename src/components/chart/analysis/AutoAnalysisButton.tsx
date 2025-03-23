@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { BackTestResultsDialog } from "../backtest/BackTestResultsDialog";
 import { supabase } from "@/lib/supabase";
 import { HistoryButton } from "./components/HistoryButton";
-import { toast } from "sonner";
 
 interface AutoAnalysisButtonProps {
   isAnalyzing: boolean;
@@ -53,31 +52,31 @@ export const AutoAnalysisButton = ({
 
         setBacktestCount(backtestCount || 0);
         setSearchHistoryCount(historyCount || 0);
-
-        // إعداد اشتراك في الوقت الحقيقي للتغييرات في العدد
-        const channel = supabase
-          .channel('counts_changes')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'backtest_results' },
-            () => fetchCounts()
-          )
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'search_history' },
-            () => fetchCounts()
-          )
-          .subscribe();
-
-        return () => {
-          supabase.removeChannel(channel);
-        };
       } catch (error) {
         console.error('Error in fetchCounts:', error);
       }
     };
 
     fetchCounts();
+
+    // إعداد اشتراك في الوقت الحقيقي للتغييرات في العدد
+    const channel = supabase
+      .channel('counts_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'backtest_results' },
+        () => fetchCounts()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'search_history' },
+        () => fetchCounts()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
@@ -113,6 +112,7 @@ export const AutoAnalysisButton = ({
           title="Back Test Results"
           count={backtestCount}
           className="bg-[#800000] hover:bg-[#600000] text-white"
+          table="backtest_results"
         />
 
         <HistoryButton
@@ -126,6 +126,7 @@ export const AutoAnalysisButton = ({
           }
           count={backtestCount}
           className="bg-blue-600 hover:bg-blue-700 text-white"
+          table="backtest_results"
         />
 
         <HistoryButton
@@ -133,6 +134,7 @@ export const AutoAnalysisButton = ({
           title="سجل البحث"
           count={searchHistoryCount}
           variant="outline"
+          table="search_history"
         />
       </div>
 
