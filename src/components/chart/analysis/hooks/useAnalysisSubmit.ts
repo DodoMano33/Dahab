@@ -1,190 +1,155 @@
-
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { toast } from "sonner";
+import { processChartAnalysis, saveAnalysisToDatabase } from "@/components/chart/analysis/utils/chartAnalysisProcessor";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { AnalysisType, SearchHistoryItem } from "@/types/analysis";
-import { buildAnalysisConfig } from "../utils/analysisConfigBuilder";
-import { validateAnalysisInputs } from "../utils/inputValidation";
-import { dismissToasts, showErrorToast, showLoadingToast } from "../utils/toastUtils";
-import { useAnalysisHandler } from "../AnalysisHandler";
-import { saveAnalysis } from "../utils/saveAnalysis";
-import { mapToAnalysisType } from "../utils/analysisTypeMapper";
+import { usePrice } from "@/hooks/usePrice";
+import { ChartAnalysisResult } from "@/types/chartAnalysis";
 
 interface UseAnalysisSubmitProps {
-  onAnalysis: (item: SearchHistoryItem) => void;
+  symbol: string;
 }
 
-// تعريف واجهة ChartAnalysisResult للتأكد من وجود الحقول المطلوبة
-interface ChartAnalysisResult {
-  analysisResult: any;
-  duration?: number;
-  currentPrice?: number;
-  symbol?: string;
-}
-
-export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
+export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const router = useRouter();
   const { user } = useAuth();
-  const { handleTradingViewConfig } = useAnalysisHandler();
+  const { currentPrice } = usePrice(symbol);
 
-  const handleAnalysis = async (
-    symbol: string, 
-    timeframe: string, 
-    providedPrice?: number,
-    isScalping: boolean = false,
-    isAI: boolean = false,
-    isSMC: boolean = false,
-    isICT: boolean = false,
-    isTurtleSoup: boolean = false,
-    isGann: boolean = false,
-    isWaves: boolean = false,
-    isPatternAnalysis: boolean = false,
-    isPriceAction: boolean = false,
-    isNeuralNetwork: boolean = false,
-    isRNN: boolean = false,
-    isTimeClustering: boolean = false,
-    isMultiVariance: boolean = false,
-    isCompositeCandlestick: boolean = false,
-    isBehavioral: boolean = false,
-    isFibonacci: boolean = false,
-    isFibonacciAdvanced: boolean = false,
-    duration?: string,
-    selectedTypes?: string[]
-  ) => {
-    const loadingToastId = showLoadingToast(
-      `جاري التحليل للرمز ${symbol} على الإطار الزمني ${timeframe}...`
-    );
-    
-    try {
+  const onSubmit = useCallback(
+    async (
+      timeframe: string,
+      analysisType: AnalysisType,
+      selectedTypes: string[],
+      providedPrice?: number,
+      isAI?: boolean,
+      isSMC?: boolean,
+      isICT?: boolean,
+      isTurtleSoup?: boolean,
+      isGann?: boolean,
+      isWaves?: boolean,
+      isPatternAnalysis?: boolean,
+      isPriceAction?: boolean,
+      isNeuralNetwork?: boolean,
+      isRNN?: boolean,
+      isTimeClustering?: boolean,
+      isMultiVariance?: boolean,
+      isCompositeCandlestick?: boolean,
+      isBehavioral?: boolean,
+      isFibonacci?: boolean,
+      isFibonacciAdvanced?: boolean,
+      duration?: string,
+      chartImage?: string
+    ) => {
       if (!user) {
-        showErrorToast(new Error("يرجى تسجيل الدخول لحفظ نتائج التحليل"));
-        dismissToasts(loadingToastId);
+        toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة");
+        router.push("/login");
         return;
       }
 
-      if (!validateAnalysisInputs(symbol, timeframe, providedPrice)) {
-        dismissToasts(loadingToastId);
+      if (!symbol) {
+        toast.error("الرجاء تحديد رمز المؤشر.");
         return;
       }
 
-      const durationHours = duration ? parseInt(duration) : 36;
-      console.log("Using duration hours:", durationHours);
-      
-      if (isNaN(durationHours) || durationHours < 1 || durationHours > 72) {
-        showErrorToast(new Error("مدة التحليل يجب أن تكون بين 1 و 72 ساعة"));
-        dismissToasts(loadingToastId);
+      if (!timeframe) {
+        toast.error("الرجاء تحديد الإطار الزمني.");
         return;
       }
 
-      const { analysisType } = buildAnalysisConfig(
-        isScalping,
-        isAI,
-        isSMC,
-        isICT,
-        isTurtleSoup,
-        isGann,
-        isWaves,
-        isPatternAnalysis,
-        isPriceAction,
-        isNeuralNetwork,
-        isRNN,
-        isTimeClustering,
-        isMultiVariance,
-        isCompositeCandlestick,
-        isBehavioral,
-        isFibonacci,
-        isFibonacciAdvanced
-      );
+      if (!analysisType && (!selectedTypes || selectedTypes.length === 0)) {
+        toast.error("الرجاء تحديد نوع التحليل.");
+        return;
+      }
 
-      console.log("Starting analysis with duration:", duration);
-      
-      const result = await handleTradingViewConfig(
-        symbol, 
-        timeframe, 
-        providedPrice, 
-        isScalping, 
-        isAI, 
-        isSMC, 
-        isICT,
-        isTurtleSoup,
-        isGann,
-        isWaves,
-        isPatternAnalysis,
-        isPriceAction,
-        isNeuralNetwork,
-        isRNN,
-        isTimeClustering,
-        isMultiVariance,
-        isCompositeCandlestick,
-        isBehavioral,
-        isFibonacci,
-        isFibonacciAdvanced,
-        duration,
-        selectedTypes
-      );
-      
-      dismissToasts(loadingToastId);
-      
-      if (result && result.analysisResult) {
-        // استخدام البيانات من النتيجة أو من المدخلات الأصلية
-        const symbolToUse = result.symbol || symbol.toUpperCase();
-        const priceToUse = result.currentPrice || providedPrice || 0;
-        const { analysisResult } = result;
-        
-        if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
-          console.error("Invalid analysis result:", analysisResult);
-          showErrorToast(new Error("نتائج التحليل غير صالحة"));
-          return;
+      if (!chartImage) {
+        toast.error("الرجاء تحميل صورة الشارت.");
+        return;
+      }
+
+      setIsAnalyzing(true);
+
+      try {
+        const inputPrice = providedPrice !== undefined ? providedPrice : currentPrice;
+
+        if (inputPrice === null || inputPrice === undefined) {
+          throw new Error("السعر الحالي غير متوفر. يرجى المحاولة مرة أخرى لاحقًا.");
         }
 
-        try {
-          // تحويل المدة إلى رقم للتأكد من نوع البيانات
-          const finalDuration = typeof result.duration === 'number' 
-            ? result.duration 
-            : (durationHours || 36);
-                             
-          console.log("Saving analysis with duration:", finalDuration);
-          
-          const mappedAnalysisType = mapToAnalysisType(analysisType);
-          console.log("Mapped analysis type:", mappedAnalysisType);
-          
-          const savedData = await saveAnalysis({
-            userId: user.id,
-            symbol: symbolToUse,
-            currentPrice: priceToUse,
-            analysisResult,
-            analysisType: mappedAnalysisType as AnalysisType,
-            timeframe,
-            durationHours: finalDuration
-          });
+        const input = {
+          symbol,
+          timeframe,
+          providedPrice: inputPrice,
+          analysisType,
+          selectedTypes,
+          isAI,
+          isSMC,
+          isICT,
+          isTurtleSoup,
+          isGann,
+          isWaves,
+          isPatternAnalysis,
+          isPriceAction,
+          isNeuralNetwork,
+          isRNN,
+          isTimeClustering,
+          isMultiVariance,
+          isCompositeCandlestick,
+          isBehavioral,
+          isFibonacci,
+          isFibonacciAdvanced,
+          duration,
+          chartImage
+        };
 
-          if (savedData) {
-            const newHistoryEntry: SearchHistoryItem = {
-              id: savedData.id,
-              date: new Date(),
-              symbol: symbolToUse,
-              currentPrice: priceToUse,
-              analysis: analysisResult,
-              targetHit: false,
-              stopLossHit: false,
-              analysisType: mappedAnalysisType as AnalysisType,
-              timeframe,
-              analysis_duration_hours: finalDuration
-            };
-
-            onAnalysis(newHistoryEntry);
-            console.log("تم تحديث سجل البحث مع مدة تحليل:", finalDuration, newHistoryEntry);
-          }
-        } catch (saveError) {
-          console.error("Error saving analysis:", saveError);
-          showErrorToast(new Error("حدث خطأ أثناء حفظ التحليل"));
-        }
+        const result = await processChartAnalysis(input);
+        handleAnalysisResult(result);
+      } catch (error: any) {
+        console.error("حدث خطأ أثناء معالجة التحليل:", error);
+        toast.error(error.message || "حدث خطأ أثناء معالجة التحليل.");
+      } finally {
+        setIsAnalyzing(false);
       }
-    } catch (error) {
-      console.error("خطأ في التحليل:", error);
-      showErrorToast(error);
-      
-      dismissToasts(loadingToastId);
+    },
+    [router, symbol, user, currentPrice]
+  );
+
+  // نستخدم الخصائص التي أضفناها للنوع ChartAnalysisResult
+  const handleAnalysisResult = (result: ChartAnalysisResult) => {
+    if (!result || !result.analysisResult) {
+      setIsAnalyzing(false);
+      return;
     }
+
+    // يمكننا الآن استخدام symbol و currentPrice بأمان
+    const symbol = result.symbol || "";
+    const currentPrice = result.currentPrice || 0;
+    const analysis = result.analysisResult;
+
+    // تصحيح نوع البيانات
+    const durationHours: number = 
+      typeof result.duration === 'string' 
+        ? parseInt(result.duration) 
+        : (result.duration as number || 8);
+
+    saveAnalysisToDatabase(
+      symbol,
+      analysis.analysisType,
+      currentPrice,
+      analysis.analysisType,
+      analysis,
+      durationHours
+    );
+
+    // تصحيح نوع البيانات
+    const analysisDuration: number = 
+      typeof result.duration === 'string' 
+        ? parseInt(result.duration) 
+        : (result.duration as number || 8);
+
+    toast.success(`تم التحليل بنجاح. المدة: ${analysisDuration} ساعة.`);
   };
 
-  return { handleAnalysis };
+  return { onSubmit, isAnalyzing };
 };

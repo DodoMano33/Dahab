@@ -17,9 +17,12 @@ interface ChartAnalysisInput {
   chartImage?: string; // صورة الشارت للتحليل
 }
 
+// تحديث نوع البيانات الناتجة ليشمل symbol و currentPrice
 interface ChartAnalysisResult {
   analysisResult: AnalysisData | null;
   duration?: string | number;
+  symbol?: string;
+  currentPrice?: number;
 }
 
 export const processChartAnalysis = async (
@@ -56,7 +59,7 @@ export const processChartAnalysis = async (
     if (!chartImage) {
       console.error("لا توجد صورة شارت للتحليل!");
       showErrorToast(new Error("لا توجد صورة شارت للتحليل!"));
-      return { analysisResult: null };
+      return { analysisResult: null, symbol, currentPrice: providedPrice };
     }
 
     // تنفيذ التحليل
@@ -67,7 +70,7 @@ export const processChartAnalysis = async (
       if (!analysisResult) {
         console.error("لم يتم العثور على أي أنماط أو إشارات في هذا التحليل.");
         showErrorToast(new Error("لم يتم العثور على أي أنماط أو إشارات في هذا التحليل."));
-        return { analysisResult: null };
+        return { analysisResult: null, symbol, currentPrice: providedPrice };
       }
       
       console.log("Single analysis result:", analysisResult);
@@ -78,7 +81,7 @@ export const processChartAnalysis = async (
       if (results.length === 0) {
         console.error("لم يتم العثور على أي أنماط أو إشارات في أي من التحليلات.");
         showErrorToast(new Error("لم يتم العثور على أي أنماط أو إشارات في أي من التحليلات."));
-        return { analysisResult: null };
+        return { analysisResult: null, symbol, currentPrice: providedPrice };
       }
       
       // استخدام النتيجة الأولى
@@ -96,7 +99,9 @@ export const processChartAnalysis = async (
     console.log("Analysis completed successfully:", analysisResult);
     return { 
       analysisResult,
-      duration: durationHours
+      duration: durationHours,
+      symbol,
+      currentPrice: providedPrice
     };
   } catch (error) {
     console.error("Error in chart analysis processor:", error);
@@ -123,6 +128,7 @@ export const saveAnalysisToDatabase = async (
       return;
     }
     
+    // تصحيح استدعاء الدالة هنا
     const { error } = await supabase
       .from('search_history')
       .insert({

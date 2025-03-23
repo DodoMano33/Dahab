@@ -1,81 +1,48 @@
 
-
-import { addMinutes, addHours, addDays } from "date-fns";
-
-// وظيفة للحصول على الوقت المتوقع بناءً على الإطار الزمني ومؤشر الهدف
-export const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
+// وظيفة للحصول على وقت متوقع بناءً على الإطار الزمني
+export const getExpectedTime = (timeframe: string, targetIndex: number = 0): Date => {
   const now = new Date();
-  const multiplier = targetIndex + 1;
-
+  
+  // اعتماداً على الإطار الزمني، نقوم بإضافة وقت مختلف
   switch (timeframe) {
-    case "1m":
-      return addMinutes(now, multiplier * 5);
-    case "5m":
-      return addMinutes(now, multiplier * 25);
-    case "15m":
-      return addMinutes(now, multiplier * 75);
-    case "30m":
-      return addMinutes(now, multiplier * 150);
-    case "1h":
-      return addHours(now, multiplier * 5);
-    case "4h":
-      return addHours(now, multiplier * 20);
-    case "1d":
-      return addDays(now, multiplier * 5);
-    case "1w":
-      return addDays(now, multiplier * 35);
+    case '1m':
+      return new Date(now.getTime() + (targetIndex + 1) * 1 * 60 * 1000);
+    case '5m':
+      return new Date(now.getTime() + (targetIndex + 1) * 5 * 60 * 1000);
+    case '15m':
+      return new Date(now.getTime() + (targetIndex + 1) * 15 * 60 * 1000);
+    case '30m':
+      return new Date(now.getTime() + (targetIndex + 1) * 30 * 60 * 1000);
+    case '1h':
+      return new Date(now.getTime() + (targetIndex + 1) * 60 * 60 * 1000);
+    case '4h':
+      return new Date(now.getTime() + (targetIndex + 1) * 4 * 60 * 60 * 1000);
+    case '1d':
+      return new Date(now.getTime() + (targetIndex + 1) * 24 * 60 * 60 * 1000);
+    case '1w':
+      return new Date(now.getTime() + (targetIndex + 1) * 7 * 24 * 60 * 60 * 1000);
+    case '1M':
+      // اضافة شهر (تقريبي - 30 يوم)
+      return new Date(now.getTime() + (targetIndex + 1) * 30 * 24 * 60 * 60 * 1000);
     default:
-      // إطار زمني افتراضي (4 ساعات)
-      return addHours(now, multiplier * 20);
+      // الإطار الزمني الافتراضي هو 4 ساعات
+      return new Date(now.getTime() + (targetIndex + 1) * 4 * 60 * 60 * 1000);
   }
 };
 
-// حساب المدة المتوقعة بناءً على الإطار الزمني
-export const calculateTimeframeBasedDuration = (timeframe: string): number => {
-  // الوقت المتوقع بالساعات
-  switch (timeframe) {
-    case "1m":
-      return 1; // ساعة واحدة
-    case "5m":
-      return 3; // 3 ساعات
-    case "15m":
-      return 6; // 6 ساعات
-    case "30m":
-      return 12; // 12 ساعة
-    case "1h":
-      return 24; // 24 ساعة
-    case "4h":
-      return 4 * 24; // 4 أيام
-    case "1d":
-      return 14 * 24; // أسبوعين
-    case "1w":
-      return 30 * 24; // شهر
-    default:
-      return 24; // 24 ساعة افتراضياً
-  }
-};
-
-// تحويل الإطار الزمني إلى تسمية مقروءة
+// وظيفة للحصول على اسم الإطار الزمني بالعربية
 export const getTimeframeLabel = (timeframe: string): string => {
-  switch (timeframe) {
-    case "1m":
-      return "دقيقة واحدة";
-    case "5m":
-      return "5 دقائق";
-    case "15m":
-      return "15 دقيقة";
-    case "30m":
-      return "30 دقيقة";
-    case "1h":
-      return "ساعة واحدة";
-    case "4h":
-      return "4 ساعات";
-    case "1d":
-      return "يوم واحد";
-    case "1w":
-      return "أسبوع واحد";
-    default:
-      return timeframe;
-  }
+  const timeframeMap: Record<string, string> = {
+    '1m': 'دقيقة',
+    '5m': '5 دقائق',
+    '15m': '15 دقيقة',
+    '30m': '30 دقيقة',
+    '1h': 'ساعة',
+    '4h': '4 ساعات',
+    '1d': 'يوم',
+    '1w': 'أسبوع',
+    '1M': 'شهر'
+  };
+  
+  return timeframeMap[timeframe] || timeframe;
 };
-

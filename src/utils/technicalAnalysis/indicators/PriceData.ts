@@ -1,5 +1,5 @@
 
-// نوع بيانات السعر الأساسي المستخدم في تحليل الأنماط
+// تعريف نوع بيانات السعر
 export interface PriceData {
   timestamp: number;
   open: number;
@@ -9,102 +9,206 @@ export interface PriceData {
   volume?: number;
 }
 
-// وظيفة للكشف عن الاتجاه باستخدام بيانات الأسعار
+// وظائف الكشف عن الاتجاه
 export const detectTrend = (prices: number[]): "صاعد" | "هابط" | "محايد" => {
-  if (prices.length < 2) {
-    return "محايد";
+  if (prices.length < 2) return "محايد";
+  
+  const recentPrices = prices.slice(-10);
+  let upCount = 0;
+  let downCount = 0;
+  
+  for (let i = 1; i < recentPrices.length; i++) {
+    if (recentPrices[i] > recentPrices[i-1]) upCount++;
+    else if (recentPrices[i] < recentPrices[i-1]) downCount++;
   }
   
-  // حساب المتوسط
-  const sum = prices.reduce((a, b) => a + b, 0);
-  const avg = sum / prices.length;
-  
-  // حساب الاتجاه البسيط (الأسعار الأخيرة فوق أو تحت المتوسط)
-  const lastPrice = prices[prices.length - 1];
-  const firstPrice = prices[0];
-  
-  if (lastPrice > firstPrice && lastPrice > avg) {
-    return "صاعد";
-  } else if (lastPrice < firstPrice && lastPrice < avg) {
-    return "هابط";
-  } else {
-    return "محايد";
-  }
+  if (upCount > downCount * 1.5) return "صاعد";
+  if (downCount > upCount * 1.5) return "هابط";
+  return "محايد";
 };
 
-// حساب الدعم والمقاومة
-export const calculateSupportResistance = (prices: number[]) => {
-  if (prices.length < 2) {
-    return { support: 0, resistance: 0 };
+// حساب مستويات الدعم والمقاومة
+export const calculateSupportResistance = (prices: number[], mainPrice?: number) => {
+  let sortedPrices = [...prices].sort((a, b) => a - b);
+  const length = sortedPrices.length;
+  
+  // استخدام السعر الرئيسي إذا كان متاحاً، وإلا استخدام متوسط الأسعار
+  const referencePrice = mainPrice || sortedPrices[Math.floor(length / 2)];
+  
+  // إيجاد أقرب مستوى دعم
+  let support = sortedPrices[0];
+  for (let i = 0; i < length; i++) {
+    if (sortedPrices[i] < referencePrice) {
+      support = sortedPrices[i];
+    } else {
+      break;
+    }
   }
   
-  // ترتيب الأسعار تصاعدياً
-  const sortedPrices = [...prices].sort((a, b) => a - b);
-  
-  // تحديد أدنى سعر كدعم وأعلى سعر كمقاومة
-  const support = sortedPrices[0];
-  const resistance = sortedPrices[sortedPrices.length - 1];
+  // إيجاد أقرب مستوى مقاومة
+  let resistance = sortedPrices[length - 1];
+  for (let i = length - 1; i >= 0; i--) {
+    if (sortedPrices[i] > referencePrice) {
+      resistance = sortedPrices[i];
+    } else {
+      break;
+    }
+  }
   
   return { support, resistance };
 };
 
-// حساب وقف الخسارة الأمثل
-export const calculateOptimalStopLoss = (
-  currentPrice: number,
-  direction: "صاعد" | "هابط" | "محايد",
-  volatility: number = 0.02
-) => {
-  if (direction === "صاعد") {
-    return currentPrice * (1 - volatility);
-  } else if (direction === "هابط") {
-    return currentPrice * (1 + volatility);
-  } else {
-    // في حالة الاتجاه المحايد، استخدم متوسط الاتجاهين
-    return currentPrice;
-  }
-};
-
-// حساب التقلب من بيانات الأسعار
-export const calculateVolatility = (prices: number[], period: number = 14): number => {
-  if (prices.length < period) {
-    return 0.02; // قيمة افتراضية للتقلب
-  }
+// حساب مستوى التقلب
+export const calculateVolatility = (prices: number[]) => {
+  if (prices.length < 2) return 0;
   
-  // حساب التقلب كانحراف معياري للعوائد اليومية
-  const returns = [];
+  let volatility = 0;
   for (let i = 1; i < prices.length; i++) {
-    returns.push((prices[i] - prices[i-1]) / prices[i-1]);
+    volatility += Math.abs(prices[i] - prices[i-1]) / prices[i-1];
   }
   
-  // حساب متوسط العوائد
-  const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-  
-  // حساب الانحراف المعياري
-  const squaredDifferences = returns.map(ret => Math.pow(ret - avgReturn, 2));
-  const variance = squaredDifferences.reduce((a, b) => a + b, 0) / returns.length;
-  const stdDev = Math.sqrt(variance);
-  
-  return stdDev;
+  return volatility / (prices.length - 1);
 };
 
 // حساب مستويات فيبوناتشي
-export const calculateFibonacciLevels = (
-  highPrice: number,
-  lowPrice: number,
-  direction: "صاعد" | "هابط" | "محايد"
-): { level: number; price: number }[] => {
-  const fibLevels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-  const range = highPrice - lowPrice;
+export const calculateFibonacciLevels = (high: number, low: number, direction?: string) => {
+  const range = high - low;
   
+  const retracementLevels = [
+    { level: 0, price: high },
+    { level: 0.236, price: high - range * 0.236 },
+    { level: 0.382, price: high - range * 0.382 },
+    { level: 0.5, price: high - range * 0.5 },
+    { level: 0.618, price: high - range * 0.618 },
+    { level: 0.786, price: high - range * 0.786 },
+    { level: 1, price: low }
+  ];
+  
+  const extensionLevels = [
+    { level: 1.272, price: low - range * 0.272 },
+    { level: 1.618, price: low - range * 0.618 },
+    { level: 2.0, price: low - range * 1.0 },
+    { level: 2.618, price: low - range * 1.618 }
+  ];
+  
+  return { retracementLevels, extensionLevels };
+};
+
+// حساب وقف الخسارة الأمثل
+export const calculateOptimalStopLoss = (
+  currentPrice: number, 
+  direction: "صاعد" | "هابط" | "محايد", 
+  support: number, 
+  resistance: number
+) => {
   if (direction === "صاعد") {
-    return fibLevels.map(level => ({
-      level,
-      price: lowPrice + (range * level)
-    }));
+    return support * 0.99; // وقف خسارة أقل من مستوى الدعم
+  } else if (direction === "هابط") {
+    return resistance * 1.01; // وقف خسارة أعلى من مستوى المقاومة
   } else {
-    return fibLevels.map(level => ({
-      level, 
-      price: highPrice - (range * level)
-    }));
+    // في حالة الاتجاه المحايد
+    const range = resistance - support;
+    return currentPrice - (range * 0.1); // وقف خسارة بنسبة 10% من المدى
   }
+};
+
+// دعم لمؤشرات الفنية الأساسية
+export const EMA = (prices: number[], period: number): number[] => {
+  // تنفيذ بسيط للمتوسط المتحرك الأسي
+  const ema: number[] = [];
+  const k = 2 / (period + 1);
+  
+  // استخدام المتوسط البسيط للقيمة الأولى
+  let sum = 0;
+  for (let i = 0; i < period; i++) {
+    sum += prices[i];
+  }
+  ema.push(sum / period);
+  
+  // حساب باقي قيم EMA
+  for (let i = period; i < prices.length; i++) {
+    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
+  }
+  
+  return ema;
+};
+
+export const RSI = (prices: number[], period: number = 14): number[] => {
+  // تنفيذ بسيط لمؤشر القوة النسبية
+  const rsi: number[] = [];
+  const deltas = [];
+  
+  for (let i = 1; i < prices.length; i++) {
+    deltas.push(prices[i] - prices[i - 1]);
+  }
+  
+  for (let i = period; i < deltas.length; i++) {
+    const gains = [];
+    const losses = [];
+    
+    for (let j = i - period; j < i; j++) {
+      if (deltas[j] >= 0) gains.push(deltas[j]);
+      else losses.push(Math.abs(deltas[j]));
+    }
+    
+    const avgGain = gains.reduce((sum, val) => sum + val, 0) / period;
+    const avgLoss = losses.reduce((sum, val) => sum + val, 0) / period;
+    
+    if (avgLoss === 0) {
+      rsi.push(100);
+    } else {
+      const rs = avgGain / avgLoss;
+      rsi.push(100 - (100 / (1 + rs)));
+    }
+  }
+  
+  return rsi;
+};
+
+export const MACD = (prices: number[]): { macd: number[], signal: number[], histogram: number[] } => {
+  // تنفيذ بسيط لمؤشر MACD
+  const ema12 = EMA(prices, 12);
+  const ema26 = EMA(prices, 26);
+  
+  // احتساب خط MACD
+  const macd: number[] = [];
+  for (let i = 0; i < ema12.length && i < ema26.length; i++) {
+    macd.push(ema12[i] - ema26[i]);
+  }
+  
+  // احتساب خط الإشارة (9-EMA of MACD)
+  const signal = EMA(macd, 9);
+  
+  // احتساب الهيستوغرام
+  const histogram: number[] = [];
+  for (let i = 0; i < macd.length && i < signal.length; i++) {
+    histogram.push(macd[i] - signal[i]);
+  }
+  
+  return { macd, signal, histogram };
+};
+
+export const BollingerBands = (prices: number[], period: number = 20, stdDev: number = 2): 
+  { upper: number[], middle: number[], lower: number[] } => {
+  // تنفيذ بسيط لمؤشر بولينجر باندز
+  const middle: number[] = [];
+  const upper: number[] = [];
+  const lower: number[] = [];
+  
+  for (let i = period - 1; i < prices.length; i++) {
+    const slice = prices.slice(i - period + 1, i + 1);
+    const avg = slice.reduce((sum, price) => sum + price, 0) / period;
+    middle.push(avg);
+    
+    let squareDiffSum = 0;
+    for (let j = 0; j < slice.length; j++) {
+      squareDiffSum += Math.pow(slice[j] - avg, 2);
+    }
+    const stdDevValue = Math.sqrt(squareDiffSum / period);
+    
+    upper.push(avg + (stdDevValue * stdDev));
+    lower.push(avg - (stdDevValue * stdDev));
+  }
+  
+  return { upper, middle, lower };
 };
