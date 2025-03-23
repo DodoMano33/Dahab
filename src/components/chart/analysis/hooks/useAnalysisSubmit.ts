@@ -6,6 +6,7 @@ import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useNavigate } from "react-router-dom";
+import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 
 // Define the ChartAnalysisResult interface
 export interface ChartAnalysisResult {
@@ -71,11 +72,6 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
         return;
       }
 
-      if (!chartImage) {
-        toast.error("الرجاء تحميل صورة الشارت.");
-        return;
-      }
-
       setIsAnalyzing(true);
 
       try {
@@ -83,6 +79,19 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
 
         if (inputPrice === null || inputPrice === undefined) {
           throw new Error("السعر الحالي غير متوفر. يرجى المحاولة مرة أخرى لاحقًا.");
+        }
+        
+        // إذا لم يتم توفير صورة، حاول التقاطها تلقائيًا
+        let finalChartImage = chartImage;
+        if (!finalChartImage) {
+          try {
+            console.log("Attempting to auto-capture chart image");
+            finalChartImage = await getTradingViewChartImage(symbol, timeframe, inputPrice);
+            console.log("Auto-captured chart image successfully");
+          } catch (error) {
+            console.error("Failed to auto-capture chart:", error);
+            // استمر بدون صورة، سيتم إنشاء صورة افتراضية في processChartAnalysis
+          }
         }
 
         const input = {
@@ -108,7 +117,7 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
           isFibonacci,
           isFibonacciAdvanced,
           duration,
-          chartImage
+          chartImage: finalChartImage
         };
 
         const result = await processChartAnalysis(input);
