@@ -1,162 +1,148 @@
 
-import { AnalysisData } from "@/types/analysis";
-import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
-import { executeAnalysis } from "./analysisExecutor";
-import { combinedAnalysis } from "@/utils/technicalAnalysis/combinedAnalysis";
-import { dismissToasts, showLoadingToast, showSuccessToast } from "./toastUtils";
+import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { executeSpecificAnalysis, executeMultipleAnalyses } from "@/utils/technicalAnalysis/analysisExecutor";
+import { supabase } from "@/lib/supabase";
+import { showErrorToast, showSuccessToast } from "./toastUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface ChartAnalysisParams {
+interface ChartAnalysisInput {
   symbol: string;
   timeframe: string;
   providedPrice: number;
   analysisType: string;
   selectedTypes: string[];
-  isAI: boolean;
-  options: {
-    isPatternAnalysis: boolean;
-    isWaves: boolean;
-    isGann: boolean;
-    isTurtleSoup: boolean;
-    isICT: boolean;
-    isSMC: boolean;
-    isScalping: boolean;
-    isPriceAction: boolean;
-    isNeuralNetwork: boolean;
-  };
+  isAI?: boolean;
+  options?: any;
   duration?: string;
+  chartImage?: string; // صورة الشارت للتحليل
 }
 
-export const processChartAnalysis = async ({
-  symbol,
-  timeframe,
-  providedPrice,
-  analysisType,
-  selectedTypes,
-  isAI,
-  options,
-  duration
-}: ChartAnalysisParams): Promise<{
-  analysisResult: AnalysisData;
-  currentPrice: number;
-  symbol: string;
-  duration?: number;
-}> => {
-  // Create toast IDs for tracking
-  const loadingToastId = showLoadingToast(
-    `جاري تحليل ${analysisType} للرمز ${symbol} على الإطار الزمني ${timeframe}...`
-  );
-  let messageToastId: string | undefined;
+interface ChartAnalysisResult {
+  analysisResult: AnalysisData | null;
+  duration?: string | number;
+}
+
+export const processChartAnalysis = async (
+  input: ChartAnalysisInput
+): Promise<ChartAnalysisResult> => {
+  const {
+    symbol,
+    timeframe,
+    providedPrice,
+    analysisType,
+    selectedTypes,
+    isAI = false,
+    options,
+    duration,
+    chartImage
+  } = input;
+
+  console.log(`Processing chart analysis for ${symbol} at price ${providedPrice} with type ${analysisType}`);
+  console.log("Selected types:", selectedTypes);
 
   try {
-    // Import and show the specialized analysis message
-    try {
-      const messagesModule = await import("../utils/analysisMessages");
-      messageToastId = messagesModule.showAnalysisMessage(
-        options.isPatternAnalysis,
-        options.isWaves,
-        options.isGann,
-        options.isTurtleSoup,
-        options.isICT,
-        options.isSMC,
-        isAI,
-        options.isNeuralNetwork
-      );
-    } catch (messageError) {
-      console.error("Error showing analysis message:", messageError);
-    }
+    let analysisResult: AnalysisData | null = null;
+    let analysisTypes: string[] = [];
 
-    // التحقق من وجود سعر محدث من TradingView عن طريق مناداة حدث
-    let finalPrice = providedPrice;
-    
-    // إرسال حدث للحصول على السعر الحالي من TradingView
-    window.dispatchEvent(new CustomEvent('request-current-price'));
-    
-    // طباعة السعر النهائي المستخدم للتحليل
-    console.log("Analysis using price:", finalPrice);
-
-    // تحويل مدة التحليل إلى رقم إذا كانت موجودة
-    const durationHours = duration ? parseInt(duration) : 36;
-    console.log(`Analysis duration set to: ${durationHours} hours`);
-
-    // Get the chart image
-    console.log("Getting TradingView chart image for:", { 
-      symbol, 
-      timeframe, 
-      price: finalPrice,
-      analysisType,
-      selectedTypes,
-      duration: durationHours
-    });
-
-    const chartImage = await getTradingViewChartImage(symbol, timeframe, finalPrice);
-    console.log("Chart image received successfully");
-
-    // Perform the analysis
-    let analysisResult: AnalysisData;
-    
-    if (isAI && selectedTypes && selectedTypes.length > 0) {
-      console.log("Starting AI combined analysis with selected types:", selectedTypes);
-      console.log("Using duration:", durationHours, "for combined analysis");
-      
-      analysisResult = await combinedAnalysis(
-        chartImage,
-        finalPrice,
-        timeframe,
-        selectedTypes
-      );
-      
-      // تأكد من تضمين مدة التحليل في نتائج التحليل
-      if (analysisResult) {
-        console.log("Attaching duration to analysis result:", durationHours);
-        analysisResult.analysis_duration_hours = durationHours;
-      }
-      
-      console.log("Combined analysis completed:", analysisResult);
+    // تحديد أنواع التحليل المطلوبة
+    if (selectedTypes && selectedTypes.length > 0) {
+      analysisTypes = selectedTypes;
+      console.log("Using provided analysis types:", analysisTypes);
     } else {
-      console.log("Starting regular analysis with options:", options);
-      console.log("Using duration:", durationHours, "for regular analysis");
-      
-      analysisResult = await executeAnalysis(
-        chartImage,
-        finalPrice,
-        timeframe,
-        options
-      );
-      
-      // تأكد من تضمين مدة التحليل في نتائج التحليل
-      if (analysisResult) {
-        console.log("Attaching duration to analysis result:", durationHours);
-        analysisResult.analysis_duration_hours = durationHours;
-      }
-      
-      console.log("Regular analysis completed:", analysisResult);
+      analysisTypes = [analysisType];
+      console.log("Using single analysis type:", analysisType);
     }
 
-    if (!analysisResult) {
-      dismissToasts(loadingToastId, messageToastId);
-      throw new Error("لم يتم العثور على نتائج التحليل");
+    if (!chartImage) {
+      console.error("لا توجد صورة شارت للتحليل!");
+      showErrorToast(new Error("لا توجد صورة شارت للتحليل!"));
+      return { analysisResult: null };
+    }
+
+    // تنفيذ التحليل
+    if (analysisTypes.length === 1) {
+      // تحليل نوع واحد
+      analysisResult = await executeSpecificAnalysis(analysisTypes[0], chartImage, providedPrice, timeframe);
+      
+      if (!analysisResult) {
+        console.error("لم يتم العثور على أي أنماط أو إشارات في هذا التحليل.");
+        showErrorToast(new Error("لم يتم العثور على أي أنماط أو إشارات في هذا التحليل."));
+        return { analysisResult: null };
+      }
+      
+      console.log("Single analysis result:", analysisResult);
+    } else {
+      // تحليل متعدد
+      const results = await executeMultipleAnalyses(analysisTypes, chartImage, providedPrice, timeframe);
+      
+      if (results.length === 0) {
+        console.error("لم يتم العثور على أي أنماط أو إشارات في أي من التحليلات.");
+        showErrorToast(new Error("لم يتم العثور على أي أنماط أو إشارات في أي من التحليلات."));
+        return { analysisResult: null };
+      }
+      
+      // استخدام النتيجة الأولى
+      analysisResult = results[0];
+      console.log("Multiple analyses results (using first):", results);
+    }
+
+    // إضافة مدة التحليل
+    const durationHours = duration ? parseInt(duration) : 8;
+    if (analysisResult) {
+      analysisResult.analysis_duration_hours = durationHours;
+      analysisResult.activation_type = "تلقائي";
     }
 
     console.log("Analysis completed successfully:", analysisResult);
-    
-    // Dismiss all toasts when analysis is completed
-    dismissToasts(loadingToastId, messageToastId);
-    
-    // Show success toast
-    showSuccessToast(analysisType, timeframe, symbol, finalPrice);
-    
-    console.log("Returning final analysis results with duration:", durationHours);
     return { 
-      analysisResult, 
-      currentPrice: finalPrice, 
-      symbol,
+      analysisResult,
       duration: durationHours
     };
-    
   } catch (error) {
-    console.error("Error in chart analysis:", error);
-    // Dismiss any loading toasts on error
-    dismissToasts(loadingToastId, messageToastId);
+    console.error("Error in chart analysis processor:", error);
+    showErrorToast(error);
     throw error;
+  }
+};
+
+// حفظ نتيجة التحليل في قاعدة البيانات
+export const saveAnalysisToDatabase = async (
+  symbol: string,
+  timeframe: string,
+  currentPrice: number,
+  analysisType: AnalysisType,
+  analysis: AnalysisData,
+  analysis_duration_hours: number = 8
+) => {
+  try {
+    const auth = useAuth();
+    const user = auth?.user;
+    
+    if (!user) {
+      console.error("لا يمكن حفظ التحليل: المستخدم غير مسجل الدخول");
+      return;
+    }
+    
+    const { error } = await supabase
+      .from('search_history')
+      .insert({
+        user_id: user.id,
+        symbol,
+        timeframe,
+        current_price: currentPrice,
+        analysis_type: analysisType,
+        analysis_duration_hours,
+        analysis
+      });
+    
+    if (error) {
+      console.error("Error saving analysis to database:", error);
+      throw error;
+    }
+    
+    showSuccessToast("تم حفظ التحليل بنجاح");
+  } catch (error) {
+    console.error("Error in saveAnalysisToDatabase:", error);
+    showErrorToast(error);
   }
 };

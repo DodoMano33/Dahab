@@ -1,31 +1,63 @@
+
 import { AnalysisData } from "@/types/analysis";
-import { analyzePatternWithPrice } from "@/utils/patternRecognition";
+import { analyzeChartPatterns } from "@/utils/technicalAnalysis/patternRecognition";
+import { calculateSupportResistance } from "@/utils/technicalAnalysis/indicators";
+import { identifyAdvancedPricePatterns } from "@/utils/technicalAnalysis/advancedPatternIdentification";
 
 export const analyzePattern = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string
-): Promise<AnalysisData> => {
-  console.log("بدء تحليل النمط - البيانات المستلمة:", { chartImage, currentPrice, timeframe });
+): Promise<AnalysisData | null> => {
+  console.log("بدء تحليل النمط للشارت:", { timeframe, currentPrice });
   
   try {
     if (!currentPrice || isNaN(currentPrice)) {
       console.error("خطأ: السعر الحالي غير صالح:", currentPrice);
-      throw new Error("السعر الحالي غير صالح");
+      return null;
     }
 
     if (!chartImage) {
       console.error("خطأ: لم يتم استلام صورة الشارت");
-      throw new Error("لم يتم استلام صورة الشارت");
+      return null;
     }
 
-    // Pass the actual timeframe to the analysis function
-    const analysis = analyzePatternWithPrice(chartImage, currentPrice, timeframe);
-    console.log("تم إكمال تحليل النمط بنجاح:", analysis);
-    return analysis;
+    // الحصول على بيانات الشارت من API للتحليل الفني
+    // في البيئة الحقيقية، سنقوم بجلب بيانات الأسعار التاريخية
+    // هنا نستخدم تحليل فني حقيقي على البيانات
+    
+    // تحليل الشارت للكشف عن الأنماط
+    const patternResults = await analyzeChartPatterns(chartImage, currentPrice, timeframe);
+    
+    if (!patternResults || !patternResults.pattern) {
+      console.log("لم يتم العثور على أنماط محددة في الشارت");
+      return null;
+    }
+    
+    // حساب مستويات الدعم والمقاومة
+    const { support, resistance } = calculateSupportResistance([patternResults.support, patternResults.resistance, currentPrice]);
+    
+    // تحديد أنماط متقدمة إضافية
+    const advancedPatterns = await identifyAdvancedPricePatterns(chartImage, currentPrice, timeframe);
+    
+    // تجميع نتائج التحليل
+    const analysisResult: AnalysisData = {
+      pattern: patternResults.pattern,
+      direction: patternResults.direction,
+      currentPrice,
+      support,
+      resistance,
+      stopLoss: patternResults.stopLoss,
+      targets: patternResults.targets,
+      bestEntryPoint: patternResults.bestEntryPoint,
+      fibonacciLevels: patternResults.fibonacciLevels || [],
+      analysisType: "Patterns"
+    };
 
+    console.log("تم إكمال تحليل النمط بنجاح:", analysisResult);
+    return analysisResult;
   } catch (error) {
     console.error("خطأ في تحليل النمط:", error);
-    throw new Error(`فشل في تحليل النمط: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+    return null;
   }
 };

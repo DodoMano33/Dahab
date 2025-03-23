@@ -127,6 +127,12 @@ export const useAnalysisHandler = () => {
       
       // Process the chart analysis with duration
       console.log("Calling processChartAnalysis with duration:", duration);
+      
+      // إنشاء صورة من TradingView للتحليل
+      const chartImage = await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number);
+      setImage(chartImage);
+      
+      // استدعاء معالج التحليل
       const result = await processChartAnalysis({
         symbol: upperSymbol,
         timeframe,
@@ -136,13 +142,13 @@ export const useAnalysisHandler = () => {
         selectedTypes: selectedTypes || [],
         isAI,
         options,
-        duration
+        duration,
+        chartImage // إرسال صورة الشارت للتحليل
       });
       
       console.log("Analysis result returned with duration:", result.duration);
       
-      // Store the image and analysis result
-      setImage(result ? await getTradingViewChartImage(upperSymbol, timeframe, finalPrice as number) : null);
+      // تخزين نتيجة التحليل
       setAnalysis(result ? result.analysisResult : null);
       setIsAnalyzing(false);
       

@@ -1,50 +1,55 @@
 
-import { addDays, addHours, addMinutes } from "date-fns";
+import { addMinutes, addHours, addDays } from "date-fns";
 
-export const getExpectedTime = (timeframe: string, targetIndex: number) => {
+// وظيفة للحصول على الوقت المتوقع بناءً على الإطار الزمني ومؤشر الهدف
+export const getExpectedTime = (timeframe: string, targetIndex: number): Date => {
   const now = new Date();
-  
+  const multiplier = targetIndex + 1;
+
   switch (timeframe) {
     case "1m":
-      return addMinutes(now, (targetIndex + 1) * 1);
+      return addMinutes(now, multiplier * 5);
     case "5m":
-      return addMinutes(now, (targetIndex + 1) * 5);
+      return addMinutes(now, multiplier * 25);
     case "15m":
-      return addMinutes(now, (targetIndex + 1) * 15);
+      return addMinutes(now, multiplier * 75);
     case "30m":
-      return addMinutes(now, (targetIndex + 1) * 30);
+      return addMinutes(now, multiplier * 150);
     case "1h":
-      return addHours(now, targetIndex + 1);
+      return addHours(now, multiplier * 5);
     case "4h":
-      return addHours(now, (targetIndex + 1) * 4);
+      return addHours(now, multiplier * 20);
     case "1d":
-      return addDays(now, targetIndex + 1);
+      return addDays(now, multiplier * 5);
     case "1w":
-      return addDays(now, (targetIndex + 1) * 7);
+      return addDays(now, multiplier * 35);
     default:
-      return addHours(now, (targetIndex + 1) * 4);
+      // إطار زمني افتراضي (4 ساعات)
+      return addHours(now, multiplier * 20);
   }
 };
 
-export const getTimeframeLabel = (timeframe: string): string => {
+// حساب المدة المتوقعة بناءً على الإطار الزمني
+export const calculateTimeframeBasedDuration = (timeframe: string): number => {
+  // الوقت المتوقع بالساعات
   switch (timeframe) {
     case "1m":
-      return "دقيقة واحدة";
+      return 1; // ساعة واحدة
     case "5m":
-      return "5 دقائق";
+      return 3; // 3 ساعات
     case "15m":
-      return "15 دقيقة";
+      return 6; // 6 ساعات
     case "30m":
-      return "30 دقيقة";
+      return 12; // 12 ساعة
     case "1h":
-      return "ساعة واحدة";
+      return 24; // 24 ساعة
     case "4h":
-      return "4 ساعات";
+      return 4 * 24; // 4 أيام
     case "1d":
-      return "يومي";
+      return 14 * 24; // أسبوعين
     case "1w":
-      return "أسبوع واحد";
+      return 30 * 24; // شهر
     default:
-      return timeframe;
+      return 24; // 24 ساعة افتراضياً
   }
 };
