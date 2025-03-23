@@ -1,4 +1,5 @@
 
+
 import { AnalysisData } from "@/types/analysis"; 
 import { supabase } from "@/lib/supabase";
 import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
@@ -146,3 +147,4 @@ export const saveAnalysisToDatabase = async (
     throw error;
   }
 };
+

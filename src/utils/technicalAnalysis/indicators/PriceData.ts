@@ -1,4 +1,5 @@
 
+
 // وظائف التحليل الفني للأسعار
 
 // اكتشاف الاتجاه بناء على سلسلة من الأسعار
@@ -180,3 +181,4 @@ export interface PriceDataPoint {
 }
 
 export type PriceData = PriceDataPoint;
+

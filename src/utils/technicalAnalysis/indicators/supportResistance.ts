@@ -1,4 +1,5 @@
 
+
 import { BollingerBands } from "technicalindicators";
 
 // وظيفة لحساب مستويات الدعم والمقاومة
@@ -30,3 +31,4 @@ export const calculateSupportResistance = (
     };
   }
 };
+

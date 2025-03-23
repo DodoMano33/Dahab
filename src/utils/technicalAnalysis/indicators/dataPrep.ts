@@ -1,4 +1,5 @@
 
+
 import { PriceData } from "./types";
 
 // وظيفة مساعدة لتحويل البيانات إلى التنسيق المطلوب لبعض المؤشرات
@@ -17,3 +18,4 @@ export const prepareDataForIndicators = (data: PriceData[]): {
     volume: data.map(d => d.volume || 0)
   };
 };
+

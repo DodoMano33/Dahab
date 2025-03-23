@@ -1,4 +1,5 @@
 
+
 import { getMetalPriceApiKey } from "./helpers";
 import { rateLimit } from "./rateLimit";
 import { getStoredPrice } from "./helpers";
@@ -142,3 +143,4 @@ const generateSimulatedPrices = (currentPrice: number): number[] => {
   
   return prices;
 };
+

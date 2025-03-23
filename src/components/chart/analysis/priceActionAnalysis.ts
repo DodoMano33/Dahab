@@ -1,4 +1,5 @@
 
+
 import { AnalysisData } from "@/types/analysis";
 import { getExpectedTime } from "@/utils/technicalAnalysis/timeUtils";
 import { detectTrend, calculateSupportResistance } from "@/utils/technicalAnalysis/indicators/PriceData";
@@ -117,3 +118,4 @@ const generateSimulatedPrices = (currentPrice: number): number[] => {
   
   return simulatedPrices;
 };
+

@@ -1,4 +1,5 @@
 
+
 // حساب مستويات الدعم والمقاومة
 export const calculateSupportResistance = (
   prices: number[]
@@ -171,3 +172,4 @@ export const calculateBollingerBands = (
   
   return { upper, middle, lower };
 };
+

@@ -1,4 +1,5 @@
 
+
 import { AnalysisData } from "@/types/analysis";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
 import { getExpectedTime } from "@/utils/technicalAnalysis";
@@ -96,3 +97,4 @@ const generateSimulatedPrices = (currentPrice: number): number[] => {
   
   return simulatedPrices;
 };
+
