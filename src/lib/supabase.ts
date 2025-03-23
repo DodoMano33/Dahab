@@ -28,18 +28,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 10
     }
   },
-  // إضافة خيارات لتحسين الاتصال والتعامل مع الأخطاء
   db: {
     schema: 'public'
-  },
-  fetch: (url, init) => {
-    return fetch(url, {
-      ...init,
-      // زيادة مهلة الاتصال لتجنب أخطاء timeout
-      signal: init?.signal || (typeof AbortSignal !== 'undefined' 
-        ? new AbortController().signal 
-        : undefined),
-    });
   }
 });
 
