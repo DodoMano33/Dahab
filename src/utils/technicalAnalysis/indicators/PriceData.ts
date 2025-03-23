@@ -1,171 +1,104 @@
 
+// وظائف التحليل الفني للأسعار
+
+// اكتشاف الاتجاه بناء على سلسلة من الأسعار
+export const detectTrend = (prices: number[]): "صاعد" | "هابط" | "محايد" => {
+  if (!prices || prices.length < 2) {
+    return "محايد";
+  }
+
+  const recentPrices = prices.slice(-10); // استخدام آخر 10 أسعار
+  
+  let upCount = 0;
+  let downCount = 0;
+  
+  for (let i = 1; i < recentPrices.length; i++) {
+    if (recentPrices[i] > recentPrices[i - 1]) {
+      upCount++;
+    } else if (recentPrices[i] < recentPrices[i - 1]) {
+      downCount++;
+    }
+  }
+  
+  if (upCount > downCount && upCount > recentPrices.length * 0.6) {
+    return "صاعد";
+  } else if (downCount > upCount && downCount > recentPrices.length * 0.6) {
+    return "هابط";
+  } else {
+    // استخدام المقارنة بين أول وآخر سعر لترجيح الاتجاه في حالة عدم وضوحه
+    return recentPrices[recentPrices.length - 1] > recentPrices[0] ? "صاعد" : "هابط";
+  }
+};
+
+// حساب مستويات الدعم والمقاومة بناء على الأسعار التاريخية
+export const calculateSupportResistance = (prices: number[]): { support: number; resistance: number } => {
+  if (!prices || prices.length < 2) {
+    const defaultPrice = prices && prices.length > 0 ? prices[0] : 0;
+    return {
+      support: defaultPrice * 0.95,
+      resistance: defaultPrice * 1.05
+    };
+  }
+  
+  // تقسيم الأسعار إلى شرائح للتحليل
+  const segmentSize = Math.min(20, Math.floor(prices.length / 3));
+  const recentPrices = prices.slice(-segmentSize);
+  
+  const min = Math.min(...recentPrices);
+  const max = Math.max(...recentPrices);
+  
+  // إضافة هامش صغير لتحسين نطاق الدعم والمقاومة
+  const support = min * 0.995;
+  const resistance = max * 1.005;
+  
+  return { support, resistance };
+};
+
+// حساب مستويات فيبوناتشي
+export const calculateFibonacciLevels = (highPrice: number, lowPrice: number, direction: "صاعد" | "هابط" | "محايد" = "صاعد") => {
+  const range = Math.abs(highPrice - lowPrice);
+  
+  // مستويات فيبوناتشي القياسية
+  const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618, 2.618];
+  
+  if (direction === "صاعد") {
+    return levels.map(level => ({
+      level,
+      price: lowPrice + range * level
+    }));
+  } else {
+    return levels.map(level => ({
+      level,
+      price: highPrice - range * level
+    }));
+  }
+};
+
+// حساب التقلب بناء على الأسعار التاريخية
+export const calculateVolatility = (prices: number[]): number => {
+  if (!prices || prices.length < 2) {
+    return 0.01; // قيمة افتراضية للتقلب
+  }
+  
+  let sum = 0;
+  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+  
+  for (let i = 0; i < prices.length; i++) {
+    sum += Math.pow(prices[i] - mean, 2);
+  }
+  
+  const variance = sum / prices.length;
+  return Math.sqrt(variance) / mean; // معامل الاختلاف (التقلب النسبي)
+};
+
+// وظائف إضافية لدعم التحليل الفني
 export interface PriceDataPoint {
-  time: Date | string;
+  timestamp: number;
   open: number;
   high: number;
   low: number;
   close: number;
-  volume?: number;
+  volume: number;
 }
 
-export class PriceData {
-  data: PriceDataPoint[];
-  
-  constructor(data: PriceDataPoint[]) {
-    this.data = data;
-  }
-  
-  getCloseValues(): number[] {
-    return this.data.map(d => d.close);
-  }
-  
-  getHighValues(): number[] {
-    return this.data.map(d => d.high);
-  }
-  
-  getLowValues(): number[] {
-    return this.data.map(d => d.low);
-  }
-  
-  getOpenValues(): number[] {
-    return this.data.map(d => d.open);
-  }
-  
-  getVolumeValues(): number[] {
-    return this.data.map(d => d.volume || 0);
-  }
-  
-  getTimes(): (Date | string)[] {
-    return this.data.map(d => d.time);
-  }
-  
-  getLastClose(): number {
-    if (this.data.length === 0) return 0;
-    return this.data[this.data.length - 1].close;
-  }
-  
-  getLastHigh(): number {
-    if (this.data.length === 0) return 0;
-    return this.data[this.data.length - 1].high;
-  }
-  
-  getLastLow(): number {
-    if (this.data.length === 0) return 0;
-    return this.data[this.data.length - 1].low;
-  }
-  
-  getLastOpen(): number {
-    if (this.data.length === 0) return 0;
-    return this.data[this.data.length - 1].open;
-  }
-  
-  slice(start: number, end?: number): PriceData {
-    return new PriceData(this.data.slice(start, end));
-  }
-  
-  static fromImageData(chartImage: string, currentPrice: number): PriceData {
-    // This is a simple mock implementation that creates fictional price data
-    // In a real scenario, this would analyze the image to extract price data
-    console.log("Creating mock price data from chart image");
-    
-    const data: PriceDataPoint[] = [];
-    const now = new Date();
-    
-    // Generate 30 days of mock data
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      
-      // Create some variance in the price
-      const variance = 0.02; // 2% variance
-      const randomFactor = 1 + (Math.random() * variance * 2 - variance);
-      
-      let close = i === 0 ? currentPrice : currentPrice * randomFactor;
-      
-      // Add some randomness to create open, high, low
-      const dailyVolatility = 0.01; // 1% intraday volatility
-      const open = close * (1 + (Math.random() * dailyVolatility * 2 - dailyVolatility));
-      const high = Math.max(open, close) * (1 + Math.random() * dailyVolatility);
-      const low = Math.min(open, close) * (1 - Math.random() * dailyVolatility);
-      
-      data.push({
-        time: date,
-        open,
-        high,
-        low,
-        close,
-        volume: Math.floor(Math.random() * 10000) + 1000
-      });
-    }
-    
-    return new PriceData(data);
-  }
-}
-
-// Add the missing functions that other files are importing
-
-export function detectTrend(prices: number[]): "صاعد" | "هابط" | "محايد" {
-  if (prices.length < 2) return "محايد";
-  
-  // Simple trend detection based on the last few prices
-  const recentPrices = prices.slice(-10);
-  const firstPrice = recentPrices[0];
-  const lastPrice = recentPrices[recentPrices.length - 1];
-  
-  if (lastPrice > firstPrice * 1.02) return "صاعد"; // 2% higher
-  if (lastPrice < firstPrice * 0.98) return "هابط"; // 2% lower
-  return "محايد";
-}
-
-export function calculateSupportResistance(prices: number[]): { support: number, resistance: number } {
-  if (!prices || prices.length === 0) {
-    return { support: 0, resistance: 0 };
-  }
-  
-  // Sort prices to find min and max
-  const sortedPrices = [...prices].sort((a, b) => a - b);
-  const support = sortedPrices[0];
-  const resistance = sortedPrices[sortedPrices.length - 1];
-  
-  return { support, resistance };
-}
-
-export function calculateFibonacciLevels(highPrice: number, lowPrice: number, direction: "صاعد" | "هابط" | "محايد" = "صاعد"): { level: number; price: number }[] {
-  const difference = highPrice - lowPrice;
-  const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1, 1.272, 1.618];
-  
-  return levels.map(level => {
-    let price;
-    if (direction === "صاعد") {
-      price = lowPrice + (difference * level);
-    } else if (direction === "هابط") {
-      price = highPrice - (difference * level);
-    } else {
-      const midPrice = (highPrice + lowPrice) / 2;
-      price = midPrice + (difference * (level - 0.5));
-    }
-    
-    return { level, price: Number(price.toFixed(2)) };
-  });
-}
-
-export function calculateVolatility(prices: number[], period: number = 14): number {
-  if (prices.length < period) {
-    return 0;
-  }
-  
-  // Calculate price changes
-  const priceChanges = [];
-  for (let i = 1; i < prices.length; i++) {
-    priceChanges.push((prices[i] - prices[i-1]) / prices[i-1]);
-  }
-  
-  // Calculate standard deviation of price changes (volatility)
-  const recentChanges = priceChanges.slice(-period);
-  const mean = recentChanges.reduce((sum, change) => sum + change, 0) / period;
-  const squaredDiffs = recentChanges.map(change => Math.pow(change - mean, 2));
-  const variance = squaredDiffs.reduce((sum, diff) => sum + diff, 0) / period;
-  const volatility = Math.sqrt(variance);
-  
-  return volatility;
-}
+export type PriceData = PriceDataPoint;

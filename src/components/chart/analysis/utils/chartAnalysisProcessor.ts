@@ -11,7 +11,7 @@ export const processChartAnalysis = async (input: any) => {
     const result = {
       analysisResult: {
         pattern: "Test Pattern",
-        direction: "صاعد",
+        direction: "صاعد" as "صاعد" | "هابط" | "محايد",
         currentPrice: input.providedPrice || 0,
         support: (input.providedPrice || 0) * 0.95,
         resistance: (input.providedPrice || 0) * 1.05,

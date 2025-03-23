@@ -149,7 +149,9 @@ export const useAnalysisHandler = () => {
       console.log("Analysis result returned with duration:", result.duration);
       
       // تخزين نتيجة التحليل
-      setAnalysis(result ? result.analysisResult : null);
+      if (result && result.analysisResult) {
+        setAnalysis(result.analysisResult);
+      }
       setIsAnalyzing(false);
       
       return result;

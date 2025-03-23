@@ -99,7 +99,7 @@ export const analyzePriceAction = async (
 };
 
 // وظيفة حساب وقف الخسارة
-function calculateStopLoss(currentPrice: number, trend: string): number {
+function calculateStopLoss(currentPrice: number, trend: "صاعد" | "هابط" | "محايد"): number {
   return trend === "صاعد"
     ? Math.round((currentPrice * 0.97) * 100) / 100
     : Math.round((currentPrice * 1.03) * 100) / 100;

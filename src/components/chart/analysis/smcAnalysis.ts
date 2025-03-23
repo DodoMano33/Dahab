@@ -91,9 +91,12 @@ export const analyzeSMCChart = async (
     timeframe
   );
   
+  // إذا كان الاتجاه محايد، نحدد اتجاه عشوائي
+  const finalDirection = direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction;
+  
   const analysisResult: AnalysisData = {
     pattern: patternDescription,
-    direction: direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction,
+    direction: finalDirection,
     currentPrice,
     support,
     resistance,
