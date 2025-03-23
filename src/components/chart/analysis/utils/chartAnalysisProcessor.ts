@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis"; 
 import { supabase } from "@/lib/supabase";
 import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
@@ -199,7 +198,7 @@ const generateFallbackPrices = (currentPrice: number): number[] => {
   const prices: number[] = [];
   const volatility = 0.02;
   
-  // توليد سلسلة من الأسعار بنمط شبه عشوائي
+  // ت��ليد سلسلة من الأسعار بنمط شبه عشوائي
   let lastPrice = currentPrice * 0.95;
   
   // إنشاء اتجاه عشوائي

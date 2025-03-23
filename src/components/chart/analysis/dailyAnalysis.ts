@@ -40,7 +40,7 @@ export const analyzeDailyChart = async (
       const stopLoss = calculations.calculateStopLoss(currentPrice, direction, support, resistance, timeframe);
       
       // حساب مستويات فيبوناتشي باستخدام الوظيفة من وحدة الحسابات
-      const fibLevels = calculations.calculateFibonacciLevels(high=resistance, low=support);
+      const fibLevels = calculations.calculateFibonacciLevels(resistance, support);
       
       const fibonacciLevels = fibLevels.map(level => ({ 
         level: level.level, 
@@ -78,7 +78,8 @@ export const analyzeDailyChart = async (
         targets,
         fibonacciLevels,
         bestEntryPoint,
-        analysisType: "Patterns"
+        analysisType: "Patterns",
+        timeframe // إضافة الإطار الزمني
       };
 
       console.log("نتائج التحليل اليومي:", analysisResult);

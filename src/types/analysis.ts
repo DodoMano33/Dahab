@@ -57,6 +57,7 @@ export interface AnalysisData {
   activation_type?: "تلقائي" | "يدوي";
   analysisType: AnalysisType;
   analysis_duration_hours?: number;
+  timeframe?: string;
 }
 
 export interface SearchHistoryItem {
