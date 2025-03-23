@@ -2,8 +2,8 @@
 import {
   calculateSupportResistance as calculateSR
 } from "../indicators";
-import { calculateFibonacciLevels } from "./fibonacci";
-import { calculateVolatility } from "./volatility";
+import { calculateFibonacciLevels as calculateFibLevels } from "./fibonacci";
+import { calculateVolatility as calculateVolatilityIndicator } from "./volatility";
 import { TrendDirection } from "./types";
 
 // استيراد مؤشرات تحليل الاتجاه والتقلب
@@ -46,7 +46,7 @@ export const calculateFibonacciLevels = (
   resistance: number, 
   direction: TrendDirection = "صاعد"
 ): { level: number; price: number }[] => {
-  return calculateFibonacciLevels(resistance, support, direction);
+  return calculateFibLevels(resistance, support, direction);
 };
 
 /**
@@ -59,5 +59,5 @@ export const calculateVolatility = (
   prices: number[], 
   period: number = 20
 ): number => {
-  return calculateVolatility(prices, period);
+  return calculateVolatilityIndicator(prices, period);
 };

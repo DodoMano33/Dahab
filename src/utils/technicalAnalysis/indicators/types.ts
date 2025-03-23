@@ -43,3 +43,6 @@ export interface IndicatorResult {
   value: number | number[] | MACDResult | BollingerBandsResult | IchimokuResult;
   date?: Date | string;
 }
+
+// تصدير نوع PriceData من هذا الملف
+export { PriceData } from "./types";
