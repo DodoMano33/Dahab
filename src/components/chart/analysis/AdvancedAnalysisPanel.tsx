@@ -13,17 +13,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { AlertsManager } from '../alerts/AlertsManager';
-import { AnalystPerformance } from './AnalystPerformance';
-import { PerformanceMetrics } from './PerformanceMetrics';
-import { Button } from "@/components/ui/button";
 import { 
   Bell, 
   BarChart3, 
   ChartLine, 
-  BarChart4,
   BrainCircuit
 } from 'lucide-react';
+import { AlertsTabContent } from './components/AlertsTabContent';
+import { PerformanceTabContent } from './components/PerformanceTabContent';
+import { MetricsTabContent } from './components/MetricsTabContent';
 
 interface AdvancedAnalysisPanelProps {
   currentAnalysisType: string;
@@ -65,46 +63,18 @@ export function AdvancedAnalysisPanel({
           </TabsList>
           
           <TabsContent value="alerts">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                إنشاء وإدارة التنبيهات لنقاط الدخول والخروج ووقف الخسارة والأهداف.
-              </p>
-              
-              <AlertsManager />
-              
-              {onCreateAlerts && (
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={() => onCreateAlerts({ type: currentAnalysisType })}
-                    variant="outline"
-                    className="mt-2"
-                  >
-                    <Bell className="mr-2 h-4 w-4" />
-                    إنشاء تنبيهات من التحليل الحالي
-                  </Button>
-                </div>
-              )}
-            </div>
+            <AlertsTabContent 
+              currentAnalysisType={currentAnalysisType} 
+              onCreateAlerts={onCreateAlerts} 
+            />
           </TabsContent>
           
           <TabsContent value="performance">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                تتبع ومقارنة أداء مختلف أنواع التحليل بناءً على النتائج السابقة.
-              </p>
-              
-              <AnalystPerformance />
-            </div>
+            <PerformanceTabContent />
           </TabsContent>
           
           <TabsContent value="metrics">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                مؤشرات تفصيلية حول أداء نوع التحليل الحالي.
-              </p>
-              
-              <PerformanceMetrics analysisType={currentAnalysisType} />
-            </div>
+            <MetricsTabContent analysisType={currentAnalysisType} />
           </TabsContent>
         </Tabs>
       </CardContent>
