@@ -1,78 +1,8 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
 import { getExpectedTime } from "@/utils/technicalAnalysis";
-import { EMA, RSI, BollingerBands, MACD } from "@/utils/technicalAnalysis/indicators";
-
-// وظيفة للكشف عن الاتجاهات بناءً على المؤشرات الفنية
-const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
-  if (prices.length < 14) {
-    return Math.random() > 0.5 ? "صاعد" : "هابط"; // إذا كانت البيانات غير كافية
-  }
-
-  // استخدام RSI للكشف عن الاتجاه
-  const rsiValues = RSI.calculate({
-    period: 14,
-    values: prices
-  });
-
-  const lastRSI = rsiValues[rsiValues.length - 1];
-  
-  // استخدام MACD للتأكيد
-  const macdResult = MACD.calculate({
-    values: prices,
-    fastPeriod: 12,
-    slowPeriod: 26,
-    signalPeriod: 9,
-    SimpleMAOscillator: false,
-    SimpleMASignal: false
-  });
-  
-  const lastMACD = macdResult[macdResult.length - 1];
-  
-  // تحديد الاتجاه بناءً على تحليل مشترك للمؤشرات
-  if (lastRSI > 50 && lastMACD.histogram > 0) {
-    return "صاعد";
-  } else if (lastRSI < 50 && lastMACD.histogram < 0) {
-    return "هابط";
-  } else {
-    // استخدام المتوسط المتحرك للكشف عن الاتجاه العام
-    const ema50 = EMA.calculate({
-      period: 50,
-      values: prices
-    });
-    
-    const ema200 = EMA.calculate({
-      period: 200,
-      values: prices.slice(0, prices.length)
-    });
-    
-    if (ema50[ema50.length - 1] > ema200[ema200.length - 1]) {
-      return "صاعد";
-    } else {
-      return "هابط";
-    }
-  }
-};
-
-// وظيفة حساب مستويات فيبوناتشي
-const calculateFibonacciLevels = (
-  highPrice: number,
-  lowPrice: number,
-  direction: "صاعد" | "هابط"
-): { level: number; price: number }[] => {
-  const fibLevels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-  const range = direction === "صاعد" ? (highPrice - lowPrice) : (lowPrice - highPrice);
-  
-  return fibLevels.map(level => {
-    let price;
-    if (direction === "صاعد") {
-      price = lowPrice + (range * level);
-    } else {
-      price = highPrice - (range * level);
-    }
-    return { level, price };
-  });
-};
+import { detectTrend, calculateSupportResistance, calculateVolatility } from "@/utils/technicalAnalysis/indicators/PriceData";
 
 // تحليل الموجات الفعلي
 export const analyzeWavesChart = async (
@@ -106,49 +36,41 @@ export const analyzeWavesChart = async (
   // استخدام البيانات لتحديد الاتجاه
   const direction = detectTrend(simulatedPrices);
   
-  // حساب الدعم والمقاومة باستخدام Bollinger Bands
-  const bollingerResult = BollingerBands.calculate({
-    period: 20,
-    values: simulatedPrices,
-    stdDev: 2
-  });
-  
-  const lastBollinger = bollingerResult[bollingerResult.length - 1];
-  const support = lastBollinger.lower;
-  const resistance = lastBollinger.upper;
+  // حساب الدعم والمقاومة
+  const { support, resistance } = calculateSupportResistance(simulatedPrices);
   
   // تحديد أعلى وأدنى سعر للفترة السابقة
   const highPrice = Math.max(...simulatedPrices.slice(-50));
   const lowPrice = Math.min(...simulatedPrices.slice(-50));
   
-  // حساب مستويات فيبوناتشي
-  const fibLevels = calculateFibonacciLevels(highPrice, lowPrice, direction);
+  // حساب وقف الخسارة
+  const stopLoss = direction === "صاعد" 
+    ? currentPrice * (1 - stopLossMultiplier) 
+    : currentPrice * (1 + stopLossMultiplier);
   
-  // حساب وقف الخسارة بناء على مستويات فيبوناتشي
-  const stopLossLevel = direction === "صاعد" ? fibLevels[1] : fibLevels[5]; // استخدام 0.236 للصعودي و 0.786 للهبوطي
-  const stopLoss = stopLossLevel.price;
+  // حساب الأهداف
+  const targetMultipliers = [1.5, 2.5, 3.5];
+  const targets = targetMultipliers.map((mult, index) => {
+    const targetPrice = direction === "صاعد" 
+      ? currentPrice * (1 + stopLossMultiplier * mult) 
+      : currentPrice * (1 - stopLossMultiplier * mult);
+    
+    return {
+      price: targetPrice,
+      expectedTime: getExpectedTime(timeframe, index)
+    };
+  });
   
   // تحديد نقطة الدخول المثالية
-  const bestEntryLevel = direction === "صاعد" ? fibLevels[2] : fibLevels[4]; // استخدام 0.382 للصعودي و 0.618 للهبوطي
   const bestEntry = {
-    price: bestEntryLevel.price,
-    reason: direction === "صاعد"
-      ? `نقطة دخول عند تصحيح الموجة بنسبة ${bestEntryLevel.level * 100}% على الإطار الزمني ${timeframe}`
-      : `نقطة دخول عند اكتمال الموجة التصحيحية بنسبة ${(1 - bestEntryLevel.level) * 100}% على الإطار الزمني ${timeframe}`
+    price: direction === "صاعد" 
+      ? currentPrice * 0.99 
+      : currentPrice * 1.01,
+    reason: `نقطة دخول مثالية للاتجاه ${direction} على الإطار الزمني ${timeframe}`
   };
 
-  // حساب الأهداف باستخدام مستويات فيبوناتشي المتبقية
-  const targetLevels = direction === "صاعد" 
-    ? [fibLevels[4], fibLevels[5], fibLevels[6]] 
-    : [fibLevels[2], fibLevels[1], fibLevels[0]];
-  
-  const targets = targetLevels.map((level, index) => ({
-    price: level.price,
-    expectedTime: getExpectedTime(timeframe, index)
-  }));
-
   const analysisResult: AnalysisData = {
-    pattern: `نموذج موجي ${direction} مع مستويات فيبوناتشي على الإطار الزمني ${timeframe}`,
+    pattern: `نموذج موجي ${direction} على الإطار الزمني ${timeframe}`,
     direction,
     currentPrice,
     support,

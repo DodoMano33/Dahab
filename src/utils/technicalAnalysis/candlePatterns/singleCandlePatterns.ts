@@ -1,5 +1,5 @@
 
-import { PriceData } from '../indicators';
+import { PriceData } from '../indicators/PriceData';
 
 // وظيفة للتحقق مما إذا كانت الشمعة دوجي
 export const isDoji = (candle: PriceData): boolean => {

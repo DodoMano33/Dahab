@@ -1,4 +1,5 @@
 
+
 import { addMinutes, addHours, addDays } from "date-fns";
 
 // وظيفة للحصول على الوقت المتوقع بناءً على الإطار الزمني ومؤشر الهدف
@@ -53,3 +54,28 @@ export const calculateTimeframeBasedDuration = (timeframe: string): number => {
       return 24; // 24 ساعة افتراضياً
   }
 };
+
+// تحويل الإطار الزمني إلى تسمية مقروءة
+export const getTimeframeLabel = (timeframe: string): string => {
+  switch (timeframe) {
+    case "1m":
+      return "دقيقة واحدة";
+    case "5m":
+      return "5 دقائق";
+    case "15m":
+      return "15 دقيقة";
+    case "30m":
+      return "30 دقيقة";
+    case "1h":
+      return "ساعة واحدة";
+    case "4h":
+      return "4 ساعات";
+    case "1d":
+      return "يوم واحد";
+    case "1w":
+      return "أسبوع واحد";
+    default:
+      return timeframe;
+  }
+};
+

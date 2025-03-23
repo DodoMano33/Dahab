@@ -1,5 +1,5 @@
 
-import { PriceData } from '../indicators';
+import { PriceData } from '../indicators/PriceData';
 
 // وظيفة مساعدة لتحويل مصفوفة أسعار الإغلاق إلى كائنات PriceData
 export const convertToPriceData = (

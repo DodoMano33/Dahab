@@ -5,10 +5,8 @@ import { getExpectedTime } from "@/utils/technicalAnalysis";
 import { 
   detectTrend, 
   calculateSupportResistance, 
-  calculateOptimalStopLoss,
-  calculateFibonacciLevels
-} from "@/utils/technicalAnalysis/indicators";
-import { detectCandlePatterns, convertToPriceData } from "@/utils/technicalAnalysis/candlePatterns";
+  calculateFibonacciLevels 
+} from "@/utils/technicalAnalysis/indicators/PriceData";
 import {
   calculateSMCStopLoss,
   calculateSMCTargets,
@@ -39,21 +37,8 @@ export const analyzeSMCChart = async (
   }
   simulatedPrices.push(currentPrice);
   
-  // محاكاة بيانات OHLC
-  const timestamps = Array.from({ length: simulatedPrices.length }, (_, i) => Date.now() - (simulatedPrices.length - i) * 3600000);
-  const open = simulatedPrices.map((price, i) => i === 0 ? price : simulatedPrices[i-1]);
-  const high = simulatedPrices.map(price => price * (1 + Math.random() * 0.005));
-  const low = simulatedPrices.map(price => price * (1 - Math.random() * 0.005));
-  const close = simulatedPrices;
-  
-  // تحويل البيانات لتنسيق PriceData لتحليل أنماط الشموع
-  const candleData = convertToPriceData(timestamps, open, high, low, close);
-  
-  // استخدام المؤشرات الجديدة لتحليل البيانات
+  // استخدام المؤشرات لتحليل البيانات
   const direction = detectTrend(simulatedPrices);
-  
-  // تحليل أنماط الشموع
-  const patterns = detectCandlePatterns(candleData);
   
   // حساب الدعم والمقاومة
   const { support, resistance } = calculateSupportResistance(simulatedPrices);
@@ -61,7 +46,7 @@ export const analyzeSMCChart = async (
   // استخدام حسابات SMC المخصصة
   const stopLoss = calculateSMCStopLoss(
     currentPrice, 
-    direction as "صاعد" | "هابط" | "محايد", 
+    direction, 
     support, 
     resistance, 
     timeframe
@@ -73,13 +58,13 @@ export const analyzeSMCChart = async (
   const fibLevels = calculateFibonacciLevels(
     highPrice, 
     lowPrice, 
-    direction as "صاعد" | "هابط" | "محايد"
+    direction
   );
   
   // حساب الأهداف المبنية على السعر باستخدام حسابات SMC
   const smcTargetPrices = calculateSMCTargets(
     currentPrice, 
-    direction as "صاعد" | "هابط" | "محايد", 
+    direction, 
     support, 
     resistance, 
     timeframe
@@ -94,26 +79,21 @@ export const analyzeSMCChart = async (
   // تحديد نقطة الدخول المثالية باستخدام حسابات SMC
   const bestEntry = calculateSMCEntryPoint(
     currentPrice, 
-    direction as "صاعد" | "هابط" | "محايد", 
+    direction, 
     support, 
     resistance, 
     timeframe
   );
   
   // تحديد نمط السوق استنادًا إلى استراتيجية SMC
-  let patternDescription = detectSMCPattern(
-    direction as "صاعد" | "هابط" | "محايد",
+  const patternDescription = detectSMCPattern(
+    direction,
     timeframe
   );
   
-  if (patterns.length > 0) {
-    const strongestPattern = patterns.sort((a, b) => b.confidence - a.confidence)[0];
-    patternDescription += ` مع نمط ${strongestPattern.pattern} (${strongestPattern.description})`;
-  }
-  
   const analysisResult: AnalysisData = {
     pattern: patternDescription,
-    direction: direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction as "صاعد" | "هابط" | "محايد",
+    direction: direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction,
     currentPrice,
     support,
     resistance,

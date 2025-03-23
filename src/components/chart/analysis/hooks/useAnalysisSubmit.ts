@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnalysisType, SearchHistoryItem } from "@/types/analysis";
@@ -10,6 +11,14 @@ import { mapToAnalysisType } from "../utils/analysisTypeMapper";
 
 interface UseAnalysisSubmitProps {
   onAnalysis: (item: SearchHistoryItem) => void;
+}
+
+// تعريف واجهة ChartAnalysisResult للتأكد من وجود الحقول المطلوبة
+interface ChartAnalysisResult {
+  analysisResult: any;
+  duration?: number;
+  currentPrice?: number;
+  symbol?: string;
 }
 
 export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
@@ -115,7 +124,10 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
       dismissToasts(loadingToastId);
       
       if (result && result.analysisResult) {
-        const { analysisResult, currentPrice, symbol: upperSymbol, duration: resultDuration } = result;
+        // استخدام البيانات من النتيجة أو من المدخلات الأصلية
+        const symbolToUse = result.symbol || symbol.toUpperCase();
+        const priceToUse = result.currentPrice || providedPrice || 0;
+        const { analysisResult } = result;
         
         if (!analysisResult || !analysisResult.pattern || !analysisResult.direction) {
           console.error("Invalid analysis result:", analysisResult);
@@ -124,11 +136,10 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
         }
 
         try {
-          const finalDuration = resultDuration !== undefined ? 
-                             resultDuration : 
-                             (durationHours !== undefined ? 
-                             durationHours : 
-                             36);
+          // تحويل المدة إلى رقم للتأكد من نوع البيانات
+          const finalDuration = typeof result.duration === 'number' 
+            ? result.duration 
+            : (durationHours || 36);
                              
           console.log("Saving analysis with duration:", finalDuration);
           
@@ -137,8 +148,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
           
           const savedData = await saveAnalysis({
             userId: user.id,
-            symbol: upperSymbol,
-            currentPrice,
+            symbol: symbolToUse,
+            currentPrice: priceToUse,
             analysisResult,
             analysisType: mappedAnalysisType as AnalysisType,
             timeframe,
@@ -149,8 +160,8 @@ export const useAnalysisSubmit = ({ onAnalysis }: UseAnalysisSubmitProps) => {
             const newHistoryEntry: SearchHistoryItem = {
               id: savedData.id,
               date: new Date(),
-              symbol: upperSymbol,
-              currentPrice,
+              symbol: symbolToUse,
+              currentPrice: priceToUse,
               analysis: analysisResult,
               targetHit: false,
               stopLossHit: false,

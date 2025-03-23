@@ -7,8 +7,7 @@ import {
   calculateSupportResistance, 
   calculateOptimalStopLoss,
   calculateVolatility
-} from "@/utils/technicalAnalysis/indicators";
-import { detectCandlePatterns, convertToPriceData } from "@/utils/technicalAnalysis/candlePatterns";
+} from "@/utils/technicalAnalysis/indicators/PriceData";
 
 export const analyzePriceAction = async (
   chartImage: string,
@@ -22,8 +21,8 @@ export const analyzePriceAction = async (
   const simulatedPrices: number[] = [];
   const volatility = 0.012; // نسبة التقلب
   
-  // توليد 200 سعر تاريخي للمحاكاة
-  for (let i = 0; i < 200; i++) {
+  // توليد بيانات محاكاة للتحليل
+  for (let i = 0; i < 100; i++) {
     if (i === 0) {
       simulatedPrices.push(currentPrice * (1 - volatility));
     } else {
@@ -33,21 +32,8 @@ export const analyzePriceAction = async (
   }
   simulatedPrices.push(currentPrice);
   
-  // محاكاة بيانات OHLC
-  const timestamps = Array.from({ length: simulatedPrices.length }, (_, i) => Date.now() - (simulatedPrices.length - i) * 3600000);
-  const open = simulatedPrices.map((price, i) => i === 0 ? price : simulatedPrices[i-1]);
-  const high = simulatedPrices.map(price => price * (1 + Math.random() * 0.005));
-  const low = simulatedPrices.map(price => price * (1 - Math.random() * 0.005));
-  const close = simulatedPrices;
-  
-  // تحويل البيانات لتنسيق PriceData لتحليل أنماط الشموع
-  const candleData = convertToPriceData(timestamps, open, high, low, close);
-  
-  // استخدام المؤشرات الجديدة لتحليل البيانات
+  // استخدام المؤشرات الفنية لتحليل البيانات
   const direction = detectTrend(simulatedPrices);
-  
-  // تحليل أنماط الشموع
-  const patterns = detectCandlePatterns(candleData);
   
   // حساب الدعم والمقاومة
   const { support, resistance } = calculateSupportResistance(simulatedPrices);
@@ -63,7 +49,6 @@ export const analyzePriceAction = async (
   const targetPercent = stopLossPercent * 2;
   
   // تحديد أهداف السعر
-  const multipliers = getTimeframeMultipliers(timeframe);
   const targets = [
     {
       price: direction === "صاعد" 
@@ -86,67 +71,21 @@ export const analyzePriceAction = async (
   ];
   
   // تحديد نقطة الدخول المثالية
-  let entryPrice = currentPrice;
-  let entryReason = "";
-  
-  // تخصيص نقطة الدخول حسب الاتجاه وأنماط الشموع
-  if (patterns.length > 0) {
-    const strongestPattern = patterns.sort((a, b) => b.confidence - a.confidence)[0];
-    
-    if (strongestPattern.signal === "صاعد" && direction === "صاعد") {
-      // نقطة دخول أدنى قليلاً من السعر الحالي للاتجاه الصاعد
-      entryPrice = currentPrice * 0.995;
-      entryReason = `نقطة دخول مثالية عند انعكاس نمط ${strongestPattern.pattern} الصاعد`;
-    } else if (strongestPattern.signal === "هابط" && direction === "هابط") {
-      // نقطة دخول أعلى قليلاً من السعر الحالي للاتجاه الهابط
-      entryPrice = currentPrice * 1.005;
-      entryReason = `نقطة دخول مثالية عند انعكاس نمط ${strongestPattern.pattern} الهابط`;
-    } else {
-      // في حالة تعارض الإشارات
-      entryPrice = currentPrice;
-      entryReason = "نقطة دخول في السعر الحالي بسبب إشارات متضاربة";
-    }
-  } else {
-    // إذا لم يتم العثور على أنماط، استخدم مستويات الدعم والمقاومة
-    if (direction === "صاعد") {
-      entryPrice = Math.max(support, currentPrice * 0.99);
-      entryReason = "نقطة دخول بالقرب من مستوى الدعم في حركة سعر صاعدة";
-    } else {
-      entryPrice = Math.min(resistance, currentPrice * 1.01);
-      entryReason = "نقطة دخول بالقرب من مستوى المقاومة في حركة سعر هابطة";
-    }
-  }
+  const entryPrice = direction === "صاعد" 
+    ? currentPrice * 0.995 
+    : currentPrice * 1.005;
   
   const bestEntry = {
     price: entryPrice,
-    reason: entryReason
+    reason: `نقطة دخول مثالية للاتجاه ${direction} على الإطار الزمني ${timeframe}`
   };
   
   // تحديد وصف النمط
-  let patternDescription = "تحليل حركة السعر: ";
-  
-  if (patterns.length > 0) {
-    const topPatterns = patterns.sort((a, b) => b.confidence - a.confidence).slice(0, 2);
-    patternDescription += topPatterns.map(p => p.pattern).join(" و ");
-  } else {
-    patternDescription += `اتجاه ${direction === "صاعد" ? "صاعد" : "هابط"} على الإطار الزمني ${timeframe}`;
-  }
-  
-  // إضافة تقييم قوة التقلب
-  let volatilityDesc = "";
-  if (actualVolatility < 0.01) {
-    volatilityDesc = "منخفض";
-  } else if (actualVolatility < 0.02) {
-    volatilityDesc = "متوسط";
-  } else {
-    volatilityDesc = "مرتفع";
-  }
-  
-  patternDescription += ` مع تقلب ${volatilityDesc}`;
+  const patternDescription = `تحليل حركة السعر: اتجاه ${direction} على الإطار الزمني ${timeframe}`;
   
   const analysisResult: AnalysisData = {
     pattern: patternDescription,
-    direction: direction === "محايد" ? (Math.random() > 0.5 ? "صاعد" : "هابط") : direction,
+    direction,
     currentPrice,
     support,
     resistance,
