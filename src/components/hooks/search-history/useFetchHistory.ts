@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ export function useFetchHistory() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const maxRetries = 3;
 
-  const fetchSearchHistory = async (): Promise<SearchHistoryItem[]> => {
+  const fetchSearchHistory = useCallback(async (): Promise<SearchHistoryItem[]> => {
     try {
       setIsRefreshing(true);
       console.log("جلب سجل البحث...");
@@ -44,6 +44,12 @@ export function useFetchHistory() {
       if (error) {
         console.error("خطأ في جلب سجل البحث:", error);
         
+        // تحقق مما إذا كانت المشكلة تتعلق بالاتصال بالشبكة
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          toast.error("تعذر الاتصال بقاعدة البيانات، يرجى التحقق من اتصالك بالإنترنت");
+          throw error;
+        }
+        
         // محاولة مسح التخزين المؤقت وإعادة المحاولة إذا كان الخطأ متعلقًا بمخطط البيانات
         if (error.message.includes('schema cache') || error.message.includes('analysis_duration_hours')) {
           console.log("محاولة إصلاح مشكلة التخزين المؤقت وإعادة المحاولة...");
@@ -59,6 +65,7 @@ export function useFetchHistory() {
             return fetchSearchHistory();
           } else {
             toast.error("فشل في استرداد البيانات بعد عدة محاولات. يرجى إعادة تحميل الصفحة.");
+            throw new Error("فشل في استرداد البيانات بعد عدة محاولات");
           }
         }
         
@@ -94,7 +101,7 @@ export function useFetchHistory() {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [retryCount, maxRetries]);
 
   return { 
     fetchSearchHistory, 

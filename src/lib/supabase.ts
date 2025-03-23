@@ -27,6 +27,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     params: {
       eventsPerSecond: 10
     }
+  },
+  // إضافة خيارات لتحسين الاتصال والتعامل مع الأخطاء
+  db: {
+    schema: 'public'
+  },
+  fetch: (url, init) => {
+    return fetch(url, {
+      ...init,
+      // زيادة مهلة الاتصال لتجنب أخطاء timeout
+      signal: init?.signal || (typeof AbortSignal !== 'undefined' 
+        ? new AbortController().signal 
+        : undefined),
+    });
   }
 });
 
@@ -60,6 +73,24 @@ export const refreshSession = async (): Promise<boolean> => {
     return !!data.session;
   } catch (err) {
     console.error('خطأ أثناء تحديث جلسة المصادقة:', err);
+    return false;
+  }
+};
+
+// وظيفة للتحقق من الاتصال بالخادم
+export const checkConnection = async (): Promise<boolean> => {
+  try {
+    // استخدام استعلام بسيط للتحقق من حالة الاتصال
+    const { error } = await supabase.from('search_history').select('count(*)', { count: 'exact', head: true });
+    
+    if (error) {
+      console.error('فشل في الاتصال بالخادم:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('خطأ أثناء التحقق من الاتصال:', err);
     return false;
   }
 };

@@ -2,6 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
+import { resetSupabaseConnection } from "@/utils/supabaseCache";
 
 /**
  * هوك لإدارة عمليات سجل البحث (إضافة، حذف، إلخ)
@@ -12,14 +13,23 @@ export function useHistoryActions() {
     try {
       console.log("محاولة حذف عنصر من السجل:", id);
       
+      // محاولة إعادة تهيئة الاتصال قبل تنفيذ العملية
+      await resetSupabaseConnection();
+      
       const { error } = await supabase
         .from('search_history')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error("خطأ في حذف العنصر:", error);
-        toast.error("حدث خطأ أثناء حذف العنصر");
+        // تحقق من نوع الخطأ للتعامل معه بشكل أفضل
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          console.error("خطأ في الاتصال بالشبكة:", error);
+          toast.error("تعذر الاتصال بقاعدة البيانات، يرجى التحقق من اتصالك بالإنترنت");
+        } else {
+          console.error("خطأ في حذف العنصر:", error);
+          toast.error("حدث خطأ أثناء حذف العنصر");
+        }
         return false;
       }
 

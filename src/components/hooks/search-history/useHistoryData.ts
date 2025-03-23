@@ -6,6 +6,7 @@ import { useFetchHistory } from "./useFetchHistory";
 import { useHistoryEvents } from "./useHistoryEvents";
 import { useHistoryActions } from "./useHistoryActions";
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
+import { toast } from "sonner";
 
 export function useHistoryData() {
   const { user } = useAuth();
@@ -15,7 +16,14 @@ export function useHistoryData() {
   
   // تعريف الدالة كـ useCallback لتسليمها إلى useHistoryEvents
   const fetchData = useCallback(async () => {
+    if (!user) {
+      setSearchHistory([]);
+      return;
+    }
+    
     try {
+      setIsRefreshing(true);
+      
       // محاولة مسح التخزين المؤقت لمخطط البيانات قبل جلب البيانات
       await clearSupabaseCache();
       await clearSearchHistoryCache();
@@ -24,8 +32,11 @@ export function useHistoryData() {
       setSearchHistory(data);
     } catch (error) {
       console.error("Error fetching search history:", error);
+      toast.error("تعذر جلب سجل البحث، سيتم إعادة المحاولة لاحقًا");
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [fetchSearchHistory]);
+  }, [fetchSearchHistory, user, setIsRefreshing]);
 
   // إعداد المستمعين للأحداث
   useHistoryEvents(fetchData);

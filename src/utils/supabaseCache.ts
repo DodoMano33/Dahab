@@ -28,10 +28,28 @@ export const clearSupabaseCache = async (): Promise<void> => {
  */
 export const clearSearchHistoryCache = async (): Promise<void> => {
   try {
-    // مسح مخبأ استعلامات سجل البحث
-    await supabase.from('search_history').select('count').limit(1).maybeSingle();
+    // استخدام استعلام بسيط لتحديث ذاكرة التخزين المؤقت
+    await supabase.from('search_history').select('id').limit(1).maybeSingle();
     console.log("تم تحديث مخبأ سجل البحث");
   } catch (err) {
     console.error("خطأ أثناء مسح مخبأ سجل البحث:", err);
+  }
+};
+
+/**
+ * إعادة تهيئة اتصال Supabase
+ */
+export const resetSupabaseConnection = async (): Promise<void> => {
+  try {
+    // محاولة إعادة تهيئة الاتصال في حالة وجود مشاكل
+    const { error } = await supabase.auth.refreshSession();
+    
+    if (error) {
+      console.error("فشل في إعادة تهيئة الاتصال:", error);
+    } else {
+      console.log("تم إعادة تهيئة الاتصال بنجاح");
+    }
+  } catch (err) {
+    console.error("خطأ أثناء إعادة تهيئة الاتصال:", err);
   }
 };
