@@ -7,9 +7,10 @@ export const analyzePriceAction = async (
   chartImage: string,
   currentPrice: number,
   timeframe: string = "1d",
-  historicalPrices: number[] = []
+  historicalPrices: number[] = [],
+  duration: number = 36 // إضافة مدة التحليل كمعامل
 ): Promise<AnalysisData> => {
-  console.log("بدء تحليل حركة السعر - البيانات المستلمة:", { chartImage, currentPrice, timeframe });
+  console.log("بدء تحليل حركة السعر - البيانات المستلمة:", { chartImage, currentPrice, timeframe, duration });
   console.log(`باستخدام ${historicalPrices.length} نقطة بيانات تاريخية`);
   
   try {
@@ -78,7 +79,8 @@ export const analyzePriceAction = async (
       bestEntryPoint: bestEntryPoint,
       targets: targets,
       fibonacciLevels: fibonacciLevels,
-      analysisType: "Price Action"
+      analysisType: "Price Action",
+      analysis_duration_hours: duration // إضافة مدة التحليل
     };
 
     console.log("تم إكمال تحليل حركة السعر بنجاح:", analysis);
