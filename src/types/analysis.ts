@@ -58,6 +58,7 @@ export interface AnalysisData {
   analysisType: AnalysisType;
   analysis_duration_hours?: number;
   timeframe?: string;
+  confidence_score?: number;
 }
 
 export interface SearchHistoryItem {
