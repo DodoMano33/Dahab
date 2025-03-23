@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
 
-const ChartAnalyzer = () => {
+export function ChartAnalyzer() {
   const {
     isAnalyzing,
     image,
@@ -140,10 +140,7 @@ const ChartAnalyzer = () => {
       )}
     </div>
   );
-};
-
-// Separate named export
-export { ChartAnalyzer };
+}
 
 // Default export
 export default ChartAnalyzer;
