@@ -6,6 +6,7 @@ import { AnalysisForm } from "../analysis/AnalysisForm";
 import { AnalysisSettings } from "../analysis/AnalysisSettings";
 import { BacktestCheckButton } from "../backtest/BacktestCheckButton";
 import { SearchHistoryItem } from "@/types/analysis";
+import { PriceLevelsDisplay } from "../PriceLevelsDisplay";
 
 interface AnalysisTabContentProps {
   searchHistoryStats: { total: number; active: number; completed: number };
@@ -46,12 +47,19 @@ export const AnalysisTabContent = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* معلومات سريعة */}
-      <AnalysisInfoCard 
-        total={searchHistoryStats.total}
-        active={searchHistoryStats.active}
-        completed={searchHistoryStats.completed}
-        isRefreshing={isRefreshing}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <AnalysisInfoCard 
+            total={searchHistoryStats.total}
+            active={searchHistoryStats.active}
+            completed={searchHistoryStats.completed}
+            isRefreshing={isRefreshing}
+          />
+        </div>
+        <div className="md:col-span-1">
+          <PriceLevelsDisplay />
+        </div>
+      </div>
 
       {/* TradingView Chart */}
       <LiveTradingViewChart

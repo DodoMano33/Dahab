@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
@@ -30,7 +29,6 @@ export const ChartAnalyzer = () => {
     isRefreshing
   } = useSearchHistory();
 
-  // استخدام هوك فحص التحليلات للتوافق مع الأنواع فقط
   const { triggerManualCheck, isLoading: isCheckLoading, lastCheckTime } = useBackTest();
 
   const [selectedTimeframes, setSelectedTimeframes] = useState<string[]>([]);
@@ -40,7 +38,6 @@ export const ChartAnalyzer = () => {
 
   const queryClient = useQueryClient();
 
-  // useMemo for search history stats
   const analysisStats = useMemo(() => {
     const activeAnalyses = searchHistory.filter(item => !item?.result_timestamp);
     const completedAnalyses = searchHistory.filter(item => item?.result_timestamp);
@@ -81,7 +78,6 @@ export const ChartAnalyzer = () => {
     setIsHistoryOpen(true);
   }, [addToSearchHistory, setIsHistoryOpen]);
 
-  // For periodic data updates
   useEffect(() => {
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
@@ -90,7 +86,6 @@ export const ChartAnalyzer = () => {
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  // Chart display component only rendered when needed
   const chartDisplayComponent = useMemo(() => {
     if (image || analysis || isAnalyzing) {
       return (
@@ -146,5 +141,4 @@ export const ChartAnalyzer = () => {
   );
 };
 
-// إضافة export default للمكون ذاته
 export default ChartAnalyzer;
