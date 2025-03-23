@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useNavigate } from "react-router-dom";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
+import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 
 // Define the ChartAnalysisResult interface
 export interface ChartAnalysisResult {
@@ -94,6 +95,10 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
           }
         }
 
+        // مسح التخزين المؤقت قبل إرسال التحليل
+        await clearSupabaseCache();
+        await clearSearchHistoryCache();
+
         const input = {
           symbol,
           timeframe,
@@ -120,8 +125,21 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
           chartImage: finalChartImage
         };
 
+        console.log("Submitting analysis with input:", input);
         const result = await processChartAnalysis(input);
-        handleAnalysisResult(result);
+        console.log("Analysis result:", result);
+        
+        // لضمان أن نتيجة التحليل مررت إلى وظيفة النجاح بشكل صحيح
+        if (result && result.analysisResult) {
+          await handleAnalysisResult({
+            analysisResult: result.analysisResult,
+            duration: result.duration,
+            symbol,
+            currentPrice: inputPrice
+          });
+        } else {
+          throw new Error("لم يتم الحصول على نتائج التحليل");
+        }
       } catch (error: any) {
         console.error("حدث خطأ أثناء معالجة التحليل:", error);
         toast.error(error.message || "حدث خطأ أثناء معالجة التحليل.");
@@ -132,39 +150,50 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
     [navigate, symbol, user, currentPrice]
   );
 
-  // نستخدم الخصائص التي أضفناها للنوع ChartAnalysisResult
-  const handleAnalysisResult = (result: ChartAnalysisResult) => {
-    if (!result || !result.analysisResult) {
+  const handleAnalysisResult = async (result: ChartAnalysisResult) => {
+    try {
+      if (!result || !result.analysisResult) {
+        setIsAnalyzing(false);
+        toast.error("لم يتم الحصول على نتائج التحليل");
+        return;
+      }
+
+      console.log("Handling analysis result:", result);
+
+      // استخدام القيم من النتيجة أو القيم الافتراضية
+      const symbolName = result.symbol || symbol;
+      const price = result.currentPrice || currentPrice || 0;
+      const analysis = result.analysisResult;
+
+      // تحويل البيانات من string إلى number عند الحاجة
+      const durationHours: number = 
+        typeof result.duration === 'string' 
+          ? parseInt(result.duration) 
+          : (result.duration as number || 8);
+
+      console.log("Saving analysis with duration:", durationHours);
+
+      // الاتصال المباشر بقاعدة البيانات لحفظ التحليل
+      await clearSupabaseCache();
+      await clearSearchHistoryCache();
+
+      // حفظ التحليل في قاعدة البيانات
+      await saveAnalysisToDatabase(
+        symbolName,
+        analysis.analysisType,
+        price,
+        analysis,
+        durationHours
+      );
+
+      // عرض رسالة النجاح
+      toast.success(`تم التحليل بنجاح. المدة: ${durationHours} ساعة.`);
+    } catch (error: any) {
+      console.error("Error handling analysis result:", error);
+      toast.error(error.message || "حدث خطأ أثناء حفظ نتائج التحليل");
+    } finally {
       setIsAnalyzing(false);
-      return;
     }
-
-    // يمكننا الآن استخدام symbol و currentPrice بأمان
-    const symbolName = result.symbol || "";
-    const price = result.currentPrice || 0;
-    const analysis = result.analysisResult;
-
-    // تحويل البيانات من string إلى number عند الحاجة
-    const durationHours: number = 
-      typeof result.duration === 'string' 
-        ? parseInt(result.duration) 
-        : (result.duration as number || 8);
-
-    saveAnalysisToDatabase(
-      symbolName,
-      analysis.analysisType,
-      price,
-      analysis,
-      durationHours
-    );
-
-    // تحويل البيانات من string إلى number عند الحاجة
-    const analysisDuration: number = 
-      typeof result.duration === 'string' 
-        ? parseInt(result.duration) 
-        : (result.duration as number || 8);
-
-    toast.success(`تم التحليل بنجاح. المدة: ${analysisDuration} ساعة.`);
   };
 
   return { onSubmit, isAnalyzing };
