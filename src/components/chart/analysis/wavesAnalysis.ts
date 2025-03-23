@@ -1,8 +1,7 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { getTimeframeMultipliers, getStopLossMultiplier } from "@/utils/technicalAnalysis/timeframeMultipliers";
 import { getExpectedTime } from "@/utils/technicalAnalysis";
-import { EMA, RSI, BollingerBands, MACD } from "technicalindicators";
+import { EMA, RSI, BollingerBands, MACD } from "@/utils/technicalAnalysis/indicators";
 
 // وظيفة للكشف عن الاتجاهات بناءً على المؤشرات الفنية
 const detectTrend = (prices: number[]): "صاعد" | "هابط" => {
