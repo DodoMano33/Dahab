@@ -142,6 +142,8 @@ const ChartAnalyzer = () => {
   );
 };
 
-// Make sure to explicitly define a named export and a default export
+// Separate named export
 export { ChartAnalyzer };
+
+// Default export
 export default ChartAnalyzer;

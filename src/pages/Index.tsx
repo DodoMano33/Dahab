@@ -10,7 +10,7 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استخدام استيراد ديناميكي بسيط وموثوق
+// استخدام استيراد عادي بدون تعقيد
 const ChartAnalyzer = lazy(() => import("../components/ChartAnalyzer"));
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
