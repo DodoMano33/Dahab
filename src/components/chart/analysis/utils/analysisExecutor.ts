@@ -1,4 +1,3 @@
-
 import { AnalysisData, AnalysisType } from "@/types/analysis";
 import { analyzeSMCChart } from "../smcAnalysis";
 import { analyzeICTChart } from "../ictAnalysis";
@@ -17,6 +16,7 @@ import { analyzeCompositeCandlestick } from "../compositeCandlestickAnalysis";
 import { analyzeBehavioral } from "../behavioralAnalysis";
 import { analyzeFibonacciChart } from "../fibonacciAnalysis";
 import { analyzeFibonacciAdvancedChart } from "../fibonacciAdvancedAnalysis";
+import { analyzeMLChart, analyzeMultiTimeframeML } from "../mlAnalysis";
 import { mapToAnalysisType } from "./analysisTypeMapper";
 
 interface AnalysisOptions {
@@ -102,6 +102,8 @@ export const executeAnalysis = async (
         case "Behavioral": return analyzeBehavioral(chartImage, currentPrice, timeframe);
         case "Fibonacci": return analyzeFibonacciChart(chartImage, currentPrice, timeframe);
         case "Fibonacci Advanced": return analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
+        case "ML": return analyzeMLChart(chartImage, currentPrice, timeframe);
+        case "Multi Timeframe": return analyzeMultiTimeframeML(chartImage, currentPrice, timeframe);
         default: return analyzeDailyChart(chartImage, currentPrice, timeframe);
       }
     });
@@ -185,6 +187,18 @@ export const executeAnalysis = async (
         analysis = await analyzeFibonacciAdvancedChart(chartImage, currentPrice, timeframe);
         if (analysis) {
           analysis.analysisType = "فيبوناتشي متقدم" as AnalysisType;
+        }
+        break;
+      case "ML":
+        analysis = await analyzeMLChart(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "تعلم آلي" as AnalysisType;
+        }
+        break;
+      case "Multi Timeframe":
+        analysis = await analyzeMultiTimeframeML(chartImage, currentPrice, timeframe);
+        if (analysis) {
+          analysis.analysisType = "تحليل متعدد الأطر الزمنية" as AnalysisType;
         }
         break;
       default:
