@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { evaluateAnalysisPerformance } from "@/utils/technicalAnalysis/analysisAccuracy";
+import { evaluateAnalysisPerformance } from "@/utils/technicalAnalysis/accuracy";
 import { PerformanceChart } from './components/PerformanceChart';
 import { PerformanceTable } from './components/PerformanceTable';
 

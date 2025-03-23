@@ -25,8 +25,11 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { evaluateAnalysisPerformance } from "@/utils/technicalAnalysis/analysisAccuracy";
-import { calculateDirectionAccuracy, calculateStopLossRate } from "@/utils/technicalAnalysis/analysisAccuracy";
+import { 
+  evaluateAnalysisPerformance,
+  calculateDirectionAccuracy, 
+  calculateStopLossRate 
+} from "@/utils/technicalAnalysis/accuracy";
 import { TrendingUp, BarChart3, PieChart, Target, AlertTriangle } from 'lucide-react';
 
 interface PerformanceMetricsProps {
