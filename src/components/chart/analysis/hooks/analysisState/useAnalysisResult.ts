@@ -48,16 +48,13 @@ export function useAnalysisResult() {
       await clearSearchHistoryCache();
 
       // حفظ التحليل في قاعدة البيانات
-      const savedData = await saveAnalysisToDatabase(
-        symbolName,
-        analysis.analysisType,
-        price,
-        analysis,
-        durationHours
-      );
+      const savedData = await saveAnalysisToDatabase({
+        analysisResult: analysis,
+        duration: durationHours.toString()
+      }, symbolName, analysis.timeframe || '', analysis.analysisType, '');
 
       // إرسال إشعار لتحديث سجل البحث
-      if (savedData) {
+      if (savedData && savedData.success) {
         dispatchAnalysisSuccessEvent({
           timestamp: new Date().toISOString(),
           checked: 1,

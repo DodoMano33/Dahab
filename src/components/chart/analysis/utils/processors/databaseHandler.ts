@@ -94,4 +94,3 @@ export const saveAnalysisToDatabase = async (
     return { success: false, error };
   }
 };
-
