@@ -9,6 +9,7 @@ export interface UseAnalysisCheckerResult {
   lastErrorTime: Date | null;
   consecutiveErrors: number;
   retryCount: number;
+  manualCheck: () => void; // Add this line to fix the second error
 }
 
 export interface CheckAnalysesOptions {

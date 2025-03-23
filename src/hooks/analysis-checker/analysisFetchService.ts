@@ -38,19 +38,24 @@ export const fetchAnalysesWithCurrentPrice = async (
       timestamp: requestBody.requestedAt
     });
     
-    // إضافة إشارة إلغاء من AbortController
+    // إضافة مهلة لإلغاء الطلب بعد 30 ثانية
     const timeout = setTimeout(() => {
       controller.abort();
     }, 30000); // زيادة وقت الانتظار إلى 30 ثانية
     
     try {
-      // استخدام فنكشن invoke مباشرة بدلاً من الفيتش العادي
+      // استخدام فنكشن invoke مع تجنب استخدام signal
       const { data, error } = await supabase.functions.invoke('auto-check-analyses', {
-        body: requestBody,
-        signal: controller.signal
+        body: requestBody
+        // Remove the signal property that's causing the error
       });
       
       clearTimeout(timeout);
+      
+      // Use standard fetch with AbortController to manually check for abort
+      if (controller.signal.aborted) {
+        throw new DOMException('The operation was aborted', 'AbortError');
+      }
       
       if (error) {
         console.error(`خطأ في استجابة الخادم: ${error.message}`);
