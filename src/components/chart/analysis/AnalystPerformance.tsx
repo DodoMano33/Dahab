@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Card,
@@ -14,14 +15,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -29,11 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Award, TrendingUp, AlertTriangle, Clock, BarChart3 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { evaluateAnalysisPerformance } from "@/utils/technicalAnalysis/analysisAccuracy";
+import { BarChart3, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { evaluateAnalysisPerformance } from "@/utils/technicalAnalysis/analysisAccuracy";
+import { PerformanceChart } from './components/PerformanceChart';
+import { PerformanceTable } from './components/PerformanceTable';
 
 interface AnalysisPerformance {
   type: string;
@@ -62,7 +56,6 @@ const analysisTypes = [
 export function AnalystPerformance() {
   const [performances, setPerformances] = useState<AnalysisPerformance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('directionAccuracy');
 
   const fetchAllPerformance = async () => {
@@ -71,7 +64,7 @@ export function AnalystPerformance() {
       const performancePromises = analysisTypes.map(type => 
         evaluateAnalysisPerformance(type.id)
           .then(performance => ({ type: type.id, ...performance }))
-          .catch(() => null) // تخطي التحليلات التي ليس لديها بيانات كافية
+          .catch(() => null) 
       );
       
       const results = await Promise.all(performancePromises);
@@ -90,32 +83,6 @@ export function AnalystPerformance() {
   useEffect(() => {
     fetchAllPerformance();
   }, []);
-
-  const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(1)}%`;
-  };
-
-  const formatTime = (hours: number) => {
-    if (hours < 1) {
-      return `${Math.round(hours * 60)} دقيقة`;
-    } else if (hours < 24) {
-      return `${hours.toFixed(1)} ساعة`;
-    } else {
-      return `${(hours / 24).toFixed(1)} يوم`;
-    }
-  };
-
-  const getRatingClass = (value: number, metric: string) => {
-    if (metric === 'stopLossRate') {
-      if (value < 0.2) return 'text-green-600';
-      if (value < 0.4) return 'text-yellow-600';
-      return 'text-red-600';
-    } else {
-      if (value > 0.7) return 'text-green-600';
-      if (value > 0.5) return 'text-yellow-600';
-      return 'text-red-600';
-    }
-  };
 
   const getDisplayName = (type: string) => {
     const found = analysisTypes.find(t => t.id === type);
@@ -178,94 +145,18 @@ export function AnalystPerformance() {
               </TabsList>
               
               <TabsContent value="chart" className="space-y-4">
-                {performances.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
-                    لا توجد بيانات كافية لعرض تقييم الأداء
-                  </div>
-                ) : (
-                  performances.map((performance) => (
-                    <div key={performance.type} className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-sm">
-                          {getDisplayName(performance.type)}
-                        </span>
-                        <span className={`font-bold ${getRatingClass(
-                          selectedCategory === 'stopLossRate' 
-                            ? 1 - performance[selectedCategory as keyof AnalysisPerformance] as number
-                            : performance[selectedCategory as keyof AnalysisPerformance] as number,
-                          selectedCategory
-                        )}`}>
-                          {selectedCategory === 'stopLossRate'
-                            ? formatPercentage(performance.stopLossRate)
-                            : selectedCategory === 'averageTimeToTarget'
-                              ? formatTime(performance.averageTimeToTarget)
-                              : formatPercentage(performance[selectedCategory as keyof AnalysisPerformance] as number)}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={selectedCategory === 'stopLossRate'
-                          ? (1 - performance.stopLossRate) * 100
-                          : ((performance[selectedCategory as keyof AnalysisPerformance] as unknown) as number) * 100} 
-                        className="h-2"
-                      />
-                    </div>
-                  ))
-                )}
+                <PerformanceChart 
+                  performances={performances}
+                  selectedCategory={selectedCategory}
+                  getDisplayName={getDisplayName}
+                />
               </TabsContent>
               
               <TabsContent value="table">
-                <div className="border rounded-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>نوع التحليل</TableHead>
-                        <TableHead>التقييم العام</TableHead>
-                        <TableHead>دقة الاتجاه</TableHead>
-                        <TableHead>تحقيق الأهداف</TableHead>
-                        <TableHead>معدل وقف الخسارة</TableHead>
-                        <TableHead>الأطر الزمنية الموصى بها</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {performances.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center py-6 text-gray-500">
-                            لا توجد بيانات كافية لعرض تقييم الأداء
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        performances.map((performance) => (
-                          <TableRow key={performance.type}>
-                            <TableCell className="font-medium">
-                              {getDisplayName(performance.type)}
-                            </TableCell>
-                            <TableCell className={getRatingClass(performance.overallScore, 'overall')}>
-                              {formatPercentage(performance.overallScore)}
-                            </TableCell>
-                            <TableCell className={getRatingClass(performance.directionAccuracy, 'accuracy')}>
-                              {formatPercentage(performance.directionAccuracy)}
-                            </TableCell>
-                            <TableCell className={getRatingClass(performance.targetHitRate, 'target')}>
-                              {formatPercentage(performance.targetHitRate)}
-                            </TableCell>
-                            <TableCell className={getRatingClass(performance.stopLossRate, 'stopLossRate')}>
-                              {formatPercentage(performance.stopLossRate)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {performance.recommendedTimeframes.map(tf => (
-                                  <Badge key={tf} variant="outline" className="text-xs">
-                                    {tf}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                <PerformanceTable 
+                  performances={performances}
+                  getDisplayName={getDisplayName}
+                />
               </TabsContent>
             </Tabs>
           )}
