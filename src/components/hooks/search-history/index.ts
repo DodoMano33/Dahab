@@ -5,6 +5,8 @@ import { useExpiredAnalyses } from "./useExpiredAnalyses";
 import { UseSearchHistoryReturn } from "./types";
 
 export const useSearchHistory = (): UseSearchHistoryReturn => {
+  console.log("useSearchHistory hook initialized");
+  
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   
   const {
@@ -34,3 +36,5 @@ export const useSearchHistory = (): UseSearchHistoryReturn => {
     refreshSearchHistory
   };
 };
+
+export default useSearchHistory;

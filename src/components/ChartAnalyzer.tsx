@@ -3,13 +3,15 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAnalysisHandler } from "./chart/analysis/AnalysisHandler";
 import { HistoryDialog } from "./chart/history/HistoryDialog";
 import { ChartDisplay } from "./chart/ChartDisplay";
-import { useSearchHistory } from "./hooks/search-history";
+import { useSearchHistory } from "@/components/hooks/search-history";
 import { ChartAnalyzerTabs } from "./chart/tabs/ChartAnalyzerTabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
 
 export function ChartAnalyzer() {
+  console.log("ChartAnalyzer component initialized");
+  
   const {
     isAnalyzing,
     image,
@@ -80,6 +82,7 @@ export function ChartAnalyzer() {
   }, [addToSearchHistory, setIsHistoryOpen]);
 
   useEffect(() => {
+    console.log("Setting up interval to invalidate searchHistory query");
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
     }, 5 * 60 * 1000);
@@ -142,5 +145,4 @@ export function ChartAnalyzer() {
   );
 }
 
-// Default export
 export default ChartAnalyzer;

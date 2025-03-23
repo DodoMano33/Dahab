@@ -10,8 +10,11 @@ import { UserProfileMenu } from "@/components/ui/UserProfileMenu";
 import { OnboardingDialog } from "@/components/ui/onboarding/Onboarding";
 import { HelpButton } from "@/components/ui/onboarding/Onboarding";
 
-// استيراد المكونات بطريقة مباشرة
-const ChartAnalyzer = lazy(() => import("@/components/ChartAnalyzer"));
+// استخدام lazy مع اسم الملف الكامل مع التأكد من وجود تصدير افتراضي
+const ChartAnalyzer = lazy(() => {
+  console.log("Lazy loading ChartAnalyzer component");
+  return import("@/components/ChartAnalyzer");
+});
 const UserDashboard = lazy(() => import("@/components/chart/dashboard/UserDashboard").then(module => ({ default: module.UserDashboard })));
 
 // استخدام مكون memo لتحسين الأداء
@@ -53,6 +56,7 @@ const Header = memo(({
 ));
 
 function Index() {
+  console.log("Index component rendering");
   const location = useLocation();
   const { isLoggedIn, user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
