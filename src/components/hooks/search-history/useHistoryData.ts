@@ -40,7 +40,7 @@ export function useHistoryData() {
   }, [user, fetchData]);
 
   // غلاف لدالة الحذف لتحديث الحالة المحلية
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): Promise<boolean> => {
     const success = await handleDeleteHistoryItem(id);
     if (success) {
       setSearchHistory(prev => prev.filter(item => item.id !== id));

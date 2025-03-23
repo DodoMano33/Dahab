@@ -1,16 +1,16 @@
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
-import { processChartAnalysis, saveAnalysisToDatabase } from "@/components/chart/analysis/utils/chartAnalysisProcessor";
-import { AnalysisData, AnalysisType } from "@/types/analysis";
+import { processChartAnalysis } from "@/components/chart/analysis/utils/chartAnalysisProcessor";
+import { AnalysisType } from "@/types/analysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useNavigate } from "react-router-dom";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
-import { dispatchAnalysisSuccessEvent } from "@/hooks/analysis-checker/events/analysisEvents";
+import { useAnalysisState, useValidation, useAnalysisResult } from "./analysisState";
 
-// Define the ChartAnalysisResult interface
+// Interface for chart analysis result
 export interface ChartAnalysisResult {
   analysisResult: AnalysisData | null;
   duration?: string | number;
@@ -23,10 +23,12 @@ interface UseAnalysisSubmitProps {
 }
 
 export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentPrice } = useCurrentPrice();
+  const { isAnalyzing, startAnalyzing, stopAnalyzing } = useAnalysisState();
+  const { validateAnalysisInput } = useValidation();
+  const { handleAnalysisResult } = useAnalysisResult();
 
   const onSubmit = useCallback(
     async (
@@ -53,28 +55,19 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
       duration?: string,
       chartImage?: string
     ) => {
-      if (!user) {
-        toast.error("يجب تسجيل الدخول لاستخدام هذه الميزة");
-        navigate("/login");
-        return;
-      }
+      // Validate input data
+      const isValid = validateAnalysisInput({
+        user,
+        symbol,
+        timeframe,
+        analysisType,
+        selectedTypes,
+        navigate
+      });
 
-      if (!symbol) {
-        toast.error("الرجاء تحديد رمز المؤشر.");
-        return;
-      }
+      if (!isValid) return;
 
-      if (!timeframe) {
-        toast.error("الرجاء تحديد الإطار الزمني.");
-        return;
-      }
-
-      if (!analysisType && (!selectedTypes || selectedTypes.length === 0)) {
-        toast.error("الرجاء تحديد نوع التحليل.");
-        return;
-      }
-
-      setIsAnalyzing(true);
+      startAnalyzing();
 
       try {
         const inputPrice = providedPrice !== undefined ? providedPrice : currentPrice;
@@ -83,7 +76,7 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
           throw new Error("السعر الحالي غير متوفر. يرجى المحاولة مرة أخرى لاحقًا.");
         }
         
-        // إذا لم يتم توفير صورة، حاول التقاطها تلقائيًا
+        // محاولة التقاط صورة الشارت إذا لم يتم توفيرها
         let finalChartImage = chartImage;
         if (!finalChartImage) {
           try {
@@ -92,7 +85,6 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
             console.log("Auto-captured chart image successfully");
           } catch (error) {
             console.error("Failed to auto-capture chart:", error);
-            // استمر بدون صورة، سيتم إنشاء صورة افتراضية في processChartAnalysis
           }
         }
 
@@ -100,6 +92,7 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
         await clearSupabaseCache();
         await clearSearchHistoryCache();
 
+        // تجميع بيانات الإدخال للتحليل
         const input = {
           symbol,
           timeframe,
@@ -127,17 +120,19 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
         };
 
         console.log("Submitting analysis with input:", input);
+        
+        // معالجة تحليل الشارت
         const result = await processChartAnalysis(input);
         console.log("Analysis result:", result);
         
-        // لضمان أن نتيجة التحليل مررت إلى وظيفة النجاح بشكل صحيح
+        // معالجة نتيجة التحليل
         if (result && result.analysisResult) {
           await handleAnalysisResult({
             analysisResult: result.analysisResult,
             duration: result.duration,
             symbol,
             currentPrice: inputPrice
-          });
+          }, symbol, inputPrice);
         } else {
           throw new Error("لم يتم الحصول على نتائج التحليل");
         }
@@ -145,69 +140,22 @@ export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
         console.error("حدث خطأ أثناء معالجة التحليل:", error);
         toast.error(error.message || "حدث خطأ أثناء معالجة التحليل.");
       } finally {
-        setIsAnalyzing(false);
+        stopAnalyzing();
       }
     },
-    [navigate, symbol, user, currentPrice]
+    [
+      user, 
+      symbol, 
+      currentPrice, 
+      navigate, 
+      validateAnalysisInput, 
+      startAnalyzing, 
+      stopAnalyzing, 
+      handleAnalysisResult
+    ]
   );
-
-  const handleAnalysisResult = async (result: ChartAnalysisResult) => {
-    try {
-      if (!result || !result.analysisResult) {
-        setIsAnalyzing(false);
-        toast.error("لم يتم الحصول على نتائج التحليل");
-        return;
-      }
-
-      console.log("Handling analysis result:", result);
-
-      // استخدام القيم من النتيجة أو القيم الافتراضية
-      const symbolName = result.symbol || symbol;
-      const price = result.currentPrice || currentPrice || 0;
-      const analysis = result.analysisResult;
-
-      // تحويل البيانات من string إلى number عند الحاجة
-      const durationHours: number = 
-        typeof result.duration === 'string' 
-          ? parseInt(result.duration) 
-          : (result.duration as number || 8);
-
-      console.log("Saving analysis with duration:", durationHours);
-
-      // الاتصال المباشر بقاعدة البيانات لحفظ التحليل
-      await clearSupabaseCache();
-      await clearSearchHistoryCache();
-
-      // حفظ التحليل في قاعدة البيانات
-      const savedData = await saveAnalysisToDatabase(
-        symbolName,
-        analysis.analysisType,
-        price,
-        analysis,
-        durationHours
-      );
-
-      // إرسال إشعار لتحديث سجل البحث
-      if (savedData) {
-        dispatchAnalysisSuccessEvent({
-          timestamp: new Date().toISOString(),
-          checked: 1,
-          symbol: symbolName
-        });
-        
-        // إطلاق حدث تحديث السجل
-        window.dispatchEvent(new CustomEvent('refreshSearchHistory'));
-      }
-
-      // عرض رسالة النجاح
-      toast.success(`تم التحليل بنجاح. المدة: ${durationHours} ساعة.`);
-    } catch (error: any) {
-      console.error("Error handling analysis result:", error);
-      toast.error(error.message || "حدث خطأ أثناء حفظ نتائج التحليل");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
 
   return { onSubmit, isAnalyzing };
 };
+
+import { AnalysisData } from "@/types/analysis";

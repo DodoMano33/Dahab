@@ -8,7 +8,7 @@ import { toast } from "sonner";
  */
 export function useHistoryActions() {
   
-  const handleDeleteHistoryItem = async (id: string) => {
+  const handleDeleteHistoryItem = async (id: string): Promise<boolean> => {
     try {
       console.log("محاولة حذف عنصر من السجل:", id);
       
@@ -35,7 +35,7 @@ export function useHistoryActions() {
 
   const addToSearchHistory = (item: SearchHistoryItem, setHistory: (history: SearchHistoryItem[]) => void) => {
     console.log("إضافة عنصر جديد إلى سجل البحث:", item);
-    setHistory(prev => [item, ...prev]);
+    setHistory((prev: SearchHistoryItem[]) => [item, ...prev]);
   };
 
   return {

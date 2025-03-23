@@ -1,55 +1,65 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { SearchHistoryItem } from "@/types/analysis";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { useHistoryData } from "./useHistoryData";
-import { useExpiredAnalyses } from "./useExpiredAnalyses";
-import { UseSearchHistoryReturn } from "./types";
 
-export const useSearchHistory = (): UseSearchHistoryReturn => {
-  console.log("useSearchHistory hook initialized");
-  
+/**
+ * هوك لإدارة سجل البحث في واجهة المستخدم
+ */
+export function useSearchHistory() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   
   const {
     searchHistory,
-    setSearchHistory,
     isRefreshing,
     setIsRefreshing,
     fetchSearchHistory,
-    handleDeleteHistoryItem,
+    handleDeleteHistoryItem: deleteHistoryItem,
     addToSearchHistory
   } = useHistoryData();
 
-  const { checkAndDeleteExpiredAnalyses } = useExpiredAnalyses(searchHistory, setSearchHistory);
-
-  // الاستماع لأحداث تحديث التاريخ
-  useEffect(() => {
-    const handleHistoryUpdate = () => {
-      console.log("History update event received in useSearchHistory");
-      fetchSearchHistory();
-    };
-    
-    window.addEventListener('refreshSearchHistory', handleHistoryUpdate);
-    
-    return () => {
-      window.removeEventListener('refreshSearchHistory', handleHistoryUpdate);
-    };
-  }, [fetchSearchHistory]);
-
-  const refreshSearchHistory = async () => {
-    await fetchSearchHistory();
-    await checkAndDeleteExpiredAnalyses();
+  // وظيفة لتحديث سجل البحث
+  const refreshSearchHistory = useCallback(async () => {
+    if (user) {
+      setIsRefreshing(true);
+      try {
+        await fetchSearchHistory();
+        // تحديث استعلام React Query
+        queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+      } catch (error) {
+        console.error("Error refreshing search history:", error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+  }, [user, fetchSearchHistory, setIsRefreshing, queryClient]);
+  
+  // وظيفة لحذف عنصر وتحديث واجهة المستخدم
+  const handleDeleteHistoryItem = async (id: string): Promise<void> => {
+    const success = await deleteHistoryItem(id);
+    if (success) {
+      // تحديث استعلام React Query بعد الحذف الناجح
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    }
   };
 
   return {
     searchHistory,
     isHistoryOpen,
-    isRefreshing,
     setIsHistoryOpen,
     handleDeleteHistoryItem,
     addToSearchHistory,
-    refreshSearchHistory
+    refreshSearchHistory,
+    isRefreshing
   };
-};
+}
 
-// تصدير افتراضي لدعم كلا النمطين من الاستيراد
-export default useSearchHistory;
+// تصدير جميع الهوكات المتعلقة بسجل البحث
+export * from "./useHistoryData";
+export * from "./useFetchHistory";
+export * from "./useHistoryEvents";
+export * from "./useHistoryActions";
