@@ -181,7 +181,7 @@ export const executeSpecificAnalysis = async (
           chartImage, 
           currentPrice, 
           timeframe, 
-          multiTimeframeHistoricalPrices.length > 0 ? multiTimeframeHistoricalPrices : undefined
+          Object.keys(multiTimeframeHistoricalPrices).length > 0 ? multiTimeframeHistoricalPrices : undefined
         );
         
       case "daily":
