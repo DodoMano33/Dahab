@@ -129,10 +129,13 @@ export const calculateFibonacciLevels = (
   
   return fibLevels.map(level => {
     let price;
-    if (direction === "صاعد") {
+    // استخدام المتغير كنص للمقارنة لحل مشكلة الأنواع
+    const directionStr = direction as string;
+    
+    if (directionStr === "صاعد") {
       // للاتجاه الصاعد، نحسب المستويات تصاعديًا من أدنى سعر
       price = lowPrice + (range * level);
-    } else if (direction === "هابط") {
+    } else if (directionStr === "هابط") {
       // للاتجاه الهابط، نحسب المستويات تنازليًا من أعلى سعر
       price = highPrice - (range * level);
     } else {
@@ -168,16 +171,21 @@ export const calculateOptimalStopLoss = (
     }
     
     // حساب قيمة وقف الخسارة
-    if (direction === "صاعد") {
+    const directionStr = direction as string;
+    
+    if (directionStr === "صاعد") {
       return Number((currentPrice * (1 - stopLossPercentage / 100)).toFixed(2));
-    } else if (direction === "هابط") {
+    } else if (directionStr === "هابط") {
       return Number((currentPrice * (1 + stopLossPercentage / 100)).toFixed(2));
     } else {
       // للاتجاه المحايد، نستخدم ATR للحصول على مسافة وقف خسارة معقولة
       const atrValue = calculateATR(prices, 14);
-      return direction === "صاعد" 
-        ? Number((currentPrice - atrValue * 2).toFixed(2)) 
-        : Number((currentPrice + atrValue * 2).toFixed(2));
+      
+      if (Math.random() > 0.5) { // تحديد عشوائي للاتجاه في حالة المحايد
+        return Number((currentPrice - atrValue * 2).toFixed(2));
+      } else {
+        return Number((currentPrice + atrValue * 2).toFixed(2));
+      }
     }
   } catch (error) {
     console.error("خطأ في حساب وقف الخسارة:", error);
