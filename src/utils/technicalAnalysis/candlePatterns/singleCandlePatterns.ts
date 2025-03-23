@@ -1,130 +1,137 @@
 
 import { PriceData } from '../indicators/types';
 
-// وظيفة للتحقق مما إذا كانت الشمعة دوجي
+// دالة حساب طول جسم الشمعة
+const getBodySize = (candle: PriceData): number => {
+  return Math.abs(candle.close - candle.open);
+};
+
+// دالة حساب طول الظل العلوي
+const getUpperShadow = (candle: PriceData): number => {
+  return candle.close > candle.open 
+    ? candle.high - candle.close 
+    : candle.high - candle.open;
+};
+
+// دالة حساب طول الظل السفلي
+const getLowerShadow = (candle: PriceData): number => {
+  return candle.close > candle.open 
+    ? candle.open - candle.low 
+    : candle.close - candle.low;
+};
+
+// دالة حساب طول كامل الشمعة
+const getCandleSize = (candle: PriceData): number => {
+  return candle.high - candle.low;
+};
+
+// دوجي - شمعة بدون جسم تقريبًا
 export const isDoji = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
-  return bodySize / totalRange < 0.1; // جسم صغير جدًا مقارنة بالنطاق الكلي
+  const bodySize = getBodySize(candle);
+  const candleSize = getCandleSize(candle);
+  
+  // إذا كان حجم الجسم أقل من 5% من حجم الشمعة الكاملة
+  return bodySize <= candleSize * 0.05;
 };
 
-// وظيفة للتحقق مما إذا كانت الشمعة مطرقة
-export const isHammer = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
-  
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
-  
-  // المطرقة لها ظل سفلي طويل والجسم في الأعلى مع ظل علوي قصير
-  return (
-    bodySize / totalRange < 0.3 && // جسم صغير نسبيًا
-    upperShadow / totalRange < 0.1 && // ظل علوي قصير
-    lowerShadow / totalRange > 0.6 // ظل سفلي طويل
-  );
-};
-
-// وظيفة للتحقق مما إذا كانت الشمعة مطرقة مقلوبة
-export const isInvertedHammer = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
-  
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
-  
-  // المطرقة المقلوبة لها ظل علوي طويل والجسم في الأسفل مع ظل سفلي قصير
-  return (
-    bodySize / totalRange < 0.3 && // جسم صغير نسبيًا
-    upperShadow / totalRange > 0.6 && // ظل علوي طويل
-    lowerShadow / totalRange < 0.1 // ظل سفلي قصير
-  );
-};
-
-// نمط شمعة النجمة الساقطة
-export const isShootingStar = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
-  
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
-  
-  // النجمة الساقطة لها ظل علوي طويل جدًا وجسم صغير والظل السفلي قصير جدًا أو غير موجود
-  return (
-    candle.close < candle.open && // شمعة هابطة
-    bodySize / totalRange < 0.3 && // جسم صغير
-    upperShadow / totalRange > 0.6 && // ظل علوي طويل جدًا
-    lowerShadow / totalRange < 0.05 // ظل سفلي قصير جدًا أو غير موجود
-  );
-};
-
-// نمط شمعة الدوجي دراجون فلاي (شمعة على شكل T)
+// دوجي طائر التنين - دوجي مع ظل سفلي طويل وبدون ظل علوي تقريبًا
 export const isDragonFlyDoji = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
+  if (!isDoji(candle)) return false;
   
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
+  const upperShadow = getUpperShadow(candle);
+  const lowerShadow = getLowerShadow(candle);
+  const candleSize = getCandleSize(candle);
   
-  // دراجون فلاي دوجي لها جسم صغير جدًا في الأعلى وظل سفلي طويل وبدون ظل علوي تقريبًا
-  return (
-    bodySize / totalRange < 0.05 && // جسم صغير جدًا
-    upperShadow / totalRange < 0.05 && // بدون ظل علوي تقريبًا
-    lowerShadow / totalRange > 0.7 // ظل سفلي طويل جدًا
-  );
+  return upperShadow <= candleSize * 0.05 && lowerShadow >= candleSize * 0.6;
 };
 
-// نمط شمعة الدوجي جريفستون (شمعة على شكل مقلوب T)
+// دوجي شاهدة القبر - دوجي مع ظل علوي طويل وبدون ظل سفلي تقريبًا
 export const isGravestoneDoji = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
+  if (!isDoji(candle)) return false;
   
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
+  const upperShadow = getUpperShadow(candle);
+  const lowerShadow = getLowerShadow(candle);
+  const candleSize = getCandleSize(candle);
   
-  // جريفستون دوجي لها جسم صغير جدًا في الأسفل وظل علوي طويل وبدون ظل سفلي تقريبًا
-  return (
-    bodySize / totalRange < 0.05 && // جسم صغير جدًا
-    upperShadow / totalRange > 0.7 && // ظل علوي طويل جدًا
-    lowerShadow / totalRange < 0.05 // بدون ظل سفلي تقريبًا
-  );
+  return lowerShadow <= candleSize * 0.05 && upperShadow >= candleSize * 0.6;
 };
 
-// نمط شمعة سبيننج توب (راس المغزل)
+// نمط المطرقة - جسم صغير في الأعلى وظل سفلي طويل
+export const isHammer = (candle: PriceData): boolean => {
+  const bodySize = getBodySize(candle);
+  const upperShadow = getUpperShadow(candle);
+  const lowerShadow = getLowerShadow(candle);
+  const candleSize = getCandleSize(candle);
+  
+  // جسم صغير (أقل من 25% من الشمعة)، ظل سفلي طويل (أكثر من ضعف الجسم)، ظل علوي قصير
+  return bodySize <= candleSize * 0.25 && 
+         lowerShadow >= bodySize * 2 && 
+         upperShadow <= bodySize * 0.5;
+};
+
+// نمط المطرقة المقلوبة - جسم صغير في الأسفل وظل علوي طويل
+export const isInvertedHammer = (candle: PriceData): boolean => {
+  const bodySize = getBodySize(candle);
+  const upperShadow = getUpperShadow(candle);
+  const lowerShadow = getLowerShadow(candle);
+  const candleSize = getCandleSize(candle);
+  
+  // جسم صغير (أقل من 25% من الشمعة)، ظل علوي طويل (أكثر من ضعف الجسم)، ظل سفلي قصير
+  return bodySize <= candleSize * 0.25 && 
+         upperShadow >= bodySize * 2 && 
+         lowerShadow <= bodySize * 0.5;
+};
+
+// نمط النجمة الهابطة - مشابه للمطرقة المقلوبة ولكن في أعلى الاتجاه
+export const isShootingStar = (candle: PriceData, prevCandles: PriceData[]): boolean => {
+  if (!isInvertedHammer(candle)) return false;
+  
+  // نحتاج إلى شمعة سابقة على الأقل للتأكد من أننا في اتجاه صاعد
+  if (prevCandles.length < 1) return false;
+  
+  const prevCandle = prevCandles[prevCandles.length - 1];
+  
+  // يجب أن تكون في اتجاه صاعد وتفتح أعلى من إغلاق الشمعة السابقة
+  return prevCandle.close < candle.open && prevCandle.close < prevCandle.open;
+};
+
+// نمط الرجل المشنوق - شمعة مطرقة في أعلى الاتجاه
+export const isHangingMan = (candle: PriceData, prevCandles: PriceData[]): boolean => {
+  if (!isHammer(candle)) return false;
+  
+  // نحتاج إلى شمعتين سابقتين على الأقل للتأكد من أننا في اتجاه صاعد
+  if (prevCandles.length < 2) return false;
+  
+  // نتحقق من وجود اتجاه صاعد قبل الرجل المشنوق
+  const isUptrend = prevCandles[prevCandles.length - 1].close > prevCandles[prevCandles.length - 2].close &&
+                   prevCandles[prevCandles.length - 2].close > prevCandles[prevCandles.length - 3]?.close;
+  
+  return isUptrend;
+};
+
+// نمط القمة المستديرة - جسم صغير مع ظلال متساوية تقريبًا
 export const isSpinningTop = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
+  const bodySize = getBodySize(candle);
+  const upperShadow = getUpperShadow(candle);
+  const lowerShadow = getLowerShadow(candle);
+  const candleSize = getCandleSize(candle);
   
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
-  
-  // سبيننج توب لها جسم صغير في المنتصف وظلال متساوية تقريبًا علوية وسفلية
-  return (
-    bodySize / totalRange < 0.3 && // جسم صغير
-    upperShadow / totalRange > 0.25 && // ظل علوي كبير
-    lowerShadow / totalRange > 0.25 && // ظل سفلي كبير
-    Math.abs(upperShadow - lowerShadow) / totalRange < 0.1 // الظلال متساوية تقريبًا
-  );
+  // جسم صغير (أقل من 30% من الشمعة) وظلال متوازنة نسبيًا
+  return bodySize <= candleSize * 0.3 && 
+         upperShadow > bodySize * 0.5 && 
+         lowerShadow > bodySize * 0.5 && 
+         Math.abs(upperShadow - lowerShadow) < candleSize * 0.2;
 };
 
-// نمط شمعة ماروبوزو (الشمعة ذات الجسم الكامل)
+// مارابوزو - شمعة ذات جسم كبير وبدون ظلال تقريبًا
 export const isMarubozu = (candle: PriceData): boolean => {
-  const bodySize = Math.abs(candle.close - candle.open);
-  const totalRange = candle.high - candle.low;
+  const bodySize = getBodySize(candle);
+  const upperShadow = getUpperShadow(candle);
+  const lowerShadow = getLowerShadow(candle);
+  const candleSize = getCandleSize(candle);
   
-  // حساب الظلال العلوية والسفلية
-  const upperShadow = candle.high - Math.max(candle.open, candle.close);
-  const lowerShadow = Math.min(candle.open, candle.close) - candle.low;
-  
-  // ماروبوزو لها جسم كبير جدًا وبدون ظلال أو ظلال صغيرة جدًا
-  return (
-    bodySize / totalRange > 0.8 && // جسم كبير جدًا
-    upperShadow / totalRange < 0.1 && // ظل علوي صغير جدًا أو غير موجود
-    lowerShadow / totalRange < 0.1 // ظل سفلي صغير جدًا أو غير موجود
-  );
+  // جسم كبير (أكثر من 90% من الشمعة)
+  return bodySize >= candleSize * 0.9 && 
+         upperShadow <= candleSize * 0.05 && 
+         lowerShadow <= candleSize * 0.05;
 };

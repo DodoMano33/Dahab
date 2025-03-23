@@ -1,113 +1,146 @@
 
 import { PriceData } from '../indicators/types';
 
-// وظيفة للتحقق من نمط الابتلاع الصاعد
+// نمط الابتلاع الصاعد (Bullish Engulfing)
 export const isBullishEngulfing = (candles: PriceData[]): boolean => {
   if (candles.length < 2) return false;
   
-  const current = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const first = candles[candles.length - 2]; // الشمعة قبل الأخيرة
+  const second = candles[candles.length - 1]; // الشمعة الأخيرة
   
-  // شرط الابتلاع الصاعد: الشمعة السابقة حمراء، والحالية خضراء أكبر
-  return (
-    previous.close < previous.open && // الشمعة السابقة هبوطية
-    current.close > current.open && // الشمعة الحالية صعودية
-    current.open < previous.close && // فتح الشمعة الحالية أقل من إغلاق السابقة
-    current.close > previous.open // إغلاق الشمعة الحالية أكبر من فتح السابقة
-  );
+  // الشمعة الأولى هبوطية والثانية صعودية
+  const isFirstBearish = first.close < first.open;
+  const isSecondBullish = second.close > second.open;
+  
+  // الشمعة الثانية تبتلع جسم الأولى
+  const isEngulfing = second.open < first.close && 
+                      second.close > first.open;
+  
+  return isFirstBearish && isSecondBullish && isEngulfing;
 };
 
-// وظيفة للتحقق من نمط الابتلاع الهابط
+// نمط الابتلاع الهابط (Bearish Engulfing)
 export const isBearishEngulfing = (candles: PriceData[]): boolean => {
   if (candles.length < 2) return false;
   
-  const current = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const first = candles[candles.length - 2]; // الشمعة قبل الأخيرة
+  const second = candles[candles.length - 1]; // الشمعة الأخيرة
   
-  // شرط الابتلاع الهابط: الشمعة السابقة خضراء، والحالية حمراء أكبر
-  return (
-    previous.close > previous.open && // الشمعة السابقة صعودية
-    current.close < current.open && // الشمعة الحالية هبوطية
-    current.open > previous.close && // فتح الشمعة الحالية أكبر من إغلاق السابقة
-    current.close < previous.open // إغلاق الشمعة الحالية أقل من فتح السابقة
-  );
+  // الشمعة الأولى صعودية والثانية هبوطية
+  const isFirstBullish = first.close > first.open;
+  const isSecondBearish = second.close < second.open;
+  
+  // الشمعة الثانية تبتلع جسم الأولى
+  const isEngulfing = second.open > first.close && 
+                      second.close < first.open;
+  
+  return isFirstBullish && isSecondBearish && isEngulfing;
 };
 
-// وظيفة للتحقق من نمط الحرامي الصاعد
+// نمط الحمل الصاعد (Bullish Harami)
 export const isBullishHarami = (candles: PriceData[]): boolean => {
   if (candles.length < 2) return false;
   
-  const current = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const first = candles[candles.length - 2]; // الشمعة قبل الأخيرة
+  const second = candles[candles.length - 1]; // الشمعة الأخيرة
   
-  const currentBodySize = Math.abs(current.close - current.open);
-  const previousBodySize = Math.abs(previous.close - previous.open);
+  // الشمعة الأولى هبوطية كبيرة والثانية صعودية صغيرة داخل الأولى
+  const isFirstBearish = first.close < first.open;
+  const isSecondBullish = second.close > second.open;
   
-  // شرط الحرامي الصاعد: الشمعة السابقة كبيرة هبوطية، والحالية صغيرة صعودية داخلها
-  return (
-    previous.close < previous.open && // الشمعة السابقة هبوطية
-    current.close > current.open && // الشمعة الحالية صعودية
-    currentBodySize < previousBodySize * 0.6 && // جسم الشمعة الحالية أصغر
-    current.high < previous.open && // سقف الشمعة الحالية أقل من فتح السابقة
-    current.low > previous.close // قاع الشمعة الحالية أكبر من إغلاق السابقة
-  );
+  // جسم الشمعة الثانية داخل جسم الأولى
+  const isInside = second.open > first.close && 
+                   second.close < first.open;
+  
+  return isFirstBearish && isSecondBullish && isInside;
 };
 
-// وظيفة للتحقق من نمط الحرامي الهابط
+// نمط الحمل الهابط (Bearish Harami)
 export const isBearishHarami = (candles: PriceData[]): boolean => {
   if (candles.length < 2) return false;
   
-  const current = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const first = candles[candles.length - 2]; // الشمعة قبل الأخيرة
+  const second = candles[candles.length - 1]; // الشمعة الأخيرة
   
-  const currentBodySize = Math.abs(current.close - current.open);
-  const previousBodySize = Math.abs(previous.close - previous.open);
+  // الشمعة الأولى صعودية كبيرة والثانية هبوطية صغيرة داخل الأولى
+  const isFirstBullish = first.close > first.open;
+  const isSecondBearish = second.close < second.open;
   
-  // شرط الحرامي الهابط: الشمعة السابقة كبيرة صعودية، والحالية صغيرة هبوطية داخلها
-  return (
-    previous.close > previous.open && // الشمعة السابقة صعودية
-    current.close < current.open && // الشمعة الحالية هبوطية
-    currentBodySize < previousBodySize * 0.6 && // جسم الشمعة الحالية أصغر
-    current.high < previous.high && // سقف الشمعة الحالية أقل من سقف السابقة
-    current.low > previous.low // قاع الشمعة الحالية أكبر من قاع السابقة
-  );
+  // جسم الشمعة الثانية داخل جسم الأولى
+  const isInside = second.open < first.close && 
+                   second.close > first.open;
+  
+  return isFirstBullish && isSecondBearish && isInside;
 };
 
-// نمط خط الاختراق الصاعد (Piercing Line)
+// نمط الخط المخترق (Piercing Line)
 export const isPiercingLine = (candles: PriceData[]): boolean => {
   if (candles.length < 2) return false;
   
-  const current = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const first = candles[candles.length - 2]; // الشمعة قبل الأخيرة
+  const second = candles[candles.length - 1]; // الشمعة الأخيرة
   
-  const previousBodySize = Math.abs(previous.close - previous.open);
-  const penetration = (previous.open - current.close) / previousBodySize;
+  // الشمعة الأولى هبوطية والثانية صعودية
+  const isFirstBearish = first.close < first.open;
+  const isSecondBullish = second.close > second.open;
   
-  // شرط نمط خط الاختراق: الشمعة السابقة هبوطية، والحالية صعودية تخترق السابقة بمقدار 50% على الأقل
-  return (
-    previous.close < previous.open && // الشمعة السابقة هبوطية
-    current.close > current.open && // الشمعة الحالية صعودية
-    current.open < previous.close && // فتح الشمعة الحالية أقل من إغلاق السابقة
-    current.close > (previous.open + previous.close) / 2 && // إغلاق الشمعة الحالية أعلى من 50% من جسم السابقة
-    current.close < previous.open // إغلاق الشمعة الحالية ما زال أقل من فتح السابقة
-  );
+  // فتح أقل من الإغلاق السابق وإغلاق يخترق أكثر من 50% من جسم الشمعة السابقة
+  const isPiercing = second.open < first.close && 
+                     second.close > first.open - (first.open - first.close) * 0.5 &&
+                     second.close < first.open;
+  
+  return isFirstBearish && isSecondBullish && isPiercing;
 };
 
-// نمط السحابة الداكنة (Dark Cloud Cover)
+// نمط السحابة السوداء (Dark Cloud Cover)
 export const isDarkCloudCover = (candles: PriceData[]): boolean => {
   if (candles.length < 2) return false;
   
-  const current = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const first = candles[candles.length - 2]; // الشمعة قبل الأخيرة
+  const second = candles[candles.length - 1]; // الشمعة الأخيرة
   
-  const previousBodySize = Math.abs(previous.close - previous.open);
+  // الشمعة الأولى صعودية والثانية هبوطية
+  const isFirstBullish = first.close > first.open;
+  const isSecondBearish = second.close < second.open;
   
-  // شرط نمط السحابة الداكنة: الشمعة السابقة صعودية، والحالية هبوطية تخترق السابقة من الأعلى بمقدار 50% على الأقل
-  return (
-    previous.close > previous.open && // الشمعة السابقة صعودية
-    current.close < current.open && // الشمعة الحالية هبوطية
-    current.open > previous.close && // فتح الشمعة الحالية أعلى من إغلاق السابقة
-    current.close < (previous.open + previous.close) / 2 && // إغلاق الشمعة الحالية أقل من 50% من جسم السابقة
-    current.close > previous.open // إغلاق الشمعة الحالية ما زال أعلى من فتح السابقة
-  );
+  // فتح أعلى من الإغلاق السابق وإغلاق يخترق أكثر من 50% من جسم الشمعة السابقة
+  const isDarkCloud = second.open > first.close && 
+                      second.close < first.close - (first.close - first.open) * 0.5 &&
+                      second.close > first.open;
+  
+  return isFirstBullish && isSecondBearish && isDarkCloud;
+};
+
+// نمط بنسات التلاقي العلوية (Tweezer Top)
+export const isTweezerTop = (candles: PriceData[]): boolean => {
+  if (candles.length < 2) return false;
+  
+  const first = candles[candles.length - 2];
+  const second = candles[candles.length - 1];
+  
+  // ارتفاع الشمعتين متماثل تقريبًا
+  const similarHighs = Math.abs(first.high - second.high) < (first.high * 0.001);
+  
+  // الشمعة الأولى صعودية والثانية هبوطية
+  const isFirstBullish = first.close > first.open;
+  const isSecondBearish = second.close < second.open;
+  
+  return similarHighs && isFirstBullish && isSecondBearish;
+};
+
+// نمط بنسات التلاقي السفلية (Tweezer Bottom)
+export const isTweezerBottom = (candles: PriceData[]): boolean => {
+  if (candles.length < 2) return false;
+  
+  const first = candles[candles.length - 2];
+  const second = candles[candles.length - 1];
+  
+  // انخفاض الشمعتين متماثل تقريبًا
+  const similarLows = Math.abs(first.low - second.low) < (first.low * 0.001);
+  
+  // الشمعة الأولى هبوطية والثانية صعودية
+  const isFirstBearish = first.close < first.open;
+  const isSecondBullish = second.close > second.open;
+  
+  return similarLows && isFirstBearish && isSecondBullish;
 };

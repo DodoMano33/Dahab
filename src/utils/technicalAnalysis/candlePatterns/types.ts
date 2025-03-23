@@ -20,7 +20,15 @@ export type CandlePatternType =
   | 'SpinningTop'
   | 'Marubozu'
   | 'DragonFlyDoji'
-  | 'GravestoneDoji';
+  | 'GravestoneDoji'
+  | 'TweezerTop'
+  | 'TweezerBottom'
+  | 'HangingMan'
+  | 'RisingThreeMethods'
+  | 'FallingThreeMethods'
+  | 'AbandonedBaby'
+  | 'MorningDojiStar'
+  | 'EveningDojiStar';
 
 export type PatternResult = {
   pattern: CandlePatternType;
