@@ -1,3 +1,4 @@
+
 import { AnalysisData } from "@/types/analysis";
 import { analyzeScalpingChart } from "@/components/chart/analysis/scalpingAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
@@ -19,6 +20,9 @@ import { analyzeDailyChart } from "@/components/chart/analysis/dailyAnalysis";
 import { getStrategyName } from "./analysisTypeMap";
 import { analyzeMLChart, analyzeMultiTimeframeML } from "@/components/chart/analysis/mlAnalysis";
 import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
+import { getMultiTimeframeTrendSyncScore } from "./predictors/multiTimeframePredictor";
+import { analyzeWeightedPatterns } from "./predictors/patternAnalysisEnhanced";
+import { analyzeTrendReversalPoints } from "./predictors/trendReversalPredictor";
 
 /**
  * Execute a specific analysis based on the given type
@@ -38,19 +42,43 @@ export const executeSpecificAnalysis = async (
   try {
     // جلب البيانات التاريخية للتحليل المتقدم
     let historicalPrices: number[] = [];
+    let multiTimeframeHistoricalPrices: { [timeframe: string]: number[] } = {};
+    
     try {
       console.log("جلب البيانات التاريخية للتحليل:", timeframe);
       historicalPrices = await fetchHistoricalPrices('XAUUSD', timeframe);
       console.log(`تم جلب ${historicalPrices.length} من نقاط البيانات التاريخية`);
+      
+      // جلب بيانات إضافية للأطر الزمنية المتعددة
+      if (normalizedType === 'multitimeframe' || normalizedType === 'متعددالأطر' || normalizedType === 'mtf') {
+        const timeframes = ['1h', '4h', '1d'];
+        for (const tf of timeframes) {
+          multiTimeframeHistoricalPrices[tf] = await fetchHistoricalPrices('XAUUSD', tf);
+          console.log(`تم جلب ${multiTimeframeHistoricalPrices[tf].length} من نقاط البيانات التاريخية للإطار الزمني ${tf}`);
+        }
+      }
     } catch (error) {
       console.error("خطأ في جلب البيانات التاريخية:", error);
       // إنشاء بيانات تاريخية متنوعة إذا فشل الجلب
       historicalPrices = generateVariedPrices(currentPrice, normalizedType);
       console.log("تم إنشاء بيانات محاكاة للتحليل بسبب فشل جلب البيانات الحقيقية");
+      
+      if (normalizedType === 'multitimeframe' || normalizedType === 'متعددالأطر' || normalizedType === 'mtf') {
+        const timeframes = ['1h', '4h', '1d'];
+        for (const tf of timeframes) {
+          multiTimeframeHistoricalPrices[tf] = generateVariedPrices(currentPrice, tf);
+        }
+      }
     }
     
     // إضافة طابع فريد لكل نوع تحليل لضمان اختلاف النتائج
     let analysisTypeVariance = getAnalysisVariance(normalizedType);
+    
+    // حساب توافق الاتجاهات بين الأطر الزمنية المختلفة
+    const trendSyncData = await getMultiTimeframeTrendSyncScore(historicalPrices, timeframe);
+    
+    // تحليل نقاط انعكاس الاتجاه المحتملة
+    const reversalData = analyzeTrendReversalPoints(historicalPrices, currentPrice);
     
     switch (normalizedType) {
       case "scalping":
@@ -88,8 +116,9 @@ export const executeSpecificAnalysis = async (
       case "patterns":
       case "pattern":
       case "نمطي":
-        console.log("Executing Pattern analysis");
-        return await analyzePattern(chartImage, currentPrice, timeframe);
+        console.log("Executing Enhanced Pattern analysis");
+        // استخدام محلل الأنماط المحسن لدقة أفضل
+        return await analyzeWeightedPatterns(chartImage, currentPrice, timeframe, historicalPrices);
         
       case "priceaction":
       case "حركةالسعر":
@@ -145,22 +174,15 @@ export const executeSpecificAnalysis = async (
       case "multitimeframe":
       case "متعددالأطر":
       case "mtf":
-        console.log("Executing Multi-Timeframe ML analysis");
+        console.log("Executing Enhanced Multi-Timeframe ML analysis");
         
-        // جلب بيانات تاريخية لعدة أطر زمنية
-        const timeframes = ["1h", "4h", "1d"];
-        const historicalPricesMap: { [timeframe: string]: number[] } = {};
-        
-        for (const tf of timeframes) {
-          try {
-            historicalPricesMap[tf] = await fetchHistoricalPrices('XAUUSD', tf);
-          } catch (error) {
-            console.error(`خطأ في جلب البيانات التاريخية للإطار الزمني ${tf}:`, error);
-            historicalPricesMap[tf] = generateVariedPrices(currentPrice, tf);
-          }
-        }
-        
-        return await analyzeMultiTimeframeML(chartImage, currentPrice, timeframe, historicalPricesMap);
+        // استخدام البيانات المجمعة للأطر الزمنية المتعددة
+        return await analyzeMultiTimeframeML(
+          chartImage, 
+          currentPrice, 
+          timeframe, 
+          multiTimeframeHistoricalPrices.length > 0 ? multiTimeframeHistoricalPrices : undefined
+        );
         
       case "daily":
       case "يومي":
@@ -189,6 +211,7 @@ interface AnalysisVariance {
   priceRange: number;
   sentimentBias: number; // -1.0 to 1.0
   fibLevels: { level: number, price: number }[];
+  reversalChance: number; // احتمالية انعكاس الاتجاه
 }
 
 /**
@@ -209,6 +232,7 @@ function getAnalysisVariance(analysisType: string): AnalysisVariance {
   const patternIndex = hash % 10; // 0 - 9 (للأنماط المختلفة)
   const priceRange = 15 + (hash % 50); // 15 - 65 نقطة سعر
   const sentimentBias = ((hash % 20) - 10) / 10; // -1.0 to 1.0
+  const reversalChance = (hash % 100) / 100; // 0.0 - 0.99
   
   // إنشاء مستويات فيبوناتشي متنوعة
   const fibBase = hash % 200;
@@ -228,7 +252,8 @@ function getAnalysisVariance(analysisType: string): AnalysisVariance {
     patternIndex,
     priceRange,
     sentimentBias,
-    fibLevels
+    fibLevels,
+    reversalChance
   };
 }
 

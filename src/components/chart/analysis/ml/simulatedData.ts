@@ -1,189 +1,102 @@
 
 /**
  * وحدة توليد بيانات محاكاة للتحليل
+ * تستخدم عندما لا تتوفر بيانات تاريخية حقيقية
  */
 
 /**
- * دالة مساعدة لتوليد بيانات محاكاة إذا لم تتوفر بيانات حقيقية
- * @param currentPrice - السعر الحالي
- * @param numPoints - عدد نقاط البيانات المراد توليدها (الافتراضي: 200)
- * @param volatility - نسبة التقلب (الافتراضي: 0.01)
+ * توليد بيانات أسعار محاكاة
+ * @param currentPrice - السعر الحالي للبناء حوله
  * @returns مصفوفة من الأسعار المحاكاة
  */
-export const generateSimulatedPrices = (
-  currentPrice: number, 
-  numPoints: number = 200, 
-  volatility: number = 0.01
-): number[] => {
-  const simulatedPrices: number[] = [];
+export function generateSimulatedPrices(currentPrice: number): number[] {
+  console.log(`توليد بيانات محاكاة حول السعر الحالي: ${currentPrice}`);
+  const prices: number[] = [];
+  const volatility = 0.01; // نسبة التقلب
   
-  // توليد أسعار تاريخية للمحاكاة
-  for (let i = 0; i < numPoints; i++) {
+  // توليد 200 سعر تاريخي للمحاكاة
+  for (let i = 0; i < 200; i++) {
     if (i === 0) {
-      simulatedPrices.push(currentPrice * (1 - volatility));
+      // بدء من سعر أقل من الحالي
+      prices.push(currentPrice * (1 - volatility));
     } else {
       const change = (Math.random() - 0.5) * volatility * 2;
-      simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
-    }
-  }
-  simulatedPrices.push(currentPrice);
-  
-  return simulatedPrices;
-};
-
-/**
- * دالة لتوليد بيانات محاكاة مع اتجاه محدد
- * @param currentPrice - السعر الحالي
- * @param trend - الاتجاه المطلوب ("صاعد" أو "هابط" أو "محايد")
- * @param numPoints - عدد نقاط البيانات المراد توليدها
- * @param volatility - نسبة التقلب
- * @returns مصفوفة من الأسعار المحاكاة
- */
-export const generateSimulatedPricesWithTrend = (
-  currentPrice: number,
-  trend: "صاعد" | "هابط" | "محايد" = "محايد",
-  numPoints: number = 200,
-  volatility: number = 0.01
-): number[] => {
-  const simulatedPrices: number[] = [];
-  
-  // تحديد اتجاه السعر الإجمالي
-  let trendFactor = 0;
-  if (trend === "صاعد") trendFactor = 0.001;
-  else if (trend === "هابط") trendFactor = -0.001;
-  
-  // توليد أسعار تاريخية للمحاكاة مع مراعاة الاتجاه
-  for (let i = 0; i < numPoints; i++) {
-    if (i === 0) {
-      simulatedPrices.push(currentPrice * (1 - volatility * 3));
-    } else {
-      const randomChange = (Math.random() - 0.5) * volatility * 2;
-      const change = randomChange + trendFactor;
-      simulatedPrices.push(simulatedPrices[i - 1] * (1 + change));
+      prices.push(prices[i - 1] * (1 + change));
     }
   }
   
-  // إضافة السعر الحالي في النهاية
-  simulatedPrices.push(currentPrice);
+  // إضافة بعض الأنماط بدلاً من البيانات العشوائية البحتة
+  addPricePatterns(prices, currentPrice);
   
-  return simulatedPrices;
-};
+  // التأكد من أن آخر سعر هو السعر الحالي
+  prices.push(currentPrice);
+  
+  return prices;
+}
 
 /**
- * دالة لتوليد بيانات محاكاة مع أنماط سعرية مختلفة
- * @param currentPrice - السعر الحالي
- * @param pattern - نمط السعر ("ترند صاعد"، "ترند هابط"، "تذبذب"، "قاع مزدوج"، "قمة مزدوجة")
- * @param numPoints - عدد نقاط البيانات المراد توليدها
- * @returns مصفوفة من الأسعار المحاكاة
+ * إضافة أنماط سعرية محددة لزيادة واقعية البيانات المحاكاة
  */
-export const generateSimulatedPricesWithPattern = (
-  currentPrice: number,
-  pattern: "ترند صاعد" | "ترند هابط" | "تذبذب" | "قاع مزدوج" | "قمة مزدوجة" = "تذبذب",
-  numPoints: number = 200
-): number[] => {
-  let simulatedPrices: number[] = [];
+function addPricePatterns(prices: number[], currentPrice: number): void {
+  const patternType = Math.floor(Math.random() * 4); // 4 أنواع من الأنماط
+  const length = prices.length;
   
-  switch (pattern) {
-    case "ترند صاعد":
-      simulatedPrices = generateSimulatedPricesWithTrend(currentPrice, "صاعد", numPoints, 0.01);
-      break;
-      
-    case "ترند هابط":
-      simulatedPrices = generateSimulatedPricesWithTrend(currentPrice, "هابط", numPoints, 0.01);
-      break;
-      
-    case "تذبذب":
-      // إنشاء نمط تذبذب في نطاق محدد
-      simulatedPrices.push(currentPrice * 0.97);
-      const range = currentPrice * 0.05;
-      const center = currentPrice * 0.97;
-      
-      for (let i = 1; i < numPoints; i++) {
-        const noiseLevel = 0.002;
-        const noise = (Math.random() - 0.5) * noiseLevel * currentPrice;
-        const amplitude = range / 2;
-        const period = numPoints / 5;
-        const priceWithCycle = center + amplitude * Math.sin((i / period) * Math.PI * 2) + noise;
-        simulatedPrices.push(priceWithCycle);
+  switch (patternType) {
+    case 0:
+      // نمط ترند صاعد
+      for (let i = length - 30; i < length; i++) {
+        prices[i] = prices[Math.max(0, i - 1)] * (1 + 0.002 + (Math.random() - 0.3) * 0.01);
       }
-      simulatedPrices.push(currentPrice);
       break;
       
-    case "قاع مزدوج":
-      // إنشاء نمط قاع مزدوج
-      simulatedPrices.push(currentPrice * 1.02);
-      
-      // المرحلة الأولى: هبوط إلى القاع الأول
-      const firstLowPoint = numPoints * 0.25;
-      const secondLowPoint = numPoints * 0.75;
-      
-      for (let i = 1; i < numPoints; i++) {
-        const noise = (Math.random() - 0.5) * 0.003 * currentPrice;
-        
-        if (i < firstLowPoint) {
-          // هبوط إلى القاع الأول
-          const progress = i / firstLowPoint;
-          simulatedPrices.push(currentPrice * (1.02 - 0.05 * progress) + noise);
-        } 
-        else if (i < firstLowPoint + (secondLowPoint - firstLowPoint) * 0.5) {
-          // ارتفاع متوسط
-          const progress = (i - firstLowPoint) / ((secondLowPoint - firstLowPoint) * 0.5);
-          simulatedPrices.push(currentPrice * (0.97 + 0.02 * progress) + noise);
-        } 
-        else if (i < secondLowPoint) {
-          // هبوط إلى القاع الثاني
-          const progress = (i - (firstLowPoint + (secondLowPoint - firstLowPoint) * 0.5)) / ((secondLowPoint - firstLowPoint) * 0.5);
-          simulatedPrices.push(currentPrice * (0.99 - 0.02 * progress) + noise);
-        } 
-        else {
-          // ارتفاع نهائي
-          const progress = (i - secondLowPoint) / (numPoints - secondLowPoint);
-          simulatedPrices.push(currentPrice * (0.97 + 0.03 * progress) + noise);
-        }
+    case 1:
+      // نمط ترند هابط
+      for (let i = length - 30; i < length; i++) {
+        prices[i] = prices[Math.max(0, i - 1)] * (1 - 0.002 + (Math.random() - 0.7) * 0.01);
       }
-      simulatedPrices.push(currentPrice);
       break;
       
-    case "قمة مزدوجة":
-      // إنشاء نمط قمة مزدوجة
-      simulatedPrices.push(currentPrice * 0.98);
-      
-      // المرحلة الأولى: صعود إلى القمة الأولى
-      const firstHighPoint = numPoints * 0.25;
-      const secondHighPoint = numPoints * 0.75;
-      
-      for (let i = 1; i < numPoints; i++) {
-        const noise = (Math.random() - 0.5) * 0.003 * currentPrice;
-        
-        if (i < firstHighPoint) {
-          // صعود إلى القمة الأولى
-          const progress = i / firstHighPoint;
-          simulatedPrices.push(currentPrice * (0.98 + 0.05 * progress) + noise);
-        } 
-        else if (i < firstHighPoint + (secondHighPoint - firstHighPoint) * 0.5) {
-          // هبوط متوسط
-          const progress = (i - firstHighPoint) / ((secondHighPoint - firstHighPoint) * 0.5);
-          simulatedPrices.push(currentPrice * (1.03 - 0.02 * progress) + noise);
-        } 
-        else if (i < secondHighPoint) {
-          // صعود إلى القمة الثانية
-          const progress = (i - (firstHighPoint + (secondHighPoint - firstHighPoint) * 0.5)) / ((secondHighPoint - firstHighPoint) * 0.5);
-          simulatedPrices.push(currentPrice * (1.01 + 0.02 * progress) + noise);
-        } 
-        else {
-          // هبوط نهائي
-          const progress = (i - secondHighPoint) / (numPoints - secondHighPoint);
-          simulatedPrices.push(currentPrice * (1.03 - 0.03 * progress) + noise);
-        }
+    case 2:
+      // نمط تذبذبي (قناة سعرية)
+      let direction = 1;
+      for (let i = length - 50; i < length; i++) {
+        if (i % 10 === 0) direction *= -1;
+        prices[i] = prices[Math.max(0, i - 1)] * (1 + direction * 0.003 + (Math.random() - 0.5) * 0.005);
       }
-      simulatedPrices.push(currentPrice);
       break;
       
-    default:
-      // نمط تذبذب افتراضي
-      simulatedPrices = generateSimulatedPrices(currentPrice, numPoints, 0.01);
+    case 3:
+      // نمط مثلث متماثل (تضييق المدى)
+      const midPoint = prices[length - 50];
+      const amplitude = 0.03; // المدى الأولي
+      
+      for (let i = length - 50; i < length; i++) {
+        const position = (i - (length - 50)) / 50; // 0 إلى 1
+        const currentAmplitude = amplitude * (1 - position); // يتناقص مع الوقت
+        const oscillation = Math.sin((i - length + 50) * 0.3) * currentAmplitude;
+        prices[i] = midPoint * (1 + oscillation);
+      }
       break;
   }
   
-  return simulatedPrices;
-};
+  // تعديل آخر الأسعار لتقترب من السعر الحالي
+  const lastIndex = prices.length - 1;
+  prices[lastIndex - 3] = currentPrice * 0.995;
+  prices[lastIndex - 2] = currentPrice * 0.997;
+  prices[lastIndex - 1] = currentPrice * 0.999;
+}
+
+/**
+ * توليد بيانات محاكاة لعدة أطر زمنية مختلفة
+ * @param currentPrice - السعر الحالي
+ * @returns كائن يحتوي على بيانات محاكاة لكل إطار زمني
+ */
+export function generateMultiTimeframeSimulatedData(
+  currentPrice: number
+): { [timeframe: string]: number[] } {
+  return {
+    "1h": generateSimulatedPrices(currentPrice),
+    "4h": generateSimulatedPrices(currentPrice).filter((_, i) => i % 4 === 0),
+    "1d": generateSimulatedPrices(currentPrice).filter((_, i) => i % 24 === 0)
+  };
+}

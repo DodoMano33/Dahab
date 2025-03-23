@@ -1,8 +1,8 @@
 
 /**
- * ملف مركزي لتصدير جميع وحدات تحليل التعلم الآلي
+ * فهرس تصدير جميع وظائف التحليل باستخدام التعلم الآلي
  */
-export * from './basicMLAnalysis';
+
 export * from './multiTimeframeAnalysis';
 export * from './simulatedData';
-export * from './advancedMLAnalysis';
+export * from './enhancedPrediction';
