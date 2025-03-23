@@ -1,4 +1,3 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { getTimeframeMultipliers } from "@/utils/technicalAnalysis/timeframeMultipliers";
 import { getExpectedTime } from "@/utils/technicalAnalysis";
@@ -6,7 +5,7 @@ import {
   detectTrend, 
   calculateSupportResistance, 
   calculateFibonacciLevels 
-} from "@/utils/technicalAnalysis/indicators/PriceData";
+} from "@/utils/technicalAnalysis";
 import {
   calculateSMCStopLoss,
   calculateSMCTargets,

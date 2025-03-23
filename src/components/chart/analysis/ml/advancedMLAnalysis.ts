@@ -1,15 +1,14 @@
-
 import { AnalysisData } from "@/types/analysis";
 import { 
   calculateSupportResistance, 
-  detectTrend 
-} from "@/utils/technicalAnalysis/indicators/PriceData";
+  detectTrend,
+  calculateFibonacciLevels 
+} from "@/utils/technicalAnalysis";
 import { 
   predictFuturePrice, 
   predictFutureSupportResistance,
   multiTimeframeAnalysis
 } from "@/utils/technicalAnalysis/mlPrediction";
-import { calculateFibonacciLevels } from "@/utils/technicalAnalysis/fibonacci";
 import { addDays, addHours } from "date-fns";
 
 /**
@@ -324,6 +323,19 @@ export const ensembleModelsAnalysis = async (
 
 // دوال مساعدة
 
+// حساب التقلب من سلسلة أسعار
+function calculateVolatility(prices: number[]): number {
+  if (prices.length < 3) return 0.02;
+  
+  let sum = 0;
+  for (let i = 1; i < prices.length; i++) {
+    const percentChange = Math.abs((prices[i] - prices[i-1]) / prices[i-1]);
+    sum += percentChange;
+  }
+  
+  return sum / (prices.length - 1);
+}
+
 // حساب عدد الأيام بناءً على الإطار الزمني
 function getTimeFrameDays(timeframe: string, multiplier: number = 1): number {
   switch (timeframe) {
@@ -348,19 +360,6 @@ function getTimeframeHours(timeframe: string): number {
     case "1w": return 240;
     default: return 24;
   }
-}
-
-// حساب التقلب من سلسلة أسعار
-function calculateVolatility(prices: number[]): number {
-  if (prices.length < 3) return 0.02;
-  
-  let sum = 0;
-  for (let i = 1; i < prices.length; i++) {
-    const percentChange = Math.abs((prices[i] - prices[i-1]) / prices[i-1]);
-    sum += percentChange;
-  }
-  
-  return sum / (prices.length - 1);
 }
 
 // توليد بيانات أسعار محاكاة

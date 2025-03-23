@@ -90,6 +90,53 @@ export const calculateSupportResistance = (
 };
 
 /**
+ * حساب مستويات فيبوناتشي ريتريسمنت
+ * @param high أعلى سعر في النطاق
+ * @param low أدنى سعر في النطاق
+ * @param direction اتجاه السوق (اختياري)
+ * @returns مصفوفة تحتوي على مستويات فيبوناتشي
+ */
+export const calculateFibonacciLevels = (
+  high: number,
+  low: number,
+  direction: "صاعد" | "هابط" | "محايد" = "صاعد"
+): { level: number; price: number }[] => {
+  // مستويات فيبوناتشي الأساسية
+  const fibLevels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+  const results: { level: number; price: number }[] = [];
+  
+  try {
+    // التأكد من أن القيم صحيحة
+    if (isNaN(high) || isNaN(low) || high <= low) {
+      console.warn("قيم غير صالحة لحساب مستويات فيبوناتشي", { high, low });
+      return [];
+    }
+    
+    const range = high - low;
+    
+    // حساب المستويات بناءً على الاتجاه
+    if (direction === "صاعد") {
+      // في الاتجاه الصاعد، نحسب المستويات من الأسفل إلى الأعلى
+      for (const level of fibLevels) {
+        const price = parseFloat((low + range * level).toFixed(2));
+        results.push({ level, price });
+      }
+    } else {
+      // في الاتجاه الهابط، نحسب المستويات من الأعلى إلى الأسفل
+      for (const level of fibLevels) {
+        const price = parseFloat((high - range * level).toFixed(2));
+        results.push({ level, price });
+      }
+    }
+    
+    return results;
+  } catch (error) {
+    console.error("خطأ في حساب مستويات فيبوناتشي:", error);
+    return [];
+  }
+};
+
+/**
  * حساب تقلب السعر على مدى فترة زمنية معينة
  * @param prices بيانات الأسعار التاريخية
  * @param period فترة الحساب (اختياري، الافتراضي 14)

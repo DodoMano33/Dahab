@@ -1,9 +1,12 @@
 
-
 import { AnalysisData } from "@/types/analysis"; 
 import { supabase } from "@/lib/supabase";
 import { fetchHistoricalPrices } from "@/utils/price/api/historyFetcher";
-import { detectTrend, calculateSupportResistance, calculateFibonacciLevels } from "@/utils/technicalAnalysis/indicators/PriceData";
+import { 
+  detectTrend,
+  calculateSupportResistance,
+  calculateFibonacciLevels
+} from "@/utils/technicalAnalysis";
 import { analyzeSMCChart } from "@/components/chart/analysis/smcAnalysis";
 import { analyzeWavesChart } from "@/components/chart/analysis/wavesAnalysis";
 import { analyzePriceAction } from "@/components/chart/analysis/priceActionAnalysis";
