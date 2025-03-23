@@ -37,4 +37,5 @@ export const useSearchHistory = (): UseSearchHistoryReturn => {
   };
 };
 
+// Adding a default export to support both named and default import styles
 export default useSearchHistory;

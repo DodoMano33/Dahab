@@ -9,8 +9,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SearchHistoryItem } from "@/types/analysis";
 import { useBackTest } from "./hooks/useBackTest";
 
-// Simple component with clear export
-export function ChartAnalyzer() {
+/**
+ * Main component for analyzing financial charts
+ */
+function ChartAnalyzer() {
   console.log("ChartAnalyzer component initialized");
   
   const {
@@ -45,7 +47,11 @@ export function ChartAnalyzer() {
   const analysisStats = useMemo(() => {
     const activeAnalyses = searchHistory.filter(item => !item?.result_timestamp);
     const completedAnalyses = searchHistory.filter(item => item?.result_timestamp);
-    return { total: searchHistory.length, active: activeAnalyses.length, completed: completedAnalyses.length };
+    return { 
+      total: searchHistory.length, 
+      active: activeAnalyses.length, 
+      completed: completedAnalyses.length 
+    };
   }, [searchHistory]);
 
   const handleTimeframesChange = useCallback((timeframes: string[]) => {
@@ -146,5 +152,5 @@ export function ChartAnalyzer() {
   );
 }
 
-// Make sure we have a proper default export
+// Explicit default export
 export default ChartAnalyzer;

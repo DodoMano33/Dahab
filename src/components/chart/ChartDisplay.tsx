@@ -21,14 +21,14 @@ export const ChartDisplay = ({
   symbol,
   currentAnalysis 
 }: ChartDisplayProps) => {
-  if (!image && !analysis && !isAnalyzing) return null;
+  console.log("ChartDisplay rendering", { hasImage: !!image, hasAnalysis: !!analysis, isAnalyzing });
 
-  console.log("ChartDisplay - Analysis Data:", analysis); // إضافة سجل للتأكد من وصول البيانات
+  if (!image && !analysis && !isAnalyzing) return null;
 
   return (
     <div className="space-y-8">
       {image && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">
               تحليل الشارت {symbol && `(${symbol})`}
@@ -44,7 +44,7 @@ export const ChartDisplay = ({
       )}
 
       {(analysis || isAnalyzing) && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-right">نتائج التحليل</h2>
           <AnalysisResult analysis={analysis!} isLoading={isAnalyzing} />
         </div>
@@ -52,3 +52,5 @@ export const ChartDisplay = ({
     </div>
   );
 };
+
+export default ChartDisplay;
