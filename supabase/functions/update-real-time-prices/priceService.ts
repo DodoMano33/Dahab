@@ -16,6 +16,15 @@ const isMarketClosed = (): boolean => {
  */
 export async function fetchPrice(symbol: string): Promise<number | null> {
   try {
+    // تم تعطيل استخدام Metal Price API مؤقتًا
+    console.log('تم تعطيل استخدام Metal Price API مؤقتًا بناءً على طلب المستخدم');
+    
+    // استخدام سعر تجريبي 
+    const mockPrice = 3000 + Math.random() * 50; // سعر عشوائي للتجربة بين 3000 و 3050
+    console.log(`استخدام سعر تجريبي للذهب: ${mockPrice.toFixed(2)}`);
+    return mockPrice;
+    
+    /* الكود المعلق ولا يستخدم حاليًا
     // تأكد من أن الرمز هو XAUUSD دائماً
     if (symbol.toUpperCase() !== 'XAUUSD') {
       console.log(`الرمز ${symbol} غير مدعوم. استخدام XAUUSD.`);
@@ -40,6 +49,7 @@ export async function fetchPrice(symbol: string): Promise<number | null> {
     
     console.error(`فشل في جلب سعر الذهب من CFI:`, result.message);
     return null;
+    */
   } catch (error: any) {
     console.error(`خطأ في جلب سعر الذهب من CFI:`, error);
     return null;

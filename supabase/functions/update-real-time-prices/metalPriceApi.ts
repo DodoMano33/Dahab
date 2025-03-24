@@ -20,6 +20,15 @@ const isMarketClosed = (): boolean => {
  */
 export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<PriceResponse> => {
   try {
+    // تم تعطيل استخدام Metal Price API مؤقتًا
+    console.log('تم تعطيل استخدام Metal Price API مؤقتًا بناءً على طلب المستخدم');
+    return { 
+      success: false, 
+      price: null,
+      message: 'تم تعطيل استخدام Metal Price API مؤقتًا' 
+    };
+    
+    /* الكود المعلق ولا يستخدم حاليًا
     // التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
     if (isMarketClosed()) {
       console.log('السوق مغلقة اليوم (السبت أو الأحد). تخطي استدعاء Metal Price API.');
@@ -81,6 +90,7 @@ export const fetchPriceFromMetalPriceApi = async (symbol: string): Promise<Price
         message: 'بيانات السعر غير صالحة في استجابة CFI' 
       };
     }
+    */
   } catch (error: any) {
     console.error(`خطأ في جلب سعر المعادن من CFI:`, error);
     return { 

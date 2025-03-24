@@ -23,6 +23,22 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = true }: UsePriceUp
     try {
       console.log("بدء جلب سعر الذهب...");
       
+      // تم تعطيل Metal Price API مؤقتًا بناءً على طلب المستخدم
+      const mockPrice = 3000 + Math.random() * 50; // سعر عشوائي للتجربة
+      toast.warning("تم تعطيل Metal Price API مؤقتًا، استخدام سعر تجريبي", { duration: 3000 });
+      const priceStr = mockPrice.toString();
+      onChange(priceStr);
+      
+      // إرسال حدث لتحديث السعر في جميع أنحاء التطبيق
+      window.dispatchEvent(new CustomEvent('metal-price-update', { 
+        detail: { price: mockPrice, symbol: 'XAUUSD' } 
+      }));
+      
+      toast.success(`تم تحديث السعر (تجريبي): ${mockPrice.toFixed(2)}`, { duration: 1000 });
+      setIsLoading(false);
+      return;
+      
+      /* الكود المعلق ولا يستخدم حاليًا
       // أولاً: محاولة جلب السعر مباشرة من Metal Price API
       const price = await fetchPreciousMetalPrice('XAUUSD');
       
@@ -78,10 +94,11 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = true }: UsePriceUp
       } else {
         throw new Error("لا يوجد سعر متاح في قاعدة البيانات");
       }
+      */
     } catch (error: any) {
       console.error("خطأ في جلب السعر:", error);
-      setErrorMessage("لم نتمكن من جلب السعر الحالي. يرجى المحاولة مرة أخرى أو إدخال السعر يدويًا");
-      toast.error("فشل في تحديث السعر: " + (error.message || "خطأ غير معروف"), { duration: 1000 });
+      setErrorMessage("لم نتمكن من جلب السعر الحالي. تم تعطيل Metal Price API مؤقتًا، يرجى إدخال السعر يدويًا");
+      toast.error("فشل في تحديث السعر: تم تعطيل Metal Price API مؤقتًا", { duration: 3000 });
     } finally {
       setIsLoading(false);
     }
