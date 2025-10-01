@@ -77,16 +77,16 @@ function Index() {
         onLoginClick={() => setShowAuthModal(true)}
       />
       
-      {isLoggedIn && (
-        <div className="container mx-auto px-4 py-3 border-b">
-          <div className="flex space-x-4 space-x-reverse">
-            <Button 
-              variant={activePage === 'analysis' ? "default" : "ghost"} 
-              onClick={() => setActivePage('analysis')}
-              asChild
-            >
-              <a href="/">التحليل</a>
-            </Button>
+      <div className="container mx-auto px-4 py-3 border-b">
+        <div className="flex space-x-4 space-x-reverse">
+          <Button 
+            variant={activePage === 'analysis' ? "default" : "ghost"} 
+            onClick={() => setActivePage('analysis')}
+            asChild
+          >
+            <a href="/">التحليل</a>
+          </Button>
+          {isLoggedIn && (
             <Button 
               variant={activePage === 'dashboard' ? "default" : "ghost"} 
               onClick={() => setActivePage('dashboard')}
@@ -94,20 +94,16 @@ function Index() {
             >
               <a href="/dashboard">لوحة المعلومات</a>
             </Button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
       
       {/* Main Content */}
       <main className="container mx-auto py-6 px-4">
         <Routes>
           <Route 
             path="/" 
-            element={
-              isLoggedIn 
-                ? <ChartAnalyzer /> 
-                : <Navigate to="/login" state={{ from: location }} replace />
-            } 
+            element={<ChartAnalyzer />} 
           />
           <Route 
             path="/dashboard" 
@@ -116,7 +112,14 @@ function Index() {
                 ? <Suspense fallback={<div className="flex items-center justify-center py-20">جاري تحميل المحتوى...</div>}>
                     <UserDashboard />
                   </Suspense>
-                : <Navigate to="/login" state={{ from: location }} replace />
+                : (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <h2 className="text-2xl font-bold mb-8">يجب تسجيل الدخول لعرض لوحة المعلومات</h2>
+                    <Button onClick={() => setShowAuthModal(true)}>
+                      تسجيل الدخول
+                    </Button>
+                  </div>
+                )
             } 
           />
           <Route 
@@ -128,7 +131,7 @@ function Index() {
                   <div className="flex flex-col items-center justify-center py-12">
                     <h2 className="text-2xl font-bold mb-8">مرحباً بك في منصة تحليل الأسواق المالية</h2>
                     <Button onClick={() => setShowAuthModal(true)}>
-                      تسجيل الدخول للمتابعة
+                      تسجيل الدخول
                     </Button>
                   </div>
                 )
