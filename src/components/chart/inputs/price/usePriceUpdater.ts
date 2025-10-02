@@ -9,7 +9,7 @@ export interface UsePriceUpdaterOptions {
   initialAutoMode?: boolean;
 }
 
-export const usePriceUpdater = ({ onChange, initialAutoMode = true }: UsePriceUpdaterOptions) => {
+export const usePriceUpdater = ({ onChange, initialAutoMode = false }: UsePriceUpdaterOptions) => {
   const [useAutoPrice, setUseAutoPrice] = useState(initialAutoMode);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
