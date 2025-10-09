@@ -43,9 +43,12 @@ const Header = memo(({
         {isLoggedIn ? (
           <UserProfileMenu />
         ) : (
-          <Button onClick={onLoginClick} size="sm">
-            تسجيل الدخول
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">وضع الضيف</span>
+            <Button onClick={onLoginClick} size="sm" variant="outline">
+              تسجيل الدخول
+            </Button>
+          </div>
         )}
       </div>
     </div>
