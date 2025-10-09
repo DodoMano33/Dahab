@@ -1,57 +1,44 @@
 
-import { fetchPriceFromMetalPriceApi } from './metalPriceApi.ts';
-
 /**
- * التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
- */
-const isMarketClosed = (): boolean => {
-  const day = new Date().getDay();
-  // 0 = الأحد، 6 = السبت
-  return day === 0 || day === 6;
-};
-
-/**
- * جلب سعر الذهب الحالي فقط (XAUUSD) من Metal Price API
- * حسب سعر شركة CFI
+ * جلب سعر الذهب الحالي من موقع un-web.com
  */
 export async function fetchPrice(symbol: string): Promise<number | null> {
   try {
-    // تم تعطيل استخدام Metal Price API مؤقتًا
-    console.log('تم تعطيل استخدام Metal Price API مؤقتًا بناءً على طلب المستخدم');
+    // جلب السعر من موقع un-web.com
+    console.log('جلب سعر الذهب من un-web.com...');
     
-    // استخدام سعر تجريبي 
-    const mockPrice = 3000 + Math.random() * 50; // سعر عشوائي للتجربة بين 3000 و 3050
-    console.log(`استخدام سعر تجريبي للذهب: ${mockPrice.toFixed(2)}`);
-    return mockPrice;
+    const url = 'https://www.un-web.com/tools/gold_price/';
     
-    /* الكود المعلق ولا يستخدم حاليًا
-    // تأكد من أن الرمز هو XAUUSD دائماً
-    if (symbol.toUpperCase() !== 'XAUUSD') {
-      console.log(`الرمز ${symbol} غير مدعوم. استخدام XAUUSD.`);
-      symbol = 'XAUUSD';
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`فشل في جلب الصفحة: ${response.status}`);
     }
     
-    // التحقق مما إذا كانت السوق مغلقة (السبت أو الأحد)
-    if (isMarketClosed()) {
-      console.log('السوق مغلقة اليوم (السبت أو الأحد). تخطي استدعاء Metal Price API.');
-      return null;
+    const html = await response.text();
+    
+    // البحث عن العنصر <span id="ounce_usd">VALUE</span>
+    const regex = /<span\s+id=["']ounce_usd["'][^>]*>([\d.]+)<\/span>/i;
+    const match = html.match(regex);
+    
+    if (match && match[1]) {
+      const price = parseFloat(match[1]);
+      
+      if (!isNaN(price)) {
+        console.log(`تم جلب سعر الذهب من un-web.com: ${price}`);
+        return price;
+      }
     }
     
-    console.log("محاولة جلب سعر الذهب من CFI عبر Metal Price API...");
-    
-    // استخدام Metal Price API لجلب سعر الذهب (XAU) من CFI
-    const result = await fetchPriceFromMetalPriceApi('XAU');
-    
-    if (result.success && result.price !== null) {
-      console.log(`تم جلب سعر الذهب من CFI بنجاح: ${result.price}`);
-      return result.price;
-    }
-    
-    console.error(`فشل في جلب سعر الذهب من CFI:`, result.message);
+    console.error('لم يتم العثور على سعر الذهب في الصفحة');
     return null;
-    */
   } catch (error: any) {
-    console.error(`خطأ في جلب سعر الذهب من CFI:`, error);
+    console.error(`خطأ في جلب سعر الذهب:`, error);
     return null;
   }
 }
