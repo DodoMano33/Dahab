@@ -21,7 +21,7 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = false }: UsePriceU
     setErrorMessage(null);
     
     try {
-      console.log("بدء جلب سعر الذهب من un-web.com...");
+      console.log("بدء جلب سعر الذهب من investing.com...");
       
       // استخدام Edge Function لجلب السعر
       const { data, error } = await supabase.functions.invoke('update-real-time-prices', {

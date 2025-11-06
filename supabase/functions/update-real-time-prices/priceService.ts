@@ -1,13 +1,13 @@
 
 /**
- * جلب سعر الذهب الحالي من موقع un-web.com
+ * جلب سعر الذهب الحالي من موقع investing.com
  */
 export async function fetchPrice(symbol: string): Promise<number | null> {
   try {
-    // جلب السعر من موقع un-web.com
-    console.log('جلب سعر الذهب من un-web.com...');
+    // جلب السعر من موقع investing.com
+    console.log('جلب سعر الذهب من investing.com...');
     
-    const url = 'https://www.un-web.com/tools/gold_price/';
+    const url = 'https://www.investing.com/currencies/xau-usd';
     
     const response = await fetch(url, {
       headers: {
@@ -22,15 +22,17 @@ export async function fetchPrice(symbol: string): Promise<number | null> {
     
     const html = await response.text();
     
-    // البحث عن العنصر <span id="ounce_usd">VALUE</span>
-    const regex = /<span\s+id=["']ounce_usd["'][^>]*>([\d.]+)<\/span>/i;
+    // البحث عن العنصر <span id="last_last">VALUE</span>
+    const regex = /<span\s+id=["']last_last["'][^>]*>([\d,]+\.?\d*)<\/span>/i;
     const match = html.match(regex);
     
     if (match && match[1]) {
-      const price = parseFloat(match[1]);
+      // إزالة الفواصل من الرقم
+      const priceString = match[1].replace(/,/g, '');
+      const price = parseFloat(priceString);
       
       if (!isNaN(price)) {
-        console.log(`تم جلب سعر الذهب من un-web.com: ${price}`);
+        console.log(`تم جلب سعر الذهب من investing.com: ${price}`);
         return price;
       }
     }

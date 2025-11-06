@@ -10,7 +10,7 @@ import { PriceResponse } from "./types";
  */
 export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | null> => {
   try {
-    console.log(`جلب سعر الذهب من CFI: ${symbol}`);
+    console.log(`جلب سعر الذهب من investing.com: ${symbol}`);
     
     // تحويل الرمز المعطى إلى رمز XAU للذهب فقط
     const metalSymbol = symbol.toUpperCase().includes('XAU') || 
@@ -18,7 +18,7 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
                         ? 'XAU' : null;
     
     if (!metalSymbol) {
-      console.warn(`الرمز ${symbol} غير مدعوم. نحن ندعم فقط XAU (الذهب) من CFI`);
+      console.warn(`الرمز ${symbol} غير مدعوم. نحن ندعم فقط XAU (الذهب) من investing.com`);
       return null;
     }
     
@@ -29,11 +29,11 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
       // محاولة استخدام السعر المخزن
       const storedPrice = await getStoredPrice('XAUUSD');
       if (storedPrice !== null) {
-        console.log(`استخدام سعر الذهب المخزن من CFI: ${storedPrice}`);
+        console.log(`استخدام سعر الذهب المخزن من investing.com: ${storedPrice}`);
         return storedPrice;
       }
       
-      console.log('لم يتم العثور على سعر مخزن للذهب من CFI.');
+      console.log('لم يتم العثور على سعر مخزن للذهب من investing.com.');
       return null;
     }
     
@@ -44,19 +44,19 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
       // استخدام السعر المخزن إذا كانت السوق مغلقة
       const storedPrice = await getStoredPrice('XAUUSD');
       if (storedPrice !== null) {
-        console.log(`استخدام سعر الذهب المخزن خلال إغلاق السوق: ${storedPrice}`);
+        console.log(`استخدام سعر الذهب المخزن من investing.com خلال إغلاق السوق: ${storedPrice}`);
         return storedPrice;
       }
       
-      console.log('لم يتم العثور على سعر مخزن للذهب أثناء إغلاق السوق.');
+      console.log('لم يتم العثور على سعر مخزن للذهب من investing.com أثناء إغلاق السوق.');
       return null;
     }
     
-    // استخدام Metal Price API مباشرة لجلب سعر الذهب من CFI
+    // استخدام Metal Price API مباشرة لجلب سعر الذهب من investing.com
     const response: PriceResponse = await fetchPriceFromMetalPriceApi(metalSymbol);
     
     if (response.success && response.price !== null) {
-      console.log(`تم جلب سعر الذهب من CFI: ${response.price}`);
+      console.log(`تم جلب سعر الذهب من investing.com: ${response.price}`);
       
       // حفظ السعر في قاعدة البيانات
       try {
@@ -71,9 +71,9 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
           });
         
         if (error) {
-          console.error('خطأ في حفظ سعر الذهب من CFI في قاعدة البيانات:', error);
+          console.error('خطأ في حفظ سعر الذهب من investing.com في قاعدة البيانات:', error);
         } else {
-          console.log('تم حفظ سعر الذهب من CFI في قاعدة البيانات');
+          console.log('تم حفظ سعر الذهب من investing.com في قاعدة البيانات');
           
           // إرسال حدث تحديث السعر
           window.dispatchEvent(new CustomEvent('metal-price-update', {
@@ -81,35 +81,35 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
           }));
         }
       } catch (saveError) {
-        console.error('خطأ غير متوقع في حفظ سعر الذهب من CFI:', saveError);
+        console.error('خطأ غير متوقع في حفظ سعر الذهب من investing.com:', saveError);
       }
       
       return response.price;
     }
     
     // إذا لم ننجح في الحصول على السعر من Metal Price API، نستخدم السعر المخزن
-    console.warn('لم ننجح في جلب سعر الذهب من CFI. محاولة استخدام السعر المخزن.');
+    console.warn('لم ننجح في جلب سعر الذهب من investing.com. محاولة استخدام السعر المخزن.');
     const storedPrice = await getStoredPrice('XAUUSD');
     
     if (storedPrice !== null) {
-      console.log(`استخدام سعر الذهب المخزن من CFI: ${storedPrice}`);
+      console.log(`استخدام سعر الذهب المخزن من investing.com: ${storedPrice}`);
       return storedPrice;
     }
     
-    console.log('لم يتم العثور على سعر للذهب من CFI');
+    console.log('لم يتم العثور على سعر للذهب من investing.com');
     return null;
   } catch (error) {
-    console.error('خطأ في جلب سعر الذهب من CFI:', error);
+    console.error('خطأ في جلب سعر الذهب من investing.com:', error);
     
     // محاولة استخدام السعر المخزن
     try {
       const storedPrice = await getStoredPrice('XAUUSD');
       if (storedPrice !== null) {
-        console.log(`استخدام سعر الذهب المخزن من CFI بعد خطأ: ${storedPrice}`);
+        console.log(`استخدام سعر الذهب المخزن من investing.com بعد خطأ: ${storedPrice}`);
         return storedPrice;
       }
     } catch (subError) {
-      console.error('خطأ في جلب السعر المخزن بعد فشل جلب السعر الحي من CFI:', subError);
+      console.error('خطأ في جلب السعر المخزن بعد فشل جلب السعر الحي من investing.com:', subError);
     }
     
     return null;
@@ -120,7 +120,7 @@ export const fetchPreciousMetalPrice = async (symbol: string): Promise<number | 
  * جلب سعر من الفوركس (غير مستخدم حالياً)
  */
 export const fetchForexPrice = async (symbol: string): Promise<number | null> => {
-  console.log(`فوركس غير مدعوم، تحويل إلى XAUUSD من CFI`);
+  console.log(`فوركس غير مدعوم، تحويل إلى XAUUSD من investing.com`);
   return fetchPreciousMetalPrice('XAUUSD');
 };
 
@@ -128,7 +128,7 @@ export const fetchForexPrice = async (symbol: string): Promise<number | null> =>
  * جلب سعر العملات الرقمية (غير مستخدم حالياً)
  */
 export const fetchCryptoPrice = async (symbol: string): Promise<number | null> => {
-  console.log(`العملات الرقمية غير مدعومة، تحويل إلى XAUUSD من CFI`);
+  console.log(`العملات الرقمية غير مدعومة، تحويل إلى XAUUSD من investing.com`);
   return fetchPreciousMetalPrice('XAUUSD');
 };
 
