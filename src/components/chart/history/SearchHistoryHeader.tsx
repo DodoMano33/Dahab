@@ -3,7 +3,7 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 
 interface SearchHistoryHeaderProps {
   initialCount?: number;
@@ -11,7 +11,7 @@ interface SearchHistoryHeaderProps {
 
 export const SearchHistoryHeader = ({ initialCount = 0 }: SearchHistoryHeaderProps) => {
   const [totalCount, setTotalCount] = useState(initialCount);
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
 
   useEffect(() => {
     setTotalCount(initialCount);

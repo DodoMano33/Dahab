@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { SearchHistoryItem } from "@/types/analysis";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useHistoryData } from "./useHistoryData";
 
@@ -10,7 +10,7 @@ import { useHistoryData } from "./useHistoryData";
  */
 export function useSearchHistory() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
   const queryClient = useQueryClient();
   
   const {

@@ -2,10 +2,10 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 
 export const useBackTest = () => {
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
   // إضافة المتغيرات المفقودة التي تم استخدامها في BacktestCheckButton

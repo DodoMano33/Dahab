@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { SearchHistoryItem } from "@/types/analysis";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 
 export function useExpiredAnalyses(searchHistory: SearchHistoryItem[], updateHistory: (newHistory: SearchHistoryItem[]) => void) {
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
 
   // تحقق من التحليلات المنتهية بشكل دوري
   useEffect(() => {

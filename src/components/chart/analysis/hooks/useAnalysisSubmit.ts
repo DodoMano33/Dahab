@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { processChartAnalysis } from "@/components/chart/analysis/utils/chartAnalysisProcessor";
 import { AnalysisType } from "@/types/analysis";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentPrice } from "@/hooks/useCurrentPrice";
 import { useNavigate } from "react-router-dom";
 import { getTradingViewChartImage } from "@/utils/tradingViewUtils";
@@ -24,7 +24,7 @@ interface UseAnalysisSubmitProps {
 
 export const useAnalysisSubmit = ({ symbol }: UseAnalysisSubmitProps) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
   const { currentPrice } = useCurrentPrice();
   const { isAnalyzing, startAnalyzing, stopAnalyzing } = useAnalysisState();
   const { validateAnalysisInput } = useValidation();

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
 // خطوات التعريف بالتطبيق
@@ -39,7 +39,7 @@ export function OnboardingDialog() {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completed, setCompleted] = useState(false);
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
 
   useEffect(() => {
     if (user) {

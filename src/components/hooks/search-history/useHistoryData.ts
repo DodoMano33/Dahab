@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { SearchHistoryItem } from "@/types/analysis";
-import { useAuth } from "@/contexts/AuthContext";
+// import { useAuth } from "@/contexts/AuthContext";
 import { useFetchHistory } from "./useFetchHistory";
 import { useHistoryEvents } from "./useHistoryEvents";
 import { useHistoryActions } from "./useHistoryActions";
@@ -9,7 +9,7 @@ import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCac
 import { toast } from "sonner";
 
 export function useHistoryData() {
-  const { user } = useAuth();
+  const user = null; // التطبيق يعمل بدون مصادقة
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const { fetchSearchHistory, isRefreshing, setIsRefreshing } = useFetchHistory();
   const { handleDeleteHistoryItem, addToSearchHistory: addItem } = useHistoryActions();
