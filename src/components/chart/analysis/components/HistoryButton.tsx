@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { History } from "lucide-react";
 import { AnalysisCountBadge } from "./AnalysisCountBadge";
 import { useEffect, useState } from "react";
-/import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 // import { useAuth } from "@/contexts/AuthContext";
 
 interface HistoryButtonProps {
