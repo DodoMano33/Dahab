@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { DashboardStats } from "./DashboardStats";
 import { CalendarCard } from "./CalendarCard";
@@ -10,7 +10,7 @@ import { LatestAnalyses } from "./LatestAnalyses";
 import { useDashboardStats } from "./hooks/useDashboardStats";
 
 export function UserDashboard() {
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { stats, isLoading, dashboardStats, setStats, setIsLoading } = useDashboardStats(user?.id);
   const queryClient = useQueryClient();

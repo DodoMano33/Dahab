@@ -1,13 +1,13 @@
 
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * هوك لإدارة الأحداث المرتبطة بتاريخ البحث
  */
 export function useHistoryEvents(fetchHistoryCallback: () => Promise<void>) {
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
 
   // إعداد المستمعين للأحداث
   useEffect(() => {

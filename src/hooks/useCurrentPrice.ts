@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { saveCurrentPrice, getCurrentPrice } from '@/utils/price/localStorage';
 
 export const useCurrentPrice = () => {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
@@ -22,14 +21,6 @@ export const useCurrentPrice = () => {
 
       if (error) {
         console.error('خطأ في جلب سعر الذهب من قاعدة البيانات:', error);
-        
-        // محاولة استرجاع السعر من التخزين المحلي
-        const { price: localPrice, lastUpdate } = getCurrentPrice();
-        if (localPrice) {
-          console.log(`استخدام السعر من التخزين المحلي: ${localPrice}`);
-          setCurrentPrice(localPrice);
-          setLastUpdateTime(lastUpdate);
-        }
         return;
       }
 
@@ -38,9 +29,6 @@ export const useCurrentPrice = () => {
         setCurrentPrice(price);
         setLastUpdateTime(updated_at);
         setPriceUpdateCount(prev => prev + 1);
-        
-        // حفظ السعر في التخزين المحلي
-        saveCurrentPrice(price);
         
         console.log(`تم تحديث سعر الذهب: ${price}`);
         
@@ -51,28 +39,12 @@ export const useCurrentPrice = () => {
       }
     } catch (error) {
       console.error('خطأ غير متوقع في جلب سعر الذهب:', error);
-      
-      // محاولة استرجاع السعر من التخزين المحلي
-      const { price: localPrice, lastUpdate } = getCurrentPrice();
-      if (localPrice) {
-        console.log(`استخدام السعر من التخزين المحلي بعد خطأ: ${localPrice}`);
-        setCurrentPrice(localPrice);
-        setLastUpdateTime(lastUpdate);
-      }
     }
   }, []);
 
   // استدعاء fetchLatestPrice عند التحميل مباشرة وكل 60 ثانية (دقيقة واحدة)
   useEffect(() => {
     console.log('بدء تعقب سعر الذهب (XAUUSD)');
-    
-    // محاولة استرجاع السعر من التخزين المحلي أولاً
-    const { price: localPrice, lastUpdate } = getCurrentPrice();
-    if (localPrice) {
-      console.log(`تم استرجاع السعر من التخزين المحلي عند التحميل: ${localPrice}`);
-      setCurrentPrice(localPrice);
-      setLastUpdateTime(lastUpdate);
-    }
     
     // جلب السعر الأولي فوراً
     fetchLatestPrice();

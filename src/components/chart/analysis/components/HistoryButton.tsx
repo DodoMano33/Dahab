@@ -4,7 +4,7 @@ import { History } from "lucide-react";
 import { AnalysisCountBadge } from "./AnalysisCountBadge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HistoryButtonProps {
   onClick: () => void;
@@ -24,7 +24,7 @@ export const HistoryButton = ({
   table = "search_history"
 }: HistoryButtonProps) => {
   const [count, setCount] = useState(initialCount);
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
 
   useEffect(() => {
     setCount(initialCount);

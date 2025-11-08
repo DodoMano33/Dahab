@@ -9,12 +9,12 @@ import { SuccessRateChart } from "./SuccessRateChart";
 import { TimeframePerfChart } from "./TimeframePerfChart";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AnalyticsDashboard() {
   const { stats, isLoading, refresh } = useBacktestStats();
   const [activeTab, setActiveTab] = useState("overview");
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
   
   const overallSuccessRate = stats.length > 0
     ? Math.round(

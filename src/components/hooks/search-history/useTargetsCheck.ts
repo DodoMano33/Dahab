@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useTargetsCheck(refreshCallback: () => Promise<void>) {
   const [isChecking, setIsChecking] = useState(false);
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
 
   // فحص تحقق الأهداف ووقف الخسارة
   const checkTargetsAndStopLoss = async () => {

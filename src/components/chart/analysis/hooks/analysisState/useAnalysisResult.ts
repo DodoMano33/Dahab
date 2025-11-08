@@ -4,7 +4,7 @@ import { AnalysisData, AnalysisType, SearchHistoryItem } from "@/types/analysis"
 import { clearSupabaseCache, clearSearchHistoryCache } from "@/utils/supabaseCache";
 import { saveAnalysisToDatabase } from "@/components/chart/analysis/utils/processors/databaseHandler";
 import { dispatchAnalysisSuccessEvent } from "@/hooks/analysis-checker/events/analysisEvents";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Define the AnalysisResult interface
 export interface AnalysisResult {
@@ -18,7 +18,7 @@ export interface AnalysisResult {
  * هوك لمعالجة نتيجة التحليل
  */
 export function useAnalysisResult() {
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
   
   const handleAnalysisResult = async (
     result: AnalysisResult,

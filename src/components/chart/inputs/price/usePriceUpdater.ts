@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { fetchPreciousMetalPrice } from "@/utils/price/api/fetchers";
-import { saveCurrentPrice, getCurrentPrice } from "@/utils/price/localStorage";
 
 export interface UsePriceUpdaterOptions {
   onChange: (value: string) => void;
@@ -31,16 +30,6 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = false }: UsePriceU
 
       if (error) {
         console.error("خطأ في استدعاء وظيفة تحديث السعر:", error);
-        
-        // محاولة استرجاع السعر من التخزين المحلي
-        const { price: localPrice } = getCurrentPrice();
-        if (localPrice) {
-          console.log(`استخدام السعر من التخزين المحلي: ${localPrice}`);
-          onChange(localPrice.toString());
-          toast.info(`استخدام السعر المحفوظ: ${localPrice}`, { duration: 2000 });
-          return;
-        }
-        
         throw new Error("فشل في تحديث السعر");
       }
 
@@ -53,25 +42,12 @@ export const usePriceUpdater = ({ onChange, initialAutoMode = false }: UsePriceU
 
       if (priceError) {
         console.error("خطأ في جلب السعر من قاعدة البيانات:", priceError);
-        
-        // محاولة استرجاع السعر من التخزين المحلي
-        const { price: localPrice } = getCurrentPrice();
-        if (localPrice) {
-          console.log(`استخدام السعر من التخزين المحلي: ${localPrice}`);
-          onChange(localPrice.toString());
-          toast.info(`استخدام السعر المحفوظ: ${localPrice}`, { duration: 2000 });
-          return;
-        }
-        
         throw new Error("لم نتمكن من استرجاع السعر المحدث");
       }
 
       if (priceData && priceData.price) {
         const price = priceData.price.toString();
         onChange(price);
-        
-        // حفظ السعر في التخزين المحلي
-        saveCurrentPrice(priceData.price);
         
         // إرسال حدث لتحديث السعر في جميع أنحاء التطبيق
         window.dispatchEvent(new CustomEvent('metal-price-update', { 

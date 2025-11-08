@@ -1,12 +1,12 @@
 
 import { useState, useRef } from "react";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useAnalysisOperations } from "./useAnalysisOperations";
 import { useAnalysisValidation } from "./useAnalysisValidation";
 import { AutoAnalysisConfig } from "../types/autoAnalysisTypes";
 
 export const useAutoAnalysis = () => {
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);

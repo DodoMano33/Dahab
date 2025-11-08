@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Check, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-// import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
@@ -19,7 +19,7 @@ interface Notification {
 export const RealTimeNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const user = null; // التطبيق يعمل بدون مصادقة
+  const { user } = useAuth();
   
   useEffect(() => {
     const fetchNotifications = async () => {
